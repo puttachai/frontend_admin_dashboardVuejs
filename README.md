@@ -29,6 +29,10 @@ npm install chart.js
 npm install chartjs-plugin-datalabels
 
 ```
+### Database name admin_dashboard.sql
+admin_dashboard.sql in firt folder
+
+```
 
 ### Compile and Hot-Reload for Development
 

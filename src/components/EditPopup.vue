@@ -70,6 +70,8 @@ import { ref } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 const props = defineProps({
   employee: Object,
   visible: Boolean
@@ -139,7 +141,7 @@ const confirmSubmitEdit = async () => {
         formData.append('image', selectedImage.value);
       }
 
-      const response = await axios.post('http://localhost/api_admin_dashboard/Update_Employee.php', formData,
+      const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/Update_Employee.php`, formData,
         { headers: { 'Content-Type': 'multipart/form-data' } });
       emit('updated', response.data); // อัพเดตข้อมูลใหม่ไปยัง parent
 

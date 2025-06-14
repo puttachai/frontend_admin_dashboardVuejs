@@ -127,16 +127,6 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-// const logout = () => {
-//     // ลบข้อมูล token และข้อมูลอื่น ๆ ที่เก็บไว้ใน localStorage
-//     localStorage.removeItem('token')
-//     localStorage.removeItem('isAuthenticated')
-//     localStorage.removeItem('image_path')
-
-//     // ไปหน้า signin
-//     router.push('/')
-// }
-
 const confirmLogoutEmployee = async () => {
   const result = await Swal.fire({
     title: 'ยืนยันการออกจากระบบ',

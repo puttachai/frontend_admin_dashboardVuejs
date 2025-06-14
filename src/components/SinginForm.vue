@@ -34,6 +34,9 @@ import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+console.log("Show BASE_URL: ",BASE_URL);
+
 const email = ref('')
 const password = ref('')
 const error = ref('')
@@ -41,7 +44,8 @@ const router = useRouter()
 
 const handleLogin = async () => {
   try {
-    const response = await axios.post('http://localhost/api_admin_dashboard/loginUser.php', {
+    console.log("Show BASE_URL: ",BASE_URL);
+    const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/loginUser.php`, {
         email: email.value,
         password: password.value
       },{

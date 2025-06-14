@@ -118,6 +118,8 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 Chart.register(...registerables);
 Chart.register(ChartDataLabels);
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
   export default {
     name: 'Dashboard',
     data() {
@@ -142,7 +144,7 @@ Chart.register(ChartDataLabels);
   },
   methods: {
     fetchLatestEmployees() {
-      fetch('http://localhost/api_admin_dashboard/get-latest-employees.php')
+      fetch(`${BASE_URL}/api_admin_dashboard/backend/api/get-latest-employees.php`)
         .then(res => res.json())
         .then(data => {
           this.latestEmployees = data;
@@ -152,7 +154,7 @@ Chart.register(ChartDataLabels);
         });
     },
     fetchdepartments(){
-      fetch("http://localhost/api_admin_dashboard/api_department_count.php")
+      fetch(`${BASE_URL}/api_admin_dashboard/backend/api/api_department_count.php`)
       .then(res => res.json())
   .then(result => {
     if(result.success) {
@@ -225,7 +227,7 @@ Chart.register(ChartDataLabels);
     //     });
     // },
     fetchSalaryData() {
-      fetch('http://localhost/api_admin_dashboard/get_top_salary.php')
+      fetch(`${BASE_URL}/api_admin_dashboard/backend/api/get_top_salary.php`)
         .then(res => res.json())
         .then(result => {
           if (result.success) {

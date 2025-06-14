@@ -40,17 +40,10 @@ admin_dashboard.sql in first folder
 npm run dev
 ```
 
-### Compile and Minify for Production
+![Dashboard Screenshot](https://raw.githubusercontent.com/puttachai/backend_admin_dashboard_PHP/refs/heads/main/img/screenshot/DashBoard.png)
 
-```sh
-npm run build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-npm run test:unit
-```
+This template should help get you started developing with Vue 3 in Vite.
+...
 
 ### Lint with [ESLint](https://eslint.org/)
 

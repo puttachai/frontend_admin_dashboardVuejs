@@ -60,5 +60,8 @@ Signin
 Signup
 ![Dashboard Screenshot](https://raw.githubusercontent.com/puttachai/backend_admin_dashboard_PHP/refs/heads/main/img/screenshot/Signup.png)
 
+Tech Stack
+![Dashboard Screenshot](https://raw.githubusercontent.com/puttachai/backend_admin_dashboard_PHP/refs/heads/main/img/screenshot/TechStack.png)
+
 ...
 

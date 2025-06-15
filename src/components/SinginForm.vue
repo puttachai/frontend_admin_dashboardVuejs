@@ -12,12 +12,14 @@
         type="email"
         placeholder="Email"
         class="w-full px-4 py-2 border rounded-md"
+        autocomplete="email"
       />
       <input
         v-model="password"
         type="password"
         placeholder="Password"
         class="w-full px-4 py-2 border rounded-md"
+        autocomplete="current-password"
       />
       <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md">
         Log in
@@ -34,8 +36,8 @@ import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 
-const BASE_URL = import.meta.env.VITE_API_URL;
-console.log("Show BASE_URL: ",BASE_URL);
+// const BASE_URL = import.meta.env.VITE_API_URL;
+// console.log("Show BASE_URL: ",BASE_URL);
 
 const email = ref('')
 const password = ref('')
@@ -44,8 +46,9 @@ const router = useRouter()
 
 const handleLogin = async () => {
   try {
-    console.log("Show BASE_URL try: ",BASE_URL);
-    const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/loginUser.php`, {
+    // console.log("Show BASE_URL: ",BASE_URL);
+    // const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/loginUser.php`, {
+    const response = await axios.post('api/api/loginUser.php', {
         email: email.value,
         password: password.value
       },{

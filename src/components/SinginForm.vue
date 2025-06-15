@@ -12,12 +12,18 @@
         type="email"
         placeholder="Email"
         class="w-full px-4 py-2 border rounded-md"
+        autocomplete="email" 
+        id="email" 
+        name="email"
       />
       <input
         v-model="password"
         type="password"
         placeholder="Password"
         class="w-full px-4 py-2 border rounded-md"
+        autocomplete="current-password" 
+        id="password" 
+        name="password"
       />
       <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md">
         Log in

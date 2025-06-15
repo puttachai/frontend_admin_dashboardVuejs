@@ -32,7 +32,7 @@
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
-// const BASE_URL= import.meta.env.VITE_API_URL;
+const BASE_URL= import.meta.env.VITE_API_URL;
 
   export default {
     data(){
@@ -75,8 +75,7 @@ import Swal from 'sweetalert2';
 
         try {
           
-          // const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/signupMain.php`, payload);
-          const response = await axios.post('/api/api/signupMain.php', payload);
+          const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/signupMain.php`, payload);
           const result = response.data;
 
           console.log("Log Value Result: ",result);

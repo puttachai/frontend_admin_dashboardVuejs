@@ -55,6 +55,7 @@ const handleLogin = async () => {
         email: email.value,
         password: password.value
       },{
+      withCredentials: true,
       headers: {
         'Content-Type': 'application/json'
       }

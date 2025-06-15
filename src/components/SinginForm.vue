@@ -44,7 +44,7 @@ const router = useRouter()
 
 const handleLogin = async () => {
   try {
-    console.log("Show BASE_URL: ",BASE_URL);
+    console.log("Show BASE_URL try: ",BASE_URL);
     const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/loginUser.php`, {
         email: email.value,
         password: password.value

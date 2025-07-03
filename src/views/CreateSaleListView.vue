@@ -334,7 +334,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                    }}</p>
+                        }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -468,7 +468,7 @@
                             <!-- Flatpickr Input -->
                             <flat-pickr v-model="formData.deliveryDate" :config="dateConfig" :readonly="isReadOnly"
                                 class="cursor-pointer w-full border rounded px-3 py-2" />
-                                <!-- class="cursor-not-allowed pr-10 mt-1 pl-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-700 placeholder-gray-400 bg-gray-100" /> -->
+                            <!-- class="cursor-not-allowed pr-10 mt-1 pl-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-700 placeholder-gray-400 bg-gray-100" /> -->
 
                             <!-- Calendar Icon on the right -->
                             <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
@@ -1175,10 +1175,19 @@ export default {
             const promotions = payload?.promotions ?? [];
 
             const getProduct = products.map(p => ({
-                pro_id: p.pro_id,
-                pro_title: p.pro_title,
-                pro_code: p.pro_code,
-                pro_images: p.pro_images,
+                // pro_id: p.pro_id, // 50983
+                // pro_title: p.pro_title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
+                // pro_code: p.pro_code, //"P02-ZZ-9999"
+                // pro_images: p.pro_images, //image url
+                pro_id: p.pro_id,//
+                pro_erp_title: p.pro_title,//
+                pro_goods_price: p.pro_goods_price,//
+                pro_goods_sku_text: p.pro_goods_sku_text,//
+                pro_sn: p.pro_sn,//
+                pro_images: p.pro_images,//
+                pro_quantity: p.pro_quantity,//
+                pro_units: p.pro_units,//
+                pro_m_code: p.pro_m_code//
             }));
 
             const getPromotion = promotions.map(p => ({
@@ -1186,10 +1195,33 @@ export default {
                 pro_m_title: p.pro_m_title,
                 pro_m_code: p.pro_m_code,
                 pro_m_images: p.pro_m_images,
+
             }));
 
             console.log('🛒 ได้สินค้า:', getProduct);
             console.log('🎯 โปรโมชั่นที่เลือก:', getPromotion);
+
+            // เพิ่มสินค้าใหม่ลงใน selectedProducts
+            getProduct.forEach(product => {
+                const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === product.pro_id);
+                if (!alreadyExists) {
+                    // this.selectedProducts.push(product);
+                    this.selectedProducts.push({
+                        pro_id: product.pro_id,//
+                        pro_erp_title: product.pro_erp_title,//
+                        pro_unit_price: product.pro_goods_price,//
+                        pro_goods_sku_text: product.pro_goods_sku_text,//
+                        // pro_sn: product.pro_sn,//
+                        pro_images: product.pro_images,//
+                        pro_quantity: product.pro_quantity,//
+                        pro_units: product.pro_units,//
+                        // pro_m_code: product.pro_m_code//
+                    });
+                }
+            });
+
+            console.log('📋 รายการสินค้าในตาราง:', this.selectedProducts);
+
         },
 
 

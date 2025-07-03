@@ -35,9 +35,12 @@
                 <form class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">รายการ *</label>
-                        <input type="text" placeholder="รหัสรายการ" disabled v-model="formData.documentNo"
-                            class="border mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                        <label class="block text-sm font-medium text-gray-700 mb-1">รายการ *</label>
+                        <div>
+                            <input type="text" placeholder="รหัสรายการ" disabled v-model="formData.documentNo"
+                            class="border mt-1.5 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                        </div>
+                      
                     </div>
 
                     <!-- <div>
@@ -584,9 +587,17 @@ export default {
             showConfirmEditPopup: false,
             popupFormData: [],
 
-            selectedProducts: [], // ค่าเริ่มต้นเป็น array ว่าง
+            Apiproducts: [], // เก็บข้อมูลสินค้าที่ได้จาก API
+
+            
 
             formTouched: false, // ค่าเริ่มต้น
+
+            pageSize: 30, // ค่าเริ่มต้น
+            totalItems: 0, // ค่าเริ่มต้น
+
+            showMoreData: false, // ค่าเริ่มต้น
+            showMoreAdress: false, // ค่าเริ่มต้น
 
             formData: {
                 listCode: '',
@@ -634,6 +645,9 @@ export default {
                 warehouseCode: 'H1',
                 docType: 'SO',
             },
+
+            selectedProducts: [], // ค่าเริ่มต้นเป็น array ว่าง
+
         };
     },
 
@@ -694,7 +708,7 @@ export default {
             // const getDataCustomer = JSON.parse(localStorage.getItem('selectDataCustomer') || 'null');
             
             // ใช้ 0 แทนถ้า level เป็น null หรือ undefined
-            const level = customerData?.data.data2?.level ?? 0;
+            const level = this.customerData?.data.data2?.level ?? 0;
             // const level = getDataCustomer?.data2?.level ?? 0;
 
             console.log("log Create LeVel 643: ", level);
@@ -718,6 +732,8 @@ export default {
 
                 const data = response.data.data;
 
+                console.log('📦 Loaded products:', data);
+
                 // เก็บจำนวนสินค้าทั้งหมดจาก API
                 this.totalItems = data.item_count || 0;
 
@@ -733,7 +749,7 @@ export default {
                 this.Apiproducts = data.data2 || [];
                 this.pageCurrent = page;
 
-                console.log('Loaded products:', this.Apiproducts);
+                console.log('📦 Loaded products:', this.Apiproducts);
                 console.log('Total items:', this.totalItems);
 
             } catch (err) {
@@ -743,17 +759,17 @@ export default {
         },
 
         // ตัวอย่างการเรียกใช้ข้อมูลในฟังก์ชัน
-        async getProducts(page = 1) {
-            const level = customerData.value?.data2?.level ?? 0;
-            console.log("log Create LeVel 643: ", level);
+        // async getProducts(page = 1) {
+        //     const level = customerData.value?.data2?.level ?? 0;
+        //     console.log("log Create LeVel 643: ", level);
 
-            try {
-                const res = await axios.get(`${BASE_URL}/your-endpoint?page=${page}&level=${level}`);
-                console.log('📦 Product Data:', res.data);
-            } catch (err) {
-                console.error('❌ Error loading product:', err);
-            }
-        },
+        //     try {
+        //         const res = await axios.get(`${BASE_URL}/your-endpoint?page=${page}&level=${level}`);
+        //         console.log('📦 Product Data:', res.data);
+        //     } catch (err) {
+        //         console.error('❌ Error loading product:', err);
+        //     }
+        // },
 
 
         async saveDocument() {
@@ -1208,11 +1224,35 @@ export default {
             this.formData.sellDate = today;
         }
 
+        // อัปเดตอัตโนมัติเมื่อ localStorage ถูกเปลี่ยนจากแท็บอื่น
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'selectDataCustomer') {
+                this.customerData = JSON.parse(event.newValue || 'null');
+                console.log('🔄 customerData updated via storage event:', this.customerData);
+                this.getProduct(); // เรียกใหม่เมื่อข้อมูลลูกค้าเปลี่ยน
+            }
+        });
+
     },
 
 }
 
 </script>
+
+<style>
+
+input{
+    /* font-size: 0.875rem; /* ขนาดตัวอักษร 14px */
+    /* line-height: 1.25rem; ความสูงบรรทัด 20px */    
+    /* padding-top: 0.5rem;
+    padding-bottom: 0.5rem; */
+
+    padding: 0.5rem;
+    margin-top: 0.4rem;
+    
+}
+
+</style>
 
 
 <!-- 

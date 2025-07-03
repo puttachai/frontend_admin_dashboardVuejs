@@ -176,18 +176,18 @@
 
                 <!-- ส่วนขวา: ปุ่มต่าง ๆ -->
                 <div class="flex gap-2">
-                    <button @click="addProductRow" class="bg-green-600 text-white px-4 py-2 rounded">
+                    <button @click="addProductRow" :disabled="isReadOnly" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                         + เพิ่มแถวสินค้า
                     </button>
-                    <button @click="showProductSelector = true"
+                    <button @click="showProductSelector = true" :disabled="isReadOnly"
                         class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                         เลือกสินค้า
                     </button>
-                    <button @click="showPromotionSelector = true"
-                        class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <button @click="showPromotionSelector = true" :disabled="isReadOnly"
+                        class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700">
                         เลือกโปรโมชั่น
                     </button>
-                    <button @click="removeAllProducts" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                    <button @click="removeAllProducts" :disabled="isReadOnly" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
                         ลบสินค้าที่เลือกทั้งหมด
                     </button>
                 </div>
@@ -231,7 +231,7 @@
                             <!-- รหัส <button @click="showProductSelector = true"-->
                             <td class="px-4 py-2 border">
 
-                                <button @click="openSelectorForRow(index)" class="bg-gray-200 px-3 py-1 rounded">{{
+                                <button @click="openSelectorForRow(index)" :disabled="isReadOnly" class="bg-gray-200 px-3 py-1 rounded">{{
                                     product.pro_id }} เลือก
                                 </button>
 
@@ -307,7 +307,7 @@
 
                             <!-- ปุ่มลบ -->
                             <td class="px-4 py-2 border text-center text-red-500 cursor-pointer hover:text-red-700"
-                                @click="removeProduct(index)">
+                                :disabled="isReadOnly" @click="removeProduct(index)">
                                 ลบ
                             </td>
                         </tr>
@@ -323,7 +323,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <div>
                     <label class="block font-medium mb-1">ช่องทางจัดส่ง</label>
-                    <select v-model="formData.deliveryType" placeholder="ช่องทางจัดส่ง"
+                    <select v-model="formData.deliveryType" placeholder="ช่องทางจัดส่ง" :disabled="isReadOnly" style="margin: 0.4rem;"
                         class="w-full border px-3 py-2 rounded">
 
                         <option value="">เลือกช่องทางจัดส่ง</option>
@@ -334,7 +334,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -353,7 +353,7 @@
             <!-- หมายเหตุ -->
             <div class="mt-4">
                 <label class="block font-medium mb-1">หมายเหตุ</label>
-                <textarea rows="3" v-model="formData.note" class="w-full border px-3 py-2 rounded"></textarea>
+                <textarea rows="3" v-model="formData.note" :readonly="isReadOnly" class="w-full border px-3 py-2 rounded"></textarea>
             </div>
 
             <!-- รวม -->
@@ -466,7 +466,7 @@
 
                         <div class="relative">
                             <!-- Flatpickr Input -->
-                            <flat-pickr v-model="formData.deliveryDate" :config="dateConfig" :readonly="isReadOnly"
+                            <flat-pickr v-model="formData.deliveryDate" :config="dateConfig" :disabled="isReadOnly"
                                 class="cursor-pointer w-full border rounded px-3 py-2" />
                             <!-- class="cursor-not-allowed pr-10 mt-1 pl-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-700 placeholder-gray-400 bg-gray-100" /> -->
 
@@ -575,6 +575,7 @@ export default {
             // ✅ ตั้งค่ารูปแบบวันและปฏิทิน
             dateConfig: {
                 dateFormat: 'd/m/Y', // เช่น 01/07/2568
+                // dateFormat: 'Y-m-d',
                 locale: Thai, // ใช้ภาษาไทย
             },
 
@@ -592,8 +593,6 @@ export default {
 
             Apiproducts: [], // เก็บข้อมูลสินค้าที่ได้จาก API
 
-
-
             formTouched: false, // ค่าเริ่มต้น
 
             pageSize: 30, // ค่าเริ่มต้น
@@ -604,8 +603,13 @@ export default {
 
             formData: {
                 listCode: '',
-                sellDate: '',
-
+                // sellDate: '',
+                // sellDate: new Date().toISOString().split('T')[0], // ตั้งค่าเริ่มต้นเป็นวันที่ปัจจุบัน (YYYY-MM-DD)
+                sellDate: new Date().toLocaleDateString('th-TH', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                }), // ตั้งค่าเริ่มต้นเป็นวันที่ปัจจุบันในรูปแบบ วัน/เดือน/ปี
                 // expireDate: '',
                 reference: '',
                 channel: '',
@@ -678,7 +682,8 @@ export default {
     computed: {
         totalAmountBeforeDiscount() {
             const subtotal = this.selectedProducts.reduce((sum, product) => {
-                const qty = product.qty || 0;
+                const qty = product.pro_quantity || 0;
+                // const qty = product.qty || 0;
                 const price = product.pro_unit_price || 0;
                 const discount = product.discount || 0;
                 return sum + (qty * price - discount);
@@ -699,6 +704,20 @@ export default {
 
 
     methods: {
+
+        updateCustomerData() {
+
+            if (this.customerData?.data2) {
+                this.formData.fullName = this.customerData.data2.contact || '';
+                this.formData.customerCode = this.customerData.data2.customer_no || '';
+                this.formData.phone = this.customerData.data2.mobile || '';
+            } else {
+                console.warn("😡 customerData หรือ data2 ไม่มีค่า:", this.customerData);
+            }
+            // this.formData.email = this.customerData.data.data2.email || ''; 
+            // this.formData.address = this.customerData.data.data2.address || '';
+
+        },
 
         updateDeliveryDate(newDate) {
             this.formData.deliveryDate = newDate;
@@ -1327,7 +1346,13 @@ export default {
         },
 
         totalprice(product) {
-            const qty = product.qty || 0;
+            // const qty = product.qty || 0;
+            // const price = product.pro_unit_price || 0;
+            // const discount = product.discount || 0;
+            // const totalprice = (qty * price - discount).toFixed(2);
+            // console.log('Log value:', totalprice);
+            // return totalprice;
+            const qty = product.pro_quantity || 0; // ใช้ pro_quantity แทน qty
             const price = product.pro_unit_price || 0;
             const discount = product.discount || 0;
             const totalprice = (qty * price - discount).toFixed(2);
@@ -1352,10 +1377,13 @@ export default {
         }
 
         this.getProduct(1);
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-        if (!this.formData.sellDate) {
-            this.formData.sellDate = today;
-        }
+
+        const today = new Date();
+        const year = today.getFullYear(); // ปีคริสต์ศักราช
+        const month = String(today.getMonth() + 1).padStart(2, '0'); // เดือน (01-12)
+        const day = String(today.getDate()).padStart(2, '0'); // วัน (01-31)
+
+        this.formData.sellDate = `${day}/${month}/${year}`; // ตั้งค่าเป็น วัน/เดือน/ปี
 
         // อัปเดตอัตโนมัติเมื่อ localStorage ถูกเปลี่ยนจากแท็บอื่น
         window.addEventListener('storage', (event) => {
@@ -1365,6 +1393,13 @@ export default {
                 this.getProduct(); // เรียกใหม่เมื่อข้อมูลลูกค้าเปลี่ยน
             }
         });
+
+        // โหลดข้อมูลลูกค้าจาก localStorage ครั้งแรก
+        if (this.customerData && this.customerData.data2) {
+            this.updateCustomerData();
+        } else {
+            console.warn("customerData ไม่มีค่าใน localStorage:", this.customerData);
+        }
 
     },
 

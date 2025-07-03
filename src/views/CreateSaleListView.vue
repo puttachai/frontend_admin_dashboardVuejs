@@ -38,9 +38,9 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">รายการ *</label>
                         <div>
                             <input type="text" placeholder="รหัสรายการ" disabled v-model="formData.documentNo"
-                            class="border mt-1.5 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                class="border mt-1.5 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                         </div>
-                      
+
                     </div>
 
                     <!-- <div>
@@ -562,6 +562,8 @@ export default {
     data() {
         return {
 
+            errors: {}, // เก็บข้อผิดพลาดของฟอร์ม
+
             customerData: JSON.parse(localStorage.getItem('selectDataCustomer') || 'null'),
 
             BASE_URL_IMAGE: import.meta.env.VITE_API_URL_IMAGE,
@@ -589,7 +591,7 @@ export default {
 
             Apiproducts: [], // เก็บข้อมูลสินค้าที่ได้จาก API
 
-            
+
 
             formTouched: false, // ค่าเริ่มต้น
 
@@ -706,7 +708,7 @@ export default {
         async getProduct(page = 1) {
 
             // const getDataCustomer = JSON.parse(localStorage.getItem('selectDataCustomer') || 'null');
-            
+
             // ใช้ 0 แทนถ้า level เป็น null หรือ undefined
             const level = this.customerData?.data.data2?.level ?? 0;
             // const level = getDataCustomer?.data2?.level ?? 0;
@@ -771,6 +773,47 @@ export default {
         //     }
         // },
 
+        async validateForm() {
+            this.errors = {}; // ล้างข้อผิดพลาดก่อนตรวจสอบใหม่
+            let isValid = true;
+
+            // ตรวจสอบฟิลด์ที่จำเป็น
+            const requiredFields = [
+                'sellDate', 'reference', 'channel', 'taxType',
+                'fullName', 'customerCode', 'phone', 'address',
+                'receiverName', 'receiverPhone', 'receiverEmail', 'receiverAddress',
+                'deliveryDate', 'trackingNo', 'deliveryType'
+            ];
+
+            for (const field of requiredFields) {
+                if (!this.formData[field]) {
+                    this.errors[field] = 'กรุณากรอกข้อมูลให้ครบถ้วน';
+                    isValid = false;
+                }
+            }
+
+            // ตรวจสอบรายการสินค้า
+            if (this.selectedProducts.length === 0) {
+                Swal.fire({
+                    text: 'กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ',
+                    icon: 'warning'
+                });
+                isValid = false;
+            } else {
+                for (const product of this.selectedProducts) {
+                    if (!product.pro_erp_title || !product.pro_quantity || product.pro_quantity <= 0 || !product.pro_unit_price || product.pro_unit_price <= 0) {
+                        Swal.fire({
+                            text: 'กรุณากรอกชื่อสินค้า, จำนวน, และมูลค่าต่อหน่วยให้ครบถ้วนและถูกต้องสำหรับทุกรายการสินค้า',
+                            icon: 'warning'
+                        });
+                        isValid = false;
+                        break;
+                    }
+                }
+            }
+
+            return isValid;
+        },
 
         async saveDocument() {
 
@@ -1054,6 +1097,53 @@ export default {
                 Swal.fire({ text: message, icon: 'error' });
             }
         },
+
+
+        // async validateForm() {
+        //     this.errors = {}; // reset error ก่อน
+
+        //     const requiredFields = [
+        //         { key: 'reference', label: 'กรุณากรอกข้อมูลอ้างอิง' },
+        //         { key: 'channel', label: 'กรุณาระบุช่องทางการขาย' },
+        //         { key: 'taxType', label: 'กรุณาระบุประเภทภาษี' },
+        //         { key: 'fullName', label: 'กรุณาระบุชื่อลูกค้า' },
+        //         { key: 'customerCode', label: 'กรุณาระบุรหัสลูกค้า' },
+        //         { key: 'phone', label: 'กรุณาระบุเบอร์โทรลูกค้า' },
+        //         { key: 'address', label: 'กรุณาระบุที่อยู่ลูกค้า' },
+        //         { key: 'receiverName', label: 'กรุณาระบุชื่อผู้รับ' },
+        //         { key: 'receiverPhone', label: 'กรุณาระบุเบอร์โทรผู้รับ' },
+        //         { key: 'receiverEmail', label: 'กรุณาระบุอีเมลผู้รับ' },
+        //         { key: 'receiverAddress', label: 'กรุณาระบุที่อยู่ผู้รับ' },
+        //         { key: 'deliveryDate', label: 'กรุณาระบุวันส่งสินค้า' },
+        //         { key: 'trackingNo', label: 'กรุณาระบุ Tracking No.' },
+        //         { key: 'deliveryType', label: 'กรุณาเลือกช่องทางการจัดส่ง' }
+        //     ];
+
+        //     requiredFields.forEach(field => {
+        //         const value = this.formData[field.key];
+        //         if (!value || value.toString().trim() === '') {
+        //             this.errors[field.key] = field.label;
+        //         }
+        //     });
+
+        //     // ตรวจสอบรายการสินค้า
+        //     if (this.formData.productList.length === 0) {
+        //         this.errors.productList = 'กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ';
+        //     } else {
+        //         this.formData.productList.forEach((product, index) => {
+        //             if (!product.pro_erp_title) {
+        //                 this.errors[`productList.${index}.pro_erp_title`] = 'กรุณาระบุชื่อสินค้า';
+        //             }
+        //             if (!product.pro_quantity || product.pro_quantity <= 0) {
+        //                 this.errors[`productList.${index}.pro_quantity`] = 'กรุณาระบุจำนวน';
+        //             }
+        //         });
+        //     }
+
+        //     return Object.keys(this.errors).length === 0;
+        // },
+
+
         addSelectedProducts(products) {
             products.forEach(p => {
                 const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === p.pro_id);
@@ -1156,54 +1246,64 @@ export default {
         },
 
         addProductRow() { //
+            console.log('เพิ่มแถวสินค้าใหม่');
             this.selectedProducts.push({
                 id: Date.now(),
+                pro_id: '',
+                pro_erp_title: '',
+                pro_quantity: 0,
+                pro_unit_price: 0,
+                discount: 0,
+                pro_images: '',
+                pro_goods_sku_text: '',
             });
         },
         openSelectorForRow(index) {
             this.editIndex = index;
             this.showProductSelectoronly = true;
         },
+
+        replaceProductInRow(products) {
+            if (!products || products.length === 0) {
+                Swal.fire('กรุณาเลือกสินค้า 1 รายการ', '', 'warning')
+                return;
+            }
+
+            if (products.length > 1) {
+                Swal.fire('กรุณาเลือกสินค้าแค่ 1 รายการ', '', 'info')
+                return;
+            }
+
+            const selected = products[0];
+            if (this.editIndex !== null && selected) {
+                this.selectedProducts[this.editIndex] = {
+                    pro_id: selected.pro_id,
+                    pro_erp_title: selected.pro_erp_title,
+                    pro_sku: selected.pro_sku,
+                    pro_quantity: selected.pro_quantity,
+                    pro_unit: selected.pro_unit,
+                    pro_unit_price: selected.pro_unit_price,
+                    pro_images: selected.pro_images,
+                    qty: 1,
+                    discount: 0
+                };
+            }
+
+            this.showProductSelectoronly = false;
+            this.editIndex = null;
+        },
+
+        totalprice(product) {
+            const qty = product.qty || 0;
+            const price = product.pro_unit_price || 0;
+            const discount = product.discount || 0;
+            const totalprice = (qty * price - discount).toFixed(2);
+            console.log('Log value:', totalprice);
+            return totalprice;
+        },
+
     },
 
-    replaceProductInRow(products) {
-        if (!products || products.length === 0) {
-            Swal.fire('กรุณาเลือกสินค้า 1 รายการ', '', 'warning')
-            return;
-        }
-
-        if (products.length > 1) {
-            Swal.fire('กรุณาเลือกสินค้าแค่ 1 รายการ', '', 'info')
-            return;
-        }
-
-        const selected = products[0];
-        if (this.editIndex !== null && selected) {
-            this.selectedProducts[this.editIndex] = {
-                pro_id: selected.pro_id,
-                pro_erp_title: selected.pro_erp_title,
-                pro_sku: selected.pro_sku,
-                pro_quantity: selected.pro_quantity,
-                pro_unit: selected.pro_unit,
-                pro_unit_price: selected.pro_unit_price,
-                pro_images: selected.pro_images,
-                qty: 1,
-                discount: 0
-            };
-        }
-
-        this.showProductSelectoronly = false;
-        this.editIndex = null;
-    },
-
-    totalprice(product) {
-        const qty = product.qty || 0;
-        const price = product.pro_unit_price || 0;
-        const discount = product.discount || 0;
-        const totalprice = (qty * price - discount).toFixed(2);
-        console.log('Log value:', totalprice);
-        return totalprice;
-    },
     created() {
         this.getProduct();
         // accountLoginSubmit();
@@ -1235,23 +1335,22 @@ export default {
 
     },
 
+
 }
 
 </script>
 
 <style>
-
-input{
+input {
     /* font-size: 0.875rem; /* ขนาดตัวอักษร 14px */
-    /* line-height: 1.25rem; ความสูงบรรทัด 20px */    
+    /* line-height: 1.25rem; ความสูงบรรทัด 20px */
     /* padding-top: 0.5rem;
     padding-bottom: 0.5rem; */
 
     padding: 0.5rem;
     margin-top: 0.4rem;
-    
-}
 
+}
 </style>
 
 
@@ -1386,7 +1485,7 @@ input{
 
 
 
-    
+
 <!-- // mounted() {
     //     this.getProduct(1);
     // },
@@ -1429,12 +1528,12 @@ input{
         //     this.showProductSelectoronly = true;
         // }, -->
 
-        <!-- // removeAllProducts() {
+<!-- // removeAllProducts() {
             //     this.selectedProducts = []; // ล้าง array ของสินค้า
             // }, -->
 
 
-    <!-- // handleSelectedProducts(products) {
+<!-- // handleSelectedProducts(products) {
         //     console.log('✅ สินค้าที่เลือก:', products)
         //     this.showPromotionProductSelector = false
 
@@ -1457,7 +1556,7 @@ input{
 
 
 
-    <!-- // async getProduct(page = 1) {
+<!-- // async getProduct(page = 1) {
         //     try {
         //         const response = await axios.get(`http://localhost/api_admin_dashboard/backend/api/get_products.php?page=${page}`);
         //         const resData = response.data;
@@ -1490,7 +1589,7 @@ input{
         // }, -->
 
 
-        <!-- // async openConfirmPopup() {
+<!-- // async openConfirmPopup() {
             //     this.popupFormData = { ...formData }; // clone เพื่อส่งไป popup
             //     this.showConfirmEditPopup = true;
             // },
@@ -1505,7 +1604,7 @@ input{
 
 
 
-            <!-- 
+<!-- 
 <template>
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">

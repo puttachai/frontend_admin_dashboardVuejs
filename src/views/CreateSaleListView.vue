@@ -54,9 +54,9 @@
                         <div class="relative">
 
                             <!-- Flatpickr Input -->
-                            <flat-pickr v-model="formData.sellDate" :config="dateConfig" :readonly="isReadOnly"
+                            <flat-pickr v-model="formData.sellDate" :config="dateConfig" disabled
                                 placeholder="เลือกวันที่"
-                                class="cursor-pointer pr-10 mt-1 pl-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-700 placeholder-gray-400" />
+                                class="pr-10 mt-1 pl-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-700 placeholder-gray-400" />
 
                             <!-- Calendar Icon on the right -->
                             <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
@@ -466,8 +466,9 @@
 
                         <div class="relative">
                             <!-- Flatpickr Input -->
-                            <flat-pickr v-model="formData.deliveryDate" :config="dateConfig" disabled
-                                class="cursor-not-allowed pr-10 mt-1 pl-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-700 placeholder-gray-400 bg-gray-100" />
+                            <flat-pickr v-model="formData.deliveryDate" :config="dateConfig" :readonly="isReadOnly"
+                                class="cursor-pointer w-full border rounded px-3 py-2" />
+                                <!-- class="cursor-not-allowed pr-10 mt-1 pl-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-700 placeholder-gray-400 bg-gray-100" /> -->
 
                             <!-- Calendar Icon on the right -->
                             <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"

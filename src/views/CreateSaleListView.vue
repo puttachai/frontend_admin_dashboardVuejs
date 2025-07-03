@@ -516,31 +516,6 @@
     </div>
 
 </template>
-<!-- 
-<template>
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">ยืนยันการบันทึกรายการขาย</h2>
-        <p class="text-gray-600 mb-6">คุณต้องการบันทึกรายการนี้ลงในระบบใช่หรือไม่?</p>
-        <div class="flex justify-end space-x-4">
-          <button @click="$emit('cancel')" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
-            ยกเลิก
-          </button>
-          <button @click="$emit('confirm')" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
-            ยืนยัน
-          </button>
-        </div>
-      </div>
-    </div>
-  </template> -->
-<!-- 
-import ConfirmSavePopup from '@/components/saleOrder/popup/ConfirmSavePopup.vue'
-
-import { ref } from 'vue'
-
-const showConfirmPopup = ref(false)
- -->
-
 
 <script>
 
@@ -708,152 +683,10 @@ export default {
 
     methods: {
 
-        // async openConfirmPopup() {
-        //     this.popupFormData = { ...formData }; // clone เพื่อส่งไป popup
-        //     this.showConfirmEditPopup = true;
-        // },
-
-        // async handlePopupConfirm(updatedData) {
-        //     formData = { ...updatedData }; // แทนที่ค่าในฟอร์มหลักด้วยค่าที่แก้ไขจาก popup
-        //     this.showConfirmEditPopup = false;
-
-        //     // ดำเนินการ save จริง
-        //     saveDocument();
-        // },
-
         updateDeliveryDate(newDate) {
             this.formData.deliveryDate = newDate;
             this.formData.sellDate = newDate; // ❌ อัปเดต sellDate ด้วย
         },
-
-        async saveDocument() {
-
-            // console.log(ข้อมูลทั้งหมดใน formData:", this.formData);
-            console.log("ข้อมูลทั้งหมดใน formData:", JSON.parse(JSON.stringify(this.formData)));
-
-            const requiredFields = [
-                'listCode', 'sellDate', 'expireDate', 'reference', 'channel', 'taxType',
-                'fullName', 'customerCode', 'phone', 'email', 'address',
-                'receiverName', 'receiverPhone', 'receiverEmail', 'receiverAddress',
-                'deliveryDate', 'trackingNo', 'deliveryType'
-            ];
-
-            for (const field of requiredFields) {
-                if (!this.formData[field]) {
-                    Swal.fire({
-                        text: 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วนในส่วน "ข้อมูลรายการ" "แบบฟอร์มลูกค้า" "รายการสินค้า" "ข้อมูลที่อยู่ผู้รับ" และ "ข้อมูลการจัดส่งสินค้า"',
-                        icon: 'warning'
-                    });
-                    return; // หยุดการทำงานหากมีฟิลด์ที่ว่าง
-                }
-            }
-
-
-            // เรียก API เพื่อสร้าง Document Running // เพิ่มข้อมูล DocumentRunning
-            let documentRunning = null;
-            try {
-                const docRunningPayload = {
-                    warehouse_code: this.formData.warehouseCode || "H1",
-                    doc_type: this.formData.docType || "SO"
-                    // warehouse_code: "H1",      // สมมุติใช้คลัง H1
-                    // doc_type: "SO"             // เอกสารขาย: Sale Order
-                };
-
-                const docResponse = await axios.post(
-                    'http://localhost/api_admin_dashboard/backend/api/post_documentrunning.php',
-                    docRunningPayload,
-                    {
-                        // headers: { 'Content-Type': 'application/json' }
-                    }
-                );
-
-                documentRunning = docResponse.data;
-
-                console.log("Log Value documentRunning: ", documentRunning);
-
-                if (!documentRunning.success) {
-                    Swal.fire({ text: documentRunning.message, icon: 'error' });
-                    return;
-                }
-
-                console.log("📄 ได้เลขเอกสาร:", documentRunning);
-
-            } catch (err) {
-                const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการสร้างเลขเอกสาร';
-                Swal.fire({ text: message, icon: 'error' });
-                return;
-            }
-
-            // ===> ใส่เลขเอกสารลงใน formData เช่น
-            this.formData.documentNo = documentRunning.document_number; // เช่น H1-SO25680619-0003
-
-
-            if (this.selectedProducts.length === 0) {
-                Swal.fire({
-                    text: 'กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ',
-                    icon: 'warning'
-                });
-                return;
-            }
-
-            for (const product of this.selectedProducts) {
-                if (!product.pro_name || !product.qty || product.qty <= 0 || !product.pro_unit_price || product.pro_unit_price <= 0) {
-                    Swal.fire({
-                        text: 'กรุณากรอกชื่อสินค้า, จำนวน, และมูลค่าต่อหน่วยให้ครบถ้วนและถูกต้องสำหรับทุกรายการสินค้า',
-                        icon: 'warning'
-                    });
-                    return; // หยุดการทำงานหากมีสินค้าที่ไม่สมบูรณ์
-                }
-            }
-
-
-            // เตรียมข้อมูลสินค้า
-            this.formData.productList = this.selectedProducts.map(product => ({
-                pro_name: product.pro_name,
-                qty: product.qty
-            }));
-
-            // 👇 ดึงชื่อสินค้าแบบรวมเป็น string เช่น: "MacBook 13, MacBook 15"
-            this.formData.product_name = this.selectedProducts.map(p => p.pro_name).join(', ');
-
-            // 👇 รวมจำนวนสินค้าทั้งหมด เช่น: 4 + 2 = 6
-            this.formData.product_qty = this.selectedProducts.reduce((sum, p) => sum + (p.qty || 0), 0);
-
-            // สร้าง payload
-            const payload = new FormData();
-            for (const key in this.formData) {
-                payload.append(key, this.formData[key]);
-                //แก้ที่นี้
-                if (key === 'productList') {
-                    // productList ต้องแปลงเป็น string ก่อนแนบ
-                    payload.append('productList', JSON.stringify(this.formData[key]));
-                }
-            }
-
-            // payload.append('status', this.formData.status || 'Active');
-
-            // ✅ ส่ง selectedProducts เป็น JSON string
-            payload.append('products', JSON.stringify(this.selectedProducts));
-
-            // เพื่อมข้อมูล FormData
-            try {
-                const response = await axios.post('http://localhost/api_admin_dashboard/backend/api/post_sale_order.php', payload, {
-                    // headers: { 'Content-Type': 'application/json' },
-                });
-
-                console.log("Log Value Data: ", response.data);
-
-                const resData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-                Swal.fire({ text: resData.message, icon: 'success' });
-            } catch (err) {
-                const message = err.response?.data?.message || err.message || 'Unknown error';
-                Swal.fire({ text: message, icon: 'error' });
-            }
-
-
-
-        },
-
 
         // ใช้ได้แต่โหลดช้า
         async getProduct(page = 1) {
@@ -921,37 +754,7 @@ export default {
                 console.error('❌ Error loading product:', err);
             }
         },
-        async getProduct(page = 1) {
-            try {
-                const response = await axios.get(`http://localhost/api_admin_dashboard/backend/api/get_products.php?page=${page}`);
-                const resData = response.data;
 
-                if (resData.success) {
-                    console.log("📦 สินค้าที่โหลด:", resData.data);
-                    this.Apiproducts = resData.data; // สมมติว่าคุณมีตัวแปร Apiproducts ใน data
-                } else {
-                    Swal.fire({ text: resData.message, icon: 'error' });
-                }
-            } catch (err) {
-                const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการโหลดสินค้า';
-                Swal.fire({ text: message, icon: 'error' });
-            }
-        },
-
-        async getProductss() {
-            try {
-                const raw = {
-                    pageCurrent: 1,
-                    keywords: '',
-                    level: 0,
-                    pageSize: 1000,
-                };
-                const response = await axios.post(`${BASE_URL}/Goods2/product`, raw);
-                Apiproducts.value = response.data.data?.data2 || [];
-            } catch (err) {
-                Swal.fire({ text: err.message, icon: 'error' });
-            }
-        },
 
         async saveDocument() {
 
@@ -1257,26 +1060,6 @@ export default {
             }, 100)
         },
 
-        // handleSelectedProducts(products) {
-        //     console.log('✅ สินค้าที่เลือก:', products)
-        //     this.showPromotionProductSelector = false
-
-        //     products.forEach(p => {
-        //         const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === p.pro_id);
-        //         if (!alreadyExists) {
-        //             this.selectedProducts.push({
-        //                 ...p,
-        //                 pro_quantity: 0, // ให้ผู้ใช้ใส่จำนวนภายหลัง
-
-        //                 pro_unit_price: p.pro_unit_price || 0,
-        //                 discount: p.discount || 0,
-        //                 pro_unit_price: p.pro_unit_price || 0,
-        //                 pro_images: p.pro_images || '',
-        //                 pro_erp_title: p.pro_erp_title || '',
-        //             });
-        //         }
-        //     });
-        // },
 
         handleSelectedProducts(payload) {
             console.log('📦 payload ที่ได้รับ:', payload);
@@ -1314,10 +1097,6 @@ export default {
         //                 getProduct(); // เรียกใหม่เมื่อข้อมูลลูกค้าเปลี่ยน
         //             }
         //         });
-
-        // removeAllProducts() {
-        //     this.selectedProducts = []; // ล้าง array ของสินค้า
-        // },
 
         removeProduct(index) {
             // this.selectedProducts.splice(index, 1);
@@ -1370,21 +1149,6 @@ export default {
             this.showProductSelectoronly = true;
         },
     },
-
-    // addSelectedProducts(products) {
-    //         products.forEach(p => {
-    //             const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === p.pro_id);
-    //             if (!alreadyExists) {
-    //                 this.selectedProducts.push(p);
-    //             }
-    //         });
-    //     },
-
-    // openSelectorForRow(index) {
-    //     this.editIndex = index;
-    //     this.showProductSelectoronly = true;
-    // },
-
 
     replaceProductInRow(products) {
         if (!products || products.length === 0) {
@@ -1446,7 +1210,144 @@ export default {
 
     },
 
-    // mounted() {
+}
+
+</script>
+
+
+<!-- 
+// async saveDocument() {
+
+    //     // console.log(ข้อมูลทั้งหมดใน formData:", this.formData);
+    //     console.log("ข้อมูลทั้งหมดใน formData:", JSON.parse(JSON.stringify(this.formData)));
+
+    //     const requiredFields = [
+    //         'listCode', 'sellDate', 'expireDate', 'reference', 'channel', 'taxType',
+    //         'fullName', 'customerCode', 'phone', 'email', 'address',
+    //         'receiverName', 'receiverPhone', 'receiverEmail', 'receiverAddress',
+    //         'deliveryDate', 'trackingNo', 'deliveryType'
+    //     ];
+
+    //     for (const field of requiredFields) {
+    //         if (!this.formData[field]) {
+    //             Swal.fire({
+    //                 text: 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วนในส่วน "ข้อมูลรายการ" "แบบฟอร์มลูกค้า" "รายการสินค้า" "ข้อมูลที่อยู่ผู้รับ" และ "ข้อมูลการจัดส่งสินค้า"',
+    //                 icon: 'warning'
+    //             });
+    //             return; // หยุดการทำงานหากมีฟิลด์ที่ว่าง
+    //         }
+    //     }
+
+
+    //     // เรียก API เพื่อสร้าง Document Running // เพิ่มข้อมูล DocumentRunning
+    //     let documentRunning = null;
+    //     try {
+    //         const docRunningPayload = {
+    //             warehouse_code: this.formData.warehouseCode || "H1",
+    //             doc_type: this.formData.docType || "SO"
+    //             // warehouse_code: "H1",      // สมมุติใช้คลัง H1
+    //             // doc_type: "SO"             // เอกสารขาย: Sale Order
+    //         };
+
+    //         const docResponse = await axios.post(
+    //             'http://localhost/api_admin_dashboard/backend/api/post_documentrunning.php',
+    //             docRunningPayload,
+    //             {
+    //                 // headers: { 'Content-Type': 'application/json' }
+    //             }
+    //         );
+
+    //         documentRunning = docResponse.data;
+
+    //         console.log("Log Value documentRunning: ", documentRunning);
+
+    //         if (!documentRunning.success) {
+    //             Swal.fire({ text: documentRunning.message, icon: 'error' });
+    //             return;
+    //         }
+
+    //         console.log("📄 ได้เลขเอกสาร:", documentRunning);
+
+    //     } catch (err) {
+    //         const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการสร้างเลขเอกสาร';
+    //         Swal.fire({ text: message, icon: 'error' });
+    //         return;
+    //     }
+
+    //     // ===> ใส่เลขเอกสารลงใน formData เช่น
+    //     this.formData.documentNo = documentRunning.document_number; // เช่น H1-SO25680619-0003
+
+
+    //     if (this.selectedProducts.length === 0) {
+    //         Swal.fire({
+    //             text: 'กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ',
+    //             icon: 'warning'
+    //         });
+    //         return;
+    //     }
+
+    //     for (const product of this.selectedProducts) {
+    //         if (!product.pro_name || !product.qty || product.qty <= 0 || !product.pro_unit_price || product.pro_unit_price <= 0) {
+    //             Swal.fire({
+    //                 text: 'กรุณากรอกชื่อสินค้า, จำนวน, และมูลค่าต่อหน่วยให้ครบถ้วนและถูกต้องสำหรับทุกรายการสินค้า',
+    //                 icon: 'warning'
+    //             });
+    //             return; // หยุดการทำงานหากมีสินค้าที่ไม่สมบูรณ์
+    //         }
+    //     }
+
+
+    //     // เตรียมข้อมูลสินค้า
+    //     this.formData.productList = this.selectedProducts.map(product => ({
+    //         pro_name: product.pro_name,
+    //         qty: product.qty
+    //     }));
+
+    //     // 👇 ดึงชื่อสินค้าแบบรวมเป็น string เช่น: "MacBook 13, MacBook 15"
+    //     this.formData.product_name = this.selectedProducts.map(p => p.pro_name).join(', ');
+
+    //     // 👇 รวมจำนวนสินค้าทั้งหมด เช่น: 4 + 2 = 6
+    //     this.formData.product_qty = this.selectedProducts.reduce((sum, p) => sum + (p.qty || 0), 0);
+
+    //     // สร้าง payload
+    //     const payload = new FormData();
+    //     for (const key in this.formData) {
+    //         payload.append(key, this.formData[key]);
+    //         //แก้ที่นี้
+    //         if (key === 'productList') {
+    //             // productList ต้องแปลงเป็น string ก่อนแนบ
+    //             payload.append('productList', JSON.stringify(this.formData[key]));
+    //         }
+    //     }
+
+    //     // payload.append('status', this.formData.status || 'Active');
+
+    //     // ✅ ส่ง selectedProducts เป็น JSON string
+    //     payload.append('products', JSON.stringify(this.selectedProducts));
+
+    //     // เพื่อมข้อมูล FormData
+    //     try {
+    //         const response = await axios.post('http://localhost/api_admin_dashboard/backend/api/post_sale_order.php', payload, {
+    //             // headers: { 'Content-Type': 'application/json' },
+    //         });
+
+    //         console.log("Log Value Data: ", response.data);
+
+    //         const resData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+    //         Swal.fire({ text: resData.message, icon: 'success' });
+    //     } catch (err) {
+    //         const message = err.response?.data?.message || err.message || 'Unknown error';
+    //         Swal.fire({ text: message, icon: 'error' });
+    //     }
+
+
+
+    // }, -->
+
+
+
+    
+<!-- // mounted() {
     //     this.getProduct(1);
     // },
 
@@ -1469,7 +1370,122 @@ export default {
     //         const vat = netBeforeVat * 0.07;
     //         return (netBeforeVat + vat).toFixed(2);
     //     }
-    // }
-}
+    // } -->
 
-</script>
+
+<!-- 
+    
+    // addSelectedProducts(products) {
+        //         products.forEach(p => {
+        //             const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === p.pro_id);
+        //             if (!alreadyExists) {
+        //                 this.selectedProducts.push(p);
+        //             }
+        //         });
+        //     },
+    
+        // openSelectorForRow(index) {
+        //     this.editIndex = index;
+        //     this.showProductSelectoronly = true;
+        // }, -->
+
+        <!-- // removeAllProducts() {
+            //     this.selectedProducts = []; // ล้าง array ของสินค้า
+            // }, -->
+
+
+    <!-- // handleSelectedProducts(products) {
+        //     console.log('✅ สินค้าที่เลือก:', products)
+        //     this.showPromotionProductSelector = false
+
+        //     products.forEach(p => {
+        //         const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === p.pro_id);
+        //         if (!alreadyExists) {
+        //             this.selectedProducts.push({
+        //                 ...p,
+        //                 pro_quantity: 0, // ให้ผู้ใช้ใส่จำนวนภายหลัง
+
+        //                 pro_unit_price: p.pro_unit_price || 0,
+        //                 discount: p.discount || 0,
+        //                 pro_unit_price: p.pro_unit_price || 0,
+        //                 pro_images: p.pro_images || '',
+        //                 pro_erp_title: p.pro_erp_title || '',
+        //             });
+        //         }
+        //     });
+        // }, -->
+
+
+
+    <!-- // async getProduct(page = 1) {
+        //     try {
+        //         const response = await axios.get(`http://localhost/api_admin_dashboard/backend/api/get_products.php?page=${page}`);
+        //         const resData = response.data;
+
+        //         if (resData.success) {
+        //             console.log("📦 สินค้าที่โหลด:", resData.data);
+        //             this.Apiproducts = resData.data; // สมมติว่าคุณมีตัวแปร Apiproducts ใน data
+        //         } else {
+        //             Swal.fire({ text: resData.message, icon: 'error' });
+        //         }
+        //     } catch (err) {
+        //         const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการโหลดสินค้า';
+        //         Swal.fire({ text: message, icon: 'error' });
+        //     }
+        // },
+
+        // async getProductss() {
+        //     try {
+        //         const raw = {
+        //             pageCurrent: 1,
+        //             keywords: '',
+        //             level: 0,
+        //             pageSize: 1000,
+        //         };
+        //         const response = await axios.post(`${BASE_URL}/Goods2/product`, raw);
+        //         Apiproducts.value = response.data.data?.data2 || [];
+        //     } catch (err) {
+        //         Swal.fire({ text: err.message, icon: 'error' });
+        //     }
+        // }, -->
+
+
+        <!-- // async openConfirmPopup() {
+            //     this.popupFormData = { ...formData }; // clone เพื่อส่งไป popup
+            //     this.showConfirmEditPopup = true;
+            // },
+    
+            // async handlePopupConfirm(updatedData) {
+            //     formData = { ...updatedData }; // แทนที่ค่าในฟอร์มหลักด้วยค่าที่แก้ไขจาก popup
+            //     this.showConfirmEditPopup = false;
+    
+            //     // ดำเนินการ save จริง
+            //     saveDocument();
+            // }, -->
+
+
+
+            <!-- 
+<template>
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">ยืนยันการบันทึกรายการขาย</h2>
+        <p class="text-gray-600 mb-6">คุณต้องการบันทึกรายการนี้ลงในระบบใช่หรือไม่?</p>
+        <div class="flex justify-end space-x-4">
+          <button @click="$emit('cancel')" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">
+            ยกเลิก
+          </button>
+          <button @click="$emit('confirm')" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+            ยืนยัน
+          </button>
+        </div>
+      </div>
+    </div>
+  </template> -->
+<!-- 
+import ConfirmSavePopup from '@/components/saleOrder/popup/ConfirmSavePopup.vue'
+
+import { ref } from 'vue'
+
+const showConfirmPopup = ref(false)
+ -->

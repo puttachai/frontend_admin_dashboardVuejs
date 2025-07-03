@@ -331,7 +331,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -500,11 +500,11 @@
                     บันทึกการแก้ไข
                 </button>
 
-                <form>
+                <!-- <form>
                     <input type="text" v-model="formData.reference" :readonly="isReadOnly"
-                        class="border mt-1 block w-full rounded-md" />
-                    <!-- เพิ่ม readonly ให้ input อื่น ๆ -->
-                </form>
+                        class="border mt-1 block w-full rounded-md" /> -->
+                <!-- เพิ่ม readonly ให้ input อื่น ๆ -->
+                <!-- </form> -->
             </div>
             <!-- <div class="md:col-span-2 mt-4">
                 <button type="button" @click="saveDocument"
@@ -570,6 +570,8 @@ const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 
 console.log("BASE_URL_IMAGE:", BASE_URL_IMAGE);
 
+
+
 export default {
     name: 'SignupForm',
     components: {
@@ -595,6 +597,8 @@ export default {
                 locale: Thai, // ใช้ภาษาไทย
             },
 
+            showMore: false, // ค่าเริ่มต้น
+
             showProductSelector: false,
             showPromotionSelector: false,
             showProductSelectoronly: false,
@@ -604,6 +608,10 @@ export default {
 
             showConfirmEditPopup: false,
             popupFormData: [],
+
+            selectedProducts: [], // ค่าเริ่มต้นเป็น array ว่าง
+
+            formTouched: false, // ค่าเริ่มต้น
 
             formData: {
                 listCode: '',
@@ -654,6 +662,49 @@ export default {
         };
     },
 
+    watch: {
+        // ✅ watch ทุก field ที่ต้องการทีละตัว
+        'formData.deliveryDate'(newVal) {
+            console.log("deliveryDate เปลี่ยนเป็น:", newVal);
+        },
+        'formData.fullName'(newVal) {
+            console.log("fullName เปลี่ยนเป็น:", newVal);
+        },
+        'formData.email'(newVal) {
+            console.log("email เปลี่ยนเป็น:", newVal);
+        },
+
+        // ✅ หรือ watch ทั้ง formData
+        formData: {
+            handler(newVal) {
+                console.log("formData เปลี่ยนแปลง:", JSON.parse(JSON.stringify(newVal)));
+            },
+            deep: true // จำเป็นต้องใส่ถ้า watch object
+        }
+    },
+
+    computed: {
+        totalAmountBeforeDiscount() {
+            const subtotal = this.selectedProducts.reduce((sum, product) => {
+                const qty = product.qty || 0;
+                const price = product.pro_unit_price || 0;
+                const discount = product.discount || 0;
+                return sum + (qty * price - discount);
+            }, 0);
+            const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
+            const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
+            const total = subtotal + deliveryFee - totalDiscount;
+            return total < 0 ? 0 : total;
+        },
+        grandTotal() {
+            const netBeforeVat = this.totalAmountBeforeDiscount;
+            const vat = netBeforeVat * 0.07;
+            return (netBeforeVat + vat).toFixed(2);
+        },
+
+
+    },
+
 
     methods: {
 
@@ -673,6 +724,233 @@ export default {
         updateDeliveryDate(newDate) {
             this.formData.deliveryDate = newDate;
             this.formData.sellDate = newDate; // ❌ อัปเดต sellDate ด้วย
+        },
+
+        async saveDocument() {
+
+            // console.log(ข้อมูลทั้งหมดใน formData:", this.formData);
+            console.log("ข้อมูลทั้งหมดใน formData:", JSON.parse(JSON.stringify(this.formData)));
+
+            const requiredFields = [
+                'listCode', 'sellDate', 'expireDate', 'reference', 'channel', 'taxType',
+                'fullName', 'customerCode', 'phone', 'email', 'address',
+                'receiverName', 'receiverPhone', 'receiverEmail', 'receiverAddress',
+                'deliveryDate', 'trackingNo', 'deliveryType'
+            ];
+
+            for (const field of requiredFields) {
+                if (!this.formData[field]) {
+                    Swal.fire({
+                        text: 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วนในส่วน "ข้อมูลรายการ" "แบบฟอร์มลูกค้า" "รายการสินค้า" "ข้อมูลที่อยู่ผู้รับ" และ "ข้อมูลการจัดส่งสินค้า"',
+                        icon: 'warning'
+                    });
+                    return; // หยุดการทำงานหากมีฟิลด์ที่ว่าง
+                }
+            }
+
+
+            // เรียก API เพื่อสร้าง Document Running // เพิ่มข้อมูล DocumentRunning
+            let documentRunning = null;
+            try {
+                const docRunningPayload = {
+                    warehouse_code: this.formData.warehouseCode || "H1",
+                    doc_type: this.formData.docType || "SO"
+                    // warehouse_code: "H1",      // สมมุติใช้คลัง H1
+                    // doc_type: "SO"             // เอกสารขาย: Sale Order
+                };
+
+                const docResponse = await axios.post(
+                    'http://localhost/api_admin_dashboard/backend/api/post_documentrunning.php',
+                    docRunningPayload,
+                    {
+                        // headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+
+                documentRunning = docResponse.data;
+
+                console.log("Log Value documentRunning: ", documentRunning);
+
+                if (!documentRunning.success) {
+                    Swal.fire({ text: documentRunning.message, icon: 'error' });
+                    return;
+                }
+
+                console.log("📄 ได้เลขเอกสาร:", documentRunning);
+
+            } catch (err) {
+                const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการสร้างเลขเอกสาร';
+                Swal.fire({ text: message, icon: 'error' });
+                return;
+            }
+
+            // ===> ใส่เลขเอกสารลงใน formData เช่น
+            this.formData.documentNo = documentRunning.document_number; // เช่น H1-SO25680619-0003
+
+
+            if (this.selectedProducts.length === 0) {
+                Swal.fire({
+                    text: 'กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            for (const product of this.selectedProducts) {
+                if (!product.pro_name || !product.qty || product.qty <= 0 || !product.pro_unit_price || product.pro_unit_price <= 0) {
+                    Swal.fire({
+                        text: 'กรุณากรอกชื่อสินค้า, จำนวน, และมูลค่าต่อหน่วยให้ครบถ้วนและถูกต้องสำหรับทุกรายการสินค้า',
+                        icon: 'warning'
+                    });
+                    return; // หยุดการทำงานหากมีสินค้าที่ไม่สมบูรณ์
+                }
+            }
+
+
+            // เตรียมข้อมูลสินค้า
+            this.formData.productList = this.selectedProducts.map(product => ({
+                pro_name: product.pro_name,
+                qty: product.qty
+            }));
+
+            // 👇 ดึงชื่อสินค้าแบบรวมเป็น string เช่น: "MacBook 13, MacBook 15"
+            this.formData.product_name = this.selectedProducts.map(p => p.pro_name).join(', ');
+
+            // 👇 รวมจำนวนสินค้าทั้งหมด เช่น: 4 + 2 = 6
+            this.formData.product_qty = this.selectedProducts.reduce((sum, p) => sum + (p.qty || 0), 0);
+
+            // สร้าง payload
+            const payload = new FormData();
+            for (const key in this.formData) {
+                payload.append(key, this.formData[key]);
+                //แก้ที่นี้
+                if (key === 'productList') {
+                    // productList ต้องแปลงเป็น string ก่อนแนบ
+                    payload.append('productList', JSON.stringify(this.formData[key]));
+                }
+            }
+
+            // payload.append('status', this.formData.status || 'Active');
+
+            // ✅ ส่ง selectedProducts เป็น JSON string
+            payload.append('products', JSON.stringify(this.selectedProducts));
+
+            // เพื่อมข้อมูล FormData
+            try {
+                const response = await axios.post('http://localhost/api_admin_dashboard/backend/api/post_sale_order.php', payload, {
+                    // headers: { 'Content-Type': 'application/json' },
+                });
+
+                console.log("Log Value Data: ", response.data);
+
+                const resData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+                Swal.fire({ text: resData.message, icon: 'success' });
+            } catch (err) {
+                const message = err.response?.data?.message || err.message || 'Unknown error';
+                Swal.fire({ text: message, icon: 'error' });
+            }
+
+
+
+        },
+
+
+        // ใช้ได้แต่โหลดช้า
+        async getProduct(page = 1) {
+
+            // const getDataCustomer = JSON.parse(localStorage.getItem('selectDataCustomer') || 'null');
+            
+            // ใช้ 0 แทนถ้า level เป็น null หรือ undefined
+            const level = customerData?.data.data2?.level ?? 0;
+            // const level = getDataCustomer?.data2?.level ?? 0;
+
+            console.log("log Create LeVel 643: ", level);
+
+            try {
+                // กำหนด pageSize ตามที่ user ต้องการ หรือเก็บไว้ใน data() แล้วส่งไป
+                const raw = {
+                    pageCurrent: page,
+                    keywords: '',
+                    level: level,
+                    pageSize: this.pageSize // this.pageSize เช่น 30, 50 หรือ item_count
+                };
+
+                console.log("raw:", raw);
+                //`${BASE_URL}/Goods2/product`
+                const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = response.data.data;
+
+                // เก็บจำนวนสินค้าทั้งหมดจาก API
+                this.totalItems = data.item_count || 0;
+
+                // ถ้าคุณอยากโหลดสินค้าทั้งหมดในรอบเดียว ให้ตั้ง pageSize = totalItems แล้วโหลดใหม่
+                // ตัวอย่าง: โหลดทั้งหมดในครั้งแรก
+                if (page === 1 && this.pageSize !== this.totalItems) {
+                    this.pageSize = this.totalItems;
+                    // เรียกโหลดใหม่อีกครั้ง
+                    return this.getProduct(1);
+                }
+
+                // เอาข้อมูลสินค้าที่ได้มาเก็บในตัวแปร
+                this.Apiproducts = data.data2 || [];
+                this.pageCurrent = page;
+
+                console.log('Loaded products:', this.Apiproducts);
+                console.log('Total items:', this.totalItems);
+
+            } catch (err) {
+                const message = err.response?.data?.message || err.message || 'Unknown error';
+                Swal.fire({ text: message, icon: 'error' });
+            }
+        },
+
+        // ตัวอย่างการเรียกใช้ข้อมูลในฟังก์ชัน
+        async getProducts(page = 1) {
+            const level = customerData.value?.data2?.level ?? 0;
+            console.log("log Create LeVel 643: ", level);
+
+            try {
+                const res = await axios.get(`${BASE_URL}/your-endpoint?page=${page}&level=${level}`);
+                console.log('📦 Product Data:', res.data);
+            } catch (err) {
+                console.error('❌ Error loading product:', err);
+            }
+        },
+        async getProduct(page = 1) {
+            try {
+                const response = await axios.get(`http://localhost/api_admin_dashboard/backend/api/get_products.php?page=${page}`);
+                const resData = response.data;
+
+                if (resData.success) {
+                    console.log("📦 สินค้าที่โหลด:", resData.data);
+                    this.Apiproducts = resData.data; // สมมติว่าคุณมีตัวแปร Apiproducts ใน data
+                } else {
+                    Swal.fire({ text: resData.message, icon: 'error' });
+                }
+            } catch (err) {
+                const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการโหลดสินค้า';
+                Swal.fire({ text: message, icon: 'error' });
+            }
+        },
+
+        async getProductss() {
+            try {
+                const raw = {
+                    pageCurrent: 1,
+                    keywords: '',
+                    level: 0,
+                    pageSize: 1000,
+                };
+                const response = await axios.post(`${BASE_URL}/Goods2/product`, raw);
+                Apiproducts.value = response.data.data?.data2 || [];
+            } catch (err) {
+                Swal.fire({ text: err.message, icon: 'error' });
+            }
         },
 
         async saveDocument() {
@@ -853,8 +1131,6 @@ export default {
                 Swal.fire({ text: message, icon: 'error' });
             }
 
-
-
         },
         enableEditMode() {
             this.isReadOnly = false; // เปิดให้แก้ไขฟอร์ม
@@ -981,26 +1257,26 @@ export default {
             }, 100)
         },
 
-        handleSelectedProducts(products) {
-            console.log('✅ สินค้าที่เลือก:', products)
-            this.showPromotionProductSelector = false
+        // handleSelectedProducts(products) {
+        //     console.log('✅ สินค้าที่เลือก:', products)
+        //     this.showPromotionProductSelector = false
 
-            products.forEach(p => {
-                const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === p.pro_id);
-                if (!alreadyExists) {
-                    this.selectedProducts.push({
-                        ...p,
-                        pro_quantity: 0, // ให้ผู้ใช้ใส่จำนวนภายหลัง
+        //     products.forEach(p => {
+        //         const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === p.pro_id);
+        //         if (!alreadyExists) {
+        //             this.selectedProducts.push({
+        //                 ...p,
+        //                 pro_quantity: 0, // ให้ผู้ใช้ใส่จำนวนภายหลัง
 
-                        pro_unit_price: p.pro_unit_price || 0,
-                        discount: p.discount || 0,
-                        pro_unit_price: p.pro_unit_price || 0,
-                        pro_images: p.pro_images || '',
-                        pro_erp_title: p.pro_erp_title || '',
-                    });
-                }
-            });
-        },
+        //                 pro_unit_price: p.pro_unit_price || 0,
+        //                 discount: p.discount || 0,
+        //                 pro_unit_price: p.pro_unit_price || 0,
+        //                 pro_images: p.pro_images || '',
+        //                 pro_erp_title: p.pro_erp_title || '',
+        //             });
+        //         }
+        //     });
+        // },
 
         handleSelectedProducts(payload) {
             console.log('📦 payload ที่ได้รับ:', payload);
@@ -1026,11 +1302,65 @@ export default {
             console.log('🎯 โปรโมชั่นที่เลือก:', getPromotion);
         },
 
+
+        // setup() {
+        //             const customerData = ref(JSON.parse(localStorage.getItem('selectDataCustomer') || 'null'));
+
+        //             // อัปเดตอัตโนมัติเมื่อ localStorage ถูกเปลี่ยนจากแท็บอื่น
+        //             window.addEventListener('storage', (event) => {
+        //             if (event.key === 'selectDataCustomer') {
+        //                 customerData.value = JSON.parse(event.newValue || 'null');
+        //                 console.log('🔄 customerData updated via storage event:', customerData.value);
+        //                 getProduct(); // เรียกใหม่เมื่อข้อมูลลูกค้าเปลี่ยน
+        //             }
+        //         });
+
+        // removeAllProducts() {
+        //     this.selectedProducts = []; // ล้าง array ของสินค้า
+        // },
+
+        removeProduct(index) {
+            // this.selectedProducts.splice(index, 1);
+            Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: 'คุณต้องการลบสินค้านี้ออกจากรายการใช่หรือไม่?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ใช่, ลบเลย!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.selectedProducts.splice(index, 1);
+                    Swal.fire('ลบแล้ว!', 'สินค้าถูกลบออกจากรายการ.', 'success');
+                }
+            });
+        },
         removeAllProducts() {
-            this.selectedProducts = []; // ล้าง array ของสินค้า
+            if (this.selectedProducts.length === 0) {
+                Swal.fire({
+                    title: 'ไม่มีสินค้า',
+                    text: 'ยังไม่มีสินค้าที่เลือกไว้ในรายการ',
+                    icon: 'info'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'ยืนยันการลบทั้งหมด?',
+                text: 'คุณต้องการลบสินค้าที่เลือกทั้งหมดออกจากรายการใช่หรือไม่?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ใช่, ลบทั้งหมด!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.selectedProducts.length = 0; // ล้างอาร์เรย์ทั้งหมด
+                    Swal.fire('ลบแล้ว!', 'สินค้าทั้งหมดถูกลบออกจากรายการ.', 'success');
+                }
+            });
         },
 
-        addProductRow() {
+        addProductRow() { //
             this.selectedProducts.push({
                 id: Date.now(),
             });
@@ -1040,6 +1370,65 @@ export default {
             this.showProductSelectoronly = true;
         },
     },
+
+    // addSelectedProducts(products) {
+    //         products.forEach(p => {
+    //             const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === p.pro_id);
+    //             if (!alreadyExists) {
+    //                 this.selectedProducts.push(p);
+    //             }
+    //         });
+    //     },
+
+    // openSelectorForRow(index) {
+    //     this.editIndex = index;
+    //     this.showProductSelectoronly = true;
+    // },
+
+
+    replaceProductInRow(products) {
+        if (!products || products.length === 0) {
+            Swal.fire('กรุณาเลือกสินค้า 1 รายการ', '', 'warning')
+            return;
+        }
+
+        if (products.length > 1) {
+            Swal.fire('กรุณาเลือกสินค้าแค่ 1 รายการ', '', 'info')
+            return;
+        }
+
+        const selected = products[0];
+        if (this.editIndex !== null && selected) {
+            this.selectedProducts[this.editIndex] = {
+                pro_id: selected.pro_id,
+                pro_erp_title: selected.pro_erp_title,
+                pro_sku: selected.pro_sku,
+                pro_quantity: selected.pro_quantity,
+                pro_unit: selected.pro_unit,
+                pro_unit_price: selected.pro_unit_price,
+                pro_images: selected.pro_images,
+                qty: 1,
+                discount: 0
+            };
+        }
+
+        this.showProductSelectoronly = false;
+        this.editIndex = null;
+    },
+
+    totalprice(product) {
+        const qty = product.qty || 0;
+        const price = product.pro_unit_price || 0;
+        const discount = product.discount || 0;
+        const totalprice = (qty * price - discount).toFixed(2);
+        console.log('Log value:', totalprice);
+        return totalprice;
+    },
+    created() {
+        this.getProduct();
+        // accountLoginSubmit();
+    },
+
     mounted() {
         const urlParams = new URLSearchParams(window.location.search);
         const documentNo = urlParams.get('documentNo');
@@ -1056,24 +1445,31 @@ export default {
         }
 
     },
-    computed: {
-        totalAmountBeforeDiscount() {
-            const subtotal = this.selectedProducts.reduce((sum, product) => {
-                const qty = product.pro_quantity || 0;
-                const price = product.pro_unit_price || 0;
-                const discount = product.pro_discount || 0;
-                return sum + (qty * price - discount);
-            }, 0);
-            const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
-            const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
-            return subtotal + deliveryFee - totalDiscount;
-        },
-        grandTotal() {
-            const netBeforeVat = this.totalAmountBeforeDiscount;
-            const vat = netBeforeVat * 0.07;
-            return (netBeforeVat + vat).toFixed(2);
-        }
-    }
+
+    // mounted() {
+    //     this.getProduct(1);
+    // },
+
+
+
+    // computed: {
+    //     totalAmountBeforeDiscount() {
+    //         const subtotal = this.selectedProducts.reduce((sum, product) => {
+    //             const qty = product.pro_quantity || 0;
+    //             const price = product.pro_unit_price || 0;
+    //             const discount = product.pro_discount || 0;
+    //             return sum + (qty * price - discount);
+    //         }, 0);
+    //         const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
+    //         const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
+    //         return subtotal + deliveryFee - totalDiscount;
+    //     },
+    //     grandTotal() {
+    //         const netBeforeVat = this.totalAmountBeforeDiscount;
+    //         const vat = netBeforeVat * 0.07;
+    //         return (netBeforeVat + vat).toFixed(2);
+    //     }
+    // }
 }
 
 </script>

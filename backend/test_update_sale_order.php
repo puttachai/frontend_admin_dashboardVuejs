@@ -1,5 +1,4 @@
 <?php
-
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: POST");
@@ -46,27 +45,18 @@ try {
     $deliveryDate = convertDateToMySQLFormat($_POST['deliveryDate'] ?? '');
 
     // อัปเดตข้อมูลในตาราง sale_order
-    // $stmt = $pdo->prepare("UPDATE sale_order SET 
-    //     list_code = ?, sell_date = ?, reference = ?, channel = ?, tax_type = ?, 
-    //     full_name = ?, customer_code = ?, phone = ?, email = ?, address = ?, 
-    //     receiver_name = ?, receiver_phone = ?, receiver_email = ?, receiver_address = ?, note = ?, 
-    //     delivery_date = ?, tracking_no = ?, delivery_type = ?, total_discount = ?, delivery_fee = ?, 
-    //     final_total_price = ?, document_no = ? 
-    //     WHERE document_no = ?");
-
     $stmt = $pdo->prepare("UPDATE sale_order SET 
-    list_code = ?, sell_date = ?, reference = ?, channel = ?, tax_type = ?, 
-    full_name = ?, customer_code = ?, phone = ?, email = ?, address = ?, 
-    receiver_name = ?, receiver_phone = ?, receiver_email = ?, receiver_address = ?, note = ?, 
-    delivery_date = ?, tracking_no = ?, delivery_type = ?, total_discount = ?, delivery_fee = ?, 
-    final_total_price = ?, document_no = ? 
-    WHERE document_no = ?");
+        list_code = ?, sell_date = ?, reference = ?, channel = ?, tax_type = ?, 
+        full_name = ?, customer_code = ?, phone = ?, email = ?, address = ?, 
+        receiver_name = ?, receiver_phone = ?, receiver_email = ?, receiver_address = ?, note = ?, 
+        delivery_date = ?, tracking_no = ?, delivery_type = ?, total_discount = ?, delivery_fee = ?, 
+        final_total_price = ?, document_no = ? 
+        WHERE document_no = ?");
 
     $stmt->execute([
         $_POST['listCode'] ?? '',
         // $_POST['sellDate'] ?? '',
-        // $sellDate, // ใช้วันที่ที่แปลงแล้ว
-        convertDateToMySQLFormat($_POST['sellDate'] ?? ''),
+        $sellDate, // ใช้วันที่ที่แปลงแล้ว
         $_POST['reference'] ?? '',
         $_POST['channel'] ?? '',
         $_POST['taxType'] ?? '',
@@ -80,9 +70,8 @@ try {
         $_POST['receiverEmail'] ?? '',
         $_POST['receiverAddress'] ?? '',
         $_POST['note'] ?? '',
-        // $_POST['deliveryDate'] ?? '',
-        // $deliveryDate, // ใช้วันที่ที่แปลงแล้ว
-        convertDateToMySQLFormat($_POST['deliveryDate'] ?? ''),
+        $_POST['deliveryDate'] ?? '',
+        $deliveryDate, // ใช้วันที่ที่แปลงแล้ว
         $_POST['trackingNo'] ?? '',
         $_POST['deliveryType'] ?? '',
         $_POST['totalDiscount'] ?? 0,
@@ -91,7 +80,7 @@ try {
         $newDocumentNo, // ใช้ doc_number ใหม่
         $documentNo // ใช้ doc_number เก่าเป็นเงื่อนไข
     ]);
-    
+
     // ลบรายการสินค้าเก่าที่เกี่ยวข้องกับ documentNo
     $stmtDelete = $pdo->prepare("DELETE FROM sale_order_items WHERE order_id = (SELECT id FROM sale_order WHERE document_no = ?)");
     $stmtDelete->execute([$documentNo]);
@@ -122,11 +111,9 @@ try {
         ]);
     }
 
-    // ส่งผลลัพธ์กลับไปยัง Frontend
     $response['success'] = true;
     $response['message'] = "อัปเดตรายการขายเรียบร้อยแล้ว";
-    $response['newDocumentNo'] = $newDocumentNo; // ส่ง `documentNo` ใหม่กลับไปยัง Frontend
-    // echo json_encode($response);
+    $response['newDocumentNo'] = $newDocumentNo;
 } catch (Exception $e) {
     $response['success'] = false;
     $response['message'] = "เกิดข้อผิดพลาด: " . $e->getMessage();

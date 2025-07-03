@@ -176,7 +176,8 @@
 
                 <!-- ส่วนขวา: ปุ่มต่าง ๆ -->
                 <div class="flex gap-2">
-                    <button @click="addProductRow" :disabled="isReadOnly" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    <button @click="addProductRow" :disabled="isReadOnly"
+                        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                         + เพิ่มแถวสินค้า
                     </button>
                     <button @click="showProductSelector = true" :disabled="isReadOnly"
@@ -187,7 +188,8 @@
                         class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700">
                         เลือกโปรโมชั่น
                     </button>
-                    <button @click="removeAllProducts" :disabled="isReadOnly" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                    <button @click="removeAllProducts" :disabled="isReadOnly"
+                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
                         ลบสินค้าที่เลือกทั้งหมด
                     </button>
                 </div>
@@ -231,8 +233,9 @@
                             <!-- รหัส <button @click="showProductSelector = true"-->
                             <td class="px-4 py-2 border">
 
-                                <button @click="openSelectorForRow(index)" :disabled="isReadOnly" class="bg-gray-200 px-3 py-1 rounded">{{
-                                    product.pro_id }} เลือก
+                                <button @click="openSelectorForRow(index)" :disabled="isReadOnly"
+                                    class="bg-gray-200 px-3 py-1 rounded">{{
+                                        product.pro_id }} เลือก
                                 </button>
 
                             </td>
@@ -323,8 +326,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <div>
                     <label class="block font-medium mb-1">ช่องทางจัดส่ง</label>
-                    <select v-model="formData.deliveryType" placeholder="ช่องทางจัดส่ง" :disabled="isReadOnly" style="margin: 0.4rem;"
-                        class="w-full border px-3 py-2 rounded">
+                    <select v-model="formData.deliveryType" placeholder="ช่องทางจัดส่ง" :disabled="isReadOnly"
+                        style="margin: 0.4rem;" class="w-full border px-3 py-2 rounded">
 
                         <option value="">เลือกช่องทางจัดส่ง</option>
                         <option>ไปรษณีย์</option>
@@ -353,7 +356,8 @@
             <!-- หมายเหตุ -->
             <div class="mt-4">
                 <label class="block font-medium mb-1">หมายเหตุ</label>
-                <textarea rows="3" v-model="formData.note" :readonly="isReadOnly" class="w-full border px-3 py-2 rounded"></textarea>
+                <textarea rows="3" v-model="formData.note" :readonly="isReadOnly"
+                    class="w-full border px-3 py-2 rounded"></textarea>
             </div>
 
             <!-- รวม -->
@@ -1014,9 +1018,11 @@ export default {
             }
 
         },
+
         enableEditMode() {
             this.isReadOnly = false; // เปิดให้แก้ไขฟอร์ม
         },
+
         async updateDocument() {
             const isValid = await this.validateForm();
             if (!isValid) {
@@ -1029,14 +1035,52 @@ export default {
             }
 
             try {
+
+                this.formData.productList = this.selectedProducts.map(product => {
+
+                    const total = this.totalprice(product);
+
+                    return {
+                        pro_id: product.pro_id,
+                        pro_erp_title: product.pro_erp_title,
+                        pro_name: product.pro_erp_title,
+                        pro_quantity: product.pro_quantity,
+                        pro_unit_price: product.pro_unit_price,
+                        pro_discount: this.formData.discount,
+                        pro_total_price: total, // รวมราคาต่อสินค้า
+                        pro_images: product.pro_images,
+                        pro_sn: product.pro_sn,
+                        unit: product.pro_unit
+                    };
+                });
+
+
+                console.log("🔍 log value this.productList:", this.formData.productList)
+
+                this.formData.final_total_price = this.grandTotal;
+
+
                 const payload = new FormData();
                 for (const key in this.formData) {
                     if (key === 'productList') {
-                        payload.append('productList', JSON.stringify(this.formData.productList));
+                        // payload.append('productList', JSON.stringify(this.formData.productList));
+                        // ✅ แปลง proxy เป็น array ปกติก่อน stringify
+                        payload.append('productList', JSON.stringify([...this.formData.productList]));
                     } else {
                         payload.append(key, this.formData[key]);
                     }
                 }
+
+                // console.log("🤯 Log Value payload: ", payload);
+
+                // ✅ log payload ทั้งหมดแบบอ่านได้
+                console.log("📦🤯 Log payload entries:");
+                for (const [key, value] of payload.entries()) {
+                    console.log(`${key}:`, value);
+                }
+
+                console.log("🛒 productList:", this.formData.productList);
+                console.log(JSON.stringify(payload))
 
                 const response = await axios.post(
                     'http://localhost/api_admin_dashboard/backend/api/update_sale_order.php',
@@ -1045,7 +1089,15 @@ export default {
 
                 const resData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
 
+                console.log("🔍 Response จาก API:", resData);
+
                 if (resData.success) {
+                    const newDocumentNo = resData.newDocumentNo; // ดึง `documentNo` ใหม่จาก API
+                    this.formData.documentNo = newDocumentNo; // อัปเดต `documentNo` ใน `formData`
+
+                    // อัปเดต URL ไปยัง `saleList` พร้อม `documentNo` ใหม่
+                    this.$router.push(`/saleList?documentNo=${newDocumentNo}`);
+
                     Swal.fire({ text: resData.message, icon: 'success' });
                     this.isReadOnly = true; // ปิดการแก้ไขหลังบันทึกสำเร็จ
                 } else {

@@ -75,7 +75,7 @@ const BASE_URL= import.meta.env.VITE_API_URL;
 
         try {
           
-          const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/signupMain.php`,{withCredentials: true,}, payload);
+          const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/signupMain.php`, payload);
           const result = response.data;
 
           console.log("Log Value Result: ",result);

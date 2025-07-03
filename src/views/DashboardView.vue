@@ -217,15 +217,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
     console.error('Error fetching departments:', err);
   });
     },
-    // fetchdepartments(){
-    //   fetch("http://localhost/api_admin_dashboard/get_departments.php")
-    //     .then(res => res.json())
-    //     .then(data => {
-    //       if (data.success) {
-    //         this.departments = data.departments;
-    //       }
-    //     });
-    // },
+    
     fetchSalaryData() {
       fetch(`${BASE_URL}/api_admin_dashboard/backend/api/get_top_salary.php`)
         .then(res => res.json())

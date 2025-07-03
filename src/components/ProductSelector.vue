@@ -1,0 +1,562 @@
+<template>
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white z-20 rounded-lg shadow-lg p-6 w-[90%] max-w-6xl max-h-[90vh] overflow-y-auto">
+
+      <!-- Search Section -->
+      <div class="flex items-center space-x-4">
+        <!-- Search Icon -->
+        <span class="material-icons text-gray-600" style="font-size: 28px;">search</span>
+        <!-- Search Input -->
+        <input class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          v-model="keyword" placeholder="ค้นหา..." @input="onInput" confirm-type="search" />
+      </div>
+
+      <div class="text-sm text-gray-500 mt-2">
+        * สามารถ ค้นหาได้ ชื่อสินค้า, รหัสสินค้า
+      </div>
+
+      <!-- Header -->
+      <div class="flex items-center mb-4">
+
+        <div class="flex-1">
+          <h2 class="text-xl font-bold">เลือกสินค้าหลายรายการ</h2>
+        </div>
+
+        <div class="flex gap-4">
+          <div class="text-sm font-semibold text-gray-500 mt-2">
+            ประเภทสมาชิก: {{ memberType }}
+          </div>
+          <!-- แสดงว่าเป็น level อะไร -->
+          <div class="">
+            <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 text-2xl">&times;</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Table -->
+      <table class="min-w-full border text-sm">
+        <thead class="bg-gray-100 text-gray-700">
+          <tr>
+            <th class="px-4 py-2 border text-center">
+              <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected" />
+            </th>
+            <!-- <th class="px-4 py-2 border">รูปภาพ</th>
+            <th class="px-4 py-2 border">ชื่อสินค้า</th>
+            <th class="px-4 py-2 border">คงเหลือ</th>
+            <th class="px-4 py-2 border">พร้อมขาย</th>
+            <th class="px-4 py-2 border">ราคาขาย</th> -->
+            <th class="px-4 py-2 border">รูปภาพ</th>
+            <th class="px-4 py-2 border">ชื่อสินค้า</th>
+            <!-- <th class="px-4 py-2 border">สี</th> -->
+            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600 relative">
+              <!-- Input ช่องค้นหา -->
+              <div class="flex gap-1">
+                <input type="text" v-model="keyword_sku_no" placeholder="ค้นหา สี"
+                  @focus="dropdownOpenIndex = 'header'"
+                  class="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none" />
+                <!-- ปุ่มค้นหา -->
+                <button @click="searchSku" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                  ค้นหา
+                </button>
+              </div>
+            </th>
+
+            <th class="px-4 py-2 border">รหัสสินค้า</th>
+            <th class="px-4 py-2 border">คงเหลือ</th>
+            <!-- <th class="px-4 py-2 border">promotion</th> -->
+            <th class="px-4 py-2 border">หน่วย</th>
+            <th class="px-4 py-2 border">ราคาขาย</th>
+          </tr>
+        </thead>
+
+        <tbody v-if="isLoading">
+          <tr>
+            <td colspan="10" class="py-10 text-center">
+              <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
+            </td>
+          </tr>
+        </tbody>
+
+        <tbody v-if="!isLoading">
+          <tr v-for="item in paginatedProducts" :key="item.id">
+            <td class="px-4 py-2 border text-center">
+              <input type="checkbox" v-model="selectedIds" :value="item.id" />
+            </td>
+
+            <td class="px-4 py-4 border text-center">
+              <template v-if="item.image">
+                <img :src="BASE_URL_IMAGE + item.image" alt="products" class="w-10 h-10 rounded-full mx-auto">
+              </template>
+              <template v-else>
+                <span class="material-icons text-gray-400 text-4xl">broken_image</span>
+              </template>
+            </td>
+
+            <td class="px-4 py-2 border">{{ item.erp_title }}</td>
+            <td class="px-4 py-2 border">{{ item.goods_sku_text ?? 'ไม่มีสี' }}</td>
+            <td class="px-4 py-2 border">{{ item.sn }}</td>
+            <!-- <td class="px-4 py-2 border">{{ item.promotion }}</td> -->
+            <td class="px-4 py-2 border">{{ item.stock }}</td>
+            <td class="px-4 py-2 border">{{ item.units }}</td>
+            <td class="px-4 py-2 border">{{ item.price }}</td>
+
+            <!-- <td class="px-4 py-2 border">{{ item.pro_name }}</td>
+            <td class="px-4 py-2 border">{{ item.pro_quantity }}</td>
+            <td class="px-4 py-2 border">{{ item.pro_status }}</td>
+            <td class="px-4 py-2 border">{{ item.pro_unit_price }}</td> -->
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <ConfigProvider :globalConfig="enConfig">
+        <div class="overflow-auto mt-4">
+          <!-- v-model:page-size="pageSize" -->
+          <pagination v-model:current="pageCurrent" v-model:page-size="pageSize" :total="total" show-page-size
+            :prev-button-props="{ content: '⏪' }" :next-button-props="{ content: '⏩' }" @change="onPaginationChange" />
+        </div>
+      </ConfigProvider>
+
+      <!-- Confirm Button -->
+      <div class="text-right mt-4">
+        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" @click="confirmSelection">
+          เลือกสินค้า
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+</template>
+
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+// import { Pagination } from 'tdesign-vue-next'
+
+import { Pagination, ConfigProvider } from 'tdesign-vue-next'
+import enConfig from 'tdesign-vue-next/es/locale/en_US'
+import Swal from 'sweetalert2';
+import axios from 'axios';
+
+
+const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
+const BASE_URL = import.meta.env.VITE_API_URL;
+
+const isLoading = ref(false) // สำหรับ loading spinner
+
+const props = defineProps({
+  productList: Array,
+  pageCurrent: Number,
+  pageSize: Number,
+  total: Number
+})
+
+const emit = defineEmits(['close', 'select-products', 'page-change'])
+
+const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+
+const getLevel = getLevelSS?.data2?.level ?? 0;
+
+// reactive state
+const keyword = ref('')
+const searchTimer = ref(null)
+
+const tableData = ref([])
+
+const total = ref(0)
+const pageCurrent = ref(1)
+const pageSize = ref(10)
+
+const selectedIds = ref([])
+const dataselect = ref([])
+const error = ref('')
+
+const keyword_sku_no = ref('');
+const dataselectsku_no = ref([]);
+
+const memberType = ref('');
+
+const paginatedProducts = computed(() => {
+  return tableData.value;
+});
+
+function onPaginationChange(pageInfo) {
+  pageCurrent.value = pageInfo.current;
+
+  // 🔒 บังคับให้ pageSize = 10 เสมอ
+  if (pageInfo.pageSize > 10) {
+    pageSize.value = 10;
+  } else if (pageInfo.pageSize === 5) {
+    pageSize.value = 5;
+  } else {
+    pageSize.value = pageInfo.pageSize;
+  }
+
+  SearchProducstSubmit(); // โหลดสินค้าหน้าใหม่
+  emit('page-change', pageInfo.current);  // ส่ง event ให้ parent โหลดหน้าข้อมูลใหม่
+}
+
+
+// Checkbox logic เลือกสินค้าทั้งหมด
+const isAllSelected = computed(() =>
+  paginatedProducts.value.every(item => selectedIds.value.includes(item.id))
+)
+
+// เช็คว่าตอนนี้สินค้าได้ถูกเลือกเป็นรายการอะไรบ้าง
+watch(selectedIds, (newVal) => {
+  const selectedProducts = props.productList.filter(p =>
+    newVal.includes(p.id)
+  );
+  console.log("สินค้าที่เลือกอยู่ตอนนี้:", selectedProducts);
+});
+
+// watch(pageSize, (newVal) => {
+//   if (newVal !== 10) {
+//     pageSize.value = 10;
+//   }
+// });
+
+// function เลือกสินค้าทั้งหมด
+function toggleSelectAll(event) {
+  if (event.target.checked) {
+    const pageIds = paginatedProducts.value.map(item => item.id)
+    selectedIds.value = [...new Set([...selectedIds.value, ...pageIds])]
+
+    console.log('toggleSelectAll selectedIds:', pageIds);
+  } else {
+    const pageIds = paginatedProducts.value.map(item => item.id)
+    selectedIds.value = selectedIds.value.filter(id => !pageIds.includes(id))
+    console.log('Error selectedIds:', pageIds);
+  }
+}
+
+
+
+function confirmSelection() {
+  const selectedProducts = props.productList
+    .filter(p => selectedIds.value.includes(p.id))
+    .map(p => ({
+      pro_id: p.id,
+      pro_erp_title: p.erp_title,
+      pro_sn: p.sn,
+      pro_images: p.image,
+      pro_quantity: p.stock,
+      pro_unit_price: p.price,
+      pro_unit: p.units,
+      // qty: 1,
+      // discount: p.discount
+    }));
+
+  console.log("✅ SelectedProducts ถูกแปลงแล้ว:", selectedProducts);
+  emit('select-products', selectedProducts);
+  emit('close');
+}
+
+const searchSku = async () => {
+  clearTimeout(searchTimer.value);
+
+  if (!keyword_sku_no.value.trim()) {
+    try {
+      const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+        version: '2.0.2',
+        pageSize: pageSize.value,
+        pageCurrent: pageCurrent.value,
+        keywords: keyword_sku_no.value,
+        level: getLevel
+      });
+
+      console.log("IF searchSku response:", response);
+      console.log("IF searchSku total:", response.data.data.item_count);
+
+      if (response.data.code === 1) {
+        total.value = response.data.data.item_count;
+        dataselectsku_no.value = response.data.data.data2;
+        tableData.value = [...dataselectsku_no.value];
+        pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
+      }
+    } catch (err) {
+      console.error("searchSku error:", err);
+    }
+  } else {
+    try {
+      const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+        version: '2.0.2',
+        pageSize: pageSize.value,
+        pageCurrent: pageCurrent.value,
+        // keywords: keyword_sku_no.value,
+        keywords: keyword.value + '$_' + keyword_sku_no.value + '_$',
+        level: getLevel,
+       
+      });
+
+      console.log("ELSE searchSku response:", response);
+      console.log("ELSE searchSku total:", response.data.data.item_count);
+
+      if (response.data.code === 1) {
+        total.value = response.data.data.item_count;
+        dataselectsku_no.value = response.data.data.data2;
+        tableData.value = [...dataselectsku_no.value];
+      }
+    } catch (err) {
+      console.error("searchSku error:", err);
+    }
+  }
+};
+
+  async function SearchProducstSubmit() {
+
+    isLoading.value = true;
+
+    const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+
+    const getLevel = getLevelSS?.data2?.level ?? 0;
+    console.log("Log getLevel: ", getLevel);
+
+    // แปลงค่า getLevel เป็นชื่อสมาชิก
+    // let memberType = '';
+    if (getLevel === 0) {
+      memberType.value = 'Member Nuser';
+    } else if (getLevel === 1) {
+      memberType.value = 'Member A';
+    } else if (getLevel === 7) {
+      memberType.value = 'Member B';
+    } else if (getLevel === 10) {
+      memberType.value = 'Member A+';
+    } else {
+      memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
+    }
+
+    console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
+
+    try {
+
+      // isLoading.value = true; // เริ่มโหลด
+
+      const raw = {
+        // pageCurrent: pageCurrent.value,
+        // keywords: keyword.value,
+        // // keywords: keyword.value.trim(), // ตัด space หน้า-หลัง
+        // level: '10',
+        // pageSize: pageSize.value,
+        pageCurrent: pageCurrent.value,
+        pageSize: pageSize.value,
+        keywords: keyword.value,
+        level: getLevel
+      };
+
+      console.log('ส่งคำค้นหา:', raw);
+      console.log('ส่ง payload ค้นหา:', JSON.stringify(raw, null, 2));
+
+      const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      // console.log("API Response ทั้งหมด:", response.data);
+      // console.log("API Response ทั้งหมด:", response.data.data.data2);
+
+      const searchProducts = response.data.data.data2;
+
+      console.log("searchProducts:", searchProducts);
+
+
+      // const getData
+
+      if (response.data.code !== 1) {
+        console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+      }
+
+      if (response.data.code === 1) {
+        const data = response.data.data;
+        const searchProducts = data.data2 || [];
+
+        tableData.value = searchProducts;
+
+        // tableData.value = searchProducts.map(item => ({
+        //   ...item,
+        //   imageLoaded: false
+        // }));
+
+        dataselect.value = searchProducts;
+        total.value = data.item_count || 0;
+
+        console.log("✅ ข้อมูล searchProducts:", searchProducts);
+
+        // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
+        isLoading.value = false; // โหลดเสร็จ
+      } else {
+        error.value = response.data.message || 'เกิดข้อผิดพลาด';
+        Swal.fire({
+          title: 'ค้นหาไม่สำเร็จ',
+          text: error.value,
+          icon: 'error'
+        });
+        // isLoading.value = false;
+      }
+    } catch (err) {
+      Swal.fire({
+        title: 'เกิดข้อผิดพลาด',
+        text: err.message || 'โปรดลองใหม่ภายหลัง',
+        icon: 'error'
+      });
+      // isLoading.value = false;
+    }
+  }
+
+  
+
+// function mounted() {
+//         this.getProduct(1);
+//     }
+function onInput() {
+  clearTimeout(searchTimer.value);
+  searchTimer.value = setTimeout(() => {
+    SearchProducstSubmit();
+  }, 500); // รอให้พิมพ์เสร็จ 0.5 วิค่อยเรียก
+}
+
+onMounted(() => {
+  SearchProducstSubmit(); // โหลดสินค้าทั้งหมดรอบแรก
+});
+
+
+</script>
+
+
+<!-- <td class="px-4 py-2 border">{{ item.pro_images }}</td>  , :src="item.image" -->
+<!-- <td class="px-4 py-4 border text-center">
+              <template v-if="item.image">
+                <div class="relative w-10 h-10 mx-auto">
+                  <img :src="BASE_URL_IMAGE + item.image" @load="item.imageLoaded = true" v-show="item.imageLoaded"
+                    alt="products" class="w-10 h-10 rounded-full absolute inset-0" />
+                  <div v-if="!item.imageLoaded" class="w-10 h-10 flex items-center justify-center">
+                    <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                      viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                  </div>
+                </div>
+              </template>
+              <template v-else>
+                <span class="material-icons text-gray-400 text-4xl">broken_image</span>
+              </template>
+            </td> -->
+
+<!-- Loading Spinner Overlay -->
+<!-- <div v-if="isLoading" class="absolute inset-0 z-50 flex items-center justify-center bg-white bg-opacity-80">
+    <svg class="animate-spin h-12 w-12 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+      viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+      </path>
+    </svg>
+  </div> -->
+
+
+<!-- // Pagination logic
+// const paginatedProducts = computed(() => {
+//   const start = (pageCurrent.value - 1) * pageSize.value
+//   // return props.productList.slice(start, start + pageSize.value)
+//   return tableData.value.slice(start, start + pageSize.value)
+// }) -->
+
+
+<!-- // watch(() => props.productList, (newVal) => {
+  //   // console.log('ProductSelector received productList:', newVal);
+  //   if (newVal) {
+  //     tableData.value = [...newVal]
+  //     total.value = newVal.length
+  //   }
+  // }, { immediate: true }) -->
+
+
+<!-- // function onInput() {
+  //   // ยกเลิก timeout เก่าถ้ามี
+  //   clearTimeout(this.searchTimer)
+  //   // ตั้ง timeout ใหม่ รอ 500ms ถ้าไม่มีการพิมพ์เพิ่มถึงค่อยเรียก
+  //   SearchProducstSubmit()
+  
+  // } -->
+
+
+<!-- // ฟังก์ชันเรียก API
+// async function SearchProducstSubmit() {
+//   try {
+
+//     // const raw = {
+//     //     pageCurrent: 1,
+//     //     keywords: '',
+//     //     level: '10', // ได้ตอนเลือกร้านค้า
+//     //     pageSize: 30
+//     // };
+
+//     const raw = {
+//       // pageCurrent: 1,
+//       // keywords: keyword.value,
+//       // level: '10',
+//       // pageSize: 30,
+//       pageCurrent: page,
+//       keywords: keyword.value, // ← ใช้ keyword ที่กรอกจริงๆ
+//       level: '10',
+//       pageSize: this.pageSize // this.pageSize เช่น 30, 50 หรือ item_count
+//     };
+
+//     console.log('🔎 Search Keyword Raw:', raw);
+
+//     // raw },
+//     const response = await axios.post(
+//       `${BASE_URL}/Goods2/product`, raw ,
+//       {
+//         headers: { 'Content-Type': 'application/json' },
+//       }
+//     )
+
+//     const data = response.data.data;
+
+//       // เก็บจำนวนสินค้าทั้งหมดจาก API
+//       this.totalItems = data.item_count || 0;
+
+//       // ถ้าคุณอยากโหลดสินค้าทั้งหมดในรอบเดียว ให้ตั้ง pageSize = totalItems แล้วโหลดใหม่
+//       // ตัวอย่าง: โหลดทั้งหมดในครั้งแรก
+//       if (page === 1 && this.pageSize !== this.totalItems) {
+//           this.pageSize = this.totalItems;
+//           // เรียกโหลดใหม่อีกครั้ง
+//           return this.getProduct(1);
+//       }
+
+//       // เอาข้อมูลสินค้าที่ได้มาเก็บในตัวแปร
+//       this.Apiproducts = data.data2 || [];
+//       this.pageCurrent = page;
+
+//     console.log('Log responseData: ', response.data);
+
+//     if (response.data.code === 1) {
+//       const data = response.data.data.data;
+//       tableData.value = data.data2;
+//       dataselect.value = data.data2;
+//       total.value = data.item_count;
+
+//       console.log("✅ Search Result:", data.data2);
+//     } else {
+//       error.value = response.data.message || 'เกิดข้อผิดพลาด';
+//       Swal.fire({
+//         title: 'ค้นหาไม่สำเร็จ',
+//         text: error.value,
+//         icon: 'error',
+//       });
+//     }
+//   } catch (err) {
+//     Swal.fire({
+//       title: 'เกิดข้อผิดพลาด',
+//       text: err.message || 'โปรดลองใหม่ภายหลัง',
+//       icon: 'error',
+//     })
+//   }
+// } -->

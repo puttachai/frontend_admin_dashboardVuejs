@@ -14,33 +14,62 @@ const hideLayout = ['singin', 'signup']
 
 <template>
 
-<div class="Container min-h-screen">
+  <div class="Container min-h-screen">
     <div v-if="!hideLayout.includes(route.name)">
-      <Navbar />
+      <!-- <Navbar /> -->
+      <Navbar @toggle-sidebar="toggleSidebar" />
     </div>
 
     <div class="flex min-h-screen">
       <div class="mysidebar">
-        <div v-if="!hideLayout.includes(route.name)" class="mysidebar2"> <!-- mysidebar -->
-          <Sidebar />
+        <div v-if="!hideLayout.includes(route.name) && isSidebarVisible" class="mysidebar2"> <!-- mysidebar -->
+          <!-- <Sidebar /> -->
+          <Sidebar :class="{ 'sidebar-hidden': !isSidebarVisible }" />
         </div>
 
-        <main class="content "> 
-          <RouterView /><!--content-->
-        </main>
-        
+       <!-- ✅ แยกการใส่ class content ตามเงื่อนไข -->
+      <main v-if="!hideLayout.includes(route.name)" class="content">
+        <RouterView />
+      </main>
+      <main v-else>
+        <RouterView />
+      </main>
+
       </div>
     </div>
-    
+
 
     <FooterComponent v-if="!hideLayout.includes(route.name)" />
-</div>
+  </div>
 
 
 </template>
 
-<style scoped>
+<!-- <script setup>
 
+import enConfig from 'tdesign-vue-next/es/locale/en_US'
+import { ConfigProvider } from 'tdesign-vue-next'
+
+</script> -->
+
+<script>
+
+import { ref } from 'vue'
+
+const isSidebarVisible = ref(true)
+
+// Responsive check (auto hide on small screen)
+if (window.innerWidth <= 430) {
+  isSidebarVisible.value = false
+}
+
+function toggleSidebar() {
+  isSidebarVisible.value = !isSidebarVisible.value
+}
+
+</script>
+
+<style scoped>
 /* * {
   box-sizing: border-box;
   font-family: 'Fira sans', sans-serif;
@@ -51,7 +80,7 @@ body {
   height: 200vh;
 }
 
-ิีbutton{
+ิีbutton {
   cursor: pointer;
   appearance: none;
   border: none;
@@ -59,17 +88,19 @@ body {
   background: none;
 }
 
-.mysidebar{
+.mysidebar {
   padding: 0;
   margin: 0;
-  display: flex; 
+  display: flex;
   flex: 1;
   overflow: hidden;
-  min-height: 0; 
-}
-.mysidebar2{
+  min-height: 0;
 
-  display: flex; 
+}
+
+.mysidebar2 {
+
+  display: flex;
 
 }
 
@@ -78,56 +109,28 @@ body {
   flex: 1;
   /* padding: 1rem; */
   overflow: auto;
+  margin-left: calc(2rem + 32px);
+  padding-top: 4rem;
+  /* ✅ เผื่อ space จาก navbar */
+
+  /* margin-left: 4rem; */
+
+  /* ใช้ media query ที่ถูกต้อง */
+  @media (max-width: 431px) {
+
+    margin-left: 0 !important;
+    /* ✅ ตั้งค่า margin-left เป็น 0 เมื่อหน้าจอเล็ก */
+  }
+
 }
 
-main{
-    flex: 1 1 0;
-    /* padding: 2rem; */
+main {
+  flex: 1 1 0;
+  /* padding: 2rem; */
 
-    @media (max-width: 768px) {
-      /* padding-left: 6rem; */
+  @media (max-width: 768px) {
+    /* padding-left: 6rem; */
 
-    }
+  }
 }
-
 </style>
-
-
-<!-- 
-<div class="Container min-h-screen"> <!-- min-h-screen 
-
-  <div class="">
-    <Navbar />
-  </div>
-
-  <div class="flex min-h-screen"> <!-- min-h-screen 
-
-    <div class="mysidebar">
-
-      <Sidebar />
-      <!-- <header>
-        <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-        <div class="wrapper">
-          <HelloWorld msg="You did it!" />
-
-          <nav>
-            <RouterLink to="/">Home</RouterLink>
-            <RouterLink to="/about">About</RouterLink>
-          </nav>
-        </div>
-      </header> 
-
-      <main class="content">
-        <RouterView />
-      </main>
-       <RouterView /> 
-
-    </div>
-
-  </div>
-
-
-  <FooterComponent />
-
-</div> -->

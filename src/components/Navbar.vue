@@ -1,5 +1,5 @@
 <template>
-  <Disclosure as="nav" class="bg-gray-800" v-slot="{ open }">
+  <Disclosure as="nav" class="bg-gray-800 fixed top-0 left-0 w-full z-50" v-slot="{ open }">
     <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
       <div class="relative flex h-16 items-center justify-between">
 
@@ -15,6 +15,11 @@
             </DisclosureButton>
           </div> -->
 
+        <!-- Hamburger Button -->
+        <button @click="$emit('toggle-sidebar')" class="menu max-[431px]:block hidden sm:hidden text-white">
+          <span class="material-icons text-3xl">menu</span>
+        </button>
+
         <!-- Logo (ด้านซ้าย) src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" file:///D:/Users/first/Downloads/White and Black Minimal Bold Real Estate Brand Logo (2).png -->
         <div class="Logomedia flex items-center">
           <router-link to="/dashboard">
@@ -23,9 +28,9 @@
         </div>
 
         <!-- Title (ตรงกลาง) -->
-        <div class="boxTitel absolute left-1/2 transform -translate-x-1/2">
+        <div v-if="!contact" class="boxTitel absolute left-1/2 transform -translate-x-1/2">
           <router-link to="/dashboard">
-            <h4 class="font-semibold text-xl text-center">The Welcome to Admin Dashboard</h4>
+            <h4 class="welcome font-semibold text-xl text-center">The Welcome to Admin Dashboard</h4>
           </router-link>
         </div>
 
@@ -47,9 +52,13 @@
               </div> -->
             <div>
               <MenuButton
-                class="relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
+                class="items-center gap-4 relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
                 <span class="absolute -inset-1.5" />
                 <span class="sr-only">Open user menu</span>
+
+                <span class="text-white text-sm ">
+                  ยินดีต้อนรับคุณ {{ contact }} {{ account }}
+                </span>
 
                 <template v-if="image_path">
                   <img class="size-8 rounded-full" :src="image_path" alt="User Avatar" />
@@ -108,8 +117,10 @@
   </Disclosure>
 </template>
 
-<script setup>
+<script>
 import Swal from 'sweetalert2'
+import { ref, onMounted, createApp } from 'vue'
+import { useRouter } from 'vue-router'
 
 import {
   Disclosure,
@@ -122,50 +133,93 @@ import {
 } from '@headlessui/vue'
 
 import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
+export default {
+  emits: ['toggle-sidebar'],
+  components: {
+    Disclosure,
+    DisclosureButton,
+    DisclosurePanel,
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuItems,
+    Bars3Icon,
+    XMarkIcon
+  },
+  setup() {
+    const router = useRouter()
+    const account = ref('')
+    const contact = ref('')
+    const image_path = ref('')
 
-const confirmLogoutEmployee = async () => {
-  const result = await Swal.fire({
-    title: 'ยืนยันการออกจากระบบ',
-    text: 'คุณต้องการออกจากระบบจริงหรือไม่?',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'ใช่, ออกเลย',
-    cancelButtonText: 'ยกเลิก',
-  });
+    //โหลดค่าจาก localStorage ตอน component mount
+    onMounted(() => {
+      loadUserData()
 
-  if (result.isConfirmed) {
+    })
 
-    try {
 
-      // ลบข้อมูล token และข้อมูลอื่น ๆ ที่เก็บไว้ใน localStorage
-      localStorage.removeItem('token')
-      localStorage.removeItem('isAuthenticated')
-      localStorage.removeItem('image_path')
-
-      // ไปหน้า signin
-      router.push('/')
-
-    } catch (error) {
-      console.error('Error Delete employees:', error);
-      Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถออกจากระบบได้', 'error');
+    function loadUserData() {
+      account.value = localStorage.getItem('account') || ''
+      contact.value = JSON.parse(localStorage.getItem('selectDataCustomer'))?.data2.contact || ''
+      image_path.value = localStorage.getItem('image_path') || ''
     }
 
-  } else {
-    // กดยกเลิก ไม่ทำอะไร
-    console.log('ยกเลิกการออกจากระบบ');
+    // โหลดค่าจาก localStorage ตอน component mount
+    // onMounted(() => {
+    //   account.value = localStorage.getItem('account') || ''
+    //   // contact.value = JSON.parse(localStorage.getItem('selectDataCustomer'))?.data.contact || ''
+    //   image_path.value = localStorage.getItem('image_path') || ''
+    //   console.log('Log Account Value: ', account.value)
+    //   console.log('Log contact Value: ', contact.value)
+    //   // console.log(localStorage.getItem('selectDataCustomer'));
+    // }),
+
+    // // สมมติอยากให้รีเฟรชด้วยปุ่ม
+    // function refreshData() {
+    //   loadUserData()
+    // }
+
+
+    // ฟังก์ชัน logout
+    const confirmLogoutEmployee = async () => {
+      const result = await Swal.fire({
+        title: 'ยืนยันการออกจากระบบ',
+        text: 'คุณต้องการออกจากระบบจริงหรือไม่?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'ใช่, ออกเลย',
+        cancelButtonText: 'ยกเลิก',
+      })
+
+      if (result.isConfirmed) {
+        try {
+          localStorage.removeItem('token')
+          localStorage.removeItem('isAuthenticated')
+          // localStorage.removeItem('account')
+          localStorage.removeItem('image_path')
+          localStorage.removeItem('selectDataCustomer')
+
+          router.push('/')
+        } catch (error) {
+          console.error('Error Delete employees:', error)
+          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถออกจากระบบได้', 'error')
+        }
+      } else {
+        console.log('ยกเลิกการออกจากระบบ')
+      }
+    }
+
+    return {
+      account,
+      contact,
+      image_path,
+      confirmLogoutEmployee,
+      // refreshData,
+    }
   }
 }
-
-const image_path = ref('')
-// โหลดรูปจาก localStorage
-onMounted(() => {
-  image_path.value = localStorage.getItem('image_path'); //|| 'https://via.placeholder.com/150'
-})
-
 </script>
 
 
@@ -184,6 +238,30 @@ onMounted(() => {
   }
 }
 
+@media (max-width: 431px) {
+  .boxTitel {
+    display: none;
+  }
+
+  .Logomedia {
+    flex: 1;
+    justify-content: center;
+    display: none;
+    /* ✅ ซ่อนโลโก้เมื่อหน้าจอเล็ก */
+  }
+
+
+}
+
+@media (max-width: 680px) {
+  .welcome, .boxTitel {
+    display: none;
+  }
+}
+
+</style>
+
+<!-- 
 /* .Logomedia {
   position: relative;
 }
@@ -202,5 +280,4 @@ onMounted(() => {
     transform: scale(0.9);
     z-index: 2;
   }
-} */
-</style>
+} */ -->

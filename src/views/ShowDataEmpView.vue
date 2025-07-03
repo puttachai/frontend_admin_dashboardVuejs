@@ -100,7 +100,7 @@ onMounted(async () => {
 
         console.log("Log BASE_URL: ", BASE_URL);
 
-        const respone = await axios.get(`${BASE_URL}/api_admin_dashboard/backend/api/get_dataEmployee.php`,{withCredentials: true,})
+        const respone = await axios.get(`${BASE_URL}/api_admin_dashboard/backend/api/get_dataEmployee.php`,)
         employees.value = respone.data;
         console.log("Log respone: ", respone);
         console.log("Success Fully");

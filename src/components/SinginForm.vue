@@ -8,13 +8,13 @@
 
     <form @submit.prevent="handleLogin" class="max-w-md mx-auto space-y-6">
       <input
-        v-model="email"
-        type="email"
-        placeholder="Email"
+        v-model="mobile"
+        type="text"
+        placeholder="Mobile"
         class="w-full px-4 py-2 border rounded-md"
-        autocomplete="email" 
-        id="email" 
-        name="email"
+        autocomplete="mobile" 
+        id="mobile" 
+        name="mobile"
       />
       <input
         v-model="password"
@@ -39,31 +39,38 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
+// import { version } from 'node:os';
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 console.log("Show BASE_URL: ",BASE_URL);
 
-const email = ref('')
+const mobile = ref('')
 const password = ref('')
+const customer = ref('')
 const error = ref('')
 const router = useRouter()
 
 const handleLogin = async () => {
   try {
     console.log("Show BASE_URL try: ",BASE_URL);
-    const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/loginUser.php`, {
-        email: email.value,
-        password: password.value
+    const response = await axios.post(`${BASE_URL}/user/accountLogin4`, {
+        account: mobile.value,
+        password: password.value,
+        customer:'',
+        version:'2.0.2',
+      // mobile: mobile.value,
+        // password: password.value
       },{
-      withCredentials: true,
+      // withCredentials: true,
       headers: {
         'Content-Type': 'application/json'
       }
     });
 
     console.log("Show Data: ",response);
+    // console.log(response.data.data.data.data2[0].nickname_admin);
 
-    if (response.data.success) {
+    if (response.data.code == 1) {
 
       Swal.fire({
         title:'ล็อกอินสำเร็จ',
@@ -72,15 +79,37 @@ const handleLogin = async () => {
         showConfirmButton: false, // ไม่แสดงปุ่ม OK
       });
 
-      // บันทึก token หรือตั้งค่า authenticated ตามต้องการ
-      localStorage.setItem('isAuthenticated', 'true')
-      localStorage.setItem('token', response.data.token || '')
-      localStorage.setItem('image_path', response.data.image_path || '')
+      if(response.data.data.data.customer_count >1 ){
+          
+      // บันทึก token หรือตั้งค่า authenticated 
+      localStorage.setItem('isAuthenticated', 'true');
+      console.log("Log Respone Data:",response.data.data.data);
+      localStorage.setItem('account', mobile.value);
+      localStorage.setItem('password', password.value);
 
-      console.log("Show Image: ",response.data.image_path);
+      localStorage.setItem('msg', response.data.msg);
 
-      // เปลี่ยนหน้าไป Dashboard
-      router.push('/dashboard')
+      const msg = localStorage.getItem('msg');
+      // console.log('Log msg: ',msg);
+      
+      router.push('/customer');
+
+      }else{
+        
+      // บันทึก token หรือตั้งค่า authenticated 
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('token', response.data.data.token || '');
+      localStorage.setItem('level', response.data.data.level || '');
+
+      localStorage.setItem('account', mobile.value);
+      localStorage.setItem('password', password.value);
+      
+      const getToken = localStorage.getItem('token');
+      console.log('Log getToken: ',getToken);
+
+      router.push('/dashboard');
+      }
+
     } else {
       error.value = response.data.message || 'Login failed'
       Swal.fire({
@@ -110,7 +139,7 @@ const handleLogin = async () => {
       </p>
   
       <div class="max-w-md mx-auto space-y-6">
-        <input type="email" placeholder="Email" class="w-full px-4 py-2 border rounded-md" />
+        <input type="mobile" placeholder="mobile" class="w-full px-4 py-2 border rounded-md" />
         <input type="password" placeholder="Password" class="w-full px-4 py-2 border rounded-md" />
         <button class="w-full bg-blue-500 text-white py-2 rounded-md">Log in</button>
       </div>

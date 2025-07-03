@@ -36,6 +36,14 @@
                 <span class="material-icons">list_alt</span>
                 <span class="text">List User Employee</span>
             </router-link>
+            <router-link class="button" to="/createsalelist">
+                <span class="material-icons">assignment_add</span>
+                <span class="text">Create a sales list</span>
+            </router-link>
+            <router-link class="button" to="/customer">
+                <span class="material-icons">person</span>
+                <span class="text">Customer</span>
+            </router-link>
             <router-link class="button" to="/about">
                 <span class="material-icons">visibility</span>
                 <span class="text">About</span>
@@ -77,10 +85,20 @@ const ToggleMenu = () => {
 
 <style lang="scss" scoped>
 aside {
+    position: fixed;
+    // top: 0;
+    // left: 0;
+    // height: 100vh;
+    // z-index: 50;
+    top: 4rem; /* ✅ กำหนดให้ไม่ทับ navbar */
+    left: 0;
+    height: calc(100vh - 4rem); /* ✅ ลดความสูงลงจาก navbar */
+    z-index: 40; /* ต่ำกว่า navbar ที่ z-50 */
+
     display: flex;
     flex-direction: column;
     width: calc(2rem + 32px);
-    min-height: 100vh;
+    // min-height: 100vh;
     overflow: hidden;
     padding: 1rem;
 
@@ -88,6 +106,7 @@ aside {
     color: var(--light);
 
     transition: 0.2s ease-out;
+    // transform: translateX(0); // แสดงปกติ
 
     .flex_x {
         flex: 1 1 0;
@@ -200,7 +219,8 @@ aside {
 
     &.is-expanded {
         // ขนาดที่ set ไว้ใน main 
-        width: var(--sidebar-width);
+        width: 240px;
+        // width: var(--sidebar-width);
 
         .menu-toggle-wrap {
             top: -3rem;
@@ -224,9 +244,21 @@ aside {
         }
     }
 
+    &.sidebar-hidden {
+        // transform: translateX(-100%);
+    }
+
+    @media (max-width: 430px) {
+       
+        // margin-left: 0rem;
+      
+    }
+
     @media (max-width: 768px) {
-        position: relative;
-        z-index: 99;
+        // position: relative;
+        position: fixed;
+        // width: var(--sidebar-width); // หรือจะใช้ full width ก็ได้
+        z-index: 15;
     }
 
 }

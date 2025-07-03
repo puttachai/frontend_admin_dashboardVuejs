@@ -4,10 +4,24 @@ import DashboardView from '../views/DashboardView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ShowDataEmpView from '../views/ShowDataEmpView.vue'
 import TechStackView from '../views/TechStackView.vue'
+import CreateSaleList from '../views/CreateSaleListView.vue'
+import CustomerView from '../views/CustomerView.vue'
 
 import AuthLayout from '../components/AuthLayout.vue'
 import SinginForm from '../components/SinginForm.vue'
 import SignupForm from '../components/SignupForm.vue'
+// import { useRoute } from 'vue-router'
+// import { computed } from 'vue'
+
+// const route = useRoute();
+
+// const isAuthLayout = computed(() => {
+//   return route.meta && route.meta.layout === 'auth'
+// })
+
+// console.log('Check isAuthLayout: ', isAuthLayout);
+
+
 
 // const router = createRouter({
 //   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,6 +51,7 @@ const routes = [
           path: '',
           name: 'signup',
           component: SignupForm,
+          // meta: { layout: 'auth' }, // ไม่ให้สืบทอดคลาสจากหน้า App
         },
       ],
     },
@@ -86,6 +101,32 @@ const routes = [
       // โค้ดนี้จะสร้างไฟล์แยก (เช่น About.[hash].js) สำหรับเส้นทางนี้โดยเฉพาะ
       // ซึ่งจะโหลดไฟล์นั้นแบบ lazy-load (โหลดเมื่อมีการเข้า route นั้นเท่านั้น)
       component: TechStackView,
+    },
+    {
+      path: '/customer',
+      name: 'customer',
+      meta: { requiresAuth: true }, //  ต้องทำการ login ก่อน
+      // การแบ่งโค้ดตามระดับของ route
+      // โค้ดนี้จะสร้างไฟล์แยก (เช่น About.[hash].js) สำหรับเส้นทางนี้โดยเฉพาะ
+      // ซึ่งจะโหลดไฟล์นั้นแบบ lazy-load (โหลดเมื่อมีการเข้า route นั้นเท่านั้น)
+      component: CustomerView,
+    },
+      
+    {
+      path: '/createsalelist',
+      name: 'createsalelist',
+      meta: { requiresAuth: true }, //  ต้องทำการ login ก่อน
+      // การแบ่งโค้ดตามระดับของ route
+      // โค้ดนี้จะสร้างไฟล์แยก (เช่น About.[hash].js) สำหรับเส้นทางนี้โดยเฉพาะ
+      // ซึ่งจะโหลดไฟล์นั้นแบบ lazy-load (โหลดเมื่อมีการเข้า route นั้นเท่านั้น)
+      component: CreateSaleList,
+    },
+
+    {
+      path: '/saleList',
+      name: 'saleList',
+      component: CreateSaleList, // หรือไฟล์ Vue ที่เกี่ยวข้อง
+      meta: { requiresAuth: true },
     },
       
     {

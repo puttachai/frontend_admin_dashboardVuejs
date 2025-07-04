@@ -359,7 +359,8 @@
                             <!-- จำนวน -->
                             <td class="px-4 py-2 border">
                                 <input type="number" min="0" v-model.number="product.pro_quantity"
-                                    class="w-full border text-gray-700 rounded px-2 py-1 text-right" disabled placeholder="จำนวน" />
+                                    class="w-full border text-gray-700 rounded px-2 py-1 text-right" disabled
+                                    placeholder="จำนวน" />
                             </td>
 
                             <!-- ราคาต่อหน่วย -->
@@ -373,7 +374,8 @@
                             <td class="px-4 py-2 border">
 
                                 <input type="number" v-model.number="product.discount"
-                                    class="w-full border text-gray-700 rounded px-2 py-1 text-right" disabled placeholder="ส่วนลด" />
+                                    class="w-full border text-gray-700 rounded px-2 py-1 text-right" disabled
+                                    placeholder="ส่วนลด" />
                             </td>
 
                             <!-- รวม -->
@@ -421,7 +423,8 @@
                     <div>
                         <label class="block font-medium mb-1 text-gray-700">ส่วนลด</label>
                         <input type="text" v-model="formData.totalDiscount" :readonly="isReadOnly"
-                            class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700" placeholder="จำนวนเงิน หรือ %" />
+                            class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700"
+                            placeholder="จำนวนเงิน หรือ %" />
                     </div>
                     <div>
                         <label class="block font-medium mb-1 text-gray-700">ค่าจัดส่ง</label>
@@ -574,7 +577,7 @@
 
         </div>
 
-        <div class=" w-full mx-auto p-6 rounded-lg bg-white shadow-md space-y-8">
+        <!-- <div class=" w-full mx-auto p-6 rounded-lg bg-white shadow-md space-y-8">
             <div class="gap-4 grid grid-cols-1 md:grid-cols-2">
                 <button v-if="isReadOnly" @click="enableEditMode"
                     class="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">
@@ -589,17 +592,33 @@
                     บันทึกการแก้ไข
                 </button>
 
-                <!-- <form>
-                    <input type="text" v-model="formData.reference" :readonly="isReadOnly"
-                        class="border mt-1 block w-full rounded-md" /> -->
-                <!-- เพิ่ม readonly ให้ input อื่น ๆ -->
-                <!-- </form> -->
             </div>
-            <!-- <div class="md:col-span-2 mt-4">
-                <button type="button" @click="saveDocument"
-                    class="w-full bg-purple-700 text-white py-2 px-4 rounded-md hover:bg-purple-800 transition">บันทึก
+        </div> -->
+        <div class="w-full mx-auto p-6 rounded-lg bg-white shadow-md space-y-8">
+
+            <div :class="[
+                'gap-4 grid',
+                visibleButtons.length === 1 ? 'grid-cols-1 place-items-center' : 'grid-cols-1 md:grid-cols-2'
+            ]">
+                <!-- ปุ่ม แก้ไข -->
+                <button v-if="isReadOnly" @click="enableEditMode"
+                    class="bg-yellow-500 text-white py-2 px-6 rounded-md hover:bg-yellow-600">
+                    แก้ไข
                 </button>
-            </div> -->
+
+                <!-- ปุ่ม บันทึก (เฉพาะเมื่อ path คือ /createsalelist) -->
+                <button v-if="!isReadOnly && isCreatePage" @click="saveDocument"
+                    class="bg-purple-700 w-full text-white py-2 px-6 rounded-md hover:bg-purple-800">
+                    บันทึก
+                </button>
+
+                <!-- ปุ่ม บันทึกการแก้ไข (เฉพาะเมื่อมี documentNo และไม่ใช่หน้า create) -->
+                <button v-if="!isReadOnly && formData.documentNo && !isCreatePage" @click="updateDocument"
+                    class="bg-green-600 w-full text-white py-2 px-6 rounded-md hover:bg-green-700">
+                    บันทึกการแก้ไข
+                </button>
+            </div>
+
         </div>
 
     </div>
@@ -614,7 +633,7 @@ import Swal from 'sweetalert2';
 import ProductSelector from '../components/ProductSelector.vue';
 import PromotionSelector from '../components/PromotionSelector.vue';
 import Promotion_ProductSelector from '../components/Promotion_ProductSelector.vue';
-
+import { useRoute } from 'vue-router'
 // import ConfirmEditPopup from '@/components/saleOrder/ConfirmEditPopup.vue'
 
 import Flatpickr from 'vue-flatpickr-component'
@@ -792,12 +811,25 @@ export default {
             return (netBeforeVat + vat).toFixed(2);
         },
 
+        // ตรวจสอบว่าเป็นหน้าแก้ไขหรือสร้างใหม่
+        isCreatePage() {
+            return this.$route.path === '/createsalelist'
+        },
+        visibleButtons() {
+            const buttons = []
+            if (this.isReadOnly) buttons.push('edit')
+            if (!this.isReadOnly && this.isCreatePage) buttons.push('save')
+            if (!this.isReadOnly && this.formData.documentNo && !this.isCreatePage) buttons.push('update')
+            return buttons
+
+        },
 
     },
 
 
     methods: {
 
+        // ปุ่ม dropdown สำหรับมือถือ
         toggleDropdown() {
             this.isDropdownOpen = !this.isDropdownOpen;
         },
@@ -908,6 +940,8 @@ export default {
                 'deliveryDate', 'trackingNo', 'deliveryType'
             ];
 
+            console.log("Log Value requiredFields: ", requiredFields);
+
             for (const field of requiredFields) {
                 if (!this.formData[field]) {
                     this.errors[field] = 'กรุณากรอกข้อมูลให้ครบถ้วน';
@@ -939,6 +973,8 @@ export default {
         },
 
         async saveDocument() {
+
+            console.log('Save new document')
 
             // console.log(ข้อมูลทั้งหมดใน formData:", this.formData);
             console.log("ข้อมูลทั้งหมดใน formData:", JSON.parse(JSON.stringify(this.formData)));
@@ -1123,6 +1159,9 @@ export default {
         },
 
         async updateDocument() {
+
+            console.log('Update existing document')
+
             const isValid = await this.validateForm();
             if (!isValid) {
                 Swal.fire({
@@ -1583,7 +1622,7 @@ input {
 
 }
 
-@media (max-width: 500px) {
+/* @media (max-width: 500px) {
     .md\\:hidden {
         display: block;
     }
@@ -1591,7 +1630,7 @@ input {
     .md\\:flex {
         display: none;
     }
-}
+} */
 </style>
 
 
@@ -1605,6 +1644,22 @@ input {
         <span class="material-icons text-purple-600">assignment_add</span>
         <h2 class="text-xl font-semibold text-gray-700">สินค้า</h2>
     </div> -->
+
+
+
+<!-- ปุ่มใช้ได้  -->
+
+<!-- <form>
+                    <input type="text" v-model="formData.reference" :readonly="isReadOnly"
+                        class="border mt-1 block w-full rounded-md" /> 
+                <!-- เพิ่ม readonly ให้ input อื่น ๆ 
+                <!-- </form> 
+            </div>
+            <div class="md:col-span-2 mt-4">
+                <button type="button" @click="saveDocument"
+                    class="w-full bg-purple-700 text-white py-2 px-4 rounded-md hover:bg-purple-800 transition">บันทึก
+                </button>
+            </div> -->
 
 <!-- ส่วนขวา: ปุ่มต่าง ๆ
     <div class="flex gap-2">

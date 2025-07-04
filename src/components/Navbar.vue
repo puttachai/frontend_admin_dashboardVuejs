@@ -1,10 +1,10 @@
 <template>
-  <Disclosure as="nav" class="bg-gray-800 fixed top-0 left-0 w-full z-50" v-slot="{ open }">
-    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+  <Disclosure as="nav" class="bg-gray-800 fixed top-0 left-0 w-full z-[60]" v-slot="{ open }">
+    <div class="mx-auto max-w-7xl px-2 smls:px-6 lg:px-8">
       <div class="relative flex h-16 items-center justify-between">
 
         <!-- Mobile Menu Button (ซ้ายสุด) -->
-        <!-- <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
+        <!-- <div class="absolute inset-y-0 left-0 flex items-center smls:hidden">
             <DisclosureButton
               class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:ring-2 focus:ring-white focus:outline-hidden focus:ring-inset"
             >
@@ -16,7 +16,7 @@
           </div> -->
 
         <!-- Hamburger Button -->
-        <button @click="$emit('toggle-sidebar')" class="menu max-[431px]:block hidden sm:hidden text-white">
+        <button @click="$emit('toggle-sidebar')" class="menu max-[431px]:block hidden smlsls:hidden text-white">
           <span class="material-icons text-3xl">menu</span>
         </button>
 
@@ -35,11 +35,11 @@
         </div>
 
         <!-- User Menu (ด้านขวา) -->
-        <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+        <div class="absolute inset-y-0 right-0 flex items-center pr-2 smls:static smls:inset-auto smls:ml-6 smls:pr-0">
           <Menu as="div" class="relative ml-3">
             <!-- <div>
                 <MenuButton
-                  class="relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
+                  class="relative flex rounded-full bg-gray-800 text-smls focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden"
                 >
                   <span class="absolute -inset-1.5" />
                   <span class="sr-only">Open user menu</span>
@@ -52,11 +52,11 @@
               </div> -->
             <div>
               <MenuButton
-                class="items-center gap-4 relative flex rounded-full bg-gray-800 text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
+                class="items-center gap-4 relative flex rounded-full bg-gray-800 text-smls focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 focus:outline-hidden">
                 <span class="absolute -inset-1.5" />
                 <span class="sr-only">Open user menu</span>
 
-                <span class="text-white text-sm truncate max-w-[250px] overflow-hidden whitespace-nowrap">
+                <span class="text-white text-smls truncate max-w-[250px] overflow-hidden whitespace-nowrap">
                   ยินดีต้อนรับคุณ {{ contact }} {{ account }}
                 </span>
 
@@ -73,11 +73,11 @@
               leave-active-class="transition ease-in duration-75" leave-from-class="transform opacity-100 scale-100"
               leave-to-class="transform opacity-0 scale-95">
               <MenuItems
-                class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden">
+                class="absolute right-0 z-[999] mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-hidden">
                 <MenuItem v-slot="{ active }">
                 <a href="/about" :class="[
                   active ? 'bg-gray-100 outline-hidden' : '',
-                  'block px-4 py-2 text-sm text-gray-700'
+                  'block px-4 py-2 text-smls text-gray-700'
                 ]">
                   About
                 </a>
@@ -87,7 +87,7 @@
                       href="#"
                       :class="[
                         active ? 'bg-gray-100 outline-hidden' : '',
-                        'block px-4 py-2 text-sm text-gray-700'
+                        'block px-4 py-2 text-smls text-gray-700'
                       ]"
                     >
                       Settings
@@ -96,7 +96,7 @@
                 <MenuItem v-slot="{ active }">
                 <a href="#" @click="confirmLogoutEmployee" :class="[
                   active ? 'bg-gray-100 outline-hidden' : '',
-                  'block px-4 py-2 text-sm text-gray-700'
+                  'block px-4 py-2 text-smls text-gray-700'
                 ]">
                   Sign out
                 </a>
@@ -109,7 +109,7 @@
     </div>
 
     <!-- Mobile Menu Items -->
-    <DisclosurePanel class="sm:hidden">
+    <DisclosurePanel class="smlsls:hidden">
       <div class="space-y-1 px-2 pt-2 pb-3">
         <!-- Add navigation items here if needed -->
       </div>

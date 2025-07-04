@@ -1,11 +1,11 @@
 <template>
-    <div class="max-w-5xl mx-auto my-10 p-8 bg-white/80 backdrop-blur-lg shadow-2xl rounded-3xl space-y-8 border border-gray-100"
+    <div class="max-w-5xl mx-auto my-10 p-8 bg-white shadow-2xl rounded-3xl space-y-8 border border-gray-100"
         @contextmenu.prevent>
         <!-- 🔍 Search -->
         <div class="flex items-center gap-3 border border-gray-300 bg-white px-4 py-3 rounded-xl shadow-sm">
             <span class="material-icons text-gray-500 text-xl">search</span>
             <input v-model="keyword" type="text" placeholder="ค้นหาด้วยเบอร์, ชื่อร้านค้า หรือรหัสร้านค้า..."
-                class="w-full text-sm bg-transparent outline-none placeholder-gray-400" @input="onInput"
+                class="w-full text-sm bg-transparent ๅ outline-none placeholder-gray-400" @input="onInput"
                 confirm-type="search" />
         </div>
         <p class="text-xs text-gray-400 italic -mt-4"> * สามารถ ค้นหาได้ เบอร์มือถือ, ชื่อร้านค้า, รหัสร้านค้า</p>
@@ -471,6 +471,28 @@ export default {
     }
 };
 </script>
+
+<style scoped>
+/* บังคับให้ตารางเลื่อนแนวนอน */
+.overflow-x-auto {
+    overflow-x: auto; /* อนุญาตให้เลื่อนในแนวนอน */
+    width: 100%; /* ขนาดเต็ม */
+}
+
+/* กำหนดขนาดขั้นต่ำของตาราง */
+table {
+    min-width: 800px; /* ขนาดขั้นต่ำของตาราง */
+    border-collapse: collapse; /* ลดช่องว่างระหว่างเซลล์ */
+}
+
+/* ปรับขนาดฟอนต์และระยะห่างเมื่อหน้าจอเล็ก */
+@media (max-width: 768px) {
+    th, td {
+        padding: 0.5rem; /* ลดระยะห่าง */
+        font-size: 0.875rem; /* ลดขนาดฟอนต์ */
+    }
+}
+</style>
 
 
 <!-- // async searchSaleId() {

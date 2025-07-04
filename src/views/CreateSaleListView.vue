@@ -222,10 +222,10 @@
 
                 <!-- ส่วนขวา: ปุ่มต่าง ๆ -->
                 <div class="hidden mdl:flex gap-2">
-                    <button @click="addProductRow" :disabled="isReadOnly"
+                    <!-- <button @click="addProductRow" :disabled="isReadOnly"
                         class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                         + เพิ่มแถวสินค้า
-                    </button>
+                    </button> -->
                     <button @click="showProductSelector = true" :disabled="isReadOnly"
                         class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                         เลือกสินค้า
@@ -313,7 +313,7 @@
 
                                 <button @click="openSelectorForRow(index)" :disabled="isReadOnly"
                                     class="bg-gray-200 px-3 py-1 text-gray-700 rounded">{{
-                                        product.pro_id }} เลือก
+                                        product.pro_id }} แก้ไขสินค้า
                                 </button>
 
                             </td>
@@ -337,7 +337,7 @@
                             <!-- ชื่อสินค้า -->
                             <td class="px-4 py-2 border">
                                 <input type="text" v-model="product.pro_erp_title" disabled
-                                    class="w-full border text-gray-700 rounded px-2 py-1" placeholder="ชื่อสินค้า" />
+                                    class="w-[250px] border text-gray-700 rounded px-2 py-1" placeholder="ชื่อสินค้า" />
                             </td>
 
                             <td class="px-4 py-2 border">
@@ -359,14 +359,14 @@
                             <!-- จำนวน -->
                             <td class="px-4 py-2 border">
                                 <input type="number" min="0" v-model.number="product.pro_quantity"
-                                    class="w-full border text-gray-700 rounded px-2 py-1 text-right" disabled
+                                    class="w-[70px] border text-gray-700 rounded px-2 py-1 text-right" disabled
                                     placeholder="จำนวน" />
                             </td>
 
                             <!-- ราคาต่อหน่วย -->
                             <td class="px-4 py-2 border">
                                 <input type="number" v-model.number="product.pro_unit_price"
-                                    class="w-full border text-gray-700 rounded px-2 py-1 text-right" disabled
+                                    class="w-[100px] border text-gray-700 rounded px-2 py-1 text-right" disabled
                                     placeholder="ราคาต่อหน่วย" />
                             </td>
 
@@ -374,7 +374,7 @@
                             <td class="px-4 py-2 border">
 
                                 <input type="number" v-model.number="product.discount"
-                                    class="w-full border text-gray-700 rounded px-2 py-1 text-right" disabled
+                                    class="w-[70px] border text-gray-700 rounded px-2 py-1 text-right" disabled
                                     placeholder="ส่วนลด" />
                             </td>
 

@@ -13,7 +13,7 @@
         <!-- 🧾 Data Table -->
         <div class="overflow-x-auto border border-gray-200 rounded-xl shadow-inner bg-white/90">
             <table class="min-w-full text-sm text-gray-700">
-                <thead class="bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-600">
+                <!-- <thead class="bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-600">
                     <tr>
                         <th class="text-left px-5 py-3 font-semibold">รหัส</th>
                         <th class="text-left px-5 py-3 font-semibold">ร้านค้า</th>
@@ -35,6 +35,34 @@
                             </div>
                         </th>
                         <th class="text-center px-5 py-3 font-semibold">
+                            <span class="material-icons text-sm text-gray-500">touch_app</span>
+                        </th>
+                    </tr>
+                </thead> -->
+
+                <thead class="bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-600 text-center">
+                    <tr>
+                        <th class="px-5 py-3 font-semibold">รหัส</th>
+                        <th class="px-5 py-3 font-semibold">ร้านค้า</th>
+                        <th class="px-5 py-3 font-semibold">
+                            <div class="flex justify-center items-center gap-1">
+                                <span class="material-icons text-sm text-gray-500">badge</span>
+                                SaleId
+                            </div>
+                        </th>
+                        <th class="px-5 py-3 font-semibold">
+                            <div class="flex flex-row sm:flex-row items-center justify-center gap-2">
+                                <input type="text" v-model="keyword_sale_no" placeholder="ค้นหา Sale"
+                                    @focus="dropdownOpenIndex = 'header'"
+                                    class="w-36 smls:w-48 px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm placeholder-gray-400 focus:ring-2 focus:ring-indigo-300 focus:outline-none" />
+                                <button @click="searchSaleId"
+                                    class="search flex mt-1.5 items-center gap-1 px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition">
+                                    <span class="material-icons text-sm">search</span>
+                                    ค้นหา
+                                </button>
+                            </div>
+                        </th>
+                        <th class="px-5 py-3 font-semibold">
                             <span class="material-icons text-sm text-gray-500">touch_app</span>
                         </th>
                     </tr>
@@ -472,7 +500,131 @@ export default {
 };
 </script>
 
+
+
 <style scoped>
+thead th {
+    text-align: center;
+}
+
+@media (max-width: 500px) {
+    .search {
+        margin-top: 0 !important;
+        /* mt-1.5 */
+
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    table {
+        font-size: 12px;
+        /* ลดขนาดตัวอักษร */
+    }
+
+    input[type="text"] {
+        width: 100% !important;
+    }
+
+    thead .flex-col {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    table input,
+    table button {
+        font-size: 12px;
+        padding: 4px 6px;
+        /* ลด padding */
+    }
+
+    table th,
+    table td {
+        padding: 6px !important;
+        /* ลด padding ใน cell */
+    }
+
+    .w-36 {
+        width: 100% !important;
+        /* ให้ input search ขยายเต็มความกว้าง */
+    }
+
+    .text-sm {
+        font-size: 12px !important;
+    }
+
+    .text-base {
+        font-size: 14px !important;
+    }
+
+    .material-icons {
+        font-size: 16px !important;
+    }
+
+    th,
+    td {
+        text-align: center;
+    }
+
+    .material-icons {
+        font-size: 16px !important;
+    }
+}
+</style>
+
+
+
+<!-- 
+@media (max-width: 500px) {
+    table {
+      font-size: 12px; /* ลดขนาดตัวอักษร */
+    }
+  
+    table input,
+    table button {
+      font-size: 12px;
+      padding: 4px 6px; /* ลด padding */
+    }
+  
+    table th,
+    table td {
+      padding: 6px !important; /* ลด padding ใน cell */
+    }
+  
+    .overflow-x-auto {
+      font-size: 12px;
+      overflow-x: auto; /* อนุญาตให้เลื่อนในแนวนอน */
+    }
+  
+    .w-36 {
+      width: 100% !important; /* ให้ input search ขยายเต็มความกว้าง */
+    }
+  
+    .text-sm {
+      font-size: 12px !important;
+    }
+  
+    .text-base {
+      font-size: 14px !important;
+    }
+  
+    .material-icons {
+      font-size: 16px !important;
+    }
+  
+    /* บังคับตารางให้ไม่เกินกล่อง */
+    table {
+      width: 100%;
+      table-layout: fixed;
+      word-break: break-word;
+    } -->
+<!-- 
+
 /* บังคับให้ตารางเลื่อนแนวนอน */
 .overflow-x-auto {
     overflow-x: auto; /* อนุญาตให้เลื่อนในแนวนอน */
@@ -491,10 +643,7 @@ table {
         padding: 0.5rem; /* ลดระยะห่าง */
         font-size: 0.875rem; /* ลดขนาดฟอนต์ */
     }
-}
-</style>
-
-
+} -->
 <!-- // async searchSaleId() {
     //     this.loading = true;
     //     const allSales = await this.fetchAllSales(this.keyword_sale_no);

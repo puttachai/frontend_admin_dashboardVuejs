@@ -96,7 +96,7 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">วันที่</label>
-                        <div class="relative" >
+                        <div class="relative">
                             <!-- Flatpickr Input -->
                             <flat-pickr v-model="formData.sellDate" :config="dateConfig" disabled
                                 placeholder="เลือกวันที่"
@@ -119,7 +119,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">อ้างอิง</label>
                             <input type="text" v-model="formData.reference" :readonly="isReadOnly"
-                                class="border  mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                class="border text-gray-700 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                         </div>
 
                         <div>
@@ -162,7 +162,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">ชื่อลูกค้า</label>
                             <input type="text" placeholder="ชื่อ, รหัส" disabled v-model="formData.fullName"
-                                class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                             <p v-if="formTouched && errors.fullName" class="text-red-500 text-sm mt-1">{{
                                 errors.fullName }}</p>
                         </div>
@@ -170,7 +170,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">รหัสลูกค้า</label>
                             <input type="text" v-model="formData.customerCode" disabled
-                                class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                             <p v-if="formTouched && errors.customerCode" class="text-red-500 text-sm mt-1">{{
                                 errors.customerCode }}
                             </p>
@@ -221,7 +221,7 @@
                 </div>
 
                 <!-- ส่วนขวา: ปุ่มต่าง ๆ -->
-                <div class="hidden md:flex gap-2">
+                <div class="hidden mdl:flex gap-2">
                     <button @click="addProductRow" :disabled="isReadOnly"
                         class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                         + เพิ่มแถวสินค้า
@@ -241,10 +241,14 @@
                 </div>
 
                 <!-- Dropdown สำหรับหน้าจอเล็ก -->
-                <div class="md:hidden relative">
+                <div class="mdl:hidden relative">
                     <button @click="toggleDropdown"
-                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
-                        ตัวเลือกสินค้า ▼
+                        class="relative bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 font-medium px-4 py-2 rounded-lg shadow-sm hover:from-purple-200 hover:to-purple-300 transition duration-300 ease-in-out flex items-center gap-2">
+                        <span class="material-icons transform transition-transform duration-300"
+                            :class="{ 'rotate-180': isDropdownOpen }">
+                            expand_more
+                        </span>
+                        <span>ตัวเลือกสินค้า</span>
                     </button>
                     <div v-show="isDropdownOpen" class="absolute right-0 mt-2 bg-white border rounded shadow-lg w-48">
                         <button @click="addProductRow" :disabled="isReadOnly"
@@ -308,7 +312,7 @@
                             <td class="px-4 py-2 border">
 
                                 <button @click="openSelectorForRow(index)" :disabled="isReadOnly"
-                                    class="bg-gray-200 px-3 py-1 rounded">{{
+                                    class="bg-gray-200 px-3 py-1 text-gray-700 rounded">{{
                                         product.pro_id }} เลือก
                                 </button>
 
@@ -333,12 +337,12 @@
                             <!-- ชื่อสินค้า -->
                             <td class="px-4 py-2 border">
                                 <input type="text" v-model="product.pro_erp_title" disabled
-                                    class="w-full border rounded px-2 py-1" placeholder="ชื่อสินค้า" />
+                                    class="w-full border text-gray-700 rounded px-2 py-1" placeholder="ชื่อสินค้า" />
                             </td>
 
                             <td class="px-4 py-2 border">
                                 <input type="text" v-model="product.pro_goods_sku_text"
-                                    class="w-full border rounded px-2 py-1" placeholder="สี" disabled />
+                                    class="w-full border text-gray-700 rounded px-2 py-1" placeholder="สี" disabled />
                                 <!-- {{ ?? '-' }} -->
                             </td>
 
@@ -355,13 +359,13 @@
                             <!-- จำนวน -->
                             <td class="px-4 py-2 border">
                                 <input type="number" min="0" v-model.number="product.pro_quantity"
-                                    class="w-full border rounded px-2 py-1 text-right" disabled placeholder="จำนวน" />
+                                    class="w-full border text-gray-700 rounded px-2 py-1 text-right" disabled placeholder="จำนวน" />
                             </td>
 
                             <!-- ราคาต่อหน่วย -->
                             <td class="px-4 py-2 border">
                                 <input type="number" v-model.number="product.pro_unit_price"
-                                    class="w-full border rounded px-2 py-1 text-right" disabled
+                                    class="w-full border text-gray-700 rounded px-2 py-1 text-right" disabled
                                     placeholder="ราคาต่อหน่วย" />
                             </td>
 
@@ -369,11 +373,11 @@
                             <td class="px-4 py-2 border">
 
                                 <input type="number" v-model.number="product.discount"
-                                    class="w-full border rounded px-2 py-1 text-right" disabled placeholder="ส่วนลด" />
+                                    class="w-full border text-gray-700 rounded px-2 py-1 text-right" disabled placeholder="ส่วนลด" />
                             </td>
 
                             <!-- รวม -->
-                            <td class="px-4 py-2 border text-right">
+                            <td class="px-4 py-2 text-gray-700 border text-right">
                                 {{ totalprice(product) }}
                                 <!-- {{ product.pro_total_price }} -->
                             </td>
@@ -383,7 +387,7 @@
                                 </td> -->
 
                             <!-- ปุ่มลบ -->
-                            <td class="px-4 py-2 border text-center text-red-500 cursor-pointer hover:text-red-700"
+                            <td class="px-4 py-2 text-gray-700 border text-center text-red-500 cursor-pointer hover:text-red-700"
                                 :disabled="isReadOnly" @click="removeProduct(index)">
                                 ลบ
                             </td>
@@ -411,18 +415,18 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                    }}</p>
+                        }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block font-medium mb-1 text-gray-700">ส่วนลด</label>
                         <input type="text" v-model="formData.totalDiscount" :readonly="isReadOnly"
-                            class="w-full border px-3 py-2 rounded text-gray-700" placeholder="จำนวนเงิน หรือ %" />
+                            class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700" placeholder="จำนวนเงิน หรือ %" />
                     </div>
                     <div>
                         <label class="block font-medium mb-1 text-gray-700">ค่าจัดส่ง</label>
                         <input type="number" v-model="formData.deliveryFee" :readonly="isReadOnly"
-                            class="w-full border px-3 py-2 rounded text-gray-700" />
+                            class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700" />
                     </div>
                 </div>
             </div>
@@ -465,7 +469,7 @@
                         <div>
                             <label class="text-sm text-gray-700 block mb-1">ชื่อผู้รับ</label>
                             <input type="text" v-model="formData.receiverName" :readonly="isReadOnly"
-                                class="w-full border rounded px-3 py-2" />
+                                class="w-full text-gray-700 border rounded px-3 py-2" />
                             <p v-if="formTouched && errors.receiverName" class="text-red-500 text-sm mt-1">{{
                                 errors.receiverName }}
                             </p>
@@ -479,7 +483,7 @@
                         <div>
                             <label class="text-sm text-gray-700 block mb-1">เบอร์โทรศัพท์ผู้รับ</label>
                             <input type="tel" v-model="formData.receiverPhone" :readonly="isReadOnly"
-                                class="w-full border rounded px-3 py-2" />
+                                class="w-full text-gray-700 border rounded px-3 py-2" />
                             <p v-if="formTouched && errors.receiverPhone" class="text-red-500 text-sm mt-1">{{
                                 errors.receiverPhone }}
                             </p>
@@ -490,14 +494,14 @@
                             <div>
                                 <label class="text-sm text-gray-700 block mb-1">อีเมลผู้รับ</label>
                                 <input type="email" v-model="formData.receiverEmail" :readonly="isReadOnly"
-                                    class="w-full border rounded px-3 py-2" />
+                                    class="w-full text-gray-700 border rounded px-3 py-2" />
                             </div>
 
                             <div>
                                 <label class="text-sm text-gray-700 block mb-1">ที่อยู่/จัดส่ง</label>
 
                                 <textarea rows="4" v-model="formData.receiverAddress" :readonly="isReadOnly"
-                                    class="w-full border rounded px-3 py-2 resize-none">
+                                    class="w-full text-gray-700 border rounded px-3 py-2 resize-none">
 
                         </textarea>
                                 <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">{{
@@ -562,7 +566,7 @@
                     <div>
                         <label class="text-sm text-gray-700 block mb-1">Tracking No.</label>
                         <input type="text" v-model="formData.trackingNo" :readonly="isReadOnly"
-                            class="w-full border rounded px-3 py-2" />
+                            class="w-full text-gray-700 border rounded px-3 py-2" />
                     </div>
                 </div>
             </div>
@@ -700,8 +704,6 @@ export default {
                 reference: '',
                 channel: '',
                 taxType: '',
-
-                
 
                 fullName: '',
                 customerCode: '',

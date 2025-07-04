@@ -19,7 +19,7 @@
       <div class="flex items-center mb-4">
 
         <div class="flex-1">
-          <h2 class="text-xl font-bold">เลือกสินค้าหลายรายการ</h2>
+          <h2 class="text-xl text-gray-700 font-bold">เลือกสินค้าหลายรายการ</h2>
         </div>
 
         <div class="flex gap-4">
@@ -98,13 +98,13 @@
               </template>
             </td>
 
-            <td class="px-4 py-2 border">{{ item.erp_title }}</td>
-            <td class="px-4 py-2 border">{{ item.goods_sku_text ?? 'ไม่มีสี' }}</td>
-            <td class="px-4 py-2 border">{{ item.sn }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.erp_title }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? 'ไม่มีสี' }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.sn }}</td>
             <!-- <td class="px-4 py-2 border">{{ item.promotion }}</td> -->
-            <td class="px-4 py-2 border">{{ item.stock }}</td>
-            <td class="px-4 py-2 border">{{ item.units }}</td>
-            <td class="px-4 py-2 border">{{ item.price }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.units }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.price }}</td>
 
             <!-- <td class="px-4 py-2 border">{{ item.pro_name }}</td>
             <td class="px-4 py-2 border">{{ item.pro_quantity }}</td>

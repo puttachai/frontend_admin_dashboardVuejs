@@ -18,8 +18,8 @@
       <!-- Header -->
       <div class="flex items-center mb-4">
 
-        <div class="flex-1">
-          <h2 class="text-xl font-bold">เลือกรายการโปรโมชั่น</h2>
+        <div class="flex-1 ">
+          <h2 class="text-xl text-gray-700 font-bold">เลือกรายการโปรโมชั่น</h2>
         </div>
 
         <div class="flex gap-4">
@@ -101,13 +101,13 @@
               </template>
             </td>
 
-            <td class="px-4 py-2 border">{{ item.title }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.title }}</td>
 
-            <td class="px-4 py-2 border">{{ item.activity_code ?? 'ไม่มีโปรโมชั่น' }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code ?? 'ไม่มีโปรโมชั่น' }}</td>
 
-            <td class="px-4 py-2 border">{{ item.activity_code }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code }}</td>
             <!-- <td class="px-4 py-2 border">{{ item.titledetail }}</td> -->
-            <td v-if="false" class="px-4 py-2 border">{{ item.promotion_index }}</td>
+            <td v-if="false" class="px-4 text-gray-700 py-2 border">{{ item.promotion_index }}</td>
             <!-- <td class="px-4 py-2 border">{{ item.units }}</td> -->
             <!-- <td class="px-4 py-2 border">{{ item.price }}</td> -->
 

@@ -19,7 +19,7 @@
       <div class="flex items-center mb-4">
 
         <div class="flex-1">
-          <h2 class="text-xl font-bold">เลือกรายการสินค้าที่เข้าร่วมโปรโมชั่น</h2>
+          <h2 class="text-xl text-gray-700 font-bold">เลือกรายการสินค้าที่เข้าร่วมโปรโมชั่น</h2>
         </div>
 
         <div class="flex gap-4">
@@ -117,24 +117,24 @@
             </td>
 
             <!-- ค้นหาด้วยรหัสโปรโมชั่น -->
-            <td class="px-4 py-2 border">{{ item.title }}</td>
-            <td class="px-4 py-2 border">{{ item.activity_code ?? 'ไม่มีข้อมูล' }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.title }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code ?? 'ไม่มีข้อมูล' }}</td>
 
             <!-- ข้อมูลจาก API -->
             <!-- <td class="px-4 py-2 border">{{ item.title }}</td> -->
-            <td class="px-4 py-2 border">{{ item.goods_id }}</td>
-            <td class="px-4 py-2 border text-center">
-              <input type="number" min="1" class="w-16 px-2 py-1 border rounded text-center"
+            <td class="px-4 text-gray-700 py-2 border">{{ item.goods_id }}</td>
+            <td class="px-4 text-gray-700 py-2 border text-center">
+              <input type="number" min="1" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
                 v-model.number="item.quantity" placeholder="0" />
               <!-- @input="onQuantityChange(item)" -->
             </td>
             <!-- <td class="px-4 py-2 border">{{ item.activity_code }}</td> -->
             <!-- <td class="px-4 py-2 border">{{ item.goods_price ?? '-'}}</td> -->
-            <td class="px-4 py-2 border">{{ item.sn ?? '-' }}</td>
-            <td class="px-4 py-2 border">{{ item.goods_sku_text ?? '-' }}</td>
-            <td class="px-4 py-2 border">{{ item.price ?? '-' }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.sn ?? '-' }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? '-' }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.price ?? '-' }}</td>
             <!-- <td class="px-4 py-2 border">{{ item.price ?? '-' }}</td> -->
-            <td class="px-4 py-2 border">{{ item.units ?? '-' }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.units ?? '-' }}</td>
             <!-- <td class="px-4 py-2 border">โปรโมชั่น: <span v-for="(promo, index) in props.selectedPromotion"
                 :key="promo.pro_m_id">
                 {{ promo.pro_m_title }}<span v-if="index < props.selectedPromotion.length - 1">, </span>

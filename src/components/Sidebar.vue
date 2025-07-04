@@ -93,8 +93,8 @@ aside {
     top: 4rem; /* ✅ กำหนดให้ไม่ทับ navbar */
     left: 0;
     height: calc(100vh - 4rem); /* ✅ ลดความสูงลงจาก navbar */
-    z-index: 40; /* ต่ำกว่า navbar ที่ z-50 */
-
+    // z-index: 40; /* ต่ำกว่า navbar ที่ z-50 */
+    z-index: 55;
     display: flex;
     flex-direction: column;
     width: calc(2rem + 32px);
@@ -142,20 +142,26 @@ aside {
         position: relative;
         top: 0;
         transition: 0.2s ease-out;
+        
+        
 
         .menu-toggle {
             transition: 0.2s ease-out;
+            
 
             .material-icons {
                 font-size: 2rem;
                 color: var(--light);
+                
             }
 
             //ปรับสีตอนชี้ iconพร้อมขยับทางแกน x
             &:hover {
+                
                 .material-icons {
                     color: var(--primary);
                     transform: translateX(0.5rem);
+                    
                 }
             }
         }
@@ -258,7 +264,8 @@ aside {
         // position: relative;
         position: fixed;
         // width: var(--sidebar-width); // หรือจะใช้ full width ก็ได้
-        z-index: 15;
+        // z-index: 15;
+        z-index: 99;
     }
 
 }

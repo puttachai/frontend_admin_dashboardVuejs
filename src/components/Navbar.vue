@@ -56,7 +56,7 @@
                 <span class="absolute -inset-1.5" />
                 <span class="sr-only">Open user menu</span>
 
-                <span class="text-white text-sm ">
+                <span class="text-white text-sm truncate max-w-[250px] overflow-hidden whitespace-nowrap">
                   ยินดีต้อนรับคุณ {{ contact }} {{ account }}
                 </span>
 

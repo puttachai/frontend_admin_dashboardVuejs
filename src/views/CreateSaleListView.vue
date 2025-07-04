@@ -3,13 +3,58 @@
     <div
         class="mainbox flex flex-col in-h-screen items-center gap-4 justify-center bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
         <!-- <div class="min-h-screen flex items-center gap-2 justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8"> -->
-        <div class="flex self-end">
+        <!-- <div class="flex self-end">
+             self-end 
+            <router-link class="button" to="/createsalelist">
+                <span class="material-icons">shopping_bag</span>
+                <span class="text">Create Sale Order</span>
+            </router-link>
             <button type="button" @click="saveDocument"
                 class="w-full bg-purple-700 text-white py-2 px-6 rounded-md hover:bg-purple-800 transition">บันทึก
             </button>
+        </div> -->
+        <!-- กล่องรวม breadcrumb + action bar -->
+        <div
+            class="fixed top-16 left-16 right-0 bg-white rounded-lg p-4 shadow-lg z-50 justify-between items-center responsive-action-bar">
+            <!-- <div class="fixed top-16 left-16 right-0 bg-white bg-opacity-50 rounded-lg p-4 shadow-lg z-50 justify-between items-center"> -->
+            <!-- Breadcrumb -->
+            <nav class="text-sm text-gray-600 mb-2">
+                <ul class="flex items-center space-x-1">
+                    <li>
+                        <router-link to="/" class="hover:text-purple-600 transition">Home</router-link>
+                        <span class="mx-1 text-gray-400">›</span>
+                    </li>
+                    <li>
+                        <router-link to="/createsalelist"
+                            class="text-purple-600 font-medium hover:text-purple-800 transition">
+                            Create Sale List
+                        </router-link>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Action Bar -->
+            <div class="flex justify-between items-center">
+                <!-- Left -->
+                <router-link to="/createsalelist"
+                    class="group flex items-center gap-2 text-purple-600 hover:text-purple-800 transition">
+                    <span class="material-icons group-hover:animate-bounce">shopping_bag</span>
+                    <span class="text font-medium text-md">Create Sale Order</span>
+                </router-link>
+
+                <!-- Right -->
+                <button type="button" @click="saveDocument"
+                    class="flex items-center gap-2 bg-purple-700 text-white py-2 px-6 rounded-md hover:bg-purple-800 transition duration-300 shadow hover:shadow-lg">
+                    <span class="material-icons">save</span>
+                    <span>บันทึก</span>
+                </button>
+            </div>
         </div>
+
+
+
         <!-- form รายการเอกสาร -->
-        <div class="boxback w-full gap-4 bg-white p-8 rounded-lg shadow-lg">
+        <div class="boxback w-full mt-20 gap-4 bg-white p-8 rounded-lg shadow-lg">
 
             <div>
                 <!-- Logo and Title -->
@@ -20,7 +65,7 @@
 
                 <div class="flex items-center gap-2 mb-4">
                     <span class="material-icons text-purple-600">content_paste</span>
-                    <h1 class="text-xl">ข้อมูล</h1>
+                    <h1 class="text-xl text-gray-700">ข้อมูล</h1>
                 </div>
 
                 <!-- แสดงภาพที่อัปโหลด -->
@@ -38,7 +83,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">รายการ *</label>
                         <div>
                             <input type="text" placeholder="รหัสรายการ" disabled v-model="formData.documentNo"
-                                class="border mt-1.5 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                class="border mt-1.5 block w-full text-gray-700 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                         </div>
 
                     </div>
@@ -50,17 +95,15 @@
                     </div> -->
 
                     <div>
-                        <label class="text-sm text-gray-700 block mb-1">วันที่</label>
-                        <div class="relative">
-
+                        <label class="block text-sm font-medium text-gray-700 mb-1">วันที่</label>
+                        <div class="relative" >
                             <!-- Flatpickr Input -->
                             <flat-pickr v-model="formData.sellDate" :config="dateConfig" disabled
                                 placeholder="เลือกวันที่"
-                                class="pr-10 mt-1 pl-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-700 placeholder-gray-400" />
+                                class="pl-4 pr-10 py-2 mt-1 w-full rounded-md border border-gray-300 text-gray-700 placeholder-gray-400 shadow-sm focus:ring-purple-500 focus:border-purple-500"></flat-pickr>
 
-                            <!-- Calendar Icon on the right -->
-                            <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-                                style="padding-top: 0.2rem;">
+                            <!-- Calendar Icon -->
+                            <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
                                 <span class="material-icons text-gray-400 text-base">calendar_today</span>
                             </span>
                         </div>
@@ -68,8 +111,10 @@
 
 
 
+
                     <!-- เงื่อนไขแสดงเพิ่มเติม -->
-                    <template v-if="showMoreData">
+                    <div v-if="showMoreData" :key="showMoreData"
+                        class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700">อ้างอิง</label>
@@ -80,21 +125,21 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700">ช่องทางการขาย</label>
                             <input type="text" v-model="formData.channel" :readonly="isReadOnly"
-                                class="border  mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                class="border text-gray-700 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                         </div>
 
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700">ประเภทภาษี</label>
                             <input type="text" v-model="formData.taxType" :readonly="isReadOnly"
-                                class="border  mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                class="border text-gray-700 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                         </div>
 
-                    </template>
+                    </div>
 
                 </form>
-                <!-- ปุ่ม Show More / Show Less -->
-                <button @click="showMoreData = !showMoreData" type="button"
-                    class="mt-4 text-purple-600 hover:underline focus:outline-none">
+                <!-- ปุ่ม Show More / Show Less , <button @click="showMoreData = !showMoreData" type="button" -->
+                <button @click="toggleShowMoreData" type="button"
+                    class="mt-4 text-purple-600 hover:underline focus:outline-none ">
                     {{ showMoreData ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼' }}
                 </button>
             </div>
@@ -108,7 +153,7 @@
                     <!-- หัวข้อ -->
                     <div class="flex items-center gap-2 mb-4">
                         <span class="material-icons text-blue-600">account_circle</span>
-                        <h1 class="text-xl">แบบฟอร์มลูกค้า</h1>
+                        <h1 class="text-xl text-gray-700">แบบฟอร์มลูกค้า</h1>
                     </div>
 
                     <!-- แบบฟอร์ม -->
@@ -136,19 +181,19 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์ลูกค้า</label>
                                 <input type="text" v-model="formData.phone" :readonly="isReadOnly"
-                                    class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                    class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">อีเมลลูกค้า</label>
                                 <input type="text" v-model="formData.email" :readonly="isReadOnly"
-                                    class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                    class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                             </div>
 
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">ที่อยู่ลูกค้า</label>
                                 <input type="text" v-model="formData.address" :readonly="isReadOnly"
-                                    class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                                    class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                             </div>
                         </div>
                     </form>
@@ -166,16 +211,17 @@
 
         <!-- หน้าสินค้า -->
         <div class="w-full mx-auto p-6 bg-white rounded-lg shadow-md">
+
             <!-- Header -->
             <div class="flex justify-between items-center mb-4">
                 <!-- ส่วนซ้าย ไอคอนและสินค้า -->
                 <div class="flex items-center gap-2">
                     <span class="material-icons text-purple-600">assignment_add</span>
-                    <h2 class="text-xl font-semibold">สินค้า</h2>
+                    <h2 class="text-xl font-semibold text-gray-700">สินค้า</h2>
                 </div>
 
                 <!-- ส่วนขวา: ปุ่มต่าง ๆ -->
-                <div class="flex gap-2">
+                <div class="hidden md:flex gap-2">
                     <button @click="addProductRow" :disabled="isReadOnly"
                         class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                         + เพิ่มแถวสินค้า
@@ -193,7 +239,35 @@
                         ลบสินค้าที่เลือกทั้งหมด
                     </button>
                 </div>
+
+                <!-- Dropdown สำหรับหน้าจอเล็ก -->
+                <div class="md:hidden relative">
+                    <button @click="toggleDropdown"
+                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+                        ตัวเลือกสินค้า ▼
+                    </button>
+                    <div v-show="isDropdownOpen" class="absolute right-0 mt-2 bg-white border rounded shadow-lg w-48">
+                        <button @click="addProductRow" :disabled="isReadOnly"
+                            class="block w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-100">
+                            + เพิ่มแถวสินค้า
+                        </button>
+                        <button @click="showProductSelector = true" :disabled="isReadOnly"
+                            class="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-100">
+                            เลือกสินค้า
+                        </button>
+                        <button @click="showPromotionSelector = true" :disabled="isReadOnly"
+                            class="block w-full text-left px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-100">
+                            เลือกโปรโมชั่น
+                        </button>
+                        <button @click="removeAllProducts" :disabled="isReadOnly"
+                            class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100">
+                            ลบสินค้าที่เลือกทั้งหมด
+                        </button>
+                    </div>
+                </div>
             </div>
+
+
 
             <!-- Popup Component -->
             <ProductSelector v-if="showProductSelector" :productList="Apiproducts" @close="showProductSelector = false"
@@ -325,9 +399,9 @@
             <!-- ช่องทางจัดส่ง -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <div>
-                    <label class="block font-medium mb-1">ช่องทางจัดส่ง</label>
+                    <label class="block font-medium mb-1 text-gray-700">ช่องทางจัดส่ง</label>
                     <select v-model="formData.deliveryType" placeholder="ช่องทางจัดส่ง" :disabled="isReadOnly"
-                        style="margin: 0.4rem;" class="w-full border px-3 py-2 rounded">
+                        style="margin: 0.4rem;" class="w-full border px-3 py-2 rounded text-gray-700">
 
                         <option value="">เลือกช่องทางจัดส่ง</option>
                         <option>ไปรษณีย์</option>
@@ -341,29 +415,32 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block font-medium mb-1">ส่วนลด</label>
+                        <label class="block font-medium mb-1 text-gray-700">ส่วนลด</label>
                         <input type="text" v-model="formData.totalDiscount" :readonly="isReadOnly"
-                            class="w-full border px-3 py-2 rounded" placeholder="จำนวนเงิน หรือ %" />
+                            class="w-full border px-3 py-2 rounded text-gray-700" placeholder="จำนวนเงิน หรือ %" />
                     </div>
                     <div>
-                        <label class="block font-medium mb-1">ค่าจัดส่ง</label>
+                        <label class="block font-medium mb-1 text-gray-700">ค่าจัดส่ง</label>
                         <input type="number" v-model="formData.deliveryFee" :readonly="isReadOnly"
-                            class="w-full border px-3 py-2 rounded" />
+                            class="w-full border px-3 py-2 rounded text-gray-700" />
                     </div>
                 </div>
             </div>
 
             <!-- หมายเหตุ -->
             <div class="mt-4">
-                <label class="block font-medium mb-1">หมายเหตุ</label>
+                <label class="block font-medium mb-1 text-gray-700">หมายเหตุ</label>
                 <textarea rows="3" v-model="formData.note" :readonly="isReadOnly"
-                    class="w-full border px-3 py-2 rounded"></textarea>
+                    class="w-full border px-3 py-2 rounded text-gray-700"></textarea>
             </div>
 
             <!-- รวม -->
             <div class="mt-6 text-right space-y-1">
-                <div>มูลค่ารวมก่อนภาษี: <span class="ml-2">{{ totalAmountBeforeDiscount.toFixed(2) }}</span></div>
-                <div>ภาษีมูลค่าเพิ่ม (7%): <span class="ml-2">{{ (totalAmountBeforeDiscount * 0.07).toFixed(2) }}</span>
+                <div class="text-gray-700">มูลค่ารวมก่อนภาษี: <span class="ml-2 text-gray-700">{{
+                    totalAmountBeforeDiscount.toFixed(2) }}</span></div>
+                <div class="text-gray-700">ภาษีมูลค่าเพิ่ม (7%): <span class="ml-2 text-gray-700">{{
+                    (totalAmountBeforeDiscount
+                        * 0.07).toFixed(2) }}</span>
                 </div>
                 <div class="text-xl font-bold text-purple-700 mt-2">
                     มูลค่ารวมสุทธิ: <span class="ml-2 text-blue-600">{{ grandTotal }}</span>
@@ -471,7 +548,7 @@
                         <div class="relative">
                             <!-- Flatpickr Input -->
                             <flat-pickr v-model="formData.deliveryDate" :config="dateConfig" :disabled="isReadOnly"
-                                class="cursor-pointer w-full border rounded px-3 py-2" />
+                                class="cursor-pointer w-full text-gray-700 border rounded px-3 py-2"></flat-pickr>
                             <!-- class="cursor-not-allowed pr-10 mt-1 pl-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-700 placeholder-gray-400 bg-gray-100" /> -->
 
                             <!-- Calendar Icon on the right -->
@@ -494,17 +571,17 @@
         </div>
 
         <div class=" w-full mx-auto p-6 rounded-lg bg-white shadow-md space-y-8">
-            <div>
+            <div class="gap-4 grid grid-cols-1 md:grid-cols-2">
                 <button v-if="isReadOnly" @click="enableEditMode"
                     class="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">
                     แก้ไข
                 </button>
                 <button v-if="!isReadOnly" @click="saveDocument"
-                    class="bg-purple-700 text-white py-2 px-4 rounded-md hover:bg-purple-800">
+                    class="bg-purple-700 w-full text-white py-2 px-4 rounded-md hover:bg-purple-800">
                     บันทึก
                 </button>
                 <button v-if="!isReadOnly && formData.documentNo" @click="updateDocument"
-                    class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
+                    class="bg-green-600 w-full text-white py-2 px-4 rounded-md hover:bg-green-700">
                     บันทึกการแก้ไข
                 </button>
 
@@ -581,6 +658,7 @@ export default {
                 dateFormat: 'd/m/Y', // เช่น 01/07/2568
                 // dateFormat: 'Y-m-d',
                 locale: Thai, // ใช้ภาษาไทย
+                // disabledMobile: true, // ปิดการเลื่อนเดือน
             },
 
             showMore: false, // ค่าเริ่มต้น
@@ -605,19 +683,25 @@ export default {
             showMoreData: false, // ค่าเริ่มต้น
             showMoreAdress: false, // ค่าเริ่มต้น
 
+            isDropdownOpen: false, // ควบคุมการเปิด/ปิด Dropdown
+
             formData: {
                 listCode: '',
-                // sellDate: '',
+                sellDate: '',
                 // sellDate: new Date().toISOString().split('T')[0], // ตั้งค่าเริ่มต้นเป็นวันที่ปัจจุบัน (YYYY-MM-DD)
-                sellDate: new Date().toLocaleDateString('th-TH', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                }), // ตั้งค่าเริ่มต้นเป็นวันที่ปัจจุบันในรูปแบบ วัน/เดือน/ปี
+                // sellDate: new Date().toLocaleDateString('th-TH', {
+                //     day: '2-digit',
+                //     month: '2-digit',
+                //     year: 'numeric',
+                // }), // ตั้งค่าเริ่มต้นเป็นวันที่ปัจจุบันในรูปแบบ วัน/เดือน/ปี
+                sellDate: new Date(),        // ✅ ใช้ Date object ตรง ๆ
+                deliveryDate: new Date(),    // ✅ ใช้ Date object ตรง ๆ
                 // expireDate: '',
                 reference: '',
                 channel: '',
                 taxType: '',
+
+                
 
                 fullName: '',
                 customerCode: '',
@@ -629,7 +713,10 @@ export default {
                 receiverEmail: '',
                 receiverAddress: '',
                 note: '',
-                deliveryDate: '',
+
+                // ใช้
+                // deliveryDate: '',
+
                 trackingNo: '',
                 deliveryType: '',
                 totalDiscount: '',
@@ -708,6 +795,16 @@ export default {
 
 
     methods: {
+
+        toggleDropdown() {
+            this.isDropdownOpen = !this.isDropdownOpen;
+        },
+
+        toggleShowMoreData() {
+            this.showMoreData = !this.showMoreData;
+            console.log("😵‍💫😵‍💫 showMoreData:", this.showMoreData);
+        },
+
 
         updateCustomerData() {
 
@@ -1436,6 +1533,7 @@ export default {
         const day = String(today.getDate()).padStart(2, '0'); // วัน (01-31)
 
         this.formData.sellDate = `${day}/${month}/${year}`; // ตั้งค่าเป็น วัน/เดือน/ปี
+        this.formData.deliveryDate = `${day}/${month}/${year}`; // ตั้งค่าเป็น วัน/เดือน/ปี
 
         // อัปเดตอัตโนมัติเมื่อ localStorage ถูกเปลี่ยนจากแท็บอื่น
         window.addEventListener('storage', (event) => {
@@ -1471,7 +1569,78 @@ input {
     margin-top: 0.4rem;
 
 }
+
+@media (max-width: 431px) {
+    .responsive-action-bar {
+        left: 0;
+    }
+
+    /* .show-more-content {
+        display: block; /* แสดงข้อมูลเพิ่มเติม 
+    } */
+
+}
+
+@media (max-width: 500px) {
+    .md\\:hidden {
+        display: block;
+    }
+
+    .md\\:flex {
+        display: none;
+    }
+}
 </style>
+
+
+
+<!--  ใช้ได้ backenup เอาไว้ -->
+
+<!-- Header -->
+<!-- <div class="flex justify-between items-center mb-4">
+    <!-- ส่วนซ้าย ไอคอนและสินค้า -->
+<!-- <div class="flex items-center gap-2">
+        <span class="material-icons text-purple-600">assignment_add</span>
+        <h2 class="text-xl font-semibold text-gray-700">สินค้า</h2>
+    </div> -->
+
+<!-- ส่วนขวา: ปุ่มต่าง ๆ
+    <div class="flex gap-2">
+        <button @click="addProductRow" :disabled="isReadOnly"
+            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            + เพิ่มแถวสินค้า
+        </button>
+        <button @click="showProductSelector = true" :disabled="isReadOnly"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            เลือกสินค้า
+        </button>
+        <button @click="showPromotionSelector = true" :disabled="isReadOnly"
+            class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700">
+            เลือกโปรโมชั่น
+        </button>
+        <button @click="removeAllProducts" :disabled="isReadOnly"
+            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+            ลบสินค้าที่เลือกทั้งหมด
+        </button>
+    </div>
+</div> -->
+
+
+<!-- <div class="flex justify-between items-center w-full">
+    
+    <router-link class="button " to="/createsalelist">
+        <div class="flex items-center gap-2 text-purple-600 hover:text-purple-800">
+            <span class="material-icons">shopping_bag</span>
+            <span class="text">Create Sale Order</span>
+        </div>
+    </router-link>
+
+ 
+    <button type="button" @click="saveDocument"
+        class="bg-purple-700 text-white py-2 px-6 rounded-md hover:bg-purple-800 transition">
+        บันทึก
+    </button>
+</div> -->
 
 
 <!-- 

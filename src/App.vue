@@ -119,6 +119,7 @@ body {
   @media (max-width: 431px) {
 
     margin-left: 0 !important;
+    /* margin-left: 0 !important; */
     /* ✅ ตั้งค่า margin-left เป็น 0 เมื่อหน้าจอเล็ก */
   }
 

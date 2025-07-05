@@ -1353,27 +1353,6 @@ export default {
             console.log("✅ Promotions:", promotions);
             console.log("✅ EmitTitles:", emitTitles);
 
-            // เพิ่มข้อมูลลงในตาราง
-            // items.forEach(item => {
-            //     const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === item.pro_sku_price_id);
-            //     if (!alreadyExists) {
-            //         const matchedTitle = emitTitles.find(emit => emit.pro_goods_id === item.pro_goods_id)?.pro_erp_title || item.pro_erp_title;
-            //         this.selectedProducts.push({
-            //             pro_id: item.pro_sku_price_id,
-            //             pro_erp_title: matchedTitle,
-            //             // pro_erp_title: item.title || item.pro_erp_title,
-            //             pro_unit_price: item.pro_goods_price,
-            //             pro_goods_sku_text: item.pro_goods_sku_text || '',
-            //             pro_sn: item.pro_sn || '',
-            //             pro_images: item.pro_image || '',
-            //             pro_quantity: item.pro_goods_num || 0,
-            //             pro_units: item.pro_units || '',
-            //             gifts: gifts.filter(gift => gift.pro_goods_id === item.pro_goods_id ), // ของแถมที่เกี่ยวข้อง && item.note ==='ของแถม'
-            //             promotions: promotions.filter(promo => promo.pro_goods_id === item.pro_goods_id ), // โปรโมชั่นที่เกี่ยวข้อง && item.note ==='โปรโมชั่น'
-            //         });
-            //     }
-            // });
-
             items.forEach(item => {
                 const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === item.pro_sku_price_id);
                 if (!alreadyExists) {
@@ -1387,8 +1366,7 @@ export default {
                         pro_goods_sku_text: item.pro_goods_sku_text || '',
                         pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
                         pro_images: item.pro_image || '',
-                        pro_quantity: item.pro_goods_num || 0,
-                        pro_units: matchedTitle.pro_units || item.pro_units || '',
+                        pro_quantity: item.pro_goods_num || 0,                        pro_units: matchedTitle.pro_units || item.pro_units || '',
                         gifts: gifts.filter(gift => gift.pro_activity_id == item.pro_activity_id),
                         promotions: promotions.filter(promo => promo.pro_activity_id == item.pro_activity_id),
                     });

@@ -286,9 +286,9 @@
 
             <!-- Popup ตัวที่สอง -->
             <Promotion_ProductSelector v-if="showPromotionProductSelector" :selectedPromotion="selectedPromotion"
-                @close="showPromotionProductSelector = false" @select-promotion_products="handleSelectedProducts" />
+                @close="showPromotionProductSelector = false"
+                @selectPromotionProducts="handleSelectedPromotionProducts" />
 
-            <!-- แสดงข้อมูลสินค้าที่เลือก -->
             <div class="overflow-x-auto">
                 <table class="min-w-full border text-sm">
                     <thead class="bg-gray-100 text-gray-700">
@@ -297,110 +297,73 @@
                             <th class="px-4 py-2 border">รูปภาพ</th>
                             <th class="px-4 py-2 border">ชื่อสินค้า *</th>
                             <th class="px-4 py-2 border">สี</th>
-                            <!-- <th class="px-4 py-2 border">จากโปรโมชั่น</th> -->
                             <th class="px-4 py-2 border">จำนวน *</th>
                             <th class="px-4 py-2 border">มูลค่าต่อหน่วย *</th>
                             <th class="px-4 py-2 border">ส่วนลดต่อหน่วย</th>
-                            <th class="px-4 py-2 border ">รวม</th>
+                            <th class="px-4 py-2 border">รวม</th>
                             <th class="px-4 py-2 border text-center">ลบ</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- ถ้า selectedProducts มีสินค้า -->
-                        <tr v-for="(product, index) in selectedProducts" :key="product.id">
-                            <!-- รหัส <button @click="showProductSelector = true"-->
-                            <td class="px-4 py-2 border">
+                        <!-- แสดงรายการสินค้า -->
+                        <template v-for="(product, index) in selectedProducts" :key="index">
+                            <!-- Row สำหรับรายการ -->
+                            <tr class="text-center bg-white">
+                                <td class="px-4 py-2 border">{{ product.pro_id }}</td>
+                                <td class="px-4 py-4 border">
+                                    <template v-if="product.pro_images">
+                                        <img :src="product.pro_images.startsWith('http') ? product.pro_images : BASE_URL_IMAGE + product.pro_images"
+                                            class="w-10 h-10 rounded-full mx-auto">
+                                    </template>
+                                    <template v-else>
+                                        <span class="material-icons text-gray-400 text-4xl">broken_image</span>
+                                    </template>
+                                </td>
+                                <td class="px-4 py-2 border">{{ product.pro_erp_title }}</td>
+                                <td class="px-4 py-2 border">{{ product.pro_goods_sku_text || '-' }}</td>
+                                <td class="px-4 py-2 border">{{ product.pro_quantity }}</td>
+                                <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
+                                <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
+                                <td class="px-4 py-2 border">{{ totalprice(product) }}</td>
+                                <td class="px-4 py-2 border text-red-500 cursor-pointer hover:text-red-700"
+                                    @click="removeProduct(index)">
+                                    ลบ
+                                </td>
+                            </tr>
 
-                                <button @click="openSelectorForRow(index)" :disabled="isReadOnly"
-                                    class="bg-gray-200 px-3 py-1 text-gray-700 rounded">{{
-                                        product.pro_id }} แก้ไขสินค้า
-                                </button>
+                            <!-- Row สำหรับของแถม -->
+                            <template v-if="product.gifts && product.gifts.length > 0">
+                                <tr class="text-center bg-yellow-50">
+                                    <td colspan="9" class="px-4 py-2 border text-left">
+                                        <strong>ของแถม:</strong>
+                                        <ul>
+                                            <li v-for="(gift, giftIndex) in product.gifts" :key="giftIndex">
+                                                {{ gift.title }} (จำนวน: {{ gift.pro_goods_num }})
+                                            </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </template>
 
-                            </td>
-
-                            <!-- <img :src="BASE_URL_IMAGE + product.pro_images" alt="products"
-                                        class="w-10 h-10 rounded-full mx-auto"> -->
-
-                            <td class="px-4 py-4 border text-center">
-                                <template v-if="product.pro_images">
-                                    {{ console.log("Check Value url and image: ", BASE_URL_IMAGE + product.pro_images)
-                                    }}
-                                    <img :src="product.pro_images.startsWith('http') ? product.pro_images : BASE_URL_IMAGE + product.pro_images"
-                                        class="w-10 h-10 rounded-full mx-auto">
-                                </template>
-                                <template v-else>
-                                    <span class="material-icons text-gray-400 text-4xl">broken_image</span>
-                                    <!-- image Defult -->
-                                </template>
-                            </td>
-
-                            <!-- ชื่อสินค้า -->
-                            <td class="px-4 py-2 border">
-                                <input type="text" v-model="product.pro_erp_title" disabled
-                                    class="w-[250px] border text-gray-700 rounded px-2 py-1" placeholder="ชื่อสินค้า" />
-                            </td>
-
-                            <td class="px-4 py-2 border">
-                                <input type="text" v-model="product.pro_goods_sku_text"
-                                    class="w-full border text-gray-700 rounded px-2 py-1" placeholder="สี" disabled />
-                                <!-- {{ ?? '-' }} -->
-                            </td>
-
-                            <!-- <td class="px-4 py-2 border text-center">
-                                {{ console.log(' : ', ) }}
-                                <span v-if="ifs">
-                                    {{  }}
-                                </span>
-                                <span v-else class="text-gray-400 italic">
-                                    -
-                                </span>
-                            </td> -->
-
-                            <!-- จำนวน -->
-                            <td class="px-4 py-2 border">
-                                <input type="number" min="0" v-model.number="product.pro_quantity"
-                                    class="w-[70px] border text-gray-700 rounded px-2 py-1 text-right" disabled
-                                    placeholder="จำนวน" />
-                            </td>
-
-                            <!-- ราคาต่อหน่วย -->
-                            <td class="px-4 py-2 border">
-                                <input type="number" v-model.number="product.pro_unit_price"
-                                    class="w-[100px] border text-gray-700 rounded px-2 py-1 text-right" disabled
-                                    placeholder="ราคาต่อหน่วย" />
-                            </td>
-
-                            <!-- ส่วนลด -->
-                            <td class="px-4 py-2 border">
-
-                                <input type="number" v-model.number="product.discount"
-                                    class="w-[70px] border text-gray-700 rounded px-2 py-1 text-right" disabled
-                                    placeholder="ส่วนลด" />
-                            </td>
-
-                            <!-- รวม -->
-                            <td class="px-4 py-2 text-gray-700 border text-right">
-                                {{ totalprice(product) }}
-                                <!-- {{ product.pro_total_price }} -->
-                            </td>
-                            <!-- <td class="px-4 py-2 border text-right">
-                                    {{ ((product.qty || 0) * (product.pro_unit_price || 0) - (product.discount ||
-                                        0)).toFixed(2) }}
-                                </td> -->
-
-                            <!-- ปุ่มลบ -->
-                            <td class="px-4 py-2 text-gray-700 border text-center text-red-500 cursor-pointer hover:text-red-700"
-                                :disabled="isReadOnly" @click="removeProduct(index)">
-                                ลบ
-                            </td>
-                        </tr>
-
-
-
+                            <!-- Row สำหรับโปรโมชั่น -->
+                            <template v-if="product.promotions && product.promotions.length > 0">
+                                <tr class="text-center bg-blue-50">
+                                    <td colspan="9" class="px-4 py-2 border text-left">
+                                        <strong>โปรโมชั่น:</strong>
+                                        <ul>
+                                            <li v-for="(promotion, promoIndex) in product.promotions" :key="promoIndex">
+                                                {{ promotion.title }}
+                                            </li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
                     </tbody>
-
                 </table>
             </div>
+
+
 
             <!-- ช่องทางจัดส่ง -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
@@ -417,7 +380,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -1376,75 +1339,67 @@ export default {
             }, 100)
         },
 
+        //handleSelectedProducts
+        handleSelectedPromotionProducts(payload) {
+            console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
 
-        handleSelectedProducts(payload) {
-            console.log('📦 payload ที่ได้รับ:', payload);
+            const items = payload.items || [];
+            const gifts = payload.gifts || [];
+            const promotions = payload.promotions || [];
+            const emitTitles = payload.emitTitles || [];
 
-            const products = payload?.products ?? [];
-            const promotions = payload?.promotions ?? [];
+            console.log("✅ Items:", items);
+            console.log("✅ Gifts:", gifts);
+            console.log("✅ Promotions:", promotions);
+            console.log("✅ EmitTitles:", emitTitles);
 
-            const getProduct = products.map(p => ({
-                // pro_id: p.pro_id, // 50983
-                // pro_title: p.pro_title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
-                // pro_code: p.pro_code, //"P02-ZZ-9999"
-                // pro_images: p.pro_images, //image url
-                pro_id: p.pro_id,//
-                pro_erp_title: p.pro_title,//
-                pro_goods_price: p.pro_goods_price,//
-                pro_goods_sku_text: p.pro_goods_sku_text,//
-                pro_sn: p.pro_sn,//
-                pro_images: p.pro_images,//
-                pro_quantity: p.pro_quantity,//
-                pro_units: p.pro_units,//
-                pro_m_code: p.pro_m_code//
-            }));
+            // เพิ่มข้อมูลลงในตาราง
+            // items.forEach(item => {
+            //     const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === item.pro_sku_price_id);
+            //     if (!alreadyExists) {
+            //         const matchedTitle = emitTitles.find(emit => emit.pro_goods_id === item.pro_goods_id)?.pro_erp_title || item.pro_erp_title;
+            //         this.selectedProducts.push({
+            //             pro_id: item.pro_sku_price_id,
+            //             pro_erp_title: matchedTitle,
+            //             // pro_erp_title: item.title || item.pro_erp_title,
+            //             pro_unit_price: item.pro_goods_price,
+            //             pro_goods_sku_text: item.pro_goods_sku_text || '',
+            //             pro_sn: item.pro_sn || '',
+            //             pro_images: item.pro_image || '',
+            //             pro_quantity: item.pro_goods_num || 0,
+            //             pro_units: item.pro_units || '',
+            //             gifts: gifts.filter(gift => gift.pro_goods_id === item.pro_goods_id ), // ของแถมที่เกี่ยวข้อง && item.note ==='ของแถม'
+            //             promotions: promotions.filter(promo => promo.pro_goods_id === item.pro_goods_id ), // โปรโมชั่นที่เกี่ยวข้อง && item.note ==='โปรโมชั่น'
+            //         });
+            //     }
+            // });
 
-            const getPromotion = promotions.map(p => ({
-                pro_m_id: p.pro_m_id,
-                pro_m_title: p.pro_m_title,
-                pro_m_code: p.pro_m_code,
-                pro_m_images: p.pro_m_images,
-
-            }));
-
-            console.log('🛒 ได้สินค้า:', getProduct);
-            console.log('🎯 โปรโมชั่นที่เลือก:', getPromotion);
-
-            // เพิ่มสินค้าใหม่ลงใน selectedProducts
-            getProduct.forEach(product => {
-                const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === product.pro_id);
+            items.forEach(item => {
+                const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === item.pro_sku_price_id);
                 if (!alreadyExists) {
-                    // this.selectedProducts.push(product);
+                    // หา emit title ที่ตรงกับสินค้า
+                    const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id) || {};
+
                     this.selectedProducts.push({
-                        pro_id: product.pro_id,//
-                        pro_erp_title: product.pro_erp_title,//
-                        pro_unit_price: product.pro_goods_price,//
-                        pro_goods_sku_text: product.pro_goods_sku_text,//
-                        // pro_sn: product.pro_sn,//
-                        pro_images: product.pro_images,//
-                        pro_quantity: product.pro_quantity,//
-                        pro_units: product.pro_units,//
-                        // pro_m_code: product.pro_m_code//
+                        pro_id: item.pro_sku_price_id,
+                        pro_erp_title: matchedTitle.pro_erp_title || item.pro_erp_title || '',
+                        pro_unit_price: matchedTitle.pro_goods_price || item.pro_goods_price || '',
+                        pro_goods_sku_text: item.pro_goods_sku_text || '',
+                        pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
+                        pro_images: item.pro_image || '',
+                        pro_quantity: item.pro_goods_num || 0,
+                        pro_units: matchedTitle.pro_units || item.pro_units || '',
+                        gifts: gifts.filter(gift => gift.pro_activity_id == item.pro_activity_id),
+                        promotions: promotions.filter(promo => promo.pro_activity_id == item.pro_activity_id),
                     });
                 }
             });
 
-            console.log('📋 รายการสินค้าในตาราง:', this.selectedProducts);
+
+            console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
 
         },
 
-
-        // setup() {
-        //             const customerData = ref(JSON.parse(localStorage.getItem('selectDataCustomer') || 'null'));
-
-        //             // อัปเดตอัตโนมัติเมื่อ localStorage ถูกเปลี่ยนจากแท็บอื่น
-        //             window.addEventListener('storage', (event) => {
-        //             if (event.key === 'selectDataCustomer') {
-        //                 customerData.value = JSON.parse(event.newValue || 'null');
-        //                 console.log('🔄 customerData updated via storage event:', customerData.value);
-        //                 getProduct(); // เรียกใหม่เมื่อข้อมูลลูกค้าเปลี่ยน
-        //             }
-        //         });
 
         removeProduct(index) {
             // this.selectedProducts.splice(index, 1);
@@ -1634,6 +1589,191 @@ input {
 </style>
 
 
+<!-- แสดงข้อมูลสินค้าที่เลือก -->
+<!-- <div class="overflow-x-auto">
+    <table class="min-w-full border text-sm">
+        <thead class="bg-gray-100 text-gray-700">
+            <tr class="text-center">
+                <th class="px-4 py-2 border">รหัส</th>
+                <th class="px-4 py-2 border">รูปภาพ</th>
+                <th class="px-4 py-2 border">ชื่อสินค้า *</th>
+                <th class="px-4 py-2 border">สี</th>
+                <!-- <th class="px-4 py-2 border">จากโปรโมชั่น</th> 
+                <th class="px-4 py-2 border">จำนวน *</th>
+                <th class="px-4 py-2 border">มูลค่าต่อหน่วย *</th>
+                <th class="px-4 py-2 border">ส่วนลดต่อหน่วย</th>
+                <th class="px-4 py-2 border ">รวม</th>
+                <th class="px-4 py-2 border text-center">ลบ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- ถ้า selectedProducts มีสินค้า 
+            <tr v-for="(product, index) in selectedProducts" :key="product.id">
+                <!-- รหัส <button @click="showProductSelector = true"
+                <td class="px-4 py-2 border">
+
+                    <button @click="openSelectorForRow(index)" :disabled="isReadOnly"
+                        class="bg-gray-200 px-3 py-1 text-gray-700 rounded">{{
+                            product.pro_id }} แก้ไขสินค้า
+                    </button>
+
+                </td>
+
+                <!-- <img :src="BASE_URL_IMAGE + product.pro_images" alt="products"
+                            class="w-10 h-10 rounded-full mx-auto"> 
+
+                <td class="px-4 py-4 border text-center">
+                    <template v-if="product.pro_images">
+                        {{ console.log("Check Value url and image: ", BASE_URL_IMAGE + product.pro_images)
+                        }}
+                        <img :src="product.pro_images.startsWith('http') ? product.pro_images : BASE_URL_IMAGE + product.pro_images"
+                            class="w-10 h-10 rounded-full mx-auto">
+                    </template>
+                    <template v-else>
+                        <span class="material-icons text-gray-400 text-4xl">broken_image</span>
+                        <!-- image Defult 
+                    </template>
+                </td>
+
+                <!-- ชื่อสินค้า 
+                <td class="px-4 py-2 border">
+                    <input type="text" v-model="product.pro_erp_title" disabled
+                        class="w-[250px] border text-gray-700 rounded px-2 py-1" placeholder="ชื่อสินค้า" />
+                </td>
+
+                <td class="px-4 py-2 border">
+                    <input type="text" v-model="product.pro_goods_sku_text"
+                        class="w-full border text-gray-700 rounded px-2 py-1" placeholder="สี" disabled />
+                     {{ ?? '-' }} 
+                </td>
+
+                <!-- <td class="px-4 py-2 border text-center">
+                    {{ console.log(' : ', ) }}
+                    <span v-if="ifs">
+                        {{  }}
+                    </span>
+                    <span v-else class="text-gray-400 italic">
+                        -
+                    </span>
+                </td> -
+
+                <!-- จำนวน 
+                <td class="px-4 py-2 border">
+                    <input type="number" min="0" v-model.number="product.pro_quantity"
+                        class="w-[70px] border text-gray-700 rounded px-2 py-1 text-right" disabled
+                        placeholder="จำนวน" />
+                </td>
+
+                <!-- ราคาต่อหน่วย 
+                <td class="px-4 py-2 border">
+                    <input type="number" v-model.number="product.pro_unit_price"
+                        class="w-[100px] border text-gray-700 rounded px-2 py-1 text-right" disabled
+                        placeholder="ราคาต่อหน่วย" />
+                </td>
+
+                <!-- ส่วนลด 
+                <td class="px-4 py-2 border">
+
+                    <input type="number" v-model.number="product.discount"
+                        class="w-[70px] border text-gray-700 rounded px-2 py-1 text-right" disabled
+                        placeholder="ส่วนลด" />
+                </td>
+
+                <!-- รวม 
+                <td class="px-4 py-2 text-gray-700 border text-right">
+                    {{ totalprice(product) }}
+                    <!-- {{ product.pro_total_price }} 
+                </td>
+                <!-- <td class="px-4 py-2 border text-right">
+                        {{ ((product.qty || 0) * (product.pro_unit_price || 0) - (product.discount ||
+                            0)).toFixed(2) }}
+                    </td> 
+
+                <!-- ปุ่มลบ 
+                <td class="px-4 py-2 text-gray-700 border text-center text-red-500 cursor-pointer hover:text-red-700"
+                    :disabled="isReadOnly" @click="removeProduct(index)">
+                    ลบ
+                </td>
+            </tr>
+
+
+
+        </tbody>
+
+    </table>
+</div> -->
+
+<!-- handleSelectedPromotionProducts(payload) {
+    console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
+
+    const products = payload?.products ?? [];
+    const promotions = payload?.promotions ?? [];
+
+    const getProduct = products.map(p => ({
+        // pro_id: p.pro_id, // 50983
+        // pro_title: p.pro_title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
+        // pro_code: p.pro_code, //"P02-ZZ-9999"
+        // pro_images: p.pro_images, //image url
+        pro_id: p.pro_id,//
+        pro_erp_title: p.pro_title,//
+        pro_goods_price: p.pro_goods_price,//
+        pro_goods_sku_text: p.pro_goods_sku_text,//
+        pro_sn: p.pro_sn,//
+        pro_images: p.pro_images,//
+        pro_quantity: p.pro_quantity,//
+        pro_units: p.pro_units,//
+        pro_m_code: p.pro_m_code//
+    }));
+
+    const getPromotion = promotions.map(p => ({
+        pro_m_id: p.pro_m_id,
+        pro_m_title: p.pro_m_title,
+        pro_m_code: p.pro_m_code,
+        pro_m_images: p.pro_m_images,
+
+    }));
+
+    console.log('🛒 ได้สินค้า:', getProduct);
+    console.log('🎯 โปรโมชั่นที่เลือก:', getPromotion);
+
+    // เพิ่มสินค้าใหม่ลงใน selectedProducts
+    getProduct.forEach(product => {
+        const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === product.pro_id);
+        if (!alreadyExists) {
+            // this.selectedProducts.push(product);
+            this.selectedProducts.push({
+                pro_id: product.pro_id,//
+                pro_erp_title: product.pro_erp_title,//
+                pro_unit_price: product.pro_goods_price,//
+                pro_goods_sku_text: product.pro_goods_sku_text,//
+                // pro_sn: product.pro_sn,//
+                pro_images: product.pro_images,//
+                pro_quantity: product.pro_quantity,//
+                pro_units: product.pro_units,//
+                // pro_m_code: product.pro_m_code//
+            });
+        }
+    });
+
+    console.log('📋 รายการสินค้าในตาราง:', this.selectedProducts);
+
+}, -->
+
+<!-- 
+
+// setup() {
+    //             const customerData = ref(JSON.parse(localStorage.getItem('selectDataCustomer') || 'null'));
+
+    //             // อัปเดตอัตโนมัติเมื่อ localStorage ถูกเปลี่ยนจากแท็บอื่น
+    //             window.addEventListener('storage', (event) => {
+    //             if (event.key === 'selectDataCustomer') {
+    //                 customerData.value = JSON.parse(event.newValue || 'null');
+    //                 console.log('🔄 customerData updated via storage event:', customerData.value);
+    //                 getProduct(); // เรียกใหม่เมื่อข้อมูลลูกค้าเปลี่ยน
+    //             }
+    //         });
+
+     -->
 
 <!--  ใช้ได้ backenup เอาไว้ -->
 

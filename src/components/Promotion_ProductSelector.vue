@@ -163,8 +163,6 @@
   </div>
 
 
-
-
 </template>
 
 <script setup>
@@ -199,7 +197,8 @@ const props = defineProps({
 
 
 
-const emit = defineEmits(['close', 'select-promotion_products', 'page-change'])
+const emit = defineEmits(['close', 'selectPromotionProducts', 'page-change'])
+// const emit = defineEmits(['close', 'select-promotion_products', 'page-change'])
 
 const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
 
@@ -262,17 +261,17 @@ function onPaginationChange(pageInfo) {
 
 
 // Checkbox logic เลือกสินค้าทั้งหมด
-  const isAllSelected = computed(() =>
-    paginatedPromotion.value.every(item => selectedIds.value.includes(item.id))
-  )
+const isAllSelected = computed(() =>
+  paginatedPromotion.value.every(item => selectedIds.value.includes(item.id))
+)
 
-  // เช็คว่าตอนนี้สินค้าได้ถูกเลือกเป็นรายการอะไรบ้าง
-  watch(selectedIds, (newVal) => {
-    const selectedPromotionProducts = tableData.value.filter(p =>
-      newVal.includes(p.id)
-    );
-    console.log("สินค้าที่เลือกอยู่ตอนนี้:", selectedPromotionProducts);
-  });
+// เช็คว่าตอนนี้สินค้าได้ถูกเลือกเป็นรายการอะไรบ้าง
+watch(selectedIds, (newVal) => {
+  const selectedPromotionProducts = tableData.value.filter(p =>
+    newVal.includes(p.id)
+  );
+  console.log("สินค้าที่เลือกอยู่ตอนนี้:", selectedPromotionProducts);
+});
 
 // watch(pageSize, (newVal) => {
 //   if (newVal !== 10) {
@@ -281,174 +280,88 @@ function onPaginationChange(pageInfo) {
 // });
 
 // function เลือกสินค้าทั้งหมด
-  function toggleSelectAll(event) {
-    if (event.target.checked) {
-      const pageIds = paginatedPromotion.value.map(item => item.id)
-      selectedIds.value = [...new Set([...selectedIds.value, ...pageIds])]
+function toggleSelectAll(event) {
+  if (event.target.checked) {
+    const pageIds = paginatedPromotion.value.map(item => item.id)
+    selectedIds.value = [...new Set([...selectedIds.value, ...pageIds])]
 
-      console.log('toggleSelectAll selectedIds:', pageIds);
-    } else {
-      const pageIds = paginatedPromotion.value.map(item => item.id)
-      selectedIds.value = selectedIds.value.filter(id => !pageIds.includes(id))
-      console.log('Error selectedIds:', pageIds);
-    }
+    console.log('toggleSelectAll selectedIds:', pageIds);
+  } else {
+    const pageIds = paginatedPromotion.value.map(item => item.id)
+    selectedIds.value = selectedIds.value.filter(id => !pageIds.includes(id))
+    console.log('Error selectedIds:', pageIds);
   }
+}
 
 
 
-  function confirmSelection() {
+function confirmSelection() {
 
-    // activity_code :"P02-ZZ-9999"
-    // activity_id :1178
+  // activity_code :"P02-ZZ-9999"
+  // activity_id :1178
 
-    const selectedPromotionProducts = tableData.value
-      .filter(p => selectedIds.value.includes(p.id))
-      .map(p => {
+  const selectedPromotionProducts = tableData.value
+    .filter(p => selectedIds.value.includes(p.id))
+    .map(p => {
 
-        // 🔍 ดึง matchedPrice จาก condition_price ตามชื่อสมาชิก
-        // const condPrice = p.condition_price?.[0]?.price || [];
-        // const found = condPrice.find(priceItem => priceItem.name === memberType.value);
-        // const matchedPrice = found ? found.price : '-';
+      // 🔍 ดึง matchedPrice จาก condition_price ตามชื่อสมาชิก
+      // const condPrice = p.condition_price?.[0]?.price || [];
+      // const found = condPrice.find(priceItem => priceItem.name === memberType.value);
+      // const matchedPrice = found ? found.price : '-';
 
-        return {
-          pro_id: p.id,
-          pro_title: p.title,
-          pro_code: p.activity_code,
-          pro_m_code: p.pro_m_code,
-          pro_goods_price: p.price,
-          // pro_goods_price: matchedPrice,
-          // pro_goods_price: p.goods_price,
-          pro_goods_sku_text: p.goods_sku_text,
-          pro_quantity: p.quantity || 0,
-          pro_sn: p.sn,
-          pro_units: p.units,
-          pro_acm_id: p.activity_id,
-          pro_images: p.image,
-        };
+      return {
+        pro_activity_id: p.activity_id, // 1167
+        // pro_id: p.activity_id, // 1167
+        pro_goods_id: p.goods_id, // 13872
+        pro_goods_price: p.goods_price, // "215.00"
+        pro_sku_price_id: p.id, //sku_price_id // 50983 
+        pro_goods_num: p.quantity || 0, // 1 
+        // pro_quantity: p.quantity || 0, // 1 
+        pro_image: p.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.jpg   
+        pro_erp_title: p.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP" 
 
-      });
+        //
+        pro_title: p.title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
 
-    const selectedPromotionsInfo = props.selectedPromotion.map(p => ({
-
-      pro_m_id: p.pro_m_id, //pro_m_id: 1176
-      pro_m_title: p.pro_m_title,
-      pro_acm_id: p.pro_acm_id,
-      pro_m_images: p.pro_m_images,
-
-    }))
-
-    console.log("✅ selectedPromotionProducts ถูกแปลงแล้ว:", selectedPromotionProducts);
-    console.log("✅ selectedPromotionsInfo ถูกแปลงแล้ว:", selectedPromotionsInfo);
-
-    emit('select-promotion_products', {
-      products: selectedPromotionProducts,
-      promotions: selectedPromotionsInfo
+        // 
+        pro_code: p.activity_code, // x
+        pro_m_code: p.pro_m_code, // x 
+        // pro_goods_sku_text: p.goods_sku_text, // x
+        pro_sn: p.sn, //"2010102DP0057" x
+        pro_units: p.units, // "PCS" x
+        // pro_goods_price: matchedPrice,
+        // pro_goods_price: p.goods_price,
+      }
 
     });
-    emit('close');
-  }
 
-  const searchPromotion_no = async () => {
-    clearTimeout(searchTimer.value);
+  const selectedPromotionsInfo = props.selectedPromotion.map(p => ({
 
-    if (!keyword_promotion_no.value.trim()) {
-      try {
+    pro_m_id: p.pro_m_id, //pro_m_id: 1176
+    pro_m_title: p.pro_m_title,
+    pro_acm_id: p.pro_acm_id,
+    pro_m_images: p.pro_m_images,
 
+  }))
 
-        const gettoken = localStorage.getItem('token');
-        console.log("log value token:", gettoken);
+  console.log("✅ selectedPromotionProducts ถูกแปลงแล้ว:", selectedPromotionProducts);
+  console.log("✅ selectedPromotionsInfo ถูกแปลงแล้ว:", selectedPromotionsInfo);
 
-        // ?from=specialprice
-        const response = await axios.post(
-          `${BASE_URL}/goods2/activityList`,
-          {
-            version: '2.0.2',
-            // keywords: keyword.value,
-            keywords: keyword_promotion_no.value,
-            level: getLevel
-          }, //  body 
-          {
-            params: {
-              "from": "specialprice"
-            },
-            headers: {
-              'Content-Type': 'application/json',
-              'token': gettoken
-            }
-          }
-        );
+  submittedProduct(selectedPromotionProducts);
+  // emit('select-promotion_products', {
+  //   products: selectedPromotionProducts,
+  //   promotions: selectedPromotionsInfo
 
-        // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
-        //   version: '2.0.2',
-        //   pageSize: pageSize.value,
-        //   pageCurrent: pageCurrent.value,
-        //   keywords: keyword_promotion_no.value,
-        //   level: getLevel
-        // });
+  // });
+  // emit('close');
+}
 
-        console.log("IF searchSku response:", response);
-        console.log("IF searchSku total:", response.data.data.item_count);
+const searchPromotion_no = async () => {
+  clearTimeout(searchTimer.value);
 
-        if (response.data.code === 1) {
-          total.value = response.data.data.item_count;
-          dataselectpromotion_no.value = response.data.data.data2;
-          tableData.value = [...dataselectpromotion_no.value];
-          pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
-        }
-      } catch (err) {
-        console.error("searchSku error:", err);
-      }
-    } else {
-      try {
-        const response = await axios.post(`${BASE_URL}/Goods2/product`, {
-          version: '2.0.2',
-          pageSize: pageSize.value,
-          pageCurrent: pageCurrent.value,
-          // keywords: dataselectpromotion_no.value,
-          keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
-          level: getLevel,
-
-        });
-
-        console.log("ELSE searchSku response:", response);
-        console.log("ELSE searchSku total:", response.data.data.item_count);
-
-        if (response.data.code === 1) {
-          total.value = response.data.data.item_count;
-          dataselectpromotion_no.value = response.data.data.data2;
-          tableData.value = [...dataselectpromotion_no.value];
-        }
-      } catch (err) {
-        console.error("searchSku error:", err);
-      } satisfies
-    }
-  };
-
-  //SearchPromotionSubmit
-  async function SearchPromotionSubmit() {
-
-    const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
-
-    const getLevel = getLevelSS?.data2?.level ?? 0;
-    console.log("Log getLevel: ", getLevel);
-
-    // แปลงค่า getLevel เป็นชื่อสมาชิก
-    // let memberType = '';
-    if (getLevel === 0) {
-      memberType.value = 'Member Nuser';
-    } else if (getLevel === 1) {
-      memberType.value = 'Member A';
-    } else if (getLevel === 7) {
-      memberType.value = 'Member B';
-    } else if (getLevel === 10) {
-      memberType.value = 'Member A+';
-    } else {
-      memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
-    }
-
-    console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
-
+  if (!keyword_promotion_no.value.trim()) {
     try {
+
 
       const gettoken = localStorage.getItem('token');
       console.log("log value token:", gettoken);
@@ -457,7 +370,9 @@ function onPaginationChange(pageInfo) {
       const response = await axios.post(
         `${BASE_URL}/goods2/activityList`,
         {
-          keywords: keyword.value,
+          version: '2.0.2',
+          // keywords: keyword.value,
+          keywords: keyword_promotion_no.value,
           level: getLevel
         }, //  body 
         {
@@ -471,131 +386,338 @@ function onPaginationChange(pageInfo) {
         }
       );
 
-      const searchPromotion = response.data.data;
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+      //   version: '2.0.2',
+      //   pageSize: pageSize.value,
+      //   pageCurrent: pageCurrent.value,
+      //   keywords: keyword_promotion_no.value,
+      //   level: getLevel
+      // });
 
-      console.log("searchProducts:", searchPromotion);
-
-
-      // const getData
-
-      if (response.data.code !== 1) {
-        console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
-      }
+      console.log("IF searchSku response:", response);
+      console.log("IF searchSku total:", response.data.data.item_count);
 
       if (response.data.code === 1) {
-        const data = response.data;
-
-        // const searchPromotion = data.data.length || 0;
-        // tableData.value = searchPromotion;
-
-        const searchPromotion = data.data.data2 || [];
-        dataselect.value = [...searchPromotion]; //
-        tableData.value = [...searchPromotion]; // 
-        total.value = data.data.item_count || searchPromotion.length;
-
-        // tableData.value = searchProducts.map(item => ({
-        //   ...item,
-        //   imageLoaded: false
-        // }));
-
-        // dataselect.value = searchPromotion;
-        // total.value = data.data || 0;
-
-        console.log("✅ ข้อมูล searchPromotion:", searchPromotion);
-
-        // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
-        // isLoading.value = false; // โหลดเสร็จ
-      } else {
-        error.value = response.data.message || 'เกิดข้อผิดพลาด';
-        Swal.fire({
-          title: 'ค้นหาไม่สำเร็จ',
-          text: error.value,
-          icon: 'error'
-        });
-        // isLoading.value = false;
+        total.value = response.data.data.item_count;
+        dataselectpromotion_no.value = response.data.data.data2;
+        tableData.value = [...dataselectpromotion_no.value];
+        pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
       }
     } catch (err) {
+      console.error("searchSku error:", err);
+    }
+  } else {
+    try {
+      const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+        version: '2.0.2',
+        pageSize: pageSize.value,
+        pageCurrent: pageCurrent.value,
+        // keywords: dataselectpromotion_no.value,
+        keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
+        level: getLevel,
+
+      });
+
+      console.log("ELSE searchSku response:", response);
+      console.log("ELSE searchSku total:", response.data.data.item_count);
+
+      if (response.data.code === 1) {
+        total.value = response.data.data.item_count;
+        dataselectpromotion_no.value = response.data.data.data2;
+        tableData.value = [...dataselectpromotion_no.value];
+      }
+    } catch (err) {
+      console.error("searchSku error:", err);
+    } satisfies
+  }
+};
+
+//SearchPromotionSubmit
+async function SearchPromotionSubmit() {
+
+  const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+
+  const getLevel = getLevelSS?.data2?.level ?? 0;
+  console.log("Log getLevel: ", getLevel);
+
+  // แปลงค่า getLevel เป็นชื่อสมาชิก
+  // let memberType = '';
+  if (getLevel === 0) {
+    memberType.value = 'Member Nuser';
+  } else if (getLevel === 1) {
+    memberType.value = 'Member A';
+  } else if (getLevel === 7) {
+    memberType.value = 'Member B';
+  } else if (getLevel === 10) {
+    memberType.value = 'Member A+';
+  } else {
+    memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
+  }
+
+  console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
+
+  try {
+
+    const gettoken = localStorage.getItem('token');
+    console.log("log value token:", gettoken);
+
+    // ?from=specialprice
+    const response = await axios.post(
+      `${BASE_URL}/goods2/activityList`,
+      {
+        keywords: keyword.value,
+        level: getLevel
+      }, //  body 
+      {
+        params: {
+          "from": "specialprice"
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'token': gettoken
+        }
+      }
+    );
+
+    const searchPromotion = response.data.data;
+
+    console.log("searchProducts:", searchPromotion);
+
+
+    // const getData
+
+    if (response.data.code !== 1) {
+      console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+    }
+
+    if (response.data.code === 1) {
+      const data = response.data;
+
+      // const searchPromotion = data.data.length || 0;
+      // tableData.value = searchPromotion;
+
+      const searchPromotion = data.data.data2 || [];
+      dataselect.value = [...searchPromotion]; //
+      tableData.value = [...searchPromotion]; // 
+      total.value = data.data.item_count || searchPromotion.length;
+
+      // tableData.value = searchProducts.map(item => ({
+      //   ...item,
+      //   imageLoaded: false
+      // }));
+
+      // dataselect.value = searchPromotion;
+      // total.value = data.data || 0;
+
+      console.log("✅ ข้อมูล searchPromotion:", searchPromotion);
+
+      // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
+      // isLoading.value = false; // โหลดเสร็จ
+    } else {
+      error.value = response.data.message || 'เกิดข้อผิดพลาด';
       Swal.fire({
-        title: 'เกิดข้อผิดพลาด',
-        text: err.message || 'โปรดลองใหม่ภายหลัง',
+        title: 'ค้นหาไม่สำเร็จ',
+        text: error.value,
         icon: 'error'
       });
       // isLoading.value = false;
     }
-  }
-
-  //page = 1
-  async function getPromotionProducts() {
-    isLoading.value = true;
-
-    const gettoken = localStorage.getItem('token');
-
-    const requests = props.selectedPromotion.map(async promo => {
-      const activity_id = promo.pro_m_id;
-
-      try {
-        const response = await axios.post(
-          `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=`,
-          {},
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              token: gettoken
-            }
-          }
-        );
-
-        const activityData = response.data.data;
-        const skuList = activityData.activity_sku_price || [];
-
-        return skuList.map(sku => ({
-          ...sku,
-          goods_id: sku.goods_id,
-          erp_title: sku.erp_title,
-          image: sku.image,
-          activity_code: activityData.activity_code,
-          pro_m_code: activityData.activity_code,
-          pro_acm_id: activityData.activity_code,
-          sn: sku.sn,
-          goods_sku_text: sku.goods_sku_text,
-          price: sku.price,
-          units: sku.units
-        }));
-      } catch (err) {
-        console.error(`❌ Error loading products for activity_id=${activity_id}`, err);
-        return []; // ถ้า error ให้ส่ง array ว่าง
-      }
+  } catch (err) {
+    Swal.fire({
+      title: 'เกิดข้อผิดพลาด',
+      text: err.message || 'โปรดลองใหม่ภายหลัง',
+      icon: 'error'
     });
-
-    // ส่งทุก request พร้อมกัน
-    const allResultsArrays = await Promise.all(requests);
-    const allResults = allResultsArrays.flat(); // รวมทุก array เข้าเป็น array เดียว
-
-    tableData.value = allResults;
-    promotionProducts.value = allResults;
-    total.value = allResults.length;
-
-    console.log("✅ ดึงข้อมูลสินค้าครบทั้งหมด:", allResults);
-    isLoading.value = false;
+    // isLoading.value = false;
   }
+}
 
+//page = 1
+async function getPromotionProducts() {
+  isLoading.value = true;
 
-  // function mounted() {
-  //         this.getProduct(1);
-  //     }
-  function onInput() {
-    clearTimeout(searchTimer.value);
-    searchTimer.value = setTimeout(() => {
-      SearchPromotionSubmit();
-    }, 500); // รอให้พิมพ์เสร็จ 0.5 วิค่อยเรียก
-  }
+  const gettoken = localStorage.getItem('token');
 
-  onMounted(() => {
-    SearchPromotionSubmit(); // โหลดสินค้าทั้งหมดรอบแรก
-    // getPromotion();
-    getPromotionProducts(); // โหลดสินค้าจากโปรโมชั่น
-    console.log("props test Log :", props);
+  const requests = props.selectedPromotion.map(async promo => {
+    const activity_id = promo.pro_m_id;
+
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=`,
+        {},
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            token: gettoken
+          }
+        }
+      );
+
+      const activityData = response.data.data;
+
+      console.log("✅ ดึงข้อมูลโปรโมชันทั้งหมด:", activityData);
+
+      const skuList = activityData.activity_sku_price || [];
+
+      return skuList.map(sku => ({
+        ...sku,
+        activity_id: activityData.id, // 1167
+        goods_id: sku.goods_id, // 13872
+        pro_sku_price_id: sku.sku_price_id, // 50983
+        erp_title: sku.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP"
+        title: sku.title, // ชุดอะแดปเตอร์เซ็ต AG-201 (20W)
+        image: sku.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.
+        goods_price: sku.goods_price, // "215.00" 
+
+        activity_code: activityData.activity_code, // x
+        pro_m_code: activityData.activity_code, // x
+        pro_acm_id: activityData.id, // x
+        sn: sku.sn, // x
+        goods_sku_text: sku.goods_sku_text, // x
+        units: sku.units // x
+      }));
+    } catch (err) {
+      console.error(`❌ Error loading products for activity_id=${activity_id}`, err);
+      return []; // ถ้า error ให้ส่ง array ว่าง
+    }
   });
+
+  // ส่งทุก request พร้อมกัน
+  const allResultsArrays = await Promise.all(requests);
+  const allResults = allResultsArrays.flat(); // รวมทุก array เข้าเป็น array เดียว
+
+  tableData.value = allResults;
+  promotionProducts.value = allResults;
+  total.value = allResults.length;
+
+  console.log("✅ ดึงข้อมูลสินค้าครบทั้งหมด:", allResults);
+  isLoading.value = false;
+}
+
+async function submittedProduct(selectedProducts) {
+  // isLoading.value = true; // เริ่มโหลด
+
+  const gettoken = localStorage.getItem('token');
+  // ดึงชื่อสินค้าทั้งหมดออกมา (เป็น array ของชื่อ)
+  // const selectedTitles = selectedProducts.map(p => p.pro_title || p.pro_erp_title );
+
+
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/cart_out/index`,
+      {
+        // pro_activity_id: 1499,
+        // pro_goods_id: 11125,
+        // pro_goods_price: 15,
+        // pro_sku_price_id: 46532,
+        // pro_goods_num: 99  ,
+        // pro_image : "/uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.webp",
+        // pro_title: "หูฟัง AP-03"
+        products: selectedProducts, // ส่งข้อมูลที่เลือกไปยัง API
+      },
+      {
+        // params: {
+        //   "from": "specialprice"
+        // },
+        headers: {
+          'Content-Type': 'application/json',
+          'token': gettoken
+        }
+      }
+    );
+
+    console.log("✅ Response from API:", response);
+
+    if (response.data.code === 1) {
+      const data = response.data.data.products || [];
+
+      console.log("Check Value data:", data);
+
+      // แยกข้อมูลออกเป็น 3 ก้อน
+      // const items = data.filter(item => item?.pro_goods_id !== 0 && !item?.pro_title && item?.note === 'รายการ');
+      // const gifts = data.filter(item => item?.pro_goods_id !== 0 && item?.pro_title && item?.note === 'ของแถม');
+      // const promotions = data.filter(item => item?.pro_goods_id === 0 && item?.pro_title && item?.note === 'โปรโมชั่น');
+      // แยกข้อมูลออกเป็น 3 ก้อน
+      const items = data.filter(item => item.pro_goods_id !== 0 && item?.note === 'รายการ');
+      const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.note === 'ของแถม');
+      const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.note === 'โปรโมชั่น');
+
+      const emitTitles = selectedProducts.map(p => ({
+        pro_goods_id: p.pro_goods_id || 0,
+        pro_activity_id: p.pro_activity_id || 0,
+        pro_erp_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',
+        pro_goods_price: p.pro_goods_price || 0,
+        pro_sn: p.pro_sn || '',
+        pro_units: p.pro_units || '',
+      }));
+
+      console.log("🤯🤯 Log emitTitles:", emitTitles);
+
+      // const emitTitles = data.map(item => item.pro_title || item.pro_erp_title).join(', ');
+      console.log("✅ Items:", items);
+      console.log("✅ Gifts:", gifts);
+      console.log("✅ Promotions:", promotions);
+
+      console.log("🔁 Emit กลับไปหน้า parent:", { items, gifts, promotions, emitTitles });
+      // ส่งข้อมูลกลับไปยังหน้าหลัก
+
+      // ทำการตรวจสอบข้อมูลที่ได้รับกลับมา
+      if (data.length > 0) {
+        Swal.fire({
+          title: 'สำเร็จ',
+          text: 'ข้อมูลถูกส่งกลับไปยังหน้าหลักเรียบร้อยแล้ว',
+          icon: 'success',
+        });
+
+      } else {
+        Swal.fire({
+          title: 'ไม่มีสินค้า',
+          text: 'ไม่พบสินค้าที่เลือกในระบบ!',
+          icon: 'warning',
+        });
+      }
+
+      console.log("📤 กำลัง emit selectPromotionProducts");
+
+      emit('selectPromotionProducts', {
+        // emit('select-promotion_products', {
+        items,
+        gifts,
+        promotions,
+        emitTitles
+      });
+
+      emit('close'); // 
+
+      // dataselect.value = data.data.products || [];
+      // tableData.value = [...dataselect.value];
+      // total.value = data.item_count || dataselect.value.length;
+    } else {
+      error.value = response.data.message || 'เกิดข้อผิดพลาด';
+    }
+  } catch (err) {
+    error.value = err.message || 'โปรดลองใหม่ภายหลัง';
+  } finally {
+    // isLoading.value = false; // โหลดเสร็จ
+  }
+}
+
+// function mounted() {
+//         this.getProduct(1);
+//     }
+function onInput() {
+  clearTimeout(searchTimer.value);
+  searchTimer.value = setTimeout(() => {
+    SearchPromotionSubmit();
+  }, 500); // รอให้พิมพ์เสร็จ 0.5 วิค่อยเรียก
+}
+
+onMounted(() => {
+  SearchPromotionSubmit(); // โหลดสินค้าทั้งหมดรอบแรก
+  // getPromotion();
+  getPromotionProducts(); // โหลดสินค้าจากโปรโมชั่น
+  console.log("props test Log :", props);
+});
 
 
 </script>

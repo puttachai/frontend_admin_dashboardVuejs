@@ -1,7 +1,7 @@
 <template>
   <Disclosure as="nav" class="bg-gray-800 fixed top-0 left-0 w-full z-[60]" v-slot="{ open }">
     <div class="mx-auto max-w-7xl px-2 smls:px-6 lg:px-8">
-      <div class="relative flex h-16 items-center justify-between">
+      <div class="relative flex h-16  items-center justify-between">
 
         <!-- Mobile Menu Button (ซ้ายสุด) -->
         <!-- <div class="absolute inset-y-0 left-0 flex items-center smls:hidden">

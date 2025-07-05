@@ -304,60 +304,62 @@
                             <th class="px-4 py-2 border text-center">ลบ</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <!-- แสดงรายการสินค้า -->
-                        <template v-for="(product, index) in selectedProducts" :key="index">
-                            <!-- Row สำหรับรายการ -->
-                            <tr class="text-center bg-white">
-                                <td class="px-4 py-2 border">{{ product.pro_id }}</td>
-                                <td class="px-4 py-4 border">
-                                    <template v-if="product.pro_images">
-                                        <img :src="product.pro_images.startsWith('http') ? product.pro_images : BASE_URL_IMAGE + product.pro_images"
-                                            class="w-10 h-10 rounded-full mx-auto">
-                                    </template>
-                                    <template v-else>
-                                        <span class="material-icons text-gray-400 text-4xl">broken_image</span>
-                                    </template>
-                                </td>
-                                <td class="px-4 py-2 border">{{ product.pro_erp_title }}</td>
-                                <td class="px-4 py-2 border">{{ product.pro_goods_sku_text || '-' }}</td>
-                                <td class="px-4 py-2 border">{{ product.pro_quantity }}</td>
-                                <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
-                                <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
-                                <td class="px-4 py-2 border">{{ totalprice(product) }}</td>
-                                <td class="px-4 py-2 border text-red-500 cursor-pointer hover:text-red-700"
-                                    @click="removeProduct(index)">
-                                    ลบ
+                        <!-- 👉 Group by pro_activity_id -->
+                        <template v-for="(group, activityId) in groupByActivityId(selectedProducts)" :key="activityId">
+                            <!-- 🔁 Loop สินค้าในกลุ่มนั้น -->
+                            <template v-for="(product, index) in group" :key="product.pro_id">
+                                <!-- 🔳 สินค้า -->
+                                <tr class="text-center bg-white">
+                                    <td class="px-4 py-2 border">{{ product.pro_id }}</td>
+                                    <td class="px-4 py-2 border">
+                                        <template v-if="product.pro_images">
+                                            <img :src="product.pro_images.startsWith('http') ? product.pro_images : BASE_URL_IMAGE + product.pro_images"
+                                                class="w-10 h-10 rounded-full mx-auto" />
+                                        </template>
+                                        <template v-else>
+                                            <span class="material-icons text-gray-400 text-4xl">broken_image</span>
+                                        </template>
+                                    </td>
+                                    <td class="px-4 py-2 border">{{ product.pro_erp_title }}</td>
+                                    <td class="px-4 py-2 border">{{ product.pro_goods_sku_text || '-' }}</td>
+                                    <td class="px-4 py-2 border">{{ product.pro_quantity }}</td>
+                                    <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
+                                    <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
+                                    <td class="px-4 py-2 border">{{ totalprice(product) }}</td>
+                                    <td class="px-4 py-2 border text-red-500 cursor-pointer hover:text-red-700"
+                                        @click="removeProductById(product.pro_id)">
+                                        ลบ
+                                    </td>
+                                </tr>
+                            </template>
+
+                            <!-- 🟦 โปรโมชั่น (แสดงแค่ 1 ครั้งในแต่ละกลุ่ม) -->
+                            <tr v-if="group[0].promotions && group[0].promotions.length > 0"
+                                class="text-center bg-blue-50">
+                                <td colspan="9" class="px-4 py-2 border text-left">
+                                    <strong>โปรโมชั่น:</strong>
+                                    <ul>
+                                        <li v-for="(promotion, promoIndex) in group[0].promotions" :key="promoIndex">
+                                            {{ promotion.title }}
+                                        </li>
+                                    </ul>
                                 </td>
                             </tr>
 
-                            <!-- Row สำหรับของแถม -->
-                            <template v-if="product.gifts && product.gifts.length > 0">
-                                <tr class="text-center bg-yellow-50">
-                                    <td colspan="9" class="px-4 py-2 border text-left">
-                                        <strong>ของแถม:</strong>
-                                        <ul>
-                                            <li v-for="(gift, giftIndex) in product.gifts" :key="giftIndex">
-                                                {{ gift.title }} (จำนวน: {{ gift.pro_goods_num }})
-                                            </li>
-                                        </ul>
-                                    </td>
-                                </tr>
-                            </template>
-
-                            <!-- Row สำหรับโปรโมชั่น -->
-                            <template v-if="product.promotions && product.promotions.length > 0">
-                                <tr class="text-center bg-blue-50">
-                                    <td colspan="9" class="px-4 py-2 border text-left">
-                                        <strong>โปรโมชั่น:</strong>
-                                        <ul>
-                                            <li v-for="(promotion, promoIndex) in product.promotions" :key="promoIndex">
-                                                {{ promotion.title }}
-                                            </li>
-                                        </ul>
-                                    </td>
-                                </tr>
-                            </template>
+                            <!-- 🟨 ของแถม (แสดงแค่ 1 ครั้งในแต่ละกลุ่ม) -->
+                            <tr v-if="group[0].gifts && group[0].gifts.length > 0" class="text-center bg-yellow-50">
+                                <td colspan="9" class="px-4 py-2 border text-left">
+                                    <strong>ของแถม:</strong>
+                                    <ul>
+                                        <li v-for="(gift, giftIndex) in group[0].gifts" :key="giftIndex">
+                                            {{ gift.title }} (จำนวน: {{ gift.pro_goods_num }})
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
                         </template>
                     </tbody>
                 </table>
@@ -380,7 +382,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                    }}</p>
+                        }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -791,6 +793,22 @@ export default {
 
 
     methods: {
+
+        groupByActivityId(products) {
+            return products.reduce((acc, item) => {
+                const key = item.promotions?.[0]?.pro_activity_id || item.pro_activity_id || 'no-activity';
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(item);
+                return acc;
+            }, {});
+        },
+
+        removeProductById(pro_id, activity_id) {
+            // this.selectedProducts = this.selectedProducts.filter(p => p.pro_id !== pro_id);
+            this.selectedProducts = this.selectedProducts.filter(
+                p => !(p.pro_id === pro_id && p.activity_id === activity_id)
+            );
+        },
 
         // ปุ่ม dropdown สำหรับมือถือ
         toggleDropdown() {
@@ -1354,19 +1372,27 @@ export default {
             console.log("✅ EmitTitles:", emitTitles);
 
             items.forEach(item => {
-                const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === item.pro_sku_price_id);
+                // const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === item.pro_sku_price_id);
+
+                // หา emit title ที่ตรงกับสินค้า
+                const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id) || {};
+
+                // 👇 ตรวจซ้ำโดยใช้ sku_id + activity_id
+                const alreadyExists = this.selectedProducts.some(sp =>
+                    sp.pro_id === item.pro_sku_price_id && sp.activity_id === item.pro_activity_id
+                );
                 if (!alreadyExists) {
-                    // หา emit title ที่ตรงกับสินค้า
-                    const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id) || {};
+
 
                     this.selectedProducts.push({
                         pro_id: item.pro_sku_price_id,
+                        activity_id: item.pro_activity_id, // ✅ เพิ่มไว้ใช้ grouping
                         pro_erp_title: matchedTitle.pro_erp_title || item.pro_erp_title || '',
                         pro_unit_price: matchedTitle.pro_goods_price || item.pro_goods_price || '',
                         pro_goods_sku_text: item.pro_goods_sku_text || '',
                         pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
                         pro_images: item.pro_image || '',
-                        pro_quantity: item.pro_goods_num || 0,                        pro_units: matchedTitle.pro_units || item.pro_units || '',
+                        pro_quantity: item.pro_goods_num || 0, pro_units: matchedTitle.pro_units || item.pro_units || '',
                         gifts: gifts.filter(gift => gift.pro_activity_id == item.pro_activity_id),
                         promotions: promotions.filter(promo => promo.pro_activity_id == item.pro_activity_id),
                     });
@@ -1377,6 +1403,46 @@ export default {
             console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
 
         },
+
+
+        //         handleSelectedPromotionProducts(groupedData) {
+        //   console.log('📦 groupedData ที่ได้รับ:', groupedData);
+
+        //   Object.keys(groupedData).forEach(activityId => {
+        //     const group = groupedData[activityId];
+        //     const items = group.items || [];
+        //     const gifts = group.gifts || [];
+        //     const promotions = group.promotions || [];
+        //     const emitTitles = group.emitTitles || [];
+
+        //     console.log(`📋 Group ${activityId} — Items:`, items);
+        //     console.log(`🎁 Group ${activityId} — Gifts:`, gifts);
+        //     console.log(`🔥 Group ${activityId} — Promotions:`, promotions);
+        //     console.log(`🏷️ Group ${activityId} — EmitTitles:`, emitTitles);
+
+        //     items.forEach(item => {
+        //       const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === item.pro_sku_price_id);
+        //       if (!alreadyExists) {
+        //         const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id) || {};
+
+        //         this.selectedProducts.push({
+        //           pro_id: item.pro_sku_price_id,
+        //           pro_erp_title: matchedTitle.pro_erp_title || item.pro_erp_title || '',
+        //           pro_unit_price: matchedTitle.pro_goods_price || item.pro_goods_price || '',
+        //           pro_goods_sku_text: item.pro_goods_sku_text || '',
+        //           pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
+        //           pro_images: item.pro_image || '',
+        //           pro_quantity: item.pro_goods_num || 0,
+        //           pro_units: matchedTitle.pro_units || item.pro_units || '',
+        //           gifts: gifts.filter(gift => gift.pro_activity_id == item.pro_activity_id),
+        //           promotions: promotions.filter(promo => promo.pro_activity_id == item.pro_activity_id),
+        //         });
+        //       }
+        //     });
+        //   });
+
+        //   console.log("🧾 รวมสินค้าทั้งหมดใน selectedProducts:", this.selectedProducts);
+        // },
 
 
         removeProduct(index) {

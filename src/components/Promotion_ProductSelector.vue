@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
     <div class="bg-white z-20 rounded-lg shadow-lg p-6 w-[90%] max-w-6xl max-h-[90vh] overflow-y-auto">
 
       <!-- Search Section -->
@@ -606,19 +606,10 @@ async function submittedProduct(selectedProducts) {
     const response = await axios.post(
       `${BASE_URL}/cart_out/index`,
       {
-        // pro_activity_id: 1499,
-        // pro_goods_id: 11125,
-        // pro_goods_price: 15,
-        // pro_sku_price_id: 46532,
-        // pro_goods_num: 99  ,
-        // pro_image : "/uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.webp",
-        // pro_title: "หูฟัง AP-03"
         products: selectedProducts, // ส่งข้อมูลที่เลือกไปยัง API
       },
       {
-        // params: {
-        //   "from": "specialprice"
-        // },
+       
         headers: {
           'Content-Type': 'application/json',
           'token': gettoken
@@ -701,6 +692,80 @@ async function submittedProduct(selectedProducts) {
     // isLoading.value = false; // โหลดเสร็จ
   }
 }
+
+// async function submittedProduct(selectedProducts) {
+//   const gettoken = localStorage.getItem('token');
+
+//   try {
+//     const response = await axios.post(
+//       `${BASE_URL}/cart_out/index`,
+//       { products: selectedProducts },
+//       { headers: { 'Content-Type': 'application/json', 'token': gettoken } }
+//     );
+
+//     console.log("✅ Response from API:", response);
+
+//     if (response.data.code === 1) {
+//       const data = response.data.data.products || [];
+
+//       console.log("Check Value data:", data);
+
+//       // สร้าง emitTitles (ข้อมูลจาก selectedProducts)
+//       const emitTitles = selectedProducts.map(p => ({
+//         pro_goods_id: p.pro_goods_id || 0,
+//         pro_activity_id: p.pro_activity_id || 0,
+//         pro_erp_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',
+//         pro_goods_price: p.pro_goods_price || 0,
+//         pro_sn: p.pro_sn || '',
+//         pro_units: p.pro_units || '',
+//       }));
+
+//       // จัดกลุ่มข้อมูลตาม pro_activity_id
+//       const groupedData = data.reduce((acc, item) => {
+//         const activityId = item.pro_activity_id;
+
+//         if (!acc[activityId]) {
+//           acc[activityId] = {
+//             items: [],
+//             gifts: [],
+//             promotions: [],
+//             emitTitles: emitTitles.filter(e => e.pro_activity_id === activityId) // 🟢 เพิ่ม emitTitles ที่ตรงกัน
+//           };
+//         }
+
+//         if (item.note === 'รายการ') {
+//           acc[activityId].items.push(item);
+//         } else if (item.note === 'ของแถม') {
+//           acc[activityId].gifts.push(item);
+//         } else if (item.note === 'โปรโมชั่น') {
+//           acc[activityId].promotions.push(item);
+//         }
+
+//         return acc;
+//       }, {});
+
+//       console.log("🔁 Grouped Data with emitTitles:", groupedData);
+
+//       emit('selectPromotionProducts', groupedData);
+//       emit('close');
+//     } else {
+//       Swal.fire({
+//         title: 'เกิดข้อผิดพลาด',
+//         text: response.data.message || 'โปรดลองใหม่ภายหลัง',
+//         icon: 'error',
+//       });
+//     }
+//   } catch (err) {
+//     console.error("❌ Error in submittedProduct:", err);
+//     Swal.fire({
+//       title: 'เกิดข้อผิดพลาด',
+//       text: err.message || 'โปรดลองใหม่ภายหลัง',
+//       icon: 'error',
+//     });
+//   }
+// }
+
+
 
 // function mounted() {
 //         this.getProduct(1);

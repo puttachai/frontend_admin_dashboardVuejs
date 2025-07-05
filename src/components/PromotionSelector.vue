@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99]">
     <div class="bg-white z-20 rounded-lg shadow-lg p-6 w-[90%] max-w-6xl max-h-[90vh] overflow-y-auto">
 
       <!-- Search Section -->
@@ -274,7 +274,7 @@ function confirmSelection() {
       pro_m_id: p.id,
       pro_m_title: p.title,
       pro_m_code: p.activity_code,
-      pro_acm_id: p.activity_id,
+      // pro_acm_id: p.activity_id,
       pro_m_images: p.image,
     }));
 

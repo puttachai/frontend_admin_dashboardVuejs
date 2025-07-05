@@ -336,8 +336,56 @@
                                 </tr>
                             </template>
 
-                            <!-- 🟦 โปรโมชั่น (แสดงแค่ 1 ครั้งในแต่ละกลุ่ม) -->
+                            <!-- 🟦 โปรโมชั่น (มินิมอล + ลูกเล่นไอคอน) -->
                             <tr v-if="group[0].promotions && group[0].promotions.length > 0"
+                                class="bg-blue-50 hover:bg-blue-100 transition-colors duration-300">
+                                <td colspan="9" class="px-6 py-4 border rounded-md">
+                                    <div class="flex items-center space-x-2 text-blue-800 font-medium">
+                                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor"
+                                            stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>โปรโมชั่น</span>
+                                    </div>
+                                    <ul class="list-disc list-inside ml-6 mt-2 text-sm text-gray-700">
+                                        <li v-for="(promotion, promoIndex) in group[0].promotions" :key="promoIndex">
+                                            {{ promotion.title }}
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+
+                            <!-- 🟨 ของแถม (มินิมอล + รูปภาพ + ฟีล modern card) -->
+                            <tr v-if="group[0].gifts && group[0].gifts.length > 0"
+                                class="bg-yellow-50 hover:bg-yellow-100 transition-colors duration-300">
+                                <td colspan="9" class="px-6 py-4 border rounded-md">
+                                    <div class="flex items-center space-x-2 text-yellow-800 font-medium">
+                                        <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor"
+                                            stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M12 8c-1.1 0-2 .9-2 2m4 0a2 2 0 00-2-2m0 4a2 2 0 002-2m-4 0a2 2 0 012-2m0 4a2 2 0 01-2-2m8-6H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8l-6-6z" />
+                                        </svg>
+                                        <span>ของแถม</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                                        <div v-for="(gift, giftIndex) in group[0].gifts" :key="giftIndex"
+                                            class="flex items-center bg-white shadow-sm rounded-lg p-2 border border-gray-200">
+                                            <img v-if="gift.pro_image"
+                                                :src="gift.pro_image.startsWith('http') ? gift.pro_image : BASE_URL_IMAGE + gift.pro_image"
+                                                class="w-12 h-12 object-cover rounded mr-4" alt="gift image" />
+                                            <div class="text-sm text-gray-800">
+                                                <div class="font-semibold">{{ gift.title }}</div>
+                                                <div class="text-gray-500">จำนวน: {{ gift.pro_goods_num }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- ใช้ได้ครั้งที่ 2 ล่าสุด -->
+                            <!-- 🟦 โปรโมชั่น (แสดงแค่ 1 ครั้งในแต่ละกลุ่ม) -->
+                            <!-- <tr v-if="group[0].promotions && group[0].promotions.length > 0"
                                 class="text-center bg-blue-50">
                                 <td colspan="9" class="px-4 py-2 border text-left">
                                     <strong>โปรโมชั่น:</strong>
@@ -347,10 +395,11 @@
                                         </li>
                                     </ul>
                                 </td>
-                            </tr>
+                            </tr> -->
 
+                            <!-- ใช้ได้ครั้งที่ 1 -->
                             <!-- 🟨 ของแถม (แสดงแค่ 1 ครั้งในแต่ละกลุ่ม) -->
-                            <tr v-if="group[0].gifts && group[0].gifts.length > 0" class="text-center bg-yellow-50">
+                            <!-- <tr v-if="group[0].gifts && group[0].gifts.length > 0" class="text-center bg-yellow-50">
                                 <td colspan="9" class="px-4 py-2 border text-left">
                                     <strong>ของแถม:</strong>
                                     <ul>
@@ -359,7 +408,29 @@
                                         </li>
                                     </ul>
                                 </td>
-                            </tr>
+                            </tr> -->
+
+                            <!-- ใช้ได้ครั้งที่ 2 ล่าสุด -->
+                            <!-- 🟨 ของแถม (แสดงแค่ 1 ครั้งในแต่ละกลุ่ม) -->
+                            <!-- <tr v-if="group[0].gifts && group[0].gifts.length > 0" class="text-center bg-yellow-50">
+                                <td colspan="9" class="px-4 py-2 border text-left">
+                                    <strong>ของแถม:</strong>
+                                    <ul class="space-y-2 mt-2">
+                                        <li v-for="(gift, giftIndex) in group[0].gifts" :key="giftIndex"
+                                            class="flex items-center space-x-4">
+                                            < ✅ รูปภาพของแถม >
+                                            <img v-if="gift.pro_image"
+                                                :src="gift.pro_image.startsWith('http') ? gift.pro_image : BASE_URL_IMAGE + gift.pro_image"
+                                                class="w-10 h-10 object-cover rounded" alt="gift pro_image" />
+                                            <span>
+                                                {{ gift.title }} (จำนวน: {{ gift.pro_goods_num }})
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr> -->
+
+
                         </template>
                     </tbody>
                 </table>
@@ -616,7 +687,7 @@ const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 
 // const getDataCustomer = JSON.parse(localStorage.getItem('selectDataCustomer') || 'null');
 
-console.log("BASE_URL_IMAGE:", BASE_URL_IMAGE);
+// console.log("BASE_URL_IMAGE:", BASE_URL_IMAGE);
 
 
 
@@ -699,6 +770,9 @@ export default {
                 receiverEmail: '',
                 receiverAddress: '',
                 note: '',
+
+                promotions: [], // เก็บรายการสินค้าที่เลือก
+                gifts: [], // เก็บรายการของแถม
 
                 // ใช้
                 // deliveryDate: '',
@@ -1092,16 +1166,30 @@ export default {
 
             this.formData.final_total_price = this.grandTotal;
 
+            const { promotions, gifts } = this.extractPromotionsAndGifts();
+            this.formData.promotions = promotions;
+            this.formData.gifts = gifts;
+
             const payload = new FormData();
 
+            // for (const key in this.formData) {
+            //     if (key === 'productList') {
+            //         // แปลง array เป็น JSON string แล้วแนบ
+            //         payload.append('productList', JSON.stringify(this.formData.productList));
+            //     } else {
+            //         payload.append(key, this.formData[key]);
+            //     }
+            // }
+
             for (const key in this.formData) {
-                if (key === 'productList') {
-                    // แปลง array เป็น JSON string แล้วแนบ
-                    payload.append('productList', JSON.stringify(this.formData.productList));
+                if (key === 'productList' || key === 'promotions' || key === 'gifts') {
+                    payload.append(key, JSON.stringify(this.formData[key]));
                 } else {
                     payload.append(key, this.formData[key]);
                 }
             }
+
+
 
             // เพื่อมข้อมูล FormData
             try {
@@ -1178,13 +1266,23 @@ export default {
 
                 this.formData.final_total_price = this.grandTotal;
 
+                const { promotions, gifts } = this.extractPromotionsAndGifts();
+                this.formData.promotions = promotions;
+                this.formData.gifts = gifts;
 
                 const payload = new FormData();
+                // for (const key in this.formData) {
+                //     if (key === 'productList') {
+                //         // payload.append('productList', JSON.stringify(this.formData.productList));
+                //         // ✅ แปลง proxy เป็น array ปกติก่อน stringify
+                //         payload.append('productList', JSON.stringify([...this.formData.productList]));
+                //     } else {
+                //         payload.append(key, this.formData[key]);
+                //     }
+                // }
                 for (const key in this.formData) {
-                    if (key === 'productList') {
-                        // payload.append('productList', JSON.stringify(this.formData.productList));
-                        // ✅ แปลง proxy เป็น array ปกติก่อน stringify
-                        payload.append('productList', JSON.stringify([...this.formData.productList]));
+                    if (key === 'productList' || key === 'promotions' || key === 'gifts') {
+                        payload.append(key, JSON.stringify([...this.formData[key]]));
                     } else {
                         payload.append(key, this.formData[key]);
                     }
@@ -1259,7 +1357,13 @@ export default {
                         totalDiscount: resData.data.order.total_discount || 0,
                         deliveryFee: resData.data.order.delivery_fee || 0,
                         final_total_price: resData.data.order.final_total_price || 0,
-                        documentNo: resData.data.order.document_no || ''
+                        documentNo: resData.data.order.document_no || '',
+
+                        //
+                        promotions: resData.data.promotions || [],
+                        gifts: resData.data.gifts || []
+                        // this.formData.promotions = resData.data.promotions || [],
+                        // this.formData.gifts = resData.data.gifts || []
                     };
 
                     // เติมข้อมูลสินค้า
@@ -1288,6 +1392,39 @@ export default {
                 Swal.fire({ text: message, icon: 'error' });
             }
         },
+
+        // new function 
+        extractPromotionsAndGifts() {
+            const grouped = this.groupByActivityId(this.selectedProducts);
+            const allPromotions = [];
+            const allGifts = [];
+
+            for (const group of Object.values(grouped)) {
+                if (group[0].promotions && Array.isArray(group[0].promotions)) {
+                    for (const promo of group[0].promotions) {
+                        allPromotions.push({
+                            title: promo.title
+                        });
+                    }
+                }
+
+                if (group[0].gifts && Array.isArray(group[0].gifts)) {
+                    for (const gift of group[0].gifts) {
+                        allGifts.push({
+                            title: gift.title,
+                            pro_goods_num: gift.pro_goods_num,
+                            pro_image: gift.pro_image || ''
+                        });
+                    }
+                }
+            }
+
+            return {
+                promotions: allPromotions,
+                gifts: allGifts
+            };
+        },
+
 
 
         // async validateForm() {

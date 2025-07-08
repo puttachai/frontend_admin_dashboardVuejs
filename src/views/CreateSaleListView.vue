@@ -331,8 +331,15 @@
                                     <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
                                     <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
                                     <td class="px-4 py-2 border">{{ totalprice(product) }}</td>
-                                    <td class="px-4 py-2 border text-red-500 cursor-pointer hover:text-red-700"
-                                        @click="removeProductById(product.pro_id)">
+                                    <!-- <td class="px-4 py-2 border text-red-500 cursor-pointer hover:text-red-700"
+                                        :disabled="isReadOnly"
+                                        @click="removeProduct(index, activityId)">
+                                        ลบ
+                                    </td> -->
+                                    <td class="px-4 py-2 border" :class="{
+                                        'text-red-500 cursor-pointer hover:text-red-700': !isReadOnly,
+                                        'text-gray-400 cursor-not-allowed': isReadOnly
+                                    }" @click="!isReadOnly && removeProduct(index, activityId)">
                                         ลบ
                                     </td>
                                 </tr>
@@ -826,23 +833,23 @@ export default {
 
     methods: {
 
-        // groupByActivityId(products) {
-        //     return products.reduce((acc, item) => {
-        //         const key = item.promotions?.[0]?.pro_activity_id || item.pro_activity_id || 'no-activity';
-        //         if (!acc[key]) acc[key] = [];
-        //         acc[key].push(item);
-        //         return acc;
-        //     }, {});
-        // },
-
         groupByActivityId(products) {
             return products.reduce((acc, item) => {
-                const key = item.pro_activity_id || 'no-activity'; // ✅ ใช้ pro_activity_id โดยตรง
+                const key = item.promotions?.[0]?.pro_activity_id || item.pro_activity_id || 'no-activity';
                 if (!acc[key]) acc[key] = [];
                 acc[key].push(item);
                 return acc;
             }, {});
         },
+
+        // groupByActivityId(products) {
+        //     return products.reduce((acc, item) => {
+        //         const key = item.pro_activity_id || 'no-activity'; // ✅ ใช้ pro_activity_id โดยตรง
+        //         if (!acc[key]) acc[key] = [];
+        //         acc[key].push(item);
+        //         return acc;
+        //     }, {});
+        // },
 
 
         // groupByActivityId(products) {
@@ -854,12 +861,7 @@ export default {
         //     }, {});
         // },
 
-        removeProductById(pro_id, activity_id) {
-            // this.selectedProducts = this.selectedProducts.filter(p => p.pro_id !== pro_id);
-            this.selectedProducts = this.selectedProducts.filter(
-                p => !(p.pro_id === pro_id && p.activity_id === activity_id)
-            );
-        },
+
 
         // ปุ่ม dropdown สำหรับมือถือ
         toggleDropdown() {
@@ -1191,9 +1193,9 @@ export default {
                 }
             }
 
-            for (let pair of payload.entries()) {
-                console.log("🤯 payload asdasdasfadfafas", pair[0] + ': ' + pair[1]);
-            }
+            // for (let pair of payload.entries()) {
+            //     console.log("🤯 payload asdasdasfadfafas", pair[0] + ': ' + pair[1]);
+            // }
 
             // console.log("🤯 Log Value this.promotions: ", this.promotions);
             // console.log("🤯 Log Value this.gifts: ", this.gifts);
@@ -1269,7 +1271,8 @@ export default {
                         pro_total_price: total, // รวมราคาต่อสินค้า
                         pro_images: product.pro_images,
                         pro_sn: product.pro_sn,
-                        unit: product.pro_unit
+                        unit: product.pro_unit,
+                        pro_activity_id: product.pro_activity_id || null // ✅ เพิ่มบรรทัดนี้!
                     };
                 });
 
@@ -1303,10 +1306,10 @@ export default {
                 // console.log("🤯 Log Value payload: ", payload);
 
                 // ✅ log payload ทั้งหมดแบบอ่านได้
-                console.log("📦🤯 Log payload entries:");
-                for (const [key, value] of payload.entries()) {
-                    console.log(`${key}:`, value);
-                }
+                // console.log("📦🤯 Log payload entries:");
+                // for (const [key, value] of payload.entries()) {
+                //     console.log(`${key}:`, value);
+                // }
 
                 console.log("🛒 productList:", this.formData.productList);
                 console.log(JSON.stringify(payload))
@@ -1599,7 +1602,14 @@ export default {
 
         },
 
-        removeProduct(index) {
+        // removeProductById(pro_id, activity_id) {
+        //     // this.selectedProducts = this.selectedProducts.filter(p => p.pro_id !== pro_id);
+        //     this.selectedProducts = this.selectedProducts.filter(
+        //         p => !(p.pro_id === pro_id && p.activity_id === activity_id)
+        //     );
+        // },
+
+        removeProduct(index, activityId) {
             // this.selectedProducts.splice(index, 1);
             Swal.fire({
                 title: 'ยืนยันการลบ?',
@@ -1609,12 +1619,29 @@ export default {
                 confirmButtonText: 'ใช่, ลบเลย!',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
+                // if (result.isConfirmed) {
+                //     this.selectedProducts.splice(index, 1);
+                //     Swal.fire('ลบแล้ว!', 'สินค้าถูกลบออกจากรายการ.', 'success');
+                // }
                 if (result.isConfirmed) {
-                    this.selectedProducts.splice(index, 1);
-                    Swal.fire('ลบแล้ว!', 'สินค้าถูกลบออกจากรายการ.', 'success');
+                    // หา index ที่แท้จริงจาก group
+                    const group = this.groupByActivityId(this.selectedProducts)[activityId];
+                    const productToRemove = group[index];
+
+                    // ค้นหา index ใน selectedProducts
+                    const realIndex = this.selectedProducts.findIndex(p =>
+                        p.pro_id === productToRemove.pro_id &&
+                        p.pro_activity_id === productToRemove.pro_activity_id
+                    );
+
+                    if (realIndex !== -1) {
+                        this.selectedProducts.splice(realIndex, 1);
+                        Swal.fire('ลบแล้ว!', 'สินค้าถูกลบออกจากรายการ.', 'success');
+                    }
                 }
             });
         },
+
         removeAllProducts() {
             if (this.selectedProducts.length === 0) {
                 Swal.fire({
@@ -1632,6 +1659,7 @@ export default {
                 showCancelButton: true,
                 confirmButtonText: 'ใช่, ลบทั้งหมด!',
                 cancelButtonText: 'ยกเลิก'
+
             }).then((result) => {
                 if (result.isConfirmed) {
                     this.selectedProducts.length = 0; // ล้างอาร์เรย์ทั้งหมด

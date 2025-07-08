@@ -9,6 +9,9 @@
         <!-- Search Input -->
         <input class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           v-model="keyword" placeholder="ค้นหา..." @input="onInput" confirm-type="search" />
+        <div class="">
+          <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 mb-16 text-4xl">&times;</button>
+        </div>
       </div>
 
       <div class="text-sm text-gray-500 mt-2">
@@ -27,9 +30,9 @@
             ประเภทสมาชิก: {{ memberType }}
           </div>
           <!-- แสดงว่าเป็น level อะไร -->
-          <div class="">
+          <!-- <div class="">
             <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 text-2xl">&times;</button>
-          </div>
+          </div> -->
         </div>
 
       </div>
@@ -65,6 +68,7 @@
             <th class="px-4 py-2 border">รหัสสินค้า</th>
             <!-- <th class="px-4 py-2 border">Activity Code</th> -->
             <th class="px-4 py-2 border text-center">จำนวน</th>
+            <th class="px-4 py-2 border text-center">คงเหลือ</th>
             <!-- <th class="px-4 py-2 border">Goods Price</th> -->
             <th class="px-4 py-2 border">หมายเลขซีเรียล</th>
             <th class="px-4 py-2 border">สี</th>
@@ -124,10 +128,16 @@
             <!-- <td class="px-4 py-2 border">{{ item.title }}</td> -->
             <td class="px-4 text-gray-700 py-2 border">{{ item.goods_id }}</td>
             <td class="px-4 text-gray-700 py-2 border text-center">
+              <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
+                v-model.number="item.amount" :min="0" :max="item.stock" @input="validateAmount(item)" placeholder="0" />
+            </td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
+            <!-- <td class="px-4 text-gray-700 py-2 border text-center">
               <input type="number" min="1" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
                 v-model.number="item.quantity" placeholder="0" />
-              <!-- @input="onQuantityChange(item)" -->
-            </td>
+               //////@input="onQuantityChange(item)" 
+            </td> -->
+
             <!-- <td class="px-4 py-2 border">{{ item.activity_code }}</td> -->
             <!-- <td class="px-4 py-2 border">{{ item.goods_price ?? '-'}}</td> -->
             <td class="px-4 text-gray-700 py-2 border">{{ item.sn ?? '-' }}</td>
@@ -231,6 +241,8 @@ const Apipromotion = ref([]);
 
 const memberType = ref('');
 
+const amount = ref(0);
+
 // const paginatedPromotion = computed(() => {
 //   return tableData.value;
 // });
@@ -293,7 +305,13 @@ function toggleSelectAll(event) {
   }
 }
 
-
+function validateAmount(item) {
+  if (item.amount < 0) {
+    item.amount = 0;
+  } else if (item.amount > item.stock) {
+    item.amount = item.stock;
+  }
+}
 
 function confirmSelection() {
 
@@ -315,7 +333,8 @@ function confirmSelection() {
         pro_goods_id: p.goods_id, // 13872
         pro_goods_price: p.goods_price, // "215.00"
         pro_sku_price_id: p.id, //sku_price_id // 50983 
-        pro_goods_num: p.quantity || 0, // 1 
+        pro_goods_num: p.amount || 0, // 1 
+        stock: p.stock || 0,
         // pro_quantity: p.quantity || 0, // 1 
         pro_image: p.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.jpg   
         pro_erp_title: p.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP" 
@@ -386,54 +405,102 @@ const searchPromotion_no = async () => {
         }
       );
 
-      // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
-      //   version: '2.0.2',
-      //   pageSize: pageSize.value,
-      //   pageCurrent: pageCurrent.value,
-      //   keywords: keyword_promotion_no.value,
-      //   level: getLevel
-      // });
-
       console.log("IF searchSku response:", response);
-      console.log("IF searchSku total:", response.data.data.item_count);
+      // console.log("IF searchSku total:", response.data.data.item_count);
 
       if (response.data.code === 1) {
-        total.value = response.data.data.item_count;
-        dataselectpromotion_no.value = response.data.data.data2;
-        tableData.value = [...dataselectpromotion_no.value];
-        pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
+        const rawData = response.data.data;
+
+        // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
+        const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
+
+        const filtered = rawData.filter((item) =>
+          item.title.toLowerCase().includes(keywordToSearch)
+        );
+
+        console.log("Filtered promotions:", filtered);
+
+        dataselectpromotion_no.value = filtered;
+        tableData.value = [...filtered];
+        total.value = filtered.length;
+        pageSize.value = (total.value < pageSize.value)
+          ? total.value
+          : parseInt(pageSize.value);
       }
+
     } catch (err) {
       console.error("searchSku error:", err);
     }
   } else {
     try {
-      const response = await axios.post(`${BASE_URL}/Goods2/product`, {
-        version: '2.0.2',
-        pageSize: pageSize.value,
-        pageCurrent: pageCurrent.value,
-        // keywords: dataselectpromotion_no.value,
-        keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
-        level: getLevel,
 
-      });
+      const gettoken = localStorage.getItem('token');
+      console.log("log value token:", gettoken);
 
-      console.log("ELSE searchSku response:", response);
-      console.log("ELSE searchSku total:", response.data.data.item_count);
+      // ?from=specialprice
+      const response = await axios.post(
+        `${BASE_URL}/goods2/activityList`,
+        {
+          version: '2.0.2',
+          pageSize: pageSize.value,
+          pageCurrent: pageCurrent.value,
+          // keywords: keyword.value,
+          keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
+          level: getLevel
+        }, //  body 
+        {
+          params: {
+            "from": "specialprice"
+          },
+          headers: {
+            'Content-Type': 'application/json',
+            'token': gettoken
+          }
+        }
+      );
+
+      console.log("IF searchSku response:", response);
+      // console.log("IF searchSku total:", response.data.data.item_count);
 
       if (response.data.code === 1) {
-        total.value = response.data.data.item_count;
-        dataselectpromotion_no.value = response.data.data.data2;
-        tableData.value = [...dataselectpromotion_no.value];
+        const rawData = response.data.data;
+
+        console.log("rawData:", rawData);
+
+        // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
+        const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
+
+        const filtered = rawData.filter((item) =>
+          item.title?.toLowerCase().includes(keywordToSearch) ||
+          item.erp_title?.toLowerCase().includes(keywordToSearch) ||
+          item.activity_code?.toLowerCase().includes(keywordToSearch) ||
+          item.activity_id?.toLowerCase().includes(keywordToSearch) ||
+          item.note?.toLowerCase().includes(keywordToSearch) ||
+          item.ML_Note?.toLowerCase().includes(keywordToSearch)
+        );
+
+
+        console.log("Filtered promotions:", filtered);
+
+        dataselectpromotion_no.value = filtered;
+        tableData.value = [...filtered];
+        total.value = filtered.length;
+        pageSize.value = (total.value < pageSize.value)
+          ? total.value
+          : parseInt(pageSize.value);
       }
+
     } catch (err) {
       console.error("searchSku error:", err);
-    } satisfies
+    }
+    //satisfies
   }
 };
 
-//SearchPromotionSubmit
+
 async function SearchPromotionSubmit() {
+  clearTimeout(searchTimer.value);
+
 
   const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
 
@@ -443,7 +510,7 @@ async function SearchPromotionSubmit() {
   // แปลงค่า getLevel เป็นชื่อสมาชิก
   // let memberType = '';
   if (getLevel === 0) {
-    memberType.value = 'Member Nuser';
+    memberType.value = 'Member End User';
   } else if (getLevel === 1) {
     memberType.value = 'Member A';
   } else if (getLevel === 7) {
@@ -456,81 +523,165 @@ async function SearchPromotionSubmit() {
 
   console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
 
-  try {
 
-    const gettoken = localStorage.getItem('token');
-    console.log("log value token:", gettoken);
+  if (!keyword.value.trim()) {
 
-    // ?from=specialprice
+    try {
+
+      const gettoken = localStorage.getItem('token');
+      console.log("log value token:", gettoken);
+
+      // ?from=specialprice
+      const response = await axios.post(
+        `${BASE_URL}/goods2/activityList`,
+        {
+          version: '2.0.2',
+          // keywords: keyword.value,
+          keywords: keyword.value,
+          level: getLevel
+        }, //  body 
+        {
+          params: {
+            "from": "specialprice"
+          },
+          headers: {
+            'Content-Type': 'application/json',
+            'token': gettoken
+          }
+        }
+      );
+
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+      //   version: '2.0.2',
+      //   pageSize: pageSize.value,
+      //   pageCurrent: pageCurrent.value,
+      //   keywords: keyword_promotion_no.value,
+      //   level: getLevel
+      // });
+
+      console.log("IF searchSku response:", response);
+      // console.log("IF searchSku total:", response.data.data.item_count);
+
+      if (response.data.code === 1) {
+        const rawData = response.data.data;
+
+        // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
+        const keywordToSearch = keyword.value.trim().toLowerCase();
+
+        const filtered = rawData.filter((item) =>
+          item.title.toLowerCase().includes(keywordToSearch)
+        );
+
+        console.log("Filtered promotions:", filtered);
+
+        dataselectpromotion_no.value = filtered;
+        tableData.value = [...filtered];
+        total.value = filtered.length;
+        pageSize.value = (total.value < pageSize.value)
+          ? total.value
+          : parseInt(pageSize.value);
+      }
+
+      // if (response.data.code === 1) {
+      //   total.value = response.data.data.item_count;
+      //   dataselectpromotion_no.value = response.data.data.data2;
+      //   tableData.value = [...dataselectpromotion_no.value];
+      //   pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
+      // }
+    } catch (err) {
+      console.error("searchSku error:", err);
+    }
+  } else {
+    try {
+
+      const gettoken = localStorage.getItem('token');
+      console.log("log value token:", gettoken);
+
+      
+  const requests = props.selectedPromotion.map(async promo => {
+  const activity_id = promo.pro_m_id;
+
     const response = await axios.post(
-      `${BASE_URL}/goods2/activityList`,
+      `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=${keyword.value}`,
+      {},
       {
-        keywords: keyword.value,
-        level: getLevel
-      }, //  body 
-      {
-        params: {
-          "from": "specialprice"
-        },
         headers: {
           'Content-Type': 'application/json',
-          'token': gettoken
+          token: gettoken
         }
       }
     );
 
-    const searchPromotion = response.data.data;
+    console.log("IF searchSku response:", response);
 
-    console.log("searchProducts:", searchPromotion);
+    // const activityData = response.data.data;
+      
+      if (response.data.code === 1) {
+        const rawData = response.data.data;
+
+        console.log("rawData:", rawData);
+
+        
+        const keywordToSearch = keyword.value.trim().toLowerCase();
+
+          const filtered = rawData.filter((item) =>
+          item.title?.toLowerCase().includes(keywordToSearch) ||
+          item.erp_title?.toLowerCase().includes(keywordToSearch) ||
+          item.activity_code?.toLowerCase().includes(keywordToSearch) ||
+          item.activity_id?.toLowerCase().includes(keywordToSearch) ||
+          item.note?.toLowerCase().includes(keywordToSearch) ||
+          item.ML_Note?.toLowerCase().includes(keywordToSearch)
+        );
 
 
-    // const getData
+        console.log("Filtered promotions:", filtered);
 
-    if (response.data.code !== 1) {
-      console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+        dataselectpromotion_no.value = filtered;
+        tableData.value = [...filtered];
+        total.value = filtered.length;
+        pageSize.value = (total.value < pageSize.value)
+          ? total.value
+          : parseInt(pageSize.value);
+      }
+
+
+  });
+
+    // ส่งทุก request พร้อมกัน
+    const allResultsArrays = await Promise.all(requests);
+    const allResults = allResultsArrays.flat(); // รวมทุก array เข้าเป็น array เดียว
+
+    tableData.value = allResults;
+
+      // ?from=specialprice
+      // const response = await axios.post(
+      //   `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=`,
+      //   {
+      //     version: '2.0.2',
+      //     pageSize: pageSize.value,
+      //     pageCurrent: pageCurrent.value,
+      //     // keywords: keyword.value,
+      //     keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
+      //     level: getLevel
+      //   }, //  body 
+      //   {
+      //     params: {
+      //       "from": "specialprice"
+      //     },
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //       'token': gettoken
+      //     }
+      //   }
+      // );
+
+      
+    } catch (err) {
+      console.error("searchSku error:", err);
     }
-
-    if (response.data.code === 1) {
-      const data = response.data;
-
-      // const searchPromotion = data.data.length || 0;
-      // tableData.value = searchPromotion;
-
-      const searchPromotion = data.data.data2 || [];
-      dataselect.value = [...searchPromotion]; //
-      tableData.value = [...searchPromotion]; // 
-      total.value = data.data.item_count || searchPromotion.length;
-
-      // tableData.value = searchProducts.map(item => ({
-      //   ...item,
-      //   imageLoaded: false
-      // }));
-
-      // dataselect.value = searchPromotion;
-      // total.value = data.data || 0;
-
-      console.log("✅ ข้อมูล searchPromotion:", searchPromotion);
-
-      // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
-      // isLoading.value = false; // โหลดเสร็จ
-    } else {
-      error.value = response.data.message || 'เกิดข้อผิดพลาด';
-      Swal.fire({
-        title: 'ค้นหาไม่สำเร็จ',
-        text: error.value,
-        icon: 'error'
-      });
-      // isLoading.value = false;
-    }
-  } catch (err) {
-    Swal.fire({
-      title: 'เกิดข้อผิดพลาด',
-      text: err.message || 'โปรดลองใหม่ภายหลัง',
-      icon: 'error'
-    });
-    // isLoading.value = false;
+    //satisfies
   }
-}
+};
 
 //page = 1
 async function getPromotionProducts() {
@@ -609,7 +760,7 @@ async function submittedProduct(selectedProducts) {
         products: selectedProducts, // ส่งข้อมูลที่เลือกไปยัง API
       },
       {
-       
+
         headers: {
           'Content-Type': 'application/json',
           'token': gettoken
@@ -640,6 +791,8 @@ async function submittedProduct(selectedProducts) {
         pro_goods_price: p.pro_goods_price || 0,
         pro_sn: p.pro_sn || '',
         pro_units: p.pro_units || '',
+        amount: p.pro_goods_num || 0,
+        stock: p.stock || 0,
       }));
 
       console.log("🤯🤯 Log emitTitles:", emitTitles);

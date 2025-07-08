@@ -21,11 +21,11 @@
             <nav class="text-sm text-gray-600 mb-2">
                 <ul class="flex items-center space-x-1">
                     <li>
-                        <router-link to="/" class="hover:text-purple-600 transition">Home</router-link>
+                        <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
                         <span class="mx-1 text-gray-400">›</span>
                     </li>
                     <li>
-                        <router-link to="/createsalelist"
+                        <router-link to="/createsalelist" @click.native="reloadPage"
                             class="text-purple-600 font-medium hover:text-purple-800 transition">
                             Create Sale List
                         </router-link>
@@ -36,18 +36,49 @@
             <!-- Action Bar -->
             <div class="flex justify-between items-center">
                 <!-- Left -->
-                <router-link to="/createsalelist"
+                <router-link to="/createsalelist" @click.native="reloadPage"
                     class="group flex items-center gap-2 text-purple-600 hover:text-purple-800 transition">
                     <span class="material-icons group-hover:animate-bounce">shopping_bag</span>
                     <span class="text font-medium text-md">Create Sale Order</span>
                 </router-link>
 
+                <div :class="[
+                    'gap-4 grid',
+                    visibleButtons.length === 1 ? 'grid-cols-1 place-items-center' : 'grid-cols-1 md:grid-cols-2'
+                ]">
+                    <!-- ปุ่ม แก้ไข -->
+                    <button v-if="isReadOnly" @click="enableEditMode"
+                        class="bg-yellow-500 text-white py-2 px-6 rounded-md hover:bg-yellow-600">
+                        แก้ไข
+                    </button>
+
+                    <!-- ปุ่ม บันทึก (เฉพาะเมื่อ path คือ /createsalelist) class="bg-purple-700 w-full text-white py-2 px-6 rounded-md hover:bg-purple-800">-->
+                    <button v-if="!isReadOnly && isCreatePage" @click="saveDocument"
+                        class="flex items-center gap-2 bg-purple-700 text-white py-2 px-6 rounded-md hover:bg-purple-800 transition duration-300 shadow hover:shadow-lg">
+                        <span class="material-icons">save</span>
+                        <span>บันทึก</span>
+                    </button>
+
+                    <!-- ปุ่ม บันทึกการแก้ไข (เฉพาะเมื่อมี documentNo และไม่ใช่หน้า create) -->
+                    <button v-if="!isReadOnly && formData.documentNo && !isCreatePage" @click="updateDocument"
+                        class="bg-green-600 w-full text-white py-2 px-6 rounded-md hover:bg-green-700">
+                        บันทึกการแก้ไข
+                    </button>
+
+                    <!-- ✅ ปุ่มยืนยันบันทึก ปรากฏเฉพาะกรณีแก้ไข -->
+                    <button v-if="!isReadOnly && formData.documentNo && !isConfirmed && !isCreatePage"
+                        @click="confirmFinalSave"
+                        class="bg-red-600 w-full text-white py-2 px-6 rounded-md hover:bg-red-700">
+                        ยืนยันการบันทึก (ไม่สามารถแก้ไขได้อีก)
+                    </button>
+                </div>
+
                 <!-- Right -->
-                <button type="button" @click="saveDocument"
+                <!-- <button type="button" @click="saveDocument"
                     class="flex items-center gap-2 bg-purple-700 text-white py-2 px-6 rounded-md hover:bg-purple-800 transition duration-300 shadow hover:shadow-lg">
                     <span class="material-icons">save</span>
                     <span>บันทึก</span>
-                </button>
+                </button> -->
             </div>
         </div>
 
@@ -300,6 +331,7 @@
                             <th class="px-4 py-2 border">ชื่อสินค้า *</th>
                             <th class="px-4 py-2 border">สี</th>
                             <th class="px-4 py-2 border">จำนวน *</th>
+                            <th class="px-4 py-2 border">คงเหลือ *</th>
                             <th class="px-4 py-2 border">มูลค่าต่อหน่วย *</th>
                             <th class="px-4 py-2 border">ส่วนลดต่อหน่วย</th>
                             <th class="px-4 py-2 border">รวม</th>
@@ -327,7 +359,17 @@
                                     </td>
                                     <td class="px-4 py-2 border">{{ product.pro_erp_title }}</td>
                                     <td class="px-4 py-2 border">{{ product.pro_goods_sku_text || '-' }}</td>
-                                    <td class="px-4 py-2 border">{{ product.pro_quantity }}</td>
+                                    <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
+                                    <!-- <td class="px-4 text-gray-700 py-2 border">
+                                        <input type="number" v-model.pro_quantity="product.pro_quantity" min="1" placeholder="จำนวน"
+                                            class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                    </td> -->
+                                    <td class="px-4 py-2 border">
+                                        <input type="number" :min="0" :max="product.pro_stock" step="1"
+                                            v-model.number="product.pro_quantity" @input="validateQuantity(product)"
+                                            class="w-full px-2 py-1 border rounded" />
+                                    </td>
+                                    <td class="px-4 py-2 border">{{ product.pro_stock }}</td>
                                     <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
                                     <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
                                     <td class="px-4 py-2 border">{{ totalprice(product) }}</td>
@@ -605,8 +647,15 @@
                 visibleButtons.length === 1 ? 'grid-cols-1 place-items-center' : 'grid-cols-1 md:grid-cols-2'
             ]">
                 <!-- ปุ่ม แก้ไข -->
-                <button v-if="isReadOnly" @click="enableEditMode"
-                    class="bg-yellow-500 text-white py-2 px-6 rounded-md hover:bg-yellow-600">
+                <!-- <button v-if="isReadOnly" @click="enableEditMode"
+                    class="bg-yellow-500 w-full text-white py-2 px-6 rounded-md hover:bg-yellow-600">
+                    แก้ไข
+                </button> -->
+
+                <!-- ปุ่ม แก้ไข -->
+                <button v-if="isReadOnly && !isConfirmed && !lockedDocumentNos.includes(formData.documentNo)"
+                    @click="enableEditMode"
+                    class="bg-yellow-500 w-full text-white py-2 px-6 rounded-md hover:bg-yellow-600">
                     แก้ไข
                 </button>
 
@@ -620,6 +669,13 @@
                 <button v-if="!isReadOnly && formData.documentNo && !isCreatePage" @click="updateDocument"
                     class="bg-green-600 w-full text-white py-2 px-6 rounded-md hover:bg-green-700">
                     บันทึกการแก้ไข
+                </button>
+
+                <!-- ✅ ปุ่มยืนยันบันทึก ปรากฏเฉพาะกรณีแก้ไข -->
+                <button v-if="!isReadOnly && formData.documentNo && !isConfirmed && !isCreatePage"
+                    @click="confirmFinalSave"
+                    class="bg-red-600 w-full text-white py-2 px-6 rounded-md hover:bg-red-700">
+                    ยืนยันการบันทึก (ไม่สามารถแก้ไขได้อีก)
                 </button>
             </div>
 
@@ -639,7 +695,7 @@ import PromotionSelector from '../components/PromotionSelector.vue';
 import Promotion_ProductSelector from '../components/Promotion_ProductSelector.vue';
 import { useRoute } from 'vue-router'
 // import ConfirmEditPopup from '@/components/saleOrder/ConfirmEditPopup.vue'
-
+import qs from 'qs';
 import Flatpickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
 
@@ -647,10 +703,20 @@ import 'flatpickr/dist/flatpickr.css'
 import { Thai } from 'flatpickr/dist/l10n/th.js'
 import flatpickr from 'flatpickr'
 
+
+
 // ✅ ตั้งค่าภาษาไทยให้กับ flatpickr
 flatpickr.localize(Thai)
 
 const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
+
+const BASE_URL_MAC_FIVEL = import.meta.env.VITE_API_URL_MAC_FIVELE;
+const BASE_URL_AUTH = import.meta.env.VITE_API_URL_AUTH;
+
+// const secretKey1 = import.meta.env.VITE_SECRET_KEY1;
+// const secretKey2 = import.meta.env.VITE_SECRET_KEY2;
+
 const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 
 // const getDataCustomer = JSON.parse(localStorage.getItem('selectDataCustomer') || 'null');
@@ -668,6 +734,9 @@ export default {
     },
     data() {
         return {
+
+            isConfirmed: false, // สำหรับควบคุมปุ่ม "ยืนยันการบันทึก"
+            lockedDocumentNos: [], // เอกสารที่ถูกล็อก (เก็บใน LocalStorage หรือดึงจาก backend)
 
             errors: {}, // เก็บข้อผิดพลาดของฟอร์ม
             formTouched: false, // ค่าเริ่มต้น
@@ -774,6 +843,16 @@ export default {
         };
     },
 
+    mounted() {
+        const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
+        this.lockedDocumentNos = locked;
+
+        if (this.formData.documentNo && locked.includes(this.formData.documentNo)) {
+            this.isReadOnly = true;
+            this.isConfirmed = true;
+        }
+    },
+
     watch: {
         // ✅ watch ทุก field ที่ต้องการทีละตัว
         'formData.deliveryDate'(newVal) {
@@ -830,8 +909,9 @@ export default {
 
     },
 
-
     methods: {
+
+
 
         groupByActivityId(products) {
             return products.reduce((acc, item) => {
@@ -840,6 +920,11 @@ export default {
                 acc[key].push(item);
                 return acc;
             }, {});
+        },
+
+        reloadPage(event) {
+            event.preventDefault(); // ป้องกัน router-link ทำงานเอง
+            this.$router.go();      // รีโหลดหน้าเดิม
         },
 
         // groupByActivityId(products) {
@@ -861,6 +946,14 @@ export default {
         //     }, {});
         // },
 
+
+        validateQuantity(product) {
+            if (product.pro_quantity > product.pro_stock) {
+                product.pro_quantity = product.pro_stock;
+            } else if (product.pro_quantity < 1) {
+                product.pro_quantity = 1;
+            }
+        },
 
 
         // ปุ่ม dropdown สำหรับมือถือ
@@ -1207,7 +1300,7 @@ export default {
 
             // เพื่อมข้อมูล FormData
             try {
-                const response = await axios.post('http://localhost/api_admin_dashboard/backend/api/post_sale_order.php', payload, {
+                const response = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_sale_order.php`, payload, {
                     // headers: { 'Content-Type': 'application/json' },
                 });
 
@@ -1237,9 +1330,290 @@ export default {
 
         },
 
+        async generateLRows(products, ML_date, ML_vnumber, ML_per, ML_supcus) {
+            const lrows = [];
+
+            let itemIndex = 1;
+
+            products.forEach((product) => {
+                // เพิ่มรายการสินค้า (ML_Note: 'item')
+                if (parseInt(product.pro_quantity) > 0) {
+                    lrows.push({
+                        ML_date,
+                        ML_type: "PS",
+                        ML_vnumber,
+                        ML_per,
+                        ML_supcus,
+                        ML_stk: product.pro_sn,
+                        ML_sto: "MAIN",
+                        ML_item: itemIndex++,
+                        ML_quan: parseInt(product.pro_quantity),
+                        ML_cog: product.pro_unit_price,
+                        ML_netL: (parseFloat(product.pro_quantity) * parseFloat(product.pro_unit_price)).toFixed(2),
+                        ML_cut: 1,
+                        ML_unit: product.pro_units,
+                        ML_des: product.pro_erp_title,
+                        ML_addcost: 0,
+                        ML_discL: 0,
+                        ML_deldate: ML_date.split(" ")[0],
+                        ML_uprice: product.pro_unit_price,
+                        ML_Note: "item"
+                    });
+                }
+
+                // เพิ่มของแถม (gifts)
+                if (Array.isArray(product.gifts)) {
+                    product.gifts.forEach(gift => {
+                        lrows.push({
+                            ML_date,
+                            ML_type: "PS",
+                            ML_vnumber,
+                            ML_per,
+                            ML_supcus,
+                            ML_stk: gift.pro_sn || "", // ถ้ามี
+                            ML_sto: "MAIN",
+                            ML_item: itemIndex++,
+                            ML_quan: parseInt(gift.pro_goods_num),
+                            ML_cog: 0,
+                            ML_netL: 0,
+                            ML_cut: 0,
+                            ML_unit: gift.pro_units || "PCS",
+                            ML_des: gift.title,
+                            ML_addcost: 0,
+                            ML_discL: 0,
+                            ML_deldate: ML_date.split(" ")[0],
+                            ML_uprice: 0,
+                            ML_Note: "promotion"
+                        });
+                    });
+                }
+
+                // เพิ่มโปรโมชั่น (promotions)
+                if (Array.isArray(product.promotions)) {
+                    product.promotions.forEach(promo => {
+                        lrows.push({
+                            ML_date,
+                            ML_type: "PS",
+                            ML_vnumber,
+                            ML_per,
+                            ML_supcus,
+                            ML_stk: promo.pro_sn || "",
+                            ML_sto: "MAIN",
+                            ML_item: itemIndex++,
+                            ML_quan: parseInt(promo.pro_goods_num),
+                            ML_cog: 0,
+                            ML_netL: 0,
+                            ML_cut: 0,
+                            ML_unit: "PCS",
+                            ML_des: promo.title,
+                            ML_addcost: 0,
+                            ML_discL: 0,
+                            ML_deldate: ML_date.split(" ")[0],
+                            ML_uprice: 0,
+                            ML_Note: "promotion"
+                        });
+                    });
+                }
+            });
+
+            return lrows;
+        },
+
+
+        // async confirmFinalSave() {
+        //     const result = await Swal.fire({
+        //         title: 'คุณแน่ใจหรือไม่?',
+        //         text: "หลังจากยืนยัน จะไม่สามารถแก้ไขข้อมูลนี้ได้อีก",
+        //         icon: 'warning',
+        //         showCancelButton: true,
+        //         confirmButtonText: 'ยืนยัน',
+        //         cancelButtonText: 'ยกเลิก'
+        //     });
+
+        //     if (result.isConfirmed) {
+        //         // 🔒 แกล้งทำเหมือนว่ามี API บันทึกสถานะ lock (คุณสามารถต่อ API จริงได้)
+        //         const docNo = this.formData.documentNo;
+        //         this.isReadOnly = true;
+        //         this.isConfirmed = true;
+
+        //         // เก็บไว้ใน localStorage เพื่อกัน user กลับมาแก้ใหม่
+        //         const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
+        //         if (!locked.includes(docNo)) {
+        //             locked.push(docNo);
+        //             localStorage.setItem('lockedDocumentNos', JSON.stringify(locked));
+        //         }
+
+        //         Swal.fire('สำเร็จ!', 'รายการถูกล็อกแล้ว', 'success');
+        //     }
+        // },
+
+        async confirmFinalSave() {
+            const result = await Swal.fire({
+                title: 'คุณแน่ใจหรือไม่?',
+                text: "หลังจากยืนยัน จะไม่สามารถแก้ไขข้อมูลนี้ได้อีก",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก'
+            });
+
+            if (!result.isConfirmed) return;
+            // if (result.isConfirmed) {
+            const docNo = this.formData.documentNo;
+
+            try {
+                const lockResponse = await axios.post(
+                    `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/lock_document.php`,
+                    { documentNo: docNo }
+                );
+
+                const resData = lockResponse.data;
+
+                console.log("🔒 Response จาก API lock_document:", resData);
+
+                if (!lockResponse.data.success) {
+                    Swal.fire('ผิดพลาด', lockResponse.data.message, 'error');
+                    return;
+                }
+
+                // if (resData.success) {
+                this.isReadOnly = true;
+                this.isConfirmed = true;
+
+                // กันย้อนแก้ในเครื่องนี้ (optional)
+                const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
+                if (!locked.includes(docNo)) {
+                    locked.push(docNo);
+                    localStorage.setItem('lockedDocumentNos', JSON.stringify(locked));
+                }
+
+                Swal.fire('สำเร็จ!', 'รายการถูกล็อกแล้ว', 'success');
+                // } else {
+                //     Swal.fire('ผิดพลาด', resData.message, 'error');
+                // }
+
+                const secretKeyData = qs.stringify({
+                    secretKey1: import.meta.env.VITE_SECRET_KEY1,
+                    secretKey2: import.meta.env.VITE_SECRET_KEY2
+                });
+
+                // 2. 🧪 ดึง token จาก BASE_URL_AUTH
+                const authResponse = await axios.post(`${BASE_URL_AUTH}`, secretKeyData , {
+                    // Secretkey1: "your_secret_1", // 👉 เปลี่ยนเป็นค่าแท้จริง
+                    // Secretkey2: "your_secret_2"
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const token = authResponse.data.token;
+                console.log("🔑 Token ที่ได้จาก BASE_URL_AUTH:", token);
+                if (!token) throw new Error("ไม่สามารถดึง token ได้");
+
+                // 3. 📦 สร้าง payload ข้อมูล Macfive
+                const payload = this.buildMacfivePayload();
+
+                console.log("📦 Payload ที่จะส่งไปยัง Macfive:", payload);
+
+                return
+
+                // 4. 🚀 ส่งไปยัง BASE_URL_MAC_FIVEL
+                const macfiveResponse = await axios.post(`${BASE_URL_MAC_FIVEL}`, payload, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                console.log("✅ Macfive ส่งสำเร็จ", macfiveResponse.data);
+
+            } catch (err) {
+                const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาด';
+                Swal.fire('ผิดพลาด', message, 'error');
+            }
+
+        },
+        // },
+
+        buildMacfivePayload() {
+            const now = new Date();
+            const formatDate = (d) => d.toISOString().slice(0, 10);
+            const formatDateTime = (d) => d.toISOString().slice(0, 19).replace("T", " ");
+
+            const docNo = this.formData.documentNo;
+
+            return {
+                hrows: {
+                    MH_date: formatDateTime(now),
+                    MH_type: "PS",
+                    MH_vnumber: docNo,
+                    MH_process: 5,
+                    MH_supcus: this.formData.customerCode,
+                    MH_noItems: this.formData.productList.length,
+                    MH_vatRate: 7,
+                    MH_vatTotal: parseFloat(this.formData.final_total_price) * 0.07,
+                    MH_netTotal: parseFloat(this.formData.final_total_price),
+                    MH_status: 15,
+                    MH_per: "DP001",
+                    MH_site: 1655,
+                    MH_deldate: formatDate(now),
+                    MH_totalCOG: parseFloat(this.formData.final_total_price),
+                    MH_discT1: 0,
+                    MH_discF1: 0,
+                    MH_discT2: 6.54,
+                    MH_discF2: parseFloat(this.formData.final_total_price) * 0.07,
+                    MH_flow: 0,
+                    MH_cur: 0,
+                    MH_Note: `// ${docNo}`,
+                    MH_cnect: 3,
+                    MH_cancel: 0
+                },
+                erows: {
+                    ME_date: formatDateTime(now),
+                    ME_type: "PS",
+                    ME_vnumber: docNo,
+                    ME_supcus: this.formData.customerCode,
+                    ME_termCX: "7|",
+                    ME_termPX: "100|",
+                    ME_termAX: `${parseFloat(this.formData.final_total_price)}|`,
+                    ME_termDX: `${formatDate(now)}|`,
+                    ME_cashRec: 0,
+                    ME_ccRec: parseFloat(this.formData.final_total_price)
+                },
+                krows: {
+                    MK_date: formatDateTime(now),
+                    MK_name: this.formData.fullName,
+                    MK_addr: this.formData.address,
+                    MK_tel: this.formData.phone
+                },
+                lrows: this.formData.productList.map((item, index) => ({
+                    ML_date: formatDateTime(now),
+                    ML_type: "PS",
+                    ML_vnumber: docNo,
+                    ML_per: "DP001",
+                    ML_supcus: this.formData.customerCode,
+                    ML_stk: item.pro_sn || "N/A",
+                    ML_sto: "MAIN",
+                    ML_item: index + 1,
+                    ML_quan: parseFloat(item.pro_quantity),
+                    ML_cog: parseFloat(item.pro_total_price || 0),
+                    ML_netL: parseFloat(item.pro_total_price || 0),
+                    ML_cut: 1,
+                    ML_unit: item.unit || "PCS",
+                    ML_des: item.pro_erp_title,
+                    ML_addcost: 0,
+                    ML_discL: 0,
+                    ML_deldate: formatDate(now),
+                    ML_uprice: parseFloat(item.pro_unit_price),
+                    ML_Note: "item"
+                }))
+            };
+        },
+
+
         enableEditMode() {
             this.isReadOnly = false; // เปิดให้แก้ไขฟอร์ม
         },
+
 
         async updateDocument() {
 
@@ -1315,7 +1689,7 @@ export default {
                 console.log(JSON.stringify(payload))
 
                 const response = await axios.post(
-                    'http://localhost/api_admin_dashboard/backend/api/update_sale_order.php',
+                    `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/update_sale_order.php`,
                     payload
                 );
 
@@ -1342,7 +1716,7 @@ export default {
         },
         async loadDocumentData(documentNo) {
             try {
-                const response = await axios.get(`http://localhost/api_admin_dashboard/backend/api/get_sale_order.php?documentNo=${documentNo}`);
+                const response = await axios.get(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/get_sale_order.php?documentNo=${documentNo}`);
 
                 console.log("😂 Log Value response: ", response);
 
@@ -1591,12 +1965,25 @@ export default {
                         pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
                         pro_images: item.pro_image || '',
                         pro_quantity: item.pro_goods_num || 0, pro_units: matchedTitle.pro_units || item.pro_units || '',
+                        pro_stock: matchedTitle.stock || 0, // ใช้ stock จาก API
+                        // pro_quantity: item.amount ?? item.pro_goods_num ?? 0,
                         gifts: gifts.filter(gift => gift.pro_activity_id == item.pro_activity_id),
                         promotions: promotions.filter(promo => promo.pro_activity_id == item.pro_activity_id),
                     });
                 }
             });
 
+            // ตรวจสอบว่า amount มากกว่า stock หรือไม่
+            // const invalidItems = items.filter(item => item.amount > item.stock || item.amount < 0);
+
+            // if (invalidItems.length > 0) {
+            //     alert("มีรายการที่ใส่จำนวนไม่ถูกต้อง (น้อยกว่า 1 หรือมากกว่าคงเหลือในคลัง)");
+            //     // หรือ Swal.fire ก็ได้
+            //     return;
+            // }
+
+            // ถ้าถูกต้อง -> ดำเนินการต่อ
+            // this.selectedItems = items;
 
             console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
 

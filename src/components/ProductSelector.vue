@@ -9,6 +9,9 @@
         <!-- Search Input -->
         <input class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           v-model="keyword" placeholder="ค้นหา..." @input="onInput" confirm-type="search" />
+        <div class="">
+          <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 mb-16 text-4xl">&times;</button>
+        </div>
       </div>
 
       <div class="text-sm text-gray-500 mt-2">
@@ -27,9 +30,9 @@
             ประเภทสมาชิก: {{ memberType }}
           </div>
           <!-- แสดงว่าเป็น level อะไร -->
-          <div class="">
+          <!-- <div class="">
             <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 text-2xl">&times;</button>
-          </div>
+          </div> -->
         </div>
 
       </div>
@@ -52,8 +55,7 @@
             <th class="px-4 py-2 text-left text-sm font-medium text-gray-600 relative">
               <!-- Input ช่องค้นหา -->
               <div class="flex gap-1">
-                <input type="text" v-model="keyword_sku_no" placeholder="ค้นหา สี"
-                  @focus="dropdownOpenIndex = 'header'"
+                <input type="text" v-model="keyword_sku_no" placeholder="ค้นหา สี" @focus="dropdownOpenIndex = 'header'"
                   class="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none" />
                 <!-- ปุ่มค้นหา -->
                 <button @click="searchSku" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -63,6 +65,7 @@
             </th>
 
             <th class="px-4 py-2 border">รหัสสินค้า</th>
+            <th class="px-4 py-2 border">จำนวน</th>
             <th class="px-4 py-2 border">คงเหลือ</th>
             <!-- <th class="px-4 py-2 border">promotion</th> -->
             <th class="px-4 py-2 border">หน่วย</th>
@@ -102,6 +105,15 @@
             <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? 'ไม่มีสี' }}</td>
             <td class="px-4 text-gray-700 py-2 border">{{ item.sn }}</td>
             <!-- <td class="px-4 py-2 border">{{ item.promotion }}</td> -->
+            <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.stock || 0 }}</td> -->
+            <!-- <td class="px-4 text-gray-700 py-2 border">
+              <input type="number" v-model.number="item.amount" min="1" placeholder="จำนวน"
+                class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
+            </td> -->
+            <td class="px-4 text-gray-700 py-2 border text-center">
+              <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
+                v-model.number="item.amount" :min="1" :max="item.stock" @input="validateAmount(item)" placeholder="0" />
+            </td>
             <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
             <td class="px-4 text-gray-700 py-2 border">{{ item.units }}</td>
             <td class="px-4 text-gray-700 py-2 border">{{ item.price }}</td>
@@ -179,6 +191,8 @@ const dataselect = ref([])
 const error = ref('')
 
 const keyword_sku_no = ref('');
+
+
 const dataselectsku_no = ref([]);
 
 const memberType = ref('');
@@ -238,16 +252,25 @@ function toggleSelectAll(event) {
 }
 
 
+function validateAmount(item) {
+  if (item.amount < 0) {
+    item.amount = 0;
+  } else if (item.amount > item.stock) {
+    item.amount = item.stock;
+  }
+}
+
 
 function confirmSelection() {
-  const selectedProducts = props.productList
+  const selectedProducts = tableData.value
+    // const selectedProducts = props.productList
     .filter(p => selectedIds.value.includes(p.id))
     .map(p => ({
       pro_id: p.id,
       pro_erp_title: p.erp_title,
       pro_sn: p.sn,
       pro_images: p.image,
-      pro_quantity: p.stock,
+      pro_quantity: p.amount || 1, // ใช้ amount ถ้าไม่มีให้ใช้ 1
       pro_unit_price: p.price,
       pro_unit: p.units,
       // qty: 1,
@@ -293,7 +316,7 @@ const searchSku = async () => {
         // keywords: keyword_sku_no.value,
         keywords: keyword.value + '$_' + keyword_sku_no.value + '_$',
         level: getLevel,
-       
+
       });
 
       console.log("ELSE searchSku response:", response);
@@ -310,106 +333,106 @@ const searchSku = async () => {
   }
 };
 
-  async function SearchProducstSubmit() {
+async function SearchProducstSubmit() {
 
-    isLoading.value = true;
+  isLoading.value = true;
 
-    const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+  const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
 
-    const getLevel = getLevelSS?.data2?.level ?? 0;
-    console.log("Log getLevel: ", getLevel);
+  const getLevel = getLevelSS?.data2?.level ?? 0;
+  console.log("Log getLevel: ", getLevel);
 
-    // แปลงค่า getLevel เป็นชื่อสมาชิก
-    // let memberType = '';
-    if (getLevel === 0) {
-      memberType.value = 'Member Nuser';
-    } else if (getLevel === 1) {
-      memberType.value = 'Member A';
-    } else if (getLevel === 7) {
-      memberType.value = 'Member B';
-    } else if (getLevel === 10) {
-      memberType.value = 'Member A+';
-    } else {
-      memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
+  // แปลงค่า getLevel เป็นชื่อสมาชิก
+  // let memberType = '';
+  if (getLevel === 0) {
+    memberType.value = 'Member Nuser';
+  } else if (getLevel === 1) {
+    memberType.value = 'Member A';
+  } else if (getLevel === 7) {
+    memberType.value = 'Member B';
+  } else if (getLevel === 10) {
+    memberType.value = 'Member A+';
+  } else {
+    memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
+  }
+
+  console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
+
+  try {
+
+    // isLoading.value = true; // เริ่มโหลด
+
+    const raw = {
+      // pageCurrent: pageCurrent.value,
+      // keywords: keyword.value,
+      // // keywords: keyword.value.trim(), // ตัด space หน้า-หลัง
+      // level: '10',
+      // pageSize: pageSize.value,
+      pageCurrent: pageCurrent.value,
+      pageSize: pageSize.value,
+      keywords: keyword.value,
+      level: getLevel
+    };
+
+    console.log('ส่งคำค้นหา:', raw);
+    console.log('ส่ง payload ค้นหา:', JSON.stringify(raw, null, 2));
+
+    const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    // console.log("API Response ทั้งหมด:", response.data);
+    // console.log("API Response ทั้งหมด:", response.data.data.data2);
+
+    const searchProducts = response.data.data.data2;
+
+    console.log("searchProducts:", searchProducts);
+
+
+    // const getData
+
+    if (response.data.code !== 1) {
+      console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
     }
 
-    console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
+    if (response.data.code === 1) {
+      const data = response.data.data;
+      const searchProducts = data.data2 || [];
 
-    try {
+      tableData.value = searchProducts;
 
-      // isLoading.value = true; // เริ่มโหลด
+      // tableData.value = searchProducts.map(item => ({
+      //   ...item,
+      //   imageLoaded: false
+      // }));
 
-      const raw = {
-        // pageCurrent: pageCurrent.value,
-        // keywords: keyword.value,
-        // // keywords: keyword.value.trim(), // ตัด space หน้า-หลัง
-        // level: '10',
-        // pageSize: pageSize.value,
-        pageCurrent: pageCurrent.value,
-        pageSize: pageSize.value,
-        keywords: keyword.value,
-        level: getLevel
-      };
+      dataselect.value = searchProducts;
+      total.value = data.item_count || 0;
 
-      console.log('ส่งคำค้นหา:', raw);
-      console.log('ส่ง payload ค้นหา:', JSON.stringify(raw, null, 2));
+      console.log("✅ ข้อมูล searchProducts:", searchProducts);
 
-      const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      // console.log("API Response ทั้งหมด:", response.data);
-      // console.log("API Response ทั้งหมด:", response.data.data.data2);
-
-      const searchProducts = response.data.data.data2;
-
-      console.log("searchProducts:", searchProducts);
-
-
-      // const getData
-
-      if (response.data.code !== 1) {
-        console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
-      }
-
-      if (response.data.code === 1) {
-        const data = response.data.data;
-        const searchProducts = data.data2 || [];
-
-        tableData.value = searchProducts;
-
-        // tableData.value = searchProducts.map(item => ({
-        //   ...item,
-        //   imageLoaded: false
-        // }));
-
-        dataselect.value = searchProducts;
-        total.value = data.item_count || 0;
-
-        console.log("✅ ข้อมูล searchProducts:", searchProducts);
-
-        // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
-        isLoading.value = false; // โหลดเสร็จ
-      } else {
-        error.value = response.data.message || 'เกิดข้อผิดพลาด';
-        Swal.fire({
-          title: 'ค้นหาไม่สำเร็จ',
-          text: error.value,
-          icon: 'error'
-        });
-        // isLoading.value = false;
-      }
-    } catch (err) {
+      // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
+      isLoading.value = false; // โหลดเสร็จ
+    } else {
+      error.value = response.data.message || 'เกิดข้อผิดพลาด';
       Swal.fire({
-        title: 'เกิดข้อผิดพลาด',
-        text: err.message || 'โปรดลองใหม่ภายหลัง',
+        title: 'ค้นหาไม่สำเร็จ',
+        text: error.value,
         icon: 'error'
       });
       // isLoading.value = false;
     }
+  } catch (err) {
+    Swal.fire({
+      title: 'เกิดข้อผิดพลาด',
+      text: err.message || 'โปรดลองใหม่ภายหลัง',
+      icon: 'error'
+    });
+    // isLoading.value = false;
   }
+}
 
-  
+
 
 // function mounted() {
 //         this.getProduct(1);
@@ -423,6 +446,11 @@ function onInput() {
 
 onMounted(() => {
   SearchProducstSubmit(); // โหลดสินค้าทั้งหมดรอบแรก
+
+  tableData.value = props.productList.map(item => ({
+    ...item,
+    amount: item.amount || 1
+  }))
 });
 
 

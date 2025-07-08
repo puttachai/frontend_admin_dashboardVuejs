@@ -9,6 +9,9 @@
         <!-- Search Input -->
         <input class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           v-model="keyword" placeholder="ค้นหา..." @input="onInput" confirm-type="search" />
+        <div class="">
+          <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 mb-16 text-4xl">&times;</button>
+        </div>
       </div>
 
       <div class="text-sm text-gray-500 mt-2">
@@ -27,9 +30,9 @@
             ประเภทสมาชิก: {{ memberType }}
           </div>
           <!-- แสดงว่าเป็น level อะไร -->
-          <div class="">
+          <!-- <div class="">
             <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 text-2xl">&times;</button>
-          </div>
+          </div> -->
         </div>
 
       </div>
@@ -330,45 +333,145 @@ const searchPromotion_no = async () => {
       // });
 
       console.log("IF searchSku response:", response);
-      console.log("IF searchSku total:", response.data.data.item_count);
+      // console.log("IF searchSku total:", response.data.data.item_count);
 
       if (response.data.code === 1) {
-        total.value = response.data.data.item_count;
-        dataselectpromotion_no.value = response.data.data.data2;
-        tableData.value = [...dataselectpromotion_no.value];
-        pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
+        const rawData = response.data.data;
+
+        // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
+        const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
+
+        const filtered = rawData.filter((item) =>
+          item.title.toLowerCase().includes(keywordToSearch)
+        );
+
+        console.log("Filtered promotions:", filtered);
+
+        dataselectpromotion_no.value = filtered;
+        tableData.value = [...filtered];
+        total.value = filtered.length;
+        pageSize.value = (total.value < pageSize.value)
+          ? total.value
+          : parseInt(pageSize.value);
       }
+
+      // if (response.data.code === 1) {
+      //   total.value = response.data.data.item_count;
+      //   dataselectpromotion_no.value = response.data.data.data2;
+      //   tableData.value = [...dataselectpromotion_no.value];
+      //   pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
+      // }
     } catch (err) {
       console.error("searchSku error:", err);
     }
   } else {
     try {
-      const response = await axios.post(`${BASE_URL}/Goods2/product`, {
-        version: '2.0.2',
-        pageSize: pageSize.value,
-        pageCurrent: pageCurrent.value,
-        // keywords: dataselectpromotion_no.value,
-        keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
-        level: getLevel,
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+      //   version: '2.0.2',
+      //   pageSize: pageSize.value,
+      //   pageCurrent: pageCurrent.value,
+      //   // keywords: dataselectpromotion_no.value,
+      //   keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
+      //   level: getLevel,
 
-      });
+      // });
 
-      console.log("ELSE searchSku response:", response);
-      console.log("ELSE searchSku total:", response.data.data.item_count);
+      // console.log("ELSE searchSku response:", response);
+      // console.log("ELSE searchSku total:", response.data.data.item_count);
+
+      // if (response.data.code === 1) {
+      //   total.value = response.data.data.item_count;
+      //   dataselectpromotion_no.value = response.data.data.data2;
+      //   tableData.value = [...dataselectpromotion_no.value];
+      // }
+      const gettoken = localStorage.getItem('token');
+      console.log("log value token:", gettoken);
+
+      // ?from=specialprice
+      const response = await axios.post(
+        `${BASE_URL}/goods2/activityList`,
+        {
+          version: '2.0.2',
+          pageSize: pageSize.value,
+          pageCurrent: pageCurrent.value,
+          // keywords: keyword.value,
+          keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
+          level: getLevel
+        }, //  body 
+        {
+          params: {
+            "from": "specialprice"
+          },
+          headers: {
+            'Content-Type': 'application/json',
+            'token': gettoken
+          }
+        }
+      );
+
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+      //   version: '2.0.2',
+      //   pageSize: pageSize.value,
+      //   pageCurrent: pageCurrent.value,
+      //   keywords: keyword_promotion_no.value,
+      //   level: getLevel
+      // });
+
+      console.log("IF searchSku response:", response);
+      // console.log("IF searchSku total:", response.data.data.item_count);
 
       if (response.data.code === 1) {
-        total.value = response.data.data.item_count;
-        dataselectpromotion_no.value = response.data.data.data2;
-        tableData.value = [...dataselectpromotion_no.value];
+        const rawData = response.data.data;
+
+        console.log("rawData:", rawData);
+
+        // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
+        const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
+
+        // const filtered = rawData.filter((item) =>
+        //   item.title.toLowerCase().includes(keywordToSearch)
+        // );
+        // const search = searchTerm.toLowerCase();
+        // const filtered = rawData.filter(item => item.activity_code?.toLowerCase().includes(keywordToSearch));
+
+        const filtered = rawData.filter((item) =>
+          item.title?.toLowerCase().includes(keywordToSearch) ||
+          item.erp_title?.toLowerCase().includes(keywordToSearch) ||
+          item.activity_code?.toLowerCase().includes(keywordToSearch) ||
+          item.activity_id?.toLowerCase().includes(keywordToSearch) ||
+          item.note?.toLowerCase().includes(keywordToSearch) ||
+          item.ML_Note?.toLowerCase().includes(keywordToSearch)
+        );
+
+
+        console.log("Filtered promotions:", filtered);
+
+        dataselectpromotion_no.value = filtered;
+        tableData.value = [...filtered];
+        total.value = filtered.length;
+        pageSize.value = (total.value < pageSize.value)
+          ? total.value
+          : parseInt(pageSize.value);
       }
+
+      // if (response.data.code === 1) {
+      //   total.value = response.data.data.item_count;
+      //   dataselectpromotion_no.value = response.data.data.data2;
+      //   tableData.value = [...dataselectpromotion_no.value];
+      //   pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
+      // }
     } catch (err) {
       console.error("searchSku error:", err);
-    } satisfies
+    }
+    //satisfies
   }
 };
 
-//SearchPromotionSubmit
+
+
 async function SearchPromotionSubmit() {
+  clearTimeout(searchTimer.value);
+
 
   const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
 
@@ -391,82 +494,259 @@ async function SearchPromotionSubmit() {
 
   console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
 
-  try {
 
-    const gettoken = localStorage.getItem('token');
-    console.log("log value token:", gettoken);
+  if (!keyword.value.trim()) {
 
-    // ?from=specialprice
-    const response = await axios.post(
-      `${BASE_URL}/goods2/activityList`,
-      {
-        keywords: keyword.value,
-        level: getLevel
-      }, //  body 
-      {
-        params: {
-          "from": "specialprice"
-        },
-        headers: {
-          'Content-Type': 'application/json',
-          'token': gettoken
+    try {
+
+      const gettoken = localStorage.getItem('token');
+      console.log("log value token:", gettoken);
+
+      // ?from=specialprice
+      const response = await axios.post(
+        `${BASE_URL}/goods2/activityList`,
+        {
+          version: '2.0.2',
+          // keywords: keyword.value,
+          keywords: keyword.value,
+          level: getLevel
+        }, //  body 
+        {
+          params: {
+            "from": "specialprice"
+          },
+          headers: {
+            'Content-Type': 'application/json',
+            'token': gettoken
+          }
         }
+      );
+
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+      //   version: '2.0.2',
+      //   pageSize: pageSize.value,
+      //   pageCurrent: pageCurrent.value,
+      //   keywords: keyword_promotion_no.value,
+      //   level: getLevel
+      // });
+
+      console.log("IF searchSku response:", response);
+      // console.log("IF searchSku total:", response.data.data.item_count);
+
+      if (response.data.code === 1) {
+        const rawData = response.data.data;
+
+        // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
+        const keywordToSearch = keyword.value.trim().toLowerCase();
+
+        const filtered = rawData.filter((item) =>
+          item.title.toLowerCase().includes(keywordToSearch)
+        );
+
+        console.log("Filtered promotions:", filtered);
+
+        dataselectpromotion_no.value = filtered;
+        tableData.value = [...filtered];
+        total.value = filtered.length;
+        pageSize.value = (total.value < pageSize.value)
+          ? total.value
+          : parseInt(pageSize.value);
       }
-    );
 
-    const searchPromotion = response.data.data;
-
-    console.log("searchProducts:", searchPromotion);
-
-
-    // const getData
-
-    if (response.data.code !== 1) {
-      console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+      // if (response.data.code === 1) {
+      //   total.value = response.data.data.item_count;
+      //   dataselectpromotion_no.value = response.data.data.data2;
+      //   tableData.value = [...dataselectpromotion_no.value];
+      //   pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
+      // }
+    } catch (err) {
+      console.error("searchSku error:", err);
     }
+  } else {
+    try {
 
-    if (response.data.code === 1) {
-      const data = response.data;
-      // const searchPromotion = data.data.length || 0;
+      const gettoken = localStorage.getItem('token');
+      console.log("log value token:", gettoken);
 
-      // tableData.value = searchPromotion;
+      // ?from=specialprice
+      const response = await axios.post(
+        `${BASE_URL}/goods2/activityList`,
+        {
+          version: '2.0.2',
+          pageSize: pageSize.value,
+          pageCurrent: pageCurrent.value,
+          // keywords: keyword.value,
+          keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
+          level: getLevel
+        }, //  body 
+        {
+          params: {
+            "from": "specialprice"
+          },
+          headers: {
+            'Content-Type': 'application/json',
+            'token': gettoken
+          }
+        }
+      );
 
-      const searchPromotion = data.data.data2 || []; // สมมุติว่า data2 คือตัว array ที่ใช้แสดงผล
-      tableData.value = [...searchPromotion];        // ยืนยันว่าเป็น array
-      total.value = searchPromotion.length;
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+      //   version: '2.0.2',
+      //   pageSize: pageSize.value,
+      //   pageCurrent: pageCurrent.value,
+      //   keywords: keyword_promotion_no.value,
+      //   level: getLevel
+      // });
 
-      // tableData.value = searchProducts.map(item => ({
-      //   ...item,
-      //   imageLoaded: false
-      // }));
+      console.log("IF searchSku response:", response);
+      // console.log("IF searchSku total:", response.data.data.item_count);
 
-      dataselect.value = searchPromotion;
-      // total.value = data.data || 0;
-      // total.value = Array.isArray(result?.data?.list) ? result.data.list.length : 0;
+      if (response.data.code === 1) {
+        const rawData = response.data.data;
+
+        console.log("rawData:", rawData);
+
+        // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
+        const keywordToSearch = keyword.value.trim().toLowerCase();
+
+        // const filtered = rawData.filter((item) =>
+        //   item.title.toLowerCase().includes(keywordToSearch)
+        // );
+        // const search = searchTerm.toLowerCase();
+        // const filtered = rawData.filter(item => item.activity_code?.toLowerCase().includes(keywordToSearch));
+
+        const filtered = rawData.filter((item) =>
+          item.title?.toLowerCase().includes(keywordToSearch) ||
+          item.erp_title?.toLowerCase().includes(keywordToSearch) ||
+          item.activity_code?.toLowerCase().includes(keywordToSearch) ||
+          item.activity_id?.toLowerCase().includes(keywordToSearch) ||
+          item.note?.toLowerCase().includes(keywordToSearch) ||
+          item.ML_Note?.toLowerCase().includes(keywordToSearch)
+        );
 
 
-      console.log("✅ ข้อมูล searchPromotion:", searchPromotion);
+        console.log("Filtered promotions:", filtered);
 
-      // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
-      // isLoading.value = false; // โหลดเสร็จ
-    } else {
-      error.value = response.data.message || 'เกิดข้อผิดพลาด';
-      Swal.fire({
-        title: 'ค้นหาไม่สำเร็จ',
-        text: error.value,
-        icon: 'error'
-      });
-      // isLoading.value = false;
+        dataselectpromotion_no.value = filtered;
+        tableData.value = [...filtered];
+        total.value = filtered.length;
+        pageSize.value = (total.value < pageSize.value)
+          ? total.value
+          : parseInt(pageSize.value);
+      }
+
+      // if (response.data.code === 1) {
+      //   total.value = response.data.data.item_count;
+      //   dataselectpromotion_no.value = response.data.data.data2;
+      //   tableData.value = [...dataselectpromotion_no.value];
+      //   pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
+      // }
+    } catch (err) {
+      console.error("searchSku error:", err);
     }
-  } catch (err) {
-    Swal.fire({
-      title: 'เกิดข้อผิดพลาด',
-      text: err.message || 'โปรดลองใหม่ภายหลัง',
-      icon: 'error'
-    });
-    // isLoading.value = false;
+    //satisfies
   }
-}
+};
+//SearchPromotionSubmit
+// async function SearchPromotionSubmit() {
+
+//   const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+
+//   const getLevel = getLevelSS?.data2?.level ?? 0;
+//   console.log("Log getLevel: ", getLevel);
+
+//   // แปลงค่า getLevel เป็นชื่อสมาชิก
+//   // let memberType = '';
+//   if (getLevel === 0) {
+//     memberType.value = 'Member End User';
+//   } else if (getLevel === 1) {
+//     memberType.value = 'Member A';
+//   } else if (getLevel === 7) {
+//     memberType.value = 'Member B';
+//   } else if (getLevel === 10) {
+//     memberType.value = 'Member A+';
+//   } else {
+//     memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
+//   }
+
+//   console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
+
+//   try {
+
+//     const gettoken = localStorage.getItem('token');
+//     console.log("log value token:", gettoken);
+
+//     // ?from=specialprice
+//     const response = await axios.post(
+//       `${BASE_URL}/goods2/activityList`,
+//       {
+//         keywords: keyword.value,
+//         level: getLevel
+//       }, //  body 
+//       {
+//         params: {
+//           "from": "specialprice"
+//         },
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'token': gettoken
+//         }
+//       }
+//     );
+
+//     const searchPromotion = response.data.data;
+
+//     console.log("searchProducts:", searchPromotion);
+
+
+//     // const getData
+
+//     if (response.data.code !== 1) {
+//       console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+//     }
+
+//     if (response.data.code === 1) {
+//       const data = response.data;
+//       // const searchPromotion = data.data.length || 0;
+
+//       // tableData.value = searchPromotion;
+
+//       const searchPromotion = data.data.data2 || []; // สมมุติว่า data2 คือตัว array ที่ใช้แสดงผล
+//       tableData.value = [...searchPromotion];        // ยืนยันว่าเป็น array
+//       total.value = searchPromotion.length;
+
+//       // tableData.value = searchProducts.map(item => ({
+//       //   ...item,
+//       //   imageLoaded: false
+//       // }));
+
+//       dataselect.value = searchPromotion;
+//       // total.value = data.data || 0;
+//       // total.value = Array.isArray(result?.data?.list) ? result.data.list.length : 0;
+
+
+//       console.log("✅ ข้อมูล searchPromotion:", searchPromotion);
+
+//       // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
+//       // isLoading.value = false; // โหลดเสร็จ
+//     } else {
+//       error.value = response.data.message || 'เกิดข้อผิดพลาด';
+//       Swal.fire({
+//         title: 'ค้นหาไม่สำเร็จ',
+//         text: error.value,
+//         icon: 'error'
+//       });
+//       // isLoading.value = false;
+//     }
+//   } catch (err) {
+//     Swal.fire({
+//       title: 'เกิดข้อผิดพลาด',
+//       text: err.message || 'โปรดลองใหม่ภายหลัง',
+//       icon: 'error'
+//     });
+//     // isLoading.value = false;
+//   }
+// }
 
 //page = 1
 async function getPromotion(page = 1) {

@@ -89,6 +89,19 @@
           </tr>
         </tbody>
 
+        <tbody v-if="paginatedPromotion.length === 0 && !isLoading">
+          <tr>
+            <td colspan="10" class="py-10 text-center">
+              <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <div class="mt-2 text-gray-500">โปรดทำการเลือก ร้านค้าของลูกค้าก่อนทำรายการ</div>
+            </td>
+          </tr>
+        </tbody>
+
         <tbody v-if="!isLoading">
           <tr v-for="item in paginatedPromotion" :key="item.id">
             <td class="px-4 py-2 border text-center">
@@ -647,6 +660,116 @@ async function SearchPromotionSubmit() {
     //satisfies
   }
 };
+//page = 1
+async function getPromotion(page = 1) {
+  isLoading.value = true;
+
+  try {
+
+    const gettoken = localStorage.getItem('token');
+    console.log("log value token:", gettoken);
+
+    if (gettoken) {
+
+      // ?from=specialprice
+      const response = await axios.post(
+        `${BASE_URL}/goods2/activityList`,
+        {}, //  body 
+        {
+          params: {
+            "from": "specialprice"
+          },
+          headers: {
+            'Content-Type': 'application/json',
+            'token': gettoken
+          }
+        }
+      );
+
+      console.log("log value data:", response.data);
+
+      const data = response.data;
+
+      // เก็บจำนวนโปรโมชั้นทั้งหมดจาก API
+      total.value = data.data.length || 0;
+
+      console.log('Log total.value:', total.value);
+
+      // ถ้าอยากโหลดโปรโมชั้นทั้งหมดในรอบเดียว ให้ตั้ง pageSize = total แล้วโหลดใหม่
+      // โหลดทั้งหมดในครั้งแรก
+      // if (page === 1 && pageSize.value !== total.value) {
+      //   pageSize.value = total.value;
+      //   // เรียกโหลดใหม่อีกครั้ง
+      //   return this.getPromotion(1);
+      // }
+
+      // เอาข้อมูลโปรโมชั้นที่ได้มาเก็บในตัวแปร
+      Apipromotion.value = data.data || [];
+
+      tableData.value = Apipromotion.value;
+      pageCurrent.value = page;
+
+      console.log('Loaded Promotion:', Apipromotion.value);
+      // console.log('Total items:', this.totalItems);
+      // isLoading.value = false;
+
+    } else if (!gettoken) {
+      Swal.fire({ text: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล', icon: 'warning' });
+      // selectcustomer.value = ; // ปิด popup เลือกร้านค้า
+      isLoading.value = false;
+      return;
+    }
+
+    isLoading.value = false;
+
+  } catch (err) {
+    const message = err.response?.data?.message || err.message || 'Unknown error';
+    Swal.fire({ text: message, icon: 'error' });
+  }
+}
+
+// function mounted() {
+//         this.getProduct(1);
+//     }
+function onInput() {
+  clearTimeout(searchTimer.value);
+  searchTimer.value = setTimeout(() => {
+    SearchPromotionSubmit();
+  }, 500); // รอให้พิมพ์เสร็จ 0.5 วิค่อยเรียก
+}
+
+// onMounted(() => {
+//   // SearchPromotionSubmit(); // โหลดสินค้าทั้งหมดรอบแรก
+//   getPromotion();
+// });
+
+onMounted(async () => {
+  try {
+    await SearchPromotionSubmit();
+    await getPromotion();
+    console.log("✅ เรียกฟังก์ชันทั้งสองแบบเรียงลำดับสำเร็จ");
+  } catch (err) {
+    console.error("❌ เกิดข้อผิดพลาดในการโหลดข้อมูล:", err);
+  }
+});
+
+// เมื่อกดปุ่มเลือกโปรโมชั่น
+function openProductSelector(promotionList) {
+  selectedPromotion.value = promotionList
+  showPromotionProductSelector.value = true
+}
+
+// callback เมื่อลูกค้าเลือกสินค้าเสร็จ
+function handleSelectedProducts(products) {
+  console.log("✅ สินค้าที่เลือกจากโปรโมชั่น:", products)
+  showPromotionProductSelector.value = false; // ✅ ปิด popup
+
+}
+
+</script>
+
+
+<!-- 
 //SearchPromotionSubmit
 // async function SearchPromotionSubmit() {
 
@@ -746,103 +869,7 @@ async function SearchPromotionSubmit() {
 //     });
 //     // isLoading.value = false;
 //   }
-// }
-
-//page = 1
-async function getPromotion(page = 1) {
-  isLoading.value = true;
-
-  try {
-
-    const gettoken = localStorage.getItem('token');
-    console.log("log value token:", gettoken);
-
-    // ?from=specialprice
-    const response = await axios.post(
-      `${BASE_URL}/goods2/activityList`,
-      {}, //  body 
-      {
-        params: {
-          "from": "specialprice"
-        },
-        headers: {
-          'Content-Type': 'application/json',
-          'token': gettoken
-        }
-      }
-    );
-
-    console.log("log value data:", response.data);
-
-    const data = response.data;
-
-    // เก็บจำนวนโปรโมชั้นทั้งหมดจาก API
-    total.value = data.data.length || 0;
-
-    console.log('Log total.value:', total.value);
-
-    // ถ้าอยากโหลดโปรโมชั้นทั้งหมดในรอบเดียว ให้ตั้ง pageSize = total แล้วโหลดใหม่
-    // โหลดทั้งหมดในครั้งแรก
-    // if (page === 1 && pageSize.value !== total.value) {
-    //   pageSize.value = total.value;
-    //   // เรียกโหลดใหม่อีกครั้ง
-    //   return this.getPromotion(1);
-    // }
-
-    // เอาข้อมูลโปรโมชั้นที่ได้มาเก็บในตัวแปร
-    Apipromotion.value = data.data || [];
-
-    tableData.value = Apipromotion.value;
-    pageCurrent.value = page;
-
-    console.log('Loaded Promotion:', Apipromotion.value);
-    // console.log('Total items:', this.totalItems);
-    isLoading.value = false;
-  } catch (err) {
-    const message = err.response?.data?.message || err.message || 'Unknown error';
-    Swal.fire({ text: message, icon: 'error' });
-  }
-}
-
-// function mounted() {
-//         this.getProduct(1);
-//     }
-function onInput() {
-  clearTimeout(searchTimer.value);
-  searchTimer.value = setTimeout(() => {
-    SearchPromotionSubmit();
-  }, 500); // รอให้พิมพ์เสร็จ 0.5 วิค่อยเรียก
-}
-
-// onMounted(() => {
-//   // SearchPromotionSubmit(); // โหลดสินค้าทั้งหมดรอบแรก
-//   getPromotion();
-// });
-
-onMounted(async () => {
-  try {
-    await SearchPromotionSubmit();
-    await getPromotion();
-    console.log("✅ เรียกฟังก์ชันทั้งสองแบบเรียงลำดับสำเร็จ");
-  } catch (err) {
-    console.error("❌ เกิดข้อผิดพลาดในการโหลดข้อมูล:", err);
-  }
-});
-
-// เมื่อกดปุ่มเลือกโปรโมชั่น
-function openProductSelector(promotionList) {
-  selectedPromotion.value = promotionList
-  showPromotionProductSelector.value = true
-}
-
-// callback เมื่อลูกค้าเลือกสินค้าเสร็จ
-function handleSelectedProducts(products) {
-  console.log("✅ สินค้าที่เลือกจากโปรโมชั่น:", products)
-  showPromotionProductSelector.value = false; // ✅ ปิด popup
-
-}
-
-</script>
+// } -->
 
 
 <!-- 

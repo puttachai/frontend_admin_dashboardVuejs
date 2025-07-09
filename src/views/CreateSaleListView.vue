@@ -457,7 +457,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -1448,46 +1448,46 @@ export default {
         // },
 
         async confirmFinalSave() {
-            const result = await Swal.fire({
-                title: 'คุณแน่ใจหรือไม่?',
-                text: "หลังจากยืนยัน จะไม่สามารถแก้ไขข้อมูลนี้ได้อีก",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'ยืนยัน',
-                cancelButtonText: 'ยกเลิก'
-            });
+            // const result = await Swal.fire({
+            //     title: 'คุณแน่ใจหรือไม่?',
+            //     text: "หลังจากยืนยัน จะไม่สามารถแก้ไขข้อมูลนี้ได้อีก",
+            //     icon: 'warning',
+            //     showCancelButton: true,
+            //     confirmButtonText: 'ยืนยัน',
+            //     cancelButtonText: 'ยกเลิก'
+            // });
 
-            if (!result.isConfirmed) return;
-            // if (result.isConfirmed) {
-            const docNo = this.formData.documentNo;
+            // if (!result.isConfirmed) return;
+            // // if (result.isConfirmed) {
+            // const docNo = this.formData.documentNo;
 
             try {
-                const lockResponse = await axios.post(
-                    `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/lock_document.php`,
-                    { documentNo: docNo }
-                );
+                // const lockResponse = await axios.post(
+                //     `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/lock_document.php`,
+                //     { documentNo: docNo }
+                // );
 
-                const resData = lockResponse.data;
+                // const resData = lockResponse.data;
 
-                console.log("🔒 Response จาก API lock_document:", resData);
+                // console.log("🔒 Response จาก API lock_document:", resData);
 
-                if (!lockResponse.data.success) {
-                    Swal.fire('ผิดพลาด', lockResponse.data.message, 'error');
-                    return;
-                }
+                // if (!lockResponse.data.success) {
+                //     Swal.fire('ผิดพลาด', lockResponse.data.message, 'error');
+                //     return;
+                // }
 
-                // if (resData.success) {
-                this.isReadOnly = true;
-                this.isConfirmed = true;
+                // // if (resData.success) {
+                // this.isReadOnly = true;
+                // this.isConfirmed = true;
 
-                // กันย้อนแก้ในเครื่องนี้ (optional)
-                const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
-                if (!locked.includes(docNo)) {
-                    locked.push(docNo);
-                    localStorage.setItem('lockedDocumentNos', JSON.stringify(locked));
-                }
+                // // กันย้อนแก้ในเครื่องนี้ (optional)
+                // const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
+                // if (!locked.includes(docNo)) {
+                //     locked.push(docNo);
+                //     localStorage.setItem('lockedDocumentNos', JSON.stringify(locked));
+                // }
 
-                Swal.fire('สำเร็จ!', 'รายการถูกล็อกแล้ว', 'success');
+                // Swal.fire('สำเร็จ!', 'รายการถูกล็อกแล้ว', 'success');
                 // } else {
                 //     Swal.fire('ผิดพลาด', resData.message, 'error');
                 // }
@@ -1498,7 +1498,7 @@ export default {
                 });
 
                 // 2. 🧪 ดึง token จาก BASE_URL_AUTH
-                const authResponse = await axios.post(`${BASE_URL_AUTH}`, secretKeyData , {
+                const authResponse = await axios.post(`${BASE_URL_AUTH}`, secretKeyData, {
                     // Secretkey1: "your_secret_1", // 👉 เปลี่ยนเป็นค่าแท้จริง
                     // Secretkey2: "your_secret_2"
                     headers: {
@@ -1506,9 +1506,14 @@ export default {
                     }
                 });
 
-                const token = authResponse.data.token;
+                const token = authResponse.data.Token;
                 console.log("🔑 Token ที่ได้จาก BASE_URL_AUTH:", token);
                 if (!token) throw new Error("ไม่สามารถดึง token ได้");
+
+                console.log("🧪 Selected Products:", this.selectedProducts.length);
+                console.log("🎁 Gifts:", this.formData.gifts?.length, this.formData.gifts);
+                console.log("📢 Promotions:", this.formData.promotions?.length, this.formData.promotions);
+
 
                 // 3. 📦 สร้าง payload ข้อมูล Macfive
                 const payload = this.buildMacfivePayload();
@@ -1544,7 +1549,7 @@ export default {
             return {
                 hrows: {
                     MH_date: formatDateTime(now),
-                    MH_type: "PS",
+                    MH_type: "TE",
                     MH_vnumber: docNo,
                     MH_process: 5,
                     MH_supcus: this.formData.customerCode,
@@ -1585,28 +1590,80 @@ export default {
                     MK_addr: this.formData.address,
                     MK_tel: this.formData.phone
                 },
-                lrows: this.formData.productList.map((item, index) => ({
-                    ML_date: formatDateTime(now),
-                    ML_type: "PS",
-                    ML_vnumber: docNo,
-                    ML_per: "DP001",
-                    ML_supcus: this.formData.customerCode,
-                    ML_stk: item.pro_sn || "N/A",
-                    ML_sto: "MAIN",
-                    ML_item: index + 1,
-                    ML_quan: parseFloat(item.pro_quantity),
-                    ML_cog: parseFloat(item.pro_total_price || 0),
-                    ML_netL: parseFloat(item.pro_total_price || 0),
-                    ML_cut: 1,
-                    ML_unit: item.unit || "PCS",
-                    ML_des: item.pro_erp_title,
-                    ML_addcost: 0,
-                    ML_discL: 0,
-                    ML_deldate: formatDate(now),
-                    ML_uprice: parseFloat(item.pro_unit_price),
-                    ML_Note: "item"
-                }))
+                lrows: [
+                    ...this.selectedProducts.map((item, index) => ({
+                        ML_date: formatDateTime(now),
+                        ML_type: "TE",
+                        ML_vnumber: docNo,
+                        ML_per: "DP001",
+                        ML_supcus: this.formData.customerCode,
+                        ML_stk: item.pro_sn || "N/A",
+                        ML_sto: "MAIN",
+                        ML_item: index + 1,
+                        ML_quan: parseFloat(item.pro_quantity),
+                        ML_cog: parseFloat(item.pro_total_price || 0),
+                        ML_netL: parseFloat(item.pro_total_price || 0),
+                        ML_cut: 1,
+                        ML_unit: item.unit || "PCS",
+                        ML_des: item.pro_erp_title,
+                        ML_addcost: 0,
+                        ML_discL: 0,
+                        ML_deldate: formatDate(now),
+                        ML_uprice: parseFloat(item.pro_unit_price),
+                        ML_Note: "item",
+
+                    })),
+
+                    // 2. 🎁 ของแถม
+                    ...this.formData.gifts.map((gift, index) => ({
+                        ML_date: formatDateTime(now),
+                        ML_type: "TE",
+                        ML_vnumber: docNo,
+                        ML_per: "DP001",
+                        ML_supcus: this.formData.customerCode,
+                        ML_stk: gift.pro_sn || "N/A",
+                        ML_sto: "MAIN",
+                        ML_item: this.selectedProducts.length + index + 1,
+                        ML_quan: parseFloat(gift.pro_goods_num),
+                        ML_cog: 0,
+                        ML_netL: 0,
+                        ML_cut: 0,
+                        ML_unit: "PCS",
+                        ML_des: gift.title,
+                        ML_addcost: 0,
+                        ML_discL: 0,
+                        ML_deldate: formatDate(now),
+                        ML_uprice: 0,
+                        ML_Note: gift.ML_Note || "gift"
+                    })),
+
+                    // 3. 📢 โปรโมชั่น
+                    ...this.formData.promotions.map((promo, index) => ({
+                        ML_date: formatDateTime(now),
+                        ML_type: "TE",
+                        ML_vnumber: docNo,
+                        ML_per: "DP001",
+                        ML_supcus: this.formData.customerCode,
+                        ML_stk: promo.pro_sn || "N/A",
+                        ML_sto: "MAIN",
+                        ML_item: this.selectedProducts.length + this.formData.gifts.length + index + 1,
+                        ML_quan: parseFloat(promo.pro_goods_num),
+                        ML_cog: 0,
+                        ML_netL: 0,
+                        ML_cut: 0,
+                        ML_unit: "PCS",
+                        ML_des: promo.title,
+                        ML_addcost: 0,
+                        ML_discL: 0,
+                        ML_deldate: formatDate(now),
+                        ML_uprice: 0,
+                        ML_Note: promo.ML_Note || "promotion"
+
+                    }))
+                    // }))
+                ]
             };
+
         },
 
 

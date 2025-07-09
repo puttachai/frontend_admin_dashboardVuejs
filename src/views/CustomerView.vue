@@ -455,10 +455,9 @@ export default {
                 }
             });
 
-            console.log("log response 274: ", response);
-            console.log(row);
-            console.log(response.data);
-
+            console.log("log response 458: ", response);
+            console.log("adsd row: ",row);
+            console.log('adasdafsad: ',response.data);
 
             if (response.data.code === 1) {
 
@@ -470,10 +469,13 @@ export default {
 
                 // เก็บข้อมูลลง localStorage แบบ string
                 localStorage.setItem('selectDataCustomer', JSON.stringify(response.data.data));
+                localStorage.setItem('selectDataCustomerRow', JSON.stringify(row));
 
                 const selectDataCustomer = JSON.parse(localStorage.getItem('selectDataCustomer'));
+                const selectDataCustomerRow = JSON.parse(localStorage.getItem('selectDataCustomerRow'));
 
                 console.log('log selectDataCustomer: ', selectDataCustomer);
+                console.log('log selectDataCustomerRow: ', selectDataCustomerRow);
                 console.log('log gettoken: ', gettoken);
 
 

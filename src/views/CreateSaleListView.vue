@@ -364,11 +364,12 @@
                                         <input type="number" v-model.pro_quantity="product.pro_quantity" min="1" placeholder="จำนวน"
                                             class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
                                     </td> -->
-                                    <td class="px-4 py-2 border">
+                                    <!-- <td class="px-4 py-2 border">
                                         <input type="number" :min="0" :max="product.pro_stock" step="1"
                                             v-model.number="product.pro_quantity" @input="validateQuantity(product)"
                                             class="w-full px-2 py-1 border rounded" />
-                                    </td>
+                                    </td> -->
+                                    <td class="px-4 py-2 border">{{ product.pro_quantity }}</td>
                                     <td class="px-4 py-2 border">{{ product.pro_stock }}</td>
                                     <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
                                     <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
@@ -457,7 +458,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                    }}</p>
+                        }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -545,11 +546,29 @@
 
                                 <textarea rows="4" v-model="formData.receiverAddress" :readonly="isReadOnly"
                                     class="w-full text-gray-700 border rounded px-3 py-2 resize-none">
-
                         </textarea>
+
+                                <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
+                                <div class="bottom-6 right-6 z-50 justify-self-end">
+                                    <button @click="showAddressPopup = true"
+                                        class="bg-purple-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
+                                        + เลือกที่อยู่ / จัดส่ง
+                                    </button>
+                                </div>
+
+                                <!-- ✅ แสดง Popup -->
+                                <DeliveryAddressPopup v-if="showAddressPopup" @close="showAddressPopup = false"
+                                    @submitted="handleAddressSelected" />
+                                <!-- โครตเจ๋ง -->
+                                <!-- <div class="fixed bottom-6 right-6 z-50">
+                                    <button @click="showAddressPopup = true"
+                                        class="bg-purple-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
+                                        + เลือกที่อยู่ / จัดส่ง
+                                    </button>
+                                </div> -->
+
                                 <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">{{
                                     errors.receiverAddress }} </p>
-
                             </div>
 
                             <!-- <button class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">
@@ -693,6 +712,7 @@ import Swal from 'sweetalert2';
 import ProductSelector from '../components/ProductSelector.vue';
 import PromotionSelector from '../components/PromotionSelector.vue';
 import Promotion_ProductSelector from '../components/Promotion_ProductSelector.vue';
+import DeliveryAddressPopup from '@/components/DeliveryAddressPopup.vue'
 import { useRoute } from 'vue-router'
 // import ConfirmEditPopup from '@/components/saleOrder/ConfirmEditPopup.vue'
 import qs from 'qs';
@@ -702,7 +722,6 @@ import 'flatpickr/dist/flatpickr.css'
 // ✅ import Thai locale
 import { Thai } from 'flatpickr/dist/l10n/th.js'
 import flatpickr from 'flatpickr'
-
 
 
 // ✅ ตั้งค่าภาษาไทยให้กับ flatpickr
@@ -729,11 +748,18 @@ export default {
         ProductSelector,
         PromotionSelector,
         Promotion_ProductSelector,
+        DeliveryAddressPopup,
         'flat-pickr': Flatpickr,
         // ConfirmEditPopup
     },
     data() {
         return {
+
+            // ✅ ตัวแปรควบคุม popup
+            showAddressPopup: false, // ควบคุมการแสดง popup ที่อยู่]
+
+            // ✅ เก็บข้อมูลที่อยู่ที่เลือกจาก popup
+            selectedAddress: [],
 
             isConfirmed: false, // สำหรับควบคุมปุ่ม "ยืนยันการบันทึก"
             lockedDocumentNos: [], // เอกสารที่ถูกล็อก (เก็บใน LocalStorage หรือดึงจาก backend)
@@ -1986,6 +2012,17 @@ export default {
             }, 100)
         },
 
+        handleAddressSelected(data) {
+            const { DC_add1, DC_add2, DC_add3, DC_tel } = data
+            const fullAddress = `${DC_add1}, ${DC_add2}, ${DC_add3}, เบอร์โทร: ${DC_tel}`
+            this.selectedAddress = fullAddress
+
+            // ใส่ลงใน formData ด้วย
+            this.formData.receiverAddress = fullAddress; 
+            this.formData.receiverPhone = DC_tel;
+            console.log('📍 ที่อยู่ที่เลือก:', this.formData.receiverAddress);
+        },
+
         //handleSelectedProducts
         handleSelectedPromotionProducts(payload) {
             console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
@@ -2007,11 +2044,27 @@ export default {
                 const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id) || {};
 
                 // 👇 ตรวจซ้ำโดยใช้ sku_id + activity_id
-                const alreadyExists = this.selectedProducts.some(sp =>
+                const alreadyExists = this.selectedProducts.find(sp =>
                     sp.pro_id === item.pro_sku_price_id && sp.activity_id === item.pro_activity_id
                 );
-                if (!alreadyExists) {
+                // const alreadyExists = this.selectedProducts.some(sp =>
+                //     sp.pro_id === item.pro_sku_price_id && sp.activity_id === item.pro_activity_id
+                // );
 
+                // if (!alreadyExists) {
+                if (alreadyExists) {
+                    // 🔁 ถ้ามีอยู่แล้ว → บวกจำนวนเพิ่ม
+                    alreadyExists.pro_quantity = parseInt(alreadyExists.pro_quantity) + parseInt(item.pro_goods_num || 0);
+                    console.log("🧮 เดิม:", alreadyExists.pro_quantity, "เพิ่ม:", item.pro_goods_num);
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'เพิ่มจำนวนสินค้าอยู่ในรายการแล้ว',
+                        text: `เพิ่มจำนวนสินค้า ${matchedTitle.pro_erp_title || item.pro_erp_title || ''} เป็น ${alreadyExists.pro_quantity} ชิ้น`,
+                    });
+                    // this.selectedProducts.push({ 
+                    //     pro_quantity: item.pro_quantity += item.pro_goods_num || 0,
+                    // });
+                } else {
 
                     this.selectedProducts.push({
                         pro_id: item.pro_sku_price_id,

@@ -458,7 +458,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                    }}</p>
+                        }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -550,7 +550,7 @@
 
                                 <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
                                 <div class="bottom-6 right-6 z-50 justify-self-end">
-                                    <button @click="showAddressPopup = true" :readonly="isReadOnly"
+                                    <button @click="showAddressPopup = true" :disabled="isReadOnly"
                                         class="bg-purple-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
                                         + เลือกที่อยู่ / จัดส่ง
                                     </button>
@@ -1289,7 +1289,7 @@ export default {
                     pro_images: product.pro_images,
                     pro_sn: product.pro_sn,
                     pro_units: product.pro_units,
-                    pro_activity_id: product.activity_id || null, // เพิ่ม activity_id ถ้ามี
+                    pro_activity_id: product.activity_id || 0, // เพิ่ม activity_id ถ้ามี
                 };
             });
 
@@ -1302,7 +1302,7 @@ export default {
             this.formData.promotions = promotions;
             this.formData.gifts = gifts;
 
-            await this.AddressInsertData(this.selectedAddress);
+            // await this.AddressInsertData(this.selectedAddress);
 
             const payload = new FormData();
 
@@ -1316,16 +1316,16 @@ export default {
             // }
 
             for (const key in this.formData) {
-                if (key === 'productList' || key === 'promotions' || key === 'gifts' || key === 'receiverAddress') {
+                if (key === 'productList' || key === 'promotions' || key === 'gifts') { //|| key === 'receiverAddress'
                     payload.append(key, JSON.stringify(this.formData[key]));
                 } else {
                     payload.append(key, this.formData[key]);
                 }
             }
-
-            // for (let pair of payload.entries()) {
-            //     console.log("🤯 payload asdasdasfadfafas", pair[0] + ': ' + pair[1]);
-            // }
+            console.log('asdasdasdads',payload);
+            for (let pair of payload.entries()) {
+                console.log("🤯 payload asdasdasfadfafas", pair[0] + ': ' + pair[1]);
+            }
 
             // console.log("🤯 Log Value this.promotions: ", this.promotions);
             // console.log("🤯 Log Value this.gifts: ", this.gifts);
@@ -1357,17 +1357,18 @@ export default {
 
                     Swal.fire({ text: resData.message, icon: 'success' });
                 } else {
-                    Swal.fire({ text: resData.message, icon: 'error' });
+                    Swal.fire({ text:'asdadas', icon: 'error' });
+                    console.log('resData', resData);
                 }
 
-                this.selectedAddress = {
-                    id: data.DC_id,
-                    detail: data.DC_add1,
-                    province_id: this.findProvinceId(data.DC_add3),
-                    amphure_id: this.findAmphureId(data.DC_add2),
-                    tambon_id: this.findTambonId(data.DC_add2),
-                    phone: data.DC_tel,
-                };
+                // this.selectedAddress = {
+                //     id: data.DC_id,
+                //     detail: data.DC_add1,
+                //     province_id: this.findProvinceId(data.DC_add3),
+                //     amphure_id: this.findAmphureId(data.DC_add2),
+                //     tambon_id: this.findTambonId(data.DC_add2),
+                //     phone: data.DC_tel,
+                // };
 
                 // await this.AddressInsertData(this.selectedAddress);
 
@@ -1375,302 +1376,305 @@ export default {
             } catch (err) {
                 const message = err.response?.data?.message || err.message || 'Unknown error';
                 Swal.fire({ text: message, icon: 'error' });
+                console.log('a454545654564 catch');
             }
 
         },
 
-        async AddressInsertData(data) {
-            // เซ็ตข้อมูล selectedAddress จากข้อมูลที่เลือก
-            this.selectedAddress = {
-                id: data.DC_id,
-                detail: data.DC_add1,
-                province_id: this.findProvinceId(data.DC_add3),
-                amphure_id: this.findAmphureId(data.DC_add2),
-                tambon_id: this.findTambonId(data.DC_add2),
-                phone: data.DC_tel,
-            };
+        // async AddressInsertData(data) {
+        //     // เซ็ตข้อมูล selectedAddress จากข้อมูลที่เลือก
+        //     this.selectedAddress = {
+        //         id: data.DC_id,
+        //         detail: data.DC_add1,
+        //         province_id: this.findProvinceId(data.DC_add3),
+        //         amphure_id: this.findAmphureId(data.DC_add2),
+        //         tambon_id: this.findTambonId(data.DC_add2),
+        //         phone: data.DC_tel,
+        //     };
 
-            const addressData = this.selectedAddress;
+        //     const addressData = this.selectedAddress;
 
-            console.log('📦 ข้อมูลที่อยู่:', addressData);
+        //     console.log('📦 ข้อมูลที่อยู่:', addressData);
 
-            // ดึงข้อมูลลูกค้า
-            const getselectDataCustomerRow = JSON.parse(localStorage.getItem('selectDataCustomerRow') || '{}');
-            const getCustomer_no = getselectDataCustomerRow?.customer_no ?? 'UNKNOWN';
-            const getCustomer_id = getselectDataCustomerRow?.customer_id ?? 0;
-            const getMobile = getselectDataCustomerRow?.mobile ?? '';
+        //     // ดึงข้อมูลลูกค้า
+        //     const getselectDataCustomerRow = JSON.parse(localStorage.getItem('selectDataCustomerRow') || '{}');
+        //     const getCustomer_no = getselectDataCustomerRow?.customer_no ?? 'UNKNOWN';
+        //     const getCustomer_id = getselectDataCustomerRow?.customer_id ?? 0;
+        //     const getMobile = getselectDataCustomerRow?.mobile ?? '';
 
-            // ดึงชื่อจังหวัด/อำเภอ/ตำบลจาก id
-            const province = this.provinces.find(p => p.id === addressData.province_id)?.name_th || '';
-            const district = this.amphures.find(a => a.id === addressData.amphure_id)?.name_th || '';
-            const subDistrict = this.tambons.find(t => t.id === addressData.tambon_id)?.name_th || '';
+        //     // ดึงชื่อจังหวัด/อำเภอ/ตำบลจาก id
+        //     const province = this.provinces.find(p => p.id === addressData.province_id)?.name_th || '';
+        //     const district = this.amphures.find(a => a.id === addressData.amphure_id)?.name_th || '';
+        //     const subDistrict = this.tambons.find(t => t.id === addressData.tambon_id)?.name_th || '';
 
-            // 👉 ยิง API เพื่อ Insert ข้อมูลที่อยู่ลงใน Database
-            try {
-                const res = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_delivery_address.php`, addressData, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
+        //     // 👉 ยิง API เพื่อ Insert ข้อมูลที่อยู่ลงใน Database
+        //     try {
+        //         const res = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_delivery_address.php`, addressData, {
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //             }
+        //         });
 
-                console.log('📦 ส่งสำเร็จ:', res.data);
+        //         console.log('📦 ส่งสำเร็จ:', res.data);
 
-                if (res.data.success === true) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'ส่งข้อมูลสำเร็จ',
-                        text: 'ข้อมูลที่อยู่ถูกบันทึกเรียบร้อยแล้ว',
-                    });
+        //         if (res.data.success === true) {
+        //             Swal.fire({
+        //                 icon: 'success',
+        //                 title: 'ส่งข้อมูลสำเร็จ',
+        //                 text: 'ข้อมูลที่อยู่ถูกบันทึกเรียบร้อยแล้ว',
+        //             });
 
-                    const address_id = res.data.id;
-                    localStorage.setItem('address_id', address_id);
+        //             const address_id = res.data.id;
+        //             localStorage.setItem('address_id', address_id);
 
-                    // ✅ ก้อนข้อมูลสำหรับ Mac Five (ใช้ addressData และข้อมูลจาก selectedAddress)
-                    const addressBulidMacFive = {
-                        DC_code: getCustomer_no,
-                        DC_id: address_id,
-                        DC_add1: addressData.detail,
-                        DC_add2: `แขวง ${subDistrict} ${district}`,
-                        DC_add3: province,
-                        DC_tel: addressData.phone || getMobile,
-                        DC_zone: '', // เพิ่ม zone หากมีข้อมูล
-                    };
+        //             // ✅ ก้อนข้อมูลสำหรับ Mac Five (ใช้ addressData และข้อมูลจาก selectedAddress)
+        //             const addressBulidMacFive = {
+        //                 DC_code: getCustomer_no,
+        //                 DC_id: address_id,
+        //                 DC_add1: addressData.detail,
+        //                 DC_add2: `แขวง ${subDistrict} ${district}`,
+        //                 DC_add3: province,
+        //                 DC_tel: addressData.phone || getMobile,
+        //                 DC_zone: '', // เพิ่ม zone หากมีข้อมูล
+        //             };
 
-                    console.log('📦 addressBulidMacFive:', addressBulidMacFive);
+        //             console.log('📦 addressBulidMacFive:', addressBulidMacFive);
 
-                    const token = await this.getAuthToken();
-                    const formEncodedData = qs.stringify(addressBulidMacFive);
+        //             const token = await this.getAuthToken();
+        //             const formEncodedData = qs.stringify(addressBulidMacFive);
 
-                    try {
-                        const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                                'Authorization': `Bearer ${token}`
-                            }
-                        });
+        //             try {
+        //                 const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
+        //                     headers: {
+        //                         'Content-Type': 'application/x-www-form-urlencoded',
+        //                         'Authorization': `Bearer ${token}`
+        //                     }
+        //                 });
 
-                        console.log('📦 ส่งข้อมูลไป Mac Five สำเร็จ:', response.data);
+        //                 console.log('📦 ส่งข้อมูลไป Mac Five สำเร็จ:', response.data);
 
-                        this.$emit('submitted', addressBulidMacFive);
-                        this.$emit('close');
-                    } catch (err) {
-                        console.error('❌ ส่งไป Mac Five ไม่สำเร็จ:', err);
-                        alert('เกิดข้อผิดพลาดในการส่งข้อมูลไปยัง Mac Five');
-                    }
+        //                 this.$emit('submitted', addressBulidMacFive);
+        //                 this.$emit('close');
+        //             } catch (err) {
+        //                 console.error('❌ ส่งไป Mac Five ไม่สำเร็จ:', err);
+        //                 alert('เกิดข้อผิดพลาดในการส่งข้อมูลไปยัง Mac Five');
+        //             }
 
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
-                        text: 'ไม่สามารถบันทึกข้อมูลที่อยู่ได้',
-                    });
-                }
+        //         } else {
+        //             Swal.fire({
+        //                 icon: 'error',
+        //                 title: 'เกิดข้อผิดพลาด',
+        //                 text: 'ไม่สามารถบันทึกข้อมูลที่อยู่ได้',
+        //             });
+        //         }
 
-            } catch (err) {
-                console.error('❌ ส่งไม่สำเร็จ:', err);
-                alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
-            }
-        },
+        //     } catch (err) {
+        //         console.error('❌ ส่งไม่สำเร็จ:', err);
+        //         alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+        //     }
+        // },
 
-        async AddressUpdaateData(data) {
-            // เซ็ตข้อมูล selectedAddress จากข้อมูลที่เลือก
-            this.selectedAddress = {
-                id: data.DC_id,
-                detail: data.DC_add1,
-                province_id: this.findProvinceId(data.DC_add3),
-                amphure_id: this.findAmphureId(data.DC_add2),
-                tambon_id: this.findTambonId(data.DC_add2),
-                phone: data.DC_tel,
-            };
+        // async AddressUpdaateData(data) {
+        //     // เซ็ตข้อมูล selectedAddress จากข้อมูลที่เลือก
+        //     this.selectedAddress = {
+        //         id: data.DC_id,
+        //         detail: data.DC_add1,
+        //         province_id: this.findProvinceId(data.DC_add3),
+        //         amphure_id: this.findAmphureId(data.DC_add2),
+        //         tambon_id: this.findTambonId(data.DC_add2),
+        //         phone: data.DC_tel,
+        //     };
 
-            const addressData = this.selectedAddress;
+        //     const addressData = this.selectedAddress;
 
-            console.log('📦 ข้อมูลที่อยู่:', addressData);
+        //     console.log('📦 ข้อมูลที่อยู่:', addressData);
 
-            // ดึงข้อมูลลูกค้า
-            const getselectDataCustomerRow = JSON.parse(localStorage.getItem('selectDataCustomerRow') || '{}');
-            const getCustomer_no = getselectDataCustomerRow?.customer_no ?? 'UNKNOWN';
-            const getCustomer_id = getselectDataCustomerRow?.customer_id ?? 0;
-            const getMobile = getselectDataCustomerRow?.mobile ?? '';
+        //     // ดึงข้อมูลลูกค้า
+        //     const getselectDataCustomerRow = JSON.parse(localStorage.getItem('selectDataCustomerRow') || '{}');
+        //     const getCustomer_no = getselectDataCustomerRow?.customer_no ?? 'UNKNOWN';
+        //     const getCustomer_id = getselectDataCustomerRow?.customer_id ?? 0;
+        //     const getMobile = getselectDataCustomerRow?.mobile ?? '';
 
-            // ดึงชื่อจังหวัด/อำเภอ/ตำบลจาก id
-            const province = this.provinces.find(p => p.id === addressData.province_id)?.name_th || '';
-            const district = this.amphures.find(a => a.id === addressData.amphure_id)?.name_th || '';
-            const subDistrict = this.tambons.find(t => t.id === addressData.tambon_id)?.name_th || '';
+        //     // ดึงชื่อจังหวัด/อำเภอ/ตำบลจาก id
+        //     const province = this.provinces.find(p => p.id === addressData.province_id)?.name_th || '';
+        //     const district = this.amphures.find(a => a.id === addressData.amphure_id)?.name_th || '';
+        //     const subDistrict = this.tambons.find(t => t.id === addressData.tambon_id)?.name_th || '';
 
-            // 👉 ยิง API เพื่อ Insert ข้อมูลที่อยู่ลงใน Database
-            try {
-                const res = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_delivery_address.php`, addressData, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
+        //     // 👉 ยิง API เพื่อ Insert ข้อมูลที่อยู่ลงใน Database
+        //     try {
+        //         const res = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_delivery_address.php`, addressData, {
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //             }
+        //         });
 
-                console.log('📦 ส่งสำเร็จ:', res.data);
+        //         console.log('📦 ส่งสำเร็จ:', res.data);
 
-                return;
+        //         return;
 
-                if (res.data.success === true) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'ส่งข้อมูลสำเร็จ',
-                        text: 'ข้อมูลที่อยู่ถูกบันทึกเรียบร้อยแล้ว',
-                    });
+        //         if (res.data.success === true) {
+        //             Swal.fire({
+        //                 icon: 'success',
+        //                 title: 'ส่งข้อมูลสำเร็จ',
+        //                 text: 'ข้อมูลที่อยู่ถูกบันทึกเรียบร้อยแล้ว',
+        //             });
 
-                    const address_id = res.data.id;
-                    localStorage.setItem('address_id', address_id);
+        //             const address_id = res.data.id;
+        //             localStorage.setItem('address_id', address_id);
 
-                    // ✅ ก้อนข้อมูลสำหรับ Mac Five (ใช้ addressData และข้อมูลจาก selectedAddress)
-                    const addressBulidMacFive = {
-                        DC_code: getCustomer_no,
-                        DC_id: address_id,
-                        DC_add1: addressData.detail,
-                        DC_add2: `แขวง ${subDistrict} ${district}`,
-                        DC_add3: province,
-                        DC_tel: addressData.phone || getMobile,
-                        DC_zone: '', // เพิ่ม zone หากมีข้อมูล
-                    };
+        //             // ✅ ก้อนข้อมูลสำหรับ Mac Five (ใช้ addressData และข้อมูลจาก selectedAddress)
+        //             const addressBulidMacFive = {
+        //                 DC_code: getCustomer_no,
+        //                 DC_id: address_id,
+        //                 DC_add1: addressData.detail,
+        //                 DC_add2: `แขวง ${subDistrict} ${district}`,
+        //                 DC_add3: province,
+        //                 DC_tel: addressData.phone || getMobile,
+        //                 DC_zone: '', // เพิ่ม zone หากมีข้อมูล
+        //             };
 
-                    console.log('📦 addressBulidMacFive:', addressBulidMacFive);
+        //             console.log('📦 addressBulidMacFive:', addressBulidMacFive);
 
-                    const token = await this.getAuthToken();
-                    const formEncodedData = qs.stringify(addressBulidMacFive);
+        //             const token = await this.getAuthToken();
+        //             const formEncodedData = qs.stringify(addressBulidMacFive);
 
-                    try {
-                        const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                                'Authorization': `Bearer ${token}`
-                            }
-                        });
+        //             try {
+        //                 const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
+        //                     headers: {
+        //                         'Content-Type': 'application/x-www-form-urlencoded',
+        //                         'Authorization': `Bearer ${token}`
+        //                     }
+        //                 });
 
-                        console.log('📦 ส่งข้อมูลไป Mac Five สำเร็จ:', response.data);
+        //                 console.log('📦 ส่งข้อมูลไป Mac Five สำเร็จ:', response.data);
 
-                        this.$emit('submitted', addressBulidMacFive);
-                        this.$emit('close');
-                    } catch (err) {
-                        console.error('❌ ส่งไป Mac Five ไม่สำเร็จ:', err);
-                        alert('เกิดข้อผิดพลาดในการส่งข้อมูลไปยัง Mac Five');
-                    }
-
-
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
-                        text: 'ไม่สามารถบันทึกข้อมูลที่อยู่ได้',
-                    });
-                }
-
-                // UPDATE ที่อยู่เดิม
-                // const updatePayload = {
-                //     id: addressId,
-                //     DC_code: getCustomer_no,
-                //     DC_id: getCustomer_id,
-                //     DC_add1: this.form.detail,
-                //     DC_add2: `แขวง ${subDistrict} ${district}`,
-                //     DC_add3: province,
-                //     DC_tel: getMobile,
-                //     DC_zone: '',
-                // };
-                this.selectedAddress = {
-                    id: data.DC_id,
-                    detail: data.DC_add1,
-                    province_id: this.findProvinceId(data.DC_add3),
-                    amphure_id: this.findAmphureId(data.DC_add2),
-                    tambon_id: this.findTambonId(data.DC_add2),
-                    phone: data.DC_tel,
-                };
-
-                const updatePayload = this.selectedAddress;
-
-                console.log('📦 ข้อมูลที่อยู่:', updatePayload);
-
-                try {
-
-                    const res = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/update_delivery_address.php`, updatePayload);
-
-                    console.log('📦 update สำเร็จ:', res.data);
-
-                    console.log('✅ res.data.success =', res.data.success);
-                    console.log('✅ typeof res.data.success =', typeof res.data.success);
+        //                 this.$emit('submitted', addressBulidMacFive);
+        //                 this.$emit('close');
+        //             } catch (err) {
+        //                 console.error('❌ ส่งไป Mac Five ไม่สำเร็จ:', err);
+        //                 alert('เกิดข้อผิดพลาดในการส่งข้อมูลไปยัง Mac Five');
+        //             }
 
 
-                    if (res.data.success) {
-                        // Swal.fire({ icon: 'success', text: 'อัปเดตข้อมูลที่อยู่เรียบร้อยแล้ว' });
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'อัปเดทข้อมูลสำเร็จ',
-                            text: 'อัปเดทข้อมูล ที่อยู่ ถูกบันทึกเรียบร้อยแล้ว',
-                        });
+        //         } else {
+        //             Swal.fire({
+        //                 icon: 'error',
+        //                 title: 'เกิดข้อผิดพลาด',
+        //                 text: 'ไม่สามารถบันทึกข้อมูลที่อยู่ได้',
+        //             });
+        //         }
 
-                        // ✅ ดึงข้อมูลล่าสุดที่ถูกอัปเดตจาก backend
-                        const updatedData = res.data;
-                        console.log('📦 ข้อมูลที่อัปเดตล่าสุด:', res.data);
-                        console.log('📦 ข้อมูลที่อัปเดตล่าสุด:', updatedData);
+        //         // UPDATE ที่อยู่เดิม
+        //         // const updatePayload = {
+        //         //     id: addressId,
+        //         //     DC_code: getCustomer_no,
+        //         //     DC_id: getCustomer_id,
+        //         //     DC_add1: this.form.detail,
+        //         //     DC_add2: `แขวง ${subDistrict} ${district}`,
+        //         //     DC_add3: province,
+        //         //     DC_tel: getMobile,
+        //         //     DC_zone: '',
+        //         // };
+        //         this.selectedAddress = {
+        //             id: data.DC_id,
+        //             detail: data.DC_add1,
+        //             province_id: this.findProvinceId(data.DC_add3),
+        //             amphure_id: this.findAmphureId(data.DC_add2),
+        //             tambon_id: this.findTambonId(data.DC_add2),
+        //             phone: data.DC_tel,
+        //         };
 
-                        // return;
+        //         const updatePayload = this.selectedAddress;
 
-                        localStorage.setItem('address_id', res.data.id)
+        //         console.log('📦 ข้อมูลที่อยู่:', updatePayload);
 
-                        // ✅ ก้อนข้อมูลที่อยู่สำหรับ Mac Five
-                        const addressBulidMacFive = {
-                            DC_code: res.data.data.customer_code, //'DEL-REST-01', // AP 
-                            DC_id: res.data.data.id,  //'0001', // ID ของที่อยู่ ใน table delivery_address
-                            DC_add1: res.data.data.address_line1,
-                            DC_add2: res.data.data.address_line2, //เขต
-                            DC_add3: res.data.data.address_line3, //10500, // รหัสไปรษณีย์
-                            DC_tel: res.data.data.phone, //'029797000',
-                            DC_zone: res.data.data.zone_code || '', //'ZON-TEST-01'
-                        };
+        //         try {
 
-                        console.log('📦 addressBulidMacFive:', addressBulidMacFive);
+        //             const res = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/update_delivery_address.php`, updatePayload);
 
-                        // return;
+        //             console.log('📦 update สำเร็จ:', res.data);
 
-                        const formJsonData = addressBulidMacFive;
-
-                        // return;
-
-                        // 1. 🔃 สร้าง addressBulidMacFive → qs.stringify แล้วยิงไป Mac Five
-                        const formEncodedData = qs.stringify(addressBulidMacFive);
-
-                        // 2. ✅ เรียกใช้ token ก่อนยิง API ไป Mac Five
-                        const token = await this.getAuthToken();
-                        // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
-
-                        //Api Mac 5 
-                        try {
-                            const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded',
-                                    'Authorization': `Bearer ${token}` // ถ้าต้องการใช้ token ใน header
-                                }
-                            });
-                            console.log('📦 ส่งสำเร็จ:', response.data);
-
-                            // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
-
-                            // localStorage.setItem('deliveryAddress', response.data);
-                            this.$emit('submitted', formJsonData);
-                            this.$emit('close');
-                        } catch (err) {
-                            console.error('❌ ส่งไม่สำเร็จ:', err);
-                            alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
-                        }
-                    }
-                } catch (error) {
-                    console.error('❌ ส่งไม่สำเร็จ:', err);
-                    alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
-                }
-
-            } catch (err) {
-                console.error('❌ ส่งไม่สำเร็จ:', err);
-                alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
-            }
-        },
+        //             console.log('✅ res.data.success =', res.data.success);
+        //             console.log('✅ typeof res.data.success =', typeof res.data.success);
 
 
+        //             if (res.data.success) {
+        //                 // Swal.fire({ icon: 'success', text: 'อัปเดตข้อมูลที่อยู่เรียบร้อยแล้ว' });
+        //                 Swal.fire({
+        //                     icon: 'success',
+        //                     title: 'อัปเดทข้อมูลสำเร็จ',
+        //                     text: 'อัปเดทข้อมูล ที่อยู่ ถูกบันทึกเรียบร้อยแล้ว',
+        //                 });
+
+        //                 // ✅ ดึงข้อมูลล่าสุดที่ถูกอัปเดตจาก backend
+        //                 const updatedData = res.data;
+        //                 console.log('📦 ข้อมูลที่อัปเดตล่าสุด:', res.data);
+        //                 console.log('📦 ข้อมูลที่อัปเดตล่าสุด:', updatedData);
+
+        //                 // return;
+
+        //                 localStorage.setItem('address_id', res.data.id)
+
+        //                 // ✅ ก้อนข้อมูลที่อยู่สำหรับ Mac Five
+        //                 const addressBulidMacFive = {
+        //                     DC_code: res.data.data.customer_code, //'DEL-REST-01', // AP 
+        //                     DC_id: res.data.data.id,  //'0001', // ID ของที่อยู่ ใน table delivery_address
+        //                     DC_add1: res.data.data.address_line1,
+        //                     DC_add2: res.data.data.address_line2, //เขต
+        //                     DC_add3: res.data.data.address_line3, //10500, // รหัสไปรษณีย์
+        //                     DC_tel: res.data.data.phone, //'029797000',
+        //                     DC_zone: res.data.data.zone_code || '', //'ZON-TEST-01'
+        //                 };
+
+        //                 console.log('📦 addressBulidMacFive:', addressBulidMacFive);
+
+        //                 // return;
+
+        //                 const formJsonData = addressBulidMacFive;
+
+        //                 // return;
+
+        //                 // 1. 🔃 สร้าง addressBulidMacFive → qs.stringify แล้วยิงไป Mac Five
+        //                 const formEncodedData = qs.stringify(addressBulidMacFive);
+
+        //                 // 2. ✅ เรียกใช้ token ก่อนยิง API ไป Mac Five
+        //                 const token = await this.getAuthToken();
+        //                 // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+        //                 //Api Mac 5 
+        //                 try {
+        //                     const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
+        //                         headers: {
+        //                             'Content-Type': 'application/x-www-form-urlencoded',
+        //                             'Authorization': `Bearer ${token}` // ถ้าต้องการใช้ token ใน header
+        //                         }
+        //                     });
+        //                     console.log('📦 ส่งสำเร็จ:', response.data);
+
+        //                     // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+        //                     // localStorage.setItem('deliveryAddress', response.data);
+        //                     this.$emit('submitted', formJsonData);
+        //                     this.$emit('close');
+        //                 } catch (err) {
+        //                     console.error('❌ ส่งไม่สำเร็จ:', err);
+        //                     alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+        //                 }
+        //             }
+        //         } catch (error) {
+        //             console.error('❌ ส่งไม่สำเร็จ:', err);
+        //             alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+        //         }
+
+        //     } catch (err) {
+        //         console.error('❌ ส่งไม่สำเร็จ:', err);
+        //         alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+        //     }
+        // },
+
+
+
+        ////////////////////////////////////////////////////////
         // async confirmFinalSave() {
         //     const result = await Swal.fire({
         //         title: 'คุณแน่ใจหรือไม่?',
@@ -2072,7 +2076,7 @@ export default {
                     Swal.fire({ text: resData.message, icon: 'error' });
                 }
 
-                await this.AddressUpdaateData(this.selectedAddress);
+                // await this.AddressUpdaateData(this.selectedAddress);
             } catch (err) {
                 const message = err.response?.data?.message || err.message || 'Unknown error';
                 Swal.fire({ text: message, icon: 'error' });
@@ -2142,8 +2146,8 @@ export default {
 
                     console.log("📄 ข้อมูลเอกสารที่โหลด:", resData.data.productList);
 
-                    const getSite_id = resData.data.data.deliveryAddress;
-                    console.log("📄 ข้อมูล Docmentที่โหลด:", getSite_id);
+                    // const getSite_id = resData.data.data.deliveryAddress;
+                    // console.log("📄 ข้อมูล Docmentที่โหลด:", getSite_id);
 
                     this.selectedProducts = resData.data.productList.map(product => {
                         // const matchedPromotions = (resData.data.promotions || []).filter(p => p.pro_activity_id === product.pro_activity_id);
@@ -2238,6 +2242,7 @@ export default {
                 if (group[0].promotions && Array.isArray(group[0].promotions)) {
                     for (const promo of group[0].promotions) {
                         allPromotions.push({
+
                             title: promo.title,
                             ML_Note: promo.ML_Note || '',
                             note: promo.note || '',
@@ -2365,7 +2370,11 @@ export default {
 
                 //     sp.pro_id === item.pro_sku_price_id && sp.activity_id === item.pro_activity_id 
                 // );
-                const activityId = item.st === 0 ? 0 : item.pro_activity_id;
+                const activityId = item.st === false ? 0 : item.pro_activity_id;
+
+                console.log('item.pro_activity_id',item.pro_activity_id);
+                console.log('activityId',activityId);
+
 
                 const alreadyExists = this.selectedProducts.find(sp =>
                     sp.pro_id === item.pro_sku_price_id &&
@@ -2400,8 +2409,10 @@ export default {
 
                     this.selectedProducts.push({
                         pro_id: item.pro_sku_price_id,
-                        activity_id: activityId,
-                        pro_activity_id: activityId,
+                        activity_id: (item.st === false || item.st === 'false' || item.st == null) ? 0 : item.pro_activity_id, //activityId ,
+                        // activity_id: item.st == false?0 : activityId, //activityId ,
+                        pro_activity_id: (item.st === false || item.st === 'false' || item.st == null) ? 0 : item.pro_activity_id,
+                        // pro_activity_id: activityId,
                         st: item.st, // ✅ เก็บค่า st ไว้ด้วย
                         pro_erp_title: matchedTitle.pro_erp_title || item.pro_erp_title || '',
                         pro_unit_price: item.pro_goods_price || item.pro_goods_price || '',

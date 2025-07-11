@@ -1,0 +1,1074 @@
+ทำการ เปลี่ยนจากการบันทึกข้อมูลลง database ที่ยิงผ่าน api เปลี่ยน การส่ง props ข้อมูลตัวของ ข้อมูลที่กรอกในหน้า popup กลับไปที่หน้าหลัก พอทำการ ส่งไปแล้วให่ทำการเอา ฟังก์ชั่น ตัวของ api ที่จะบันทึกข้อมูลลง Database ใส่ไว้ใน ฟังก์ชั่น saveDocument หลังที่ทำในส่วนของ const response = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_sale_order.php`, payload, { เสร็จ
+
+
+Code DeliveryAddressPopup.vue
+<template>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+        <div class="w-full max-w-md bg-white rounded-lg p-6 shadow-xl">
+            <h2 class="text-lg font-semibold mb-4">กรอกข้อมูลที่อยู่/จัดส่ง</h2>
+            <form @submit.prevent="submitAddress">
+                <div class="space-y-4">
+                    <!-- จังหวัด -->
+                    <div>
+                        <label class="text-sm">จังหวัด</label>
+                        <select v-model="form.province_id" @change="onProvinceChange"
+                            class="w-full border rounded px-3 py-2">
+                            <option value="">-- กรุณาเลือกจังหวัด --</option>
+                            <option v-for="p in provinces" :key="p.id" :value="p.id">{{ p.name_th }}</option>
+                        </select>
+                    </div>
+
+                    <!-- เขต/อำเภอ -->
+                    <div>
+                        <label class="text-sm">เขต/อำเภอ</label>
+                        <select v-model="form.amphure_id" @change="onAmphureChange"
+                            class="w-full border rounded px-3 py-2">
+                            <option value="">-- กรุณาเลือกอำเภอ --</option>
+                            <option v-for="a in amphures" :key="a.id" :value="a.id">{{ a.name_th }}</option>
+                        </select>
+                    </div>
+
+                    <!-- ตำบล/แขวง -->
+                    <div>
+                        <label class="text-sm">แขวง/ตำบล</label>
+                        <select v-model="form.tambon_id" class="w-full border rounded px-3 py-2">
+                            <option value="">-- กรุณาเลือกตำบล --</option>
+                            <option v-for="t in tambons" :key="t.id" :value="t.id">{{ t.name_th }}</option>
+                        </select>
+                    </div>
+
+                    <!-- ที่อยู่เพิ่มเติม -->
+                    <div>
+                        <label class="text-sm">ที่อยู่เพิ่มเติม</label>
+                        <textarea v-model="form.detail" rows="3" class="w-full border rounded px-3 py-2"
+                            required></textarea>
+                    </div>
+
+                    <!-- ปุ่ม -->
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" @click="$emit('close')"
+                            class="px-4 py-2 border rounded text-gray-600 hover:bg-gray-100">ยกเลิก</button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">ตกลง</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</template>
+
+
+<script>
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import qs from 'qs'; // อย่าลืม import
+// import.meta.env.VITE_DELIVERY_ADDRESS
+
+const BASE_URL_DELIVERY_ADDRESS = import.meta.env.VITE_DELIVERY_ADDRESS;
+const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
+
+const BASE_URL_AUTH = import.meta.env.VITE_API_URL_AUTH;
+
+export default {
+    name: 'DeliveryAddressPopup',
+    data() {
+        //   return {
+        //     form: {
+        //       province: '',
+        //       district: '',
+        //       subDistrict: '',
+        //       detail: '',
+        //     },
+        //     provinces: [
+        //       'กรุงเทพมหานคร', 'เชียงใหม่', 'ชลบุรี', 'ภูเก็ต', 'ขอนแก่น',
+        //       'นครราชสีมา', 'สงขลา', 'สุราษฎร์ธานี', 'เชียงราย', 'พิษณุโลก'
+        //       // เพิ่มจังหวัดอื่นได้อีกตามต้องการ
+        //     ]
+        //   };
+        return {
+            form: {
+                province_id: '',
+                amphure_id: '',
+                tambon_id: '',
+                detail: ''
+            },
+            provinces: [],
+            amphures: [],
+            tambons: [],
+            rawData: []
+        };
+    },
+
+    props: {
+        existingAddress: {
+            type: Object,
+            default: () => ({})
+        }
+    },
+    mounted() {
+        // this.fetchLocationData();
+        this.fetchLocationData().then(() => {
+            this.prefillAddressForm();
+        });
+    },
+
+    methods: {
+
+        prefillAddressForm() {
+            if (this.existingAddress && Object.keys(this.existingAddress).length) {
+                const { province_id, amphure_id, tambon_id, detail } = this.existingAddress;
+
+                this.form.province_id = province_id;
+                this.form.amphure_id = amphure_id;
+                this.form.tambon_id = tambon_id;
+                this.form.detail = detail;
+
+                this.onProvinceChange();
+                setTimeout(() => {
+                    this.onAmphureChange();
+                }, 0);
+            }
+        },
+
+        async fetchLocationData() {
+            try {
+                const res = await axios.get('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province_with_amphure_tambon.json');
+                this.rawData = res.data;
+                this.provinces = this.rawData.map(p => ({ id: p.id, name_th: p.name_th, amphure: p.amphure }));
+            } catch (err) {
+                console.error('❌ โหลดข้อมูลจังหวัดไม่สำเร็จ', err);
+            }
+        },
+        onProvinceChange() {
+            const selectedProvince = this.rawData.find(p => p.id === this.form.province_id);
+            this.amphures = selectedProvince?.amphure || [];
+            this.form.amphure_id = '';
+            this.form.tambon_id = '';
+            this.tambons = [];
+        },
+        onAmphureChange() {
+            const selectedProvince = this.rawData.find(p => p.id === this.form.province_id);
+            const selectedAmphure = selectedProvince?.amphure.find(a => a.id === this.form.amphure_id);
+            this.tambons = selectedAmphure?.tambon || [];
+            this.form.tambon_id = '';
+        },
+
+        async getAuthToken() {
+            // localStorage.removeItem("mac5_token");
+            const tokenData = JSON.parse(localStorage.getItem("mac5_token")) || null;
+
+            // console.log("🔑 Check tokenData :", tokenData);
+
+            const oneHour = 60 * 60 * 1000; // 1 ชั่วโมงในหน่วยมิลลิวินาที
+            const now = Date.now();
+
+            if (tokenData && tokenData.token && now - tokenData.timestamp < oneHour) {
+                // console.log("🔑 ใช้ token เดิม:", tokenData.token);
+                return tokenData.token; // ✅ ใช้ token เดิม
+            }
+
+            console.log("🔑 Token ไม่พบหรือหมดอายุ กำลังขอใหม่...");
+
+            // 🛎️ แสดง loading เฉพาะตอนขอ token ใหม่
+            Swal.fire({
+                title: 'กำลังดำเนินการ...',
+                text: 'กำลังเพิ่มข้อมูล (ครั้งแรกจะใช้เวลาสักครู่)',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // 🔄 ถ้าไม่มี token หรือหมดอายุ ให้ขอใหม่
+            const secretKeyData = qs.stringify({
+                secretKey1: import.meta.env.VITE_SECRET_KEY1,
+                secretKey2: import.meta.env.VITE_SECRET_KEY2
+            });
+
+            try {
+                const authResponse = await axios.post(`${BASE_URL_AUTH}`, secretKeyData, {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const token = authResponse.data.Token;
+                if (!token) throw new Error("ไม่สามารถดึง token ได้");
+
+                // 📝 บันทึก token และ timestamp ลง localStorage
+                localStorage.setItem("mac5_token", JSON.stringify({
+                    token,
+                    timestamp: now
+                }));
+
+                Swal.close(); // ✅ ปิด Swal เมื่อเรียบร้อย
+                return token;
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ขอ Token ไม่สำเร็จ',
+                    text: 'ไม่สามารถขอ token ได้ กรุณาลองใหม่อีกครั้ง',
+                });
+                console.error("❌ ดึง token ไม่สำเร็จ:", err);
+                throw err;
+            }
+        },
+
+
+        async submitAddress() {
+
+            // const account_id = localStorage.getItem('account');
+            // console.log('📌📌 log address_ids: ', account_id);
+            const existingAddressId  = this.existingAddress?.id; // || account_id
+            // const addressId = this.existingAddress?.id || localStorage.getItem('address_id');
+            const isManualInput = this.form.detail && !existingAddressId;
+
+
+            const province = this.provinces.find(p => p.id === this.form.province_id)?.name_th || '';
+            const district = this.amphures.find(a => a.id === this.form.amphure_id)?.name_th || '';
+            const subDistrict = this.tambons.find(t => t.id === this.form.tambon_id)?.name_th || '';
+
+            const getselectDataCustomerRow = JSON.parse(localStorage.getItem('selectDataCustomerRow') || '{}');
+
+            const getCustomer_id = getselectDataCustomerRow?.customer_id ?? 0;;
+            const getCustomer_no = getselectDataCustomerRow?.customer_no ?? 0;;
+            const getMobile = getselectDataCustomerRow?.mobile ?? 0;;
+
+            console.log('log getCustomer_id: ', getCustomer_id);
+            console.log('log getselectDataCustomerRow: ', getselectDataCustomerRow);
+
+            // 📌 กำหนด addressId จาก existingAddress หรือ localStorage
+            const addressId = existingAddressId || null;
+
+            if (addressId) {
+                // UPDATE ที่อยู่เดิม
+                const updatePayload = {
+                    id: addressId,
+                    DC_code: getCustomer_no,
+                    DC_id: getCustomer_id,
+                    DC_add1: this.form.detail,
+                    DC_add2: `แขวง ${subDistrict} ${district}`,
+                    DC_add3: province,
+                    DC_tel: getMobile,
+                    DC_zone: '',
+                };
+
+                try {
+
+                    const res = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/update_delivery_address.php`, updatePayload);
+
+                    console.log('📦 ส่งสำเร็จ:', res.data);
+
+                    console.log('✅ res.data.success =', res.data.success);
+                    console.log('✅ typeof res.data.success =', typeof res.data.success);
+
+
+                    if (res.data.success) {
+                        // Swal.fire({ icon: 'success', text: 'อัปเดตข้อมูลที่อยู่เรียบร้อยแล้ว' });
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ส่งข้อมูลสำเร็จ',
+                            text: 'ข้อมูลที่อยู่ถูกบันทึกเรียบร้อยแล้ว',
+                        });
+
+                        // ✅ ดึงข้อมูลล่าสุดที่ถูกอัปเดตจาก backend
+                        const updatedData = res.data;
+                        console.log('📦 ข้อมูลที่อัปเดตล่าสุด:', res.data);
+                        console.log('📦 ข้อมูลที่อัปเดตล่าสุด:', updatedData);
+
+                        // return;
+
+                        localStorage.setItem('address_id', res.data.id)
+
+
+                        // ✅ ก้อนข้อมูลที่อยู่สำหรับ Mac Five
+                        const addressBulidMacFive = {
+                            DC_code: res.data.data.customer_code, //'DEL-REST-01', // AP 
+                            DC_id: res.data.data.id,  //'0001', // ID ของที่อยู่ ใน table delivery_address
+                            DC_add1: res.data.data.address_line1,
+                            DC_add2: res.data.data.address_line2, //เขต
+                            DC_add3: res.data.data.address_line3, //10500, // รหัสไปรษณีย์
+                            DC_tel: res.data.data.phone, //'029797000',
+                            DC_zone: res.data.data.zone_code || '', //'ZON-TEST-01'
+                        };
+
+
+                        console.log('📦 addressBulidMacFive:', addressBulidMacFive);
+
+                        // return;
+
+                        const formJsonData = addressBulidMacFive;
+
+                        // return;
+
+                        // const formEncodedData = qs.stringify(addressBulidMacFive);
+
+
+
+                        // 2. 🔃 สร้าง addressBulidMacFive → qs.stringify แล้วยิงไป Mac Five
+                        const formEncodedData = qs.stringify(addressBulidMacFive);
+
+                        // 1. ✅ เรียกใช้ token ก่อนยิง API ไป Mac Five
+                        const token = await this.getAuthToken();
+                        // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+                        //Api Mac 5 
+                        try {
+                            const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Authorization': `Bearer ${token}` // ถ้าต้องการใช้ token ใน header
+                                }
+                            });
+                            console.log('📦 ส่งสำเร็จ:', response.data);
+
+                            // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+                            // localStorage.setItem('deliveryAddress', response.data);
+                            this.$emit('submitted', formJsonData);
+                            this.$emit('close');
+                        } catch (err) {
+                            console.error('❌ ส่งไม่สำเร็จ:', err);
+                            alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ ส่งไม่สำเร็จ:', err);
+                    alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+                }
+
+
+            } else {
+
+                // INSERT ใหม่ 
+                const addressData = {
+                    DC_code: getCustomer_no, //'DEL-REST-01', // AP 
+                    DC_id: getCustomer_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
+                    DC_add1: this.form.detail,
+                    DC_add2: `แขวง ${subDistrict} ${district}`, //เขต
+                    DC_add3: `${province}`, //10500, // รหัสไปรษณีย์
+                    DC_tel: getMobile, //'029797000',
+                    DC_zone: '', //'ZON-TEST-01'
+                };
+
+                console.log('📦 ข้อมูลที่อยู่:', addressData)
+
+                // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+                //Api Database Local
+                try {
+                    const res = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_delivery_address.php`, addressData,
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        }
+                    );
+                    console.log('📦 ส่งสำเร็จ:', res.data);
+
+                    // return;
+
+                    if (res.data.success === true) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ส่งข้อมูลสำเร็จ',
+                            text: 'ข้อมูลที่อยู่ถูกบันทึกเรียบร้อยแล้ว',
+                        });
+
+                        localStorage.setItem('address_id', res.data.id)
+                        const address_id = res.data.id;
+                        // const addressData = JSON.parse(localStorage.getItem('address_id') || 'null');
+                        // const address_id = addressData?.data.id || null;
+                        console.log('📦 address_id:', address_id);
+
+                        const getaddress_id = JSON.parse(localStorage.getItem('address_id')) || null;
+                        console.log('📦 getaddress_id:', getaddress_id);
+
+
+                        // ก้อนข้อมูลที่อยู่สำหรับส่งไปยัง Mac 5
+                        const addressBulidMacFive = {
+                            DC_code: getCustomer_no, //'DEL-REST-01', // AP 
+                            DC_id: getaddress_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
+                            DC_add1: this.form.detail,
+                            DC_add2: `แขวง ${subDistrict} ${district}`, //เขต
+                            DC_add3: `${province}`, //10500, // รหัสไปรษณีย์
+                            DC_tel: getMobile, //'029797000',
+                            DC_zone: '', //'ZON-TEST-01'
+                        };
+
+                        console.log('📦 addressBulidMacFive:', addressBulidMacFive);
+
+                        const formJsonData = addressBulidMacFive;
+
+                        // const formEncodedData = qs.stringify(addressBulidMacFive);
+
+                        // 1. ✅ เรียกใช้ token ก่อนยิง API ไป Mac Five
+                        const token = await this.getAuthToken();
+
+                        // 2. 🔃 สร้าง addressBulidMacFive → qs.stringify แล้วยิงไป Mac Five
+                        const formEncodedData = qs.stringify(addressBulidMacFive);
+
+                        // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+                        //Api Mac 5 
+                        try {
+                            const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Authorization': `Bearer ${token}` // ถ้าต้องการใช้ token ใน header
+                                }
+                            });
+                            console.log('📦 ส่งสำเร็จ:', response.data);
+
+                            // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+                            // localStorage.setItem('deliveryAddress', response.data);
+                            this.$emit('submitted', formJsonData);
+                            this.$emit('close');
+                        } catch (err) {
+                            console.error('❌ ส่งไม่สำเร็จ:', err);
+                            alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+                        }
+
+
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'ไม่สามารถบันทึกข้อมูลที่อยู่ได้',
+                        });
+                    }
+
+                    return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+                    localStorage.setItem('deliveryAddress', JSON.stringify(addressData));
+                    this.$emit('submitted', addressData);
+                    this.$emit('close');
+                } catch (err) {
+                    console.error('❌ ส่งไม่สำเร็จ:', err);
+                    alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+                }
+
+            }
+
+            // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+        }
+    }
+};
+
+</script> 
+
+Code  CreateSaleListView.vue
+
+
+<!-- -ข้อมูลที่อยู่ผู้รับ  -->
+        <div class="w-full mx-auto p-6 bg-white rounded-lg shadow-md space-y-8">
+            <!-- กล่องหลัก แบ่งเป็น 2 ฝั่ง -->
+            <div class="  gap-8">
+                <!-- ซ้าย: ข้อมูลที่อยู่ผู้รับ -->
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-icons text-blue-600">contact_mail</span>
+                        <h2 class="text-lg font-semibold text-gray-800">ข้อมูลที่อยู่ผู้รับ</h2>
+                    </div>
+
+                    <div class="space-y-4">
+
+                        <div>
+                            <label class="text-sm text-gray-700 block mb-1">ชื่อผู้รับ</label>
+                            <input type="text" v-model="formData.receiverName" :readonly="isReadOnly"
+                                class="w-full text-gray-700 border rounded px-3 py-2" />
+                            <p v-if="formTouched && errors.receiverName" class="text-red-500 text-sm mt-1">{{
+                                errors.receiverName }}
+                            </p>
+                        </div>
+
+                        <!-- <div class="flex items-center gap-2 text-sm text-blue-600 cursor-pointer">
+                            <span class="material-icons text-base">content_copy</span>
+                            <span>คัดลอกจากข้อมูลลูกค้า</span>
+                        </div> -->
+
+                        <div>
+                            <label class="text-sm text-gray-700 block mb-1">เบอร์โทรศัพท์ผู้รับ</label>
+                            <input type="tel" v-model="formData.receiverPhone" :readonly="isReadOnly"
+                                class="w-full text-gray-700 border rounded px-3 py-2" />
+                            <p v-if="formTouched && errors.receiverPhone" class="text-red-500 text-sm mt-1">{{
+                                errors.receiverPhone }}
+                            </p>
+                        </div>
+
+                        <div v-if="showMoreAdress">
+
+                            <div>
+                                <label class="text-sm text-gray-700 block mb-1">อีเมลผู้รับ</label>
+                                <input type="email" v-model="formData.receiverEmail" :readonly="isReadOnly"
+                                    class="w-full text-gray-700 border rounded px-3 py-2" />
+                            </div>
+
+                            <div>
+                                <label class="text-sm text-gray-700 block mb-1">ที่อยู่/จัดส่ง</label>
+
+                                <textarea rows="4" v-model="formData.receiverAddress" :readonly="isReadOnly"
+                                    class="w-full text-gray-700 border rounded px-3 py-2 resize-none">
+                        </textarea>
+
+                                <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
+                                <div class="bottom-6 right-6 z-50 justify-self-end">
+                                    <button @click="showAddressPopup = true" :readonly="isReadOnly"
+                                        class="bg-purple-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
+                                        + เลือกที่อยู่ / จัดส่ง
+                                    </button>
+                                </div>
+
+                                <!-- ✅ แสดง Popup -->
+                                <DeliveryAddressPopup v-if="showAddressPopup" :existingAddress="selectedAddress"
+                                    @close="showAddressPopup = false" @submitted="handleAddressSelected" />
+                                <!-- โครตเจ๋ง -->
+                                <!-- <div class="fixed bottom-6 right-6 z-50">
+                                    <button @click="showAddressPopup = true"
+                                        class="bg-purple-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
+                                        + เลือกที่อยู่ / จัดส่ง
+                                    </button>
+                                </div> -->
+
+                                <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">{{
+                                    errors.receiverAddress }} </p>
+                            </div>
+
+                            <!-- <button class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">
+                                ตรวจสอบที่อยู่
+                            </button> -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ปุ่ม Show More / Show Less -->
+                <button @click="showMoreAdress = !showMoreAdress" type="button"
+                    class="mt-4 text-purple-600 hover:underline focus:outline-none">
+                    {{ showMoreAdress ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼' }}
+                </button>
+
+            </div>
+
+            <!-- ขวา: ข้อมูลการจัดส่งสินค้า -->
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="material-icons text-purple-600">local_shipping</span>
+                    <h2 class="text-lg font-semibold text-gray-800">ข้อมูลการจัดส่งสินค้า</h2>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- <div>
+                        <label class="text-sm text-gray-700 block mb-1">วันส่งสินค้า</label>
+                        <div class="flex">
+                            <input type="date" v-model="formData.deliveryDate" :readonly="isReadOnly"
+                                class="flex-grow border rounded-l px-3 py-2 bg-gray-50 text-gray-700" />
+                            <p v-if="formTouched && errors.deliveryDate" class="text-red-500 text-sm mt-1">{{
+                                errors.deliveryDate }}
+                            </p>
+
+                            <button class="bg-gray-200 px-3 rounded-r hover:bg-gray-300">
+                                <span class="material-icons text-sm">calendar_today</span>
+                            </button>
+                        </div>
+                    </div> -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">วันที่จัดส่ง</label>
+
+                        <div class="relative">
+                            <!-- Flatpickr Input -->
+                            <flat-pickr v-model="formData.deliveryDate" :config="dateConfig" :disabled="isReadOnly"
+                                class="cursor-pointer w-full text-gray-700 border rounded px-3 py-2"></flat-pickr>
+                            <!-- class="cursor-not-allowed pr-10 mt-1 pl-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-700 placeholder-gray-400 bg-gray-100" /> -->
+
+                            <!-- Calendar Icon on the right -->
+                            <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+                                style="padding-top: 0.2rem;">
+                                <span class="material-icons text-gray-400 text-base">calendar_today</span>
+                            </span>
+
+                        </div>
+
+                    </div>
+                    <p v-if="formTouched && errors.deliveryDate" class="text-red-500 text-sm mt-1">{{
+                        errors.deliveryDate }} </p>
+
+                    <div>
+                        <label class="text-sm text-gray-700 block mb-1">Tracking No.</label>
+                        <input type="text" v-model="formData.trackingNo" :readonly="isReadOnly"
+                            class="w-full text-gray-700 border rounded px-3 py-2" />
+                        <p v-if="formTouched && errors.trackingNo" class="text-red-500 text-sm mt-1">{{
+                            errors.trackingNo }} </p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>  
+
+
+<script>
+
+import { ref, onMounted, watch } from 'vue';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import ProductSelector from '../components/ProductSelector.vue';
+import PromotionSelector from '../components/PromotionSelector.vue';
+import Promotion_ProductSelector from '../components/Promotion_ProductSelector.vue';
+import DeliveryAddressPopup from '@/components/DeliveryAddressPopup.vue'
+import { useRoute } from 'vue-router'
+// import ConfirmEditPopup from '@/components/saleOrder/ConfirmEditPopup.vue'
+import qs from 'qs';
+import Flatpickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
+
+// ✅ import Thai locale
+import { Thai } from 'flatpickr/dist/l10n/th.js'
+import flatpickr from 'flatpickr'
+
+
+// ✅ ตั้งค่าภาษาไทยให้กับ flatpickr
+flatpickr.localize(Thai)
+
+const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
+
+const BASE_URL_MAC_FIVEL = import.meta.env.VITE_API_URL_MAC_FIVELE;
+const BASE_URL_AUTH = import.meta.env.VITE_API_URL_AUTH;
+
+// const secretKey1 = import.meta.env.VITE_SECRET_KEY1;
+// const secretKey2 = import.meta.env.VITE_SECRET_KEY2;
+
+const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
+
+// const getDataCustomer = JSON.parse(localStorage.getItem('selectDataCustomer') || 'null');
+
+// console.log("BASE_URL_IMAGE:", BASE_URL_IMAGE);
+
+export default {
+    name: 'SignupForm',
+    components: {
+        ProductSelector,
+        PromotionSelector,
+        Promotion_ProductSelector,
+        DeliveryAddressPopup,
+        'flat-pickr': Flatpickr,
+        // ConfirmEditPopup
+    },
+    data() {
+        return {
+
+            // ✅ ตัวแปรควบคุม popup
+            showAddressPopup: false, // ควบคุมการแสดง popup ที่อยู่]
+
+            // ✅ เก็บข้อมูลที่อยู่ที่เลือกจาก popup
+            selectedAddress: [],
+
+            isConfirmed: false, // สำหรับควบคุมปุ่ม "ยืนยันการบันทึก"
+            lockedDocumentNos: [], // เอกสารที่ถูกล็อก (เก็บใน LocalStorage หรือดึงจาก backend)
+
+            errors: {}, // เก็บข้อผิดพลาดของฟอร์ม
+            formTouched: false, // ค่าเริ่มต้น
+
+            customerData: JSON.parse(localStorage.getItem('selectDataCustomer') || 'null'),
+
+            BASE_URL_IMAGE: import.meta.env.VITE_API_URL_IMAGE,
+
+            isReadOnly: false, // ใช้ควบคุมสถานะ readonly
+
+            selectedDate: '',
+            // ✅ ตั้งค่ารูปแบบวันและปฏิทิน
+            dateConfig: {
+                dateFormat: 'd/m/Y', // เช่น 01/07/2568
+                // dateFormat: 'Y-m-d',
+                locale: Thai, // ใช้ภาษาไทย
+                // disabledMobile: true, // ปิดการเลื่อนเดือน
+            },
+
+            showMore: false, // ค่าเริ่มต้น
+
+            showProductSelector: false,
+            showPromotionSelector: false,
+            showProductSelectoronly: false,
+
+            showPromotionProductSelector: false,
+            selectedPromotion: [],
+
+            showConfirmEditPopup: false,
+            popupFormData: [],
+
+            Apiproducts: [], // เก็บข้อมูลสินค้าที่ได้จาก API
+
+            pageSize: 30, // ค่าเริ่มต้น
+            totalItems: 0, // ค่าเริ่มต้น
+
+            showMoreData: false, // ค่าเริ่มต้น
+            showMoreAdress: false, // ค่าเริ่มต้น
+
+            isDropdownOpen: false, // ควบคุมการเปิด/ปิด Dropdown
+
+            formData: {
+                listCode: '',
+                sellDate: '',
+                // sellDate: new Date().toISOString().split('T')[0], // ตั้งค่าเริ่มต้นเป็นวันที่ปัจจุบัน (YYYY-MM-DD)
+                // sellDate: new Date().toLocaleDateString('th-TH', {
+                //     day: '2-digit',
+                //     month: '2-digit',
+                //     year: 'numeric',
+                // }), // ตั้งค่าเริ่มต้นเป็นวันที่ปัจจุบันในรูปแบบ วัน/เดือน/ปี
+                sellDate: new Date(),        // ✅ ใช้ Date object ตรง ๆ
+                deliveryDate: new Date(),    // ✅ ใช้ Date object ตรง ๆ
+                // expireDate: '',
+                reference: '',
+                channel: '',
+                taxType: '',
+
+                fullName: '',
+                customerCode: '',
+                phone: '',
+                email: '',
+                address: '',
+                receiverName: '',
+                receiverPhone: '',
+                receiverEmail: '',
+                receiverAddress: '',
+                note: '',
+
+                promotions: [], // เก็บรายการสินค้าที่เลือก
+                gifts: [], // เก็บรายการของแถม
+
+                // ใช้
+                // deliveryDate: '',
+
+                trackingNo: '',
+                deliveryType: '',
+                totalDiscount: '',
+
+                totalDiscount: '',
+                deliveryFee: '',
+
+                documentNo: '',
+
+                pro_quantity: '' || 0,
+
+                discount: '' || 0,
+                final_total_price: 0,
+
+                // total_price: '' || 0,
+
+                // product_name : product.pro_name,
+                // qty: '',
+                pro_erp_title: '',
+                // pro_name: '',
+
+                productList: [],
+
+                warehouseCode: 'H1',
+                docType: 'SO',
+            },
+
+            selectedProducts: [], // ค่าเริ่มต้นเป็น array ว่าง
+
+        };
+    }, 
+    methods: { 
+async saveDocument() {
+
+            console.log('Save new document')
+
+            // console.log(ข้อมูลทั้งหมดใน formData:", this.formData);
+            console.log("ข้อมูลทั้งหมดใน formData:", JSON.parse(JSON.stringify(this.formData)));
+
+            const isValid = await this.validateForm();
+            if (!isValid) {
+                console.warn("❌ ข้อมูลไม่ครบ", this.errors);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่สามารถบันทึกได้',
+                    text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+                });
+                return;
+            }
+
+            // ✅ ดำเนินการบันทึกต่อ...
+            console.log("✅ กำลังบันทึกข้อมูล", this.formData);
+
+            // 'listCode' ,'expireDate', 'email',
+            // const requiredFields = [
+            //     'sellDate', 'reference', 'channel', 'taxType',
+            //     'fullName', 'customerCode', 'phone', 'address',
+            //     'receiverName', 'receiverPhone', 'receiverEmail', 'receiverAddress',
+            //     'deliveryDate', 'trackingNo', 'deliveryType'
+            // ];
+
+            // console.log("Log Value requiredFields: ", requiredFields);
+
+            // for (const field of requiredFields) {
+            //     if (!this.formData[field]) {
+            //         Swal.fire({
+            //             text: 'กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วนในส่วน "ข้อมูลรายการ" "แบบฟอร์มลูกค้า" "รายการสินค้า" "ข้อมูลที่อยู่ผู้รับ" และ "ข้อมูลการจัดส่งสินค้า"',
+            //             icon: 'warning'
+            //         });
+            //         return; // หยุดการทำงานหากมีฟิลด์ที่ว่าง
+            //     }
+            // }
+
+
+            // เรียก API เพื่อสร้าง Document Running // เพิ่มข้อมูล DocumentRunning
+            // let documentRunning = null;
+            try {
+                const docRunningPayload = {
+                    warehouse_code: this.formData.warehouseCode || "H1",
+                    doc_type: this.formData.docType || "SO"
+                    // warehouse_code: "H1",      // สมมุติใช้คลัง H1
+                    // doc_type: "SO"             // เอกสารขาย: Sale Order
+                };
+
+                const docResponse = await axios.post(
+                    'http://localhost/api_admin_dashboard/backend/api/post_documentrunning.php',
+                    docRunningPayload,
+                    {
+                        // headers: { 'Content-Type': 'application/json' }
+                    }
+                );
+
+                this.documentRunning = docResponse.data; // ค่าที่จะเอามาใช้ prefix =>H1-SO25680625 prefix+RunNumber H1-SO25680625-00001
+
+                // console.log("Log Value documentRunning: ", this.documentRunning);
+                console.log("📄 ได้เลขเอกสาร:", this.documentRunning);
+
+                if (!this.documentRunning.success) {
+                    Swal.fire({ text: this.documentRunning.message, icon: 'error' });
+                    return;
+                }
+
+            } catch (err) {
+                const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการสร้างเลขเอกสาร';
+                Swal.fire({ text: message, icon: 'error' });
+                return;
+            }
+
+            // ===> ใส่เลขเอกสารลงใน formData เช่น
+            const list_code = this.documentRunning?.list_code; // H1-SO25680619
+            this.formData.listCode = list_code; // เช่น H1-SO25680619
+            console.log("Log Value listCodeData: ", list_code);
+
+            const documentNo = this.documentRunning?.doc_number;// H1-SO25680619-0003 , run_number_formatteddaj get_products = localStorage.getItem('');
+            this.formData.documentNo = documentNo;
+            console.log("Log Value DocumentNo: ", documentNo);
+
+
+            if (this.selectedProducts.length === 0) {
+                Swal.fire({
+                    text: 'กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            console.log("🔍 Selected Products: ", this.selectedProducts);
+
+            for (const product of this.selectedProducts) {
+                if (product.pro_erp_title) {
+                    this.pro_erp_title = product.pro_erp_title;
+                    this.formData.pro_erp_title = this.pro_erp_title;
+                }
+            }
+
+            console.log("log value this.pro_erp_title:", this.pro_erp_title);
+
+            //pro_name
+            for (const product of this.selectedProducts) {
+                if (!product.pro_erp_title || !product.pro_quantity || product.pro_quantity < 0 || !product.pro_unit_price || product.pro_unit_price < 0) {
+                    Swal.fire({
+                        text: 'กรุณากรอกชื่อสินค้า, จำนวน, และมูลค่าต่อหน่วยให้ครบถ้วนและถูกต้องสำหรับทุกรายการสินค้า',
+                        icon: 'warning'
+                    });
+                    return; // หยุดการทำงานหากมีสินค้าที่ไม่สมบูรณ์
+                }
+            }
+
+
+            this.formData.productList = this.selectedProducts.map(product => {
+
+                const total = this.totalprice(product);
+
+                return {
+                    pro_id: product.pro_id,
+                    pro_erp_title: product.pro_erp_title,
+                    pro_quantity: product.pro_quantity,
+                    pro_unit_price: product.pro_unit_price,
+                    pro_discount: this.formData.discount,
+                    pro_total_price: total, // รวมราคาต่อสินค้า
+                    pro_images: product.pro_images,
+                    pro_sn: product.pro_sn,
+                    pro_units: product.pro_units,
+                    pro_activity_id: product.activity_id || null, // เพิ่ม activity_id ถ้ามี
+                };
+            });
+
+
+            console.log("🔍 log value this.productList:", this.formData.productList)
+
+            this.formData.final_total_price = this.grandTotal;
+
+            const { promotions, gifts } = this.extractPromotionsAndGifts();
+            this.formData.promotions = promotions;
+            this.formData.gifts = gifts;
+
+            const payload = new FormData();
+
+            // for (const key in this.formData) {
+            //     if (key === 'productList') {
+            //         // แปลง array เป็น JSON string แล้วแนบ
+            //         payload.append('productList', JSON.stringify(this.formData.productList));
+            //     } else {
+            //         payload.append(key, this.formData[key]);
+            //     }
+            // }
+
+            for (const key in this.formData) {
+                if (key === 'productList' || key === 'promotions' || key === 'gifts') {
+                    payload.append(key, JSON.stringify(this.formData[key]));
+                } else {
+                    payload.append(key, this.formData[key]);
+                }
+            }
+
+            // for (let pair of payload.entries()) {
+            //     console.log("🤯 payload asdasdasfadfafas", pair[0] + ': ' + pair[1]);
+            // }
+
+            // console.log("🤯 Log Value this.promotions: ", this.promotions);
+            // console.log("🤯 Log Value this.gifts: ", this.gifts);
+
+            // payload.append('promotions', JSON.stringify(this.promotions));
+            // payload.append('gifts', JSON.stringify(this.gifts));
+
+
+
+            // เพื่อมข้อมูล FormData
+            try {
+                const response = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_sale_order.php`, payload, {
+                    // headers: { 'Content-Type': 'application/json' },
+                });
+
+                console.log("fdsffffadfdfs Log Value Data: ", response.data);
+
+                const resData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+                if (resData.success) {
+                    // เก็บ documentNo ลง localStorage
+                    const documentNo = this.formData.documentNo;
+                    localStorage.setItem('documentNo', documentNo);
+
+                    // เปลี่ยน URL ไปยัง saleList?documentNo=<documentNo>
+                    this.$router.push(`/saleList?documentNo=${documentNo}`);
+
+                    // ตั้งค่าให้ฟอร์มเป็น readonly
+                    this.isReadOnly = true;
+
+                    Swal.fire({ text: resData.message, icon: 'success' });
+                } else {
+                    Swal.fire({ text: resData.message, icon: 'error' });
+                }
+                // Swal.fire({ text: resData.message, icon: 'success' });
+            } catch (err) {
+                const message = err.response?.data?.message || err.message || 'Unknown error';
+                Swal.fire({ text: message, icon: 'error' });
+            }
+
+        },
+  
+
+  handleSelectedPromotionProducts(payload) {
+            console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
+
+            const items = payload.items || [];
+            const gifts = payload.gifts || [];
+            const promotions = payload.promotions || [];
+            const emitTitles = payload.emitTitles || [];
+
+            console.log("✅ Items:", items);
+            console.log("✅ Gifts:", gifts);
+            console.log("✅ Promotions:", promotions);
+            console.log("✅ EmitTitles:", emitTitles);
+
+            items.forEach(item => {
+                // const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === item.pro_sku_price_id);
+
+                // หา emit title ที่ตรงกับสินค้า
+                const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id) || {};
+
+                // 👇 ตรวจซ้ำโดยใช้ sku_id + activity_id
+                // const alreadyExists = this.selectedProducts.find(sp =>
+
+                //     sp.pro_id === item.pro_sku_price_id && sp.activity_id === item.pro_activity_id 
+                // );
+                const activityId = item.st === 0 ? 0 : item.pro_activity_id;
+
+                const alreadyExists = this.selectedProducts.find(sp =>
+                    sp.pro_id === item.pro_sku_price_id &&
+                    sp.activity_id === activityId &&
+                    sp.st === item.st // ✅ ตรวจ st ด้วย
+                );
+                console.log("🧮 Chack selectedProducts: ", this.selectedProducts);
+                console.log("🧮 Chack pro_sku_price_id: ", item.pro_sku_price_id);
+
+                console.log("🧮 Chack pro_activity_id: ", item.pro_activity_id);
+                console.log("🧮 Chack alreadyExists: ", alreadyExists);
+                console.log("sss Chack item.st: ", item.st);
+                // const alreadyExists = this.selectedProducts.some(sp =>
+                //     sp.pro_id === item.pro_sku_price_id && sp.activity_id === item.pro_activity_id
+                // );
+
+                // if (!alreadyExists) {
+                if (alreadyExists) {
+                    // 🔁 ถ้ามีอยู่แล้ว → บวกจำนวนเพิ่ม
+                    alreadyExists.pro_quantity = parseInt(alreadyExists.pro_quantity) + parseInt(item.pro_goods_num || 0);
+                    console.log("🧮 เดิม:", alreadyExists.pro_quantity, "เพิ่ม:", item.pro_goods_num);
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'เพิ่มจำนวนสินค้าอยู่ในรายการแล้ว',
+                        text: `เพิ่มจำนวนสินค้า ${matchedTitle.pro_erp_title || item.pro_erp_title || ''} เป็น ${alreadyExists.pro_quantity} ชิ้น`,
+                    });
+                    // this.selectedProducts.push({ 
+                    //     pro_quantity: item.pro_quantity += item.pro_goods_num || 0,
+                    // });
+
+                } else {
+
+                        this.selectedProducts.push({
+                        pro_id: item.pro_sku_price_id,
+                        activity_id: activityId,
+                        pro_activity_id: activityId,
+                        st: item.st, // ✅ เก็บค่า st ไว้ด้วย
+                        pro_erp_title: matchedTitle.pro_erp_title || item.pro_erp_title || '',
+                        pro_unit_price: item.pro_goods_price || item.pro_goods_price || '',
+                        pro_goods_sku_text: item.pro_goods_sku_text || '',
+                        pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
+                        pro_images: item.pro_image || '',
+                        pro_quantity: item.pro_goods_num || 0,
+                        pro_units: matchedTitle.pro_units || item.pro_units || '',
+                        pro_stock: matchedTitle.stock || 0,
+                        gifts: gifts.filter(gift => gift.pro_activity_id == item.pro_activity_id),
+                        promotions: promotions.filter(promo => promo.pro_activity_id == item.pro_activity_id),
+                    });
+                }
+            });
+
+            // ตรวจสอบว่า amount มากกว่า stock หรือไม่
+            // const invalidItems = items.filter(item => item.amount > item.stock || item.amount < 0);
+
+            // if (invalidItems.length > 0) {
+            //     alert("มีรายการที่ใส่จำนวนไม่ถูกต้อง (น้อยกว่า 1 หรือมากกว่าคงเหลือในคลัง)");
+            //     // หรือ Swal.fire ก็ได้
+            //     return;
+            // }
+
+            // ถ้าถูกต้อง -> ดำเนินการต่อ
+            // this.selectedItems = items;
+
+            console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
+
+        },

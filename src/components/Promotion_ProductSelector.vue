@@ -712,7 +712,7 @@ async function getPromotionProducts() {
 
       return skuList.map(sku => ({
         ...sku,
-        activity_id: activityData.id, // 1167
+        activity_id: activityData.id || 0, // 1167
         goods_id: sku.goods_id, // 13872
         pro_sku_price_id: sku.sku_price_id, // 50983
         erp_title: sku.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP"

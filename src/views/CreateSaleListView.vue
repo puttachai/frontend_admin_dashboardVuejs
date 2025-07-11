@@ -458,7 +458,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -1322,10 +1322,21 @@ export default {
                     payload.append(key, this.formData[key]);
                 }
             }
-            console.log('asdasdasdads',payload);
-            for (let pair of payload.entries()) {
-                console.log("🤯 payload asdasdasfadfafas", pair[0] + ': ' + pair[1]);
+
+            if (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณาเลือกที่อยู่จัดส่ง',
+                });
+                return;
             }
+
+            // ✅ เพิ่ม selectedAddress เข้าไป
+            payload.append('deliveryAddress', JSON.stringify(this.selectedAddress));
+            // console.log('asdasdasdads',payload);
+            // for (let pair of payload.entries()) {
+            //     console.log("🤯 payload asdasdasfadfafas", pair[0] + ': ' + pair[1]);
+            // }
 
             // console.log("🤯 Log Value this.promotions: ", this.promotions);
             // console.log("🤯 Log Value this.gifts: ", this.gifts);
@@ -1357,7 +1368,7 @@ export default {
 
                     Swal.fire({ text: resData.message, icon: 'success' });
                 } else {
-                    Swal.fire({ text:'asdadas', icon: 'error' });
+                    Swal.fire({ text: 'asdadas', icon: 'error' });
                     console.log('resData', resData);
                 }
 
@@ -1764,49 +1775,49 @@ export default {
         },
 
         async confirmFinalSave() {
-            // const result = await Swal.fire({
-            //     title: 'คุณแน่ใจหรือไม่?',
-            //     text: "หลังจากยืนยัน จะไม่สามารถแก้ไขข้อมูลนี้ได้อีก",
-            //     icon: 'warning',
-            //     showCancelButton: true,
-            //     confirmButtonText: 'ยืนยัน',
-            //     cancelButtonText: 'ยกเลิก'
-            // });
+            const result = await Swal.fire({
+                title: 'คุณแน่ใจหรือไม่?',
+                text: "หลังจากยืนยัน จะไม่สามารถแก้ไขข้อมูลนี้ได้อีก",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก'
+            });
 
-            // if (!result.isConfirmed) return;
-            // // if (result.isConfirmed) {
-            // const docNo = this.formData.documentNo;
+            if (!result.isConfirmed) return;
+            // if (result.isConfirmed) {
+            const docNo = this.formData.documentNo;
 
             try {
-                // const lockResponse = await axios.post(
-                //     `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/lock_document.php`,
-                //     { documentNo: docNo }
-                // );
+                const lockResponse = await axios.post(
+                    `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/lock_document.php`,
+                    { documentNo: docNo }
+                );
 
-                // const resData = lockResponse.data;
+                const resData = lockResponse.data;
 
-                // console.log("🔒 Response จาก API lock_document:", resData);
+                console.log("🔒 Response จาก API lock_document:", resData);
 
-                // if (!lockResponse.data.success) {
-                //     Swal.fire('ผิดพลาด', lockResponse.data.message, 'error');
-                //     return;
-                // }
+                if (!lockResponse.data.success) {
+                    Swal.fire('ผิดพลาด', lockResponse.data.message, 'error');
+                    return;
+                }
 
-                // // if (resData.success) {
-                // this.isReadOnly = true;
-                // this.isConfirmed = true;
+                if (resData.success) {
+                this.isReadOnly = true;
+                this.isConfirmed = true;
 
-                // // กันย้อนแก้ในเครื่องนี้ (optional)
-                // const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
-                // if (!locked.includes(docNo)) {
-                //     locked.push(docNo);
-                //     localStorage.setItem('lockedDocumentNos', JSON.stringify(locked));
-                // }
+                // กันย้อนแก้ในเครื่องนี้ (optional)
+                const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
+                if (!locked.includes(docNo)) {
+                    locked.push(docNo);
+                    localStorage.setItem('lockedDocumentNos', JSON.stringify(locked));
+                }
 
-                // Swal.fire('สำเร็จ!', 'รายการถูกล็อกแล้ว', 'success');
-                // } else {
-                //     Swal.fire('ผิดพลาด', resData.message, 'error');
-                // }
+                Swal.fire('สำเร็จ!', 'รายการถูกล็อกแล้ว', 'success');
+                } else {
+                    Swal.fire('ผิดพลาด', resData.message, 'error');
+                }
 
                 const token = await this.getAuthToken();
                 console.log("🔑 token", token);
@@ -2012,7 +2023,7 @@ export default {
                         pro_images: product.pro_images,
                         pro_sn: product.pro_sn,
                         pro_units: product.pro_units,
-                        pro_activity_id: product.pro_activity_id || null // ✅ เพิ่มบรรทัดนี้!
+                        pro_activity_id: product.pro_activity_id || 0 // ✅ เพิ่มบรรทัดนี้!
                     };
                 });
 
@@ -2042,6 +2053,22 @@ export default {
                         payload.append(key, this.formData[key]);
                     }
                 }
+
+                if (!this.formData.receiverName) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'กรุณาเลือกที่อยู่จัดส่ง',
+                    });
+                    return;
+                }else if(!this.selectedAddress || Object.keys(this.selectedAddress).length === 0){
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'กรุณาเลือกที่อยู่จัดส่ง',
+                    });
+                }
+
+                // ✅ เพิ่ม selectedAddress เข้าไป
+                payload.append('deliveryAddress', JSON.stringify(this.selectedAddress));
 
                 // console.log("🤯 Log Value payload: ", payload);
 
@@ -2172,7 +2199,7 @@ export default {
                             pro_sn: product.sn,
                             pro_unit: product.unit || '',
                             activity_id: product.pro_activity_id || null,
-                            pro_activity_id: product.pro_activity_id || null, // ✅ ใช้ชื่อนี้ให้ตรง backend
+                            pro_activity_id: product.pro_activity_id || 0, // ✅ ใช้ชื่อนี้ให้ตรง backend
                             pro_goods_sku_text: product.pro_goods_sku_text || '',
                             // promotions: matchedPromotions,
                             // gifts: matchedGifts
@@ -2304,20 +2331,20 @@ export default {
             }, 100)
         },
 
-        findProvinceId(name) {
-            const match = this.$refs.addressPopup?.rawData?.find(p => p.name_th === name);
-            return match?.id || '';
-        },
-        findAmphureId(name) {
-            const allAmphures = this.$refs.addressPopup?.rawData?.flatMap(p => p.amphure);
-            const match = allAmphures?.find(a => name.includes(a.name_th));
-            return match?.id || '';
-        },
-        findTambonId(name) {
-            const allTambons = this.$refs.addressPopup?.rawData?.flatMap(p => p.amphure.flatMap(a => a.tambon));
-            const match = allTambons?.find(t => name.includes(t.name_th));
-            return match?.id || '';
-        },
+        // findProvinceId(name) {
+        //     const match = this.$refs.addressPopup?.rawData?.find(p => p.name_th === name);
+        //     return match?.id || '';
+        // },
+        // findAmphureId(name) {
+        //     const allAmphures = this.$refs.addressPopup?.rawData?.flatMap(p => p.amphure);
+        //     const match = allAmphures?.find(a => name.includes(a.name_th));
+        //     return match?.id || '';
+        // },
+        // findTambonId(name) {
+        //     const allTambons = this.$refs.addressPopup?.rawData?.flatMap(p => p.amphure.flatMap(a => a.tambon));
+        //     const match = allTambons?.find(t => name.includes(t.name_th));
+        //     return match?.id || '';
+        // },
 
         handleAddressSelected(data) {
             // async handleAddressSelected(data) {
@@ -2328,18 +2355,22 @@ export default {
 
             // ✅ เก็บ object เต็ม ๆ
             this.selectedAddress = {
-                id: data.DC_id, // สมมติว่า DC_id คือ id ที่อยู่
-                detail: data.DC_add1,
-                province_id: this.findProvinceId(data.DC_add3),
-                amphure_id: this.findAmphureId(data.DC_add2),
-                tambon_id: this.findTambonId(data.DC_add2),
-                phone: data.DC_tel,
+                DC_id: data.DC_id, // สมมติว่า DC_id คือ id ที่อยู่
+                DC_add1: data.DC_add1,
+                // province_id: this.findProvinceId(data.DC_add3),
+                // amphure_id: this.findAmphureId(data.DC_add2),
+                // tambon_id: this.findTambonId(data.DC_add2),
+                DC_add3: data.DC_add3,
+                DC_add2: data.DC_add2,
+                DC_tel: data.DC_tel,
+                DC_zone: data.DC_zone || '',
             };
 
             // ✅ แสดงผลใน UI
             this.formData.receiverAddress = fullAddress;
             this.formData.receiverPhone = DC_tel;
             console.log('📍 ที่อยู่ที่เลือก:', this.formData.receiverAddress);
+            console.log('📍object ที่อยู่ที่เลือก:', this.selectedAddress);
 
             // 📌 ใส่ไว้ใน saveDocument()
             // await this.saveDocument(addressData);
@@ -2372,8 +2403,8 @@ export default {
                 // );
                 const activityId = item.st === false ? 0 : item.pro_activity_id;
 
-                console.log('item.pro_activity_id',item.pro_activity_id);
-                console.log('activityId',activityId);
+                console.log('item.pro_activity_id', item.pro_activity_id);
+                console.log('activityId', activityId);
 
 
                 const alreadyExists = this.selectedProducts.find(sp =>

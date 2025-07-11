@@ -68,6 +68,7 @@
             </th>
 
             <th class="px-4 py-2 border w-[120px]">รหัสโปรโมชั่น</th>
+            <th class="px-4 py-2 border w-[120px]">สมาชิก</th>
             <!-- <th class="px-4 py-2 border">รายละเอียด</th> -->
             <th v-if="false" class="px-4 py-2 border">promotion_Day||Months</th>
             <!-- <th class="px-4 py-2 border">หน่วย</th>
@@ -122,6 +123,7 @@
             <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code ?? 'ไม่มีโปรโมชั่น' }}</td>
 
             <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code }}</td>
+            <td class="px-4 text-gray-700 py-2 border">{{ item.level }}</td>
             <!-- <td class="px-4 py-2 border">{{ item.titledetail }}</td> -->
             <td v-if="false" class="px-4 text-gray-700 py-2 border">{{ item.promotion_index }}</td>
             <!-- <td class="px-4 py-2 border">{{ item.units }}</td> -->

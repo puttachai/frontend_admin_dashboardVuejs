@@ -94,11 +94,38 @@ export default {
             rawData: []
         };
     },
+
+    props: {
+        existingAddress: {
+            type: Object,
+            default: () => ({})
+        }
+    },
     mounted() {
-        this.fetchLocationData();
+        // this.fetchLocationData();
+        this.fetchLocationData().then(() => {
+            this.prefillAddressForm();
+        });
     },
 
     methods: {
+
+        prefillAddressForm() {
+            if (this.existingAddress && Object.keys(this.existingAddress).length) {
+                const { province_id, amphure_id, tambon_id, detail } = this.existingAddress;
+
+                this.form.province_id = province_id;
+                this.form.amphure_id = amphure_id;
+                this.form.tambon_id = tambon_id;
+                this.form.detail = detail;
+
+                this.onProvinceChange();
+                setTimeout(() => {
+                    this.onAmphureChange();
+                }, 0);
+            }
+        },
+
         async fetchLocationData() {
             try {
                 const res = await axios.get('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province_with_amphure_tambon.json');
@@ -185,6 +212,14 @@ export default {
 
 
         async submitAddress() {
+
+            // const account_id = localStorage.getItem('account');
+            // console.log('📌📌 log address_ids: ', account_id);
+            const existingAddressId  = this.existingAddress?.id; // || account_id
+            // const addressId = this.existingAddress?.id || localStorage.getItem('address_id');
+            const isManualInput = this.form.detail && !existingAddressId;
+
+
             const province = this.provinces.find(p => p.id === this.form.province_id)?.name_th || '';
             const district = this.amphures.find(a => a.id === this.form.amphure_id)?.name_th || '';
             const subDistrict = this.tambons.find(t => t.id === this.form.tambon_id)?.name_th || '';
@@ -196,167 +231,235 @@ export default {
             const getMobile = getselectDataCustomerRow?.mobile ?? 0;;
 
             console.log('log getCustomer_id: ', getCustomer_id);
+            console.log('log getselectDataCustomerRow: ', getselectDataCustomerRow);
 
-            // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+            // 📌 กำหนด addressId จาก existingAddress หรือ localStorage
+            const addressId = existingAddressId || null;
 
-            const addressData = {
-                DC_code: getCustomer_no, //'DEL-REST-01', // AP 
-                DC_id: getCustomer_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
-                DC_add1: this.form.detail,
-                DC_add2: `แขวง ${subDistrict} ${district}`, //เขต
-                DC_add3: `${province}`, //10500, // รหัสไปรษณีย์
-                DC_tel: getMobile, //'029797000',
-                DC_zone: '', //'ZON-TEST-01'
-            };
+            if (addressId) {
+                // UPDATE ที่อยู่เดิม
+                const updatePayload = {
+                    id: addressId,
+                    DC_code: getCustomer_no,
+                    DC_id: getCustomer_id,
+                    DC_add1: this.form.detail,
+                    DC_add2: `แขวง ${subDistrict} ${district}`,
+                    DC_add3: province,
+                    DC_tel: getMobile,
+                    DC_zone: '',
+                };
 
-            console.log('📦 ข้อมูลที่อยู่:', addressData)
+                try {
 
-            // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+                    const res = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/update_delivery_address.php`, updatePayload);
 
-            //Api Database Local
-            try {
-                const res = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_delivery_address.php`, addressData,
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
+                    console.log('📦 ส่งสำเร็จ:', res.data);
+
+                    console.log('✅ res.data.success =', res.data.success);
+                    console.log('✅ typeof res.data.success =', typeof res.data.success);
+
+
+                    if (res.data.success) {
+                        // Swal.fire({ icon: 'success', text: 'อัปเดตข้อมูลที่อยู่เรียบร้อยแล้ว' });
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ส่งข้อมูลสำเร็จ',
+                            text: 'ข้อมูลที่อยู่ถูกบันทึกเรียบร้อยแล้ว',
+                        });
+
+                        // ✅ ดึงข้อมูลล่าสุดที่ถูกอัปเดตจาก backend
+                        const updatedData = res.data;
+                        console.log('📦 ข้อมูลที่อัปเดตล่าสุด:', res.data);
+                        console.log('📦 ข้อมูลที่อัปเดตล่าสุด:', updatedData);
+
+                        // return;
+
+                        localStorage.setItem('address_id', res.data.id)
+
+
+                        // ✅ ก้อนข้อมูลที่อยู่สำหรับ Mac Five
+                        const addressBulidMacFive = {
+                            DC_code: res.data.data.customer_code, //'DEL-REST-01', // AP 
+                            DC_id: res.data.data.id,  //'0001', // ID ของที่อยู่ ใน table delivery_address
+                            DC_add1: res.data.data.address_line1,
+                            DC_add2: res.data.data.address_line2, //เขต
+                            DC_add3: res.data.data.address_line3, //10500, // รหัสไปรษณีย์
+                            DC_tel: res.data.data.phone, //'029797000',
+                            DC_zone: res.data.data.zone_code || '', //'ZON-TEST-01'
+                        };
+
+
+                        console.log('📦 addressBulidMacFive:', addressBulidMacFive);
+
+                        // return;
+
+                        const formJsonData = addressBulidMacFive;
+
+                        // return;
+
+                        // const formEncodedData = qs.stringify(addressBulidMacFive);
+
+
+
+                        // 2. 🔃 สร้าง addressBulidMacFive → qs.stringify แล้วยิงไป Mac Five
+                        const formEncodedData = qs.stringify(addressBulidMacFive);
+
+                        // 1. ✅ เรียกใช้ token ก่อนยิง API ไป Mac Five
+                        const token = await this.getAuthToken();
+                        // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+                        //Api Mac 5 
+                        try {
+                            const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Authorization': `Bearer ${token}` // ถ้าต้องการใช้ token ใน header
+                                }
+                            });
+                            console.log('📦 ส่งสำเร็จ:', response.data);
+
+                            // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+                            // localStorage.setItem('deliveryAddress', response.data);
+                            this.$emit('submitted', formJsonData);
+                            this.$emit('close');
+                        } catch (err) {
+                            console.error('❌ ส่งไม่สำเร็จ:', err);
+                            alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
                         }
                     }
-                );
-                console.log('📦 ส่งสำเร็จ:', res.data);
+                } catch (error) {
+                    console.error('❌ ส่งไม่สำเร็จ:', err);
+                    alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+                }
 
-                if (res.data.success === true) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'ส่งข้อมูลสำเร็จ',
-                        text: 'ข้อมูลที่อยู่ถูกบันทึกเรียบร้อยแล้ว',
-                    });
 
-                    localStorage.setItem('address_id', res.data.id)
-                    const address_id = res.data.id;
-                    // const addressData = JSON.parse(localStorage.getItem('address_id') || 'null');
-                    // const address_id = addressData?.data.id || null;
-                    console.log('📦 address_id:', address_id);
+            } else {
 
-                    const getaddress_id = JSON.parse(localStorage.getItem('address_id')) || null;
-                    console.log('📦 getaddress_id:', getaddress_id);
+                // INSERT ใหม่ 
+                const addressData = {
+                    DC_code: getCustomer_no, //'DEL-REST-01', // AP 
+                    DC_id: getCustomer_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
+                    DC_add1: this.form.detail,
+                    DC_add2: `แขวง ${subDistrict} ${district}`, //เขต
+                    DC_add3: `${province}`, //10500, // รหัสไปรษณีย์
+                    DC_tel: getMobile, //'029797000',
+                    DC_zone: '', //'ZON-TEST-01'
+                };
 
-                    // // 1. 🔑 ดึง token จาก BASE_URL_AUTH
-                    // const secretKeyData = qs.stringify({
-                    //     secretKey1: import.meta.env.VITE_SECRET_KEY1,
-                    //     secretKey2: import.meta.env.VITE_SECRET_KEY2
-                    // });
+                console.log('📦 ข้อมูลที่อยู่:', addressData)
 
-                    // // 2. 🧪 ดึง token จาก BASE_URL_AUTH
-                    // const authResponse = await axios.post(`${BASE_URL_AUTH}`, secretKeyData, {
-                    //     // Secretkey1: "your_secret_1", // 👉 เปลี่ยนเป็นค่าแท้จริง
-                    //     // Secretkey2: "your_secret_2"
-                    //     headers: {
-                    //         'Content-Type': 'application/x-www-form-urlencoded'
-                    //     }
-                    // });
+                // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
 
-                    // const token = authResponse.data.Token;
-                    // console.log("🔑 Token ที่ได้จาก BASE_URL_AUTH:", token);
-                    // if (!token) throw new Error("ไม่สามารถดึง token ได้");
-
-                    // ก้อนข้อมูลที่อยู่สำหรับส่งไปยัง Mac 5
-                    const addressBulidMacFive = {
-                        DC_code: getCustomer_no, //'DEL-REST-01', // AP 
-                        DC_id: getaddress_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
-                        DC_add1: this.form.detail,
-                        DC_add2: `แขวง ${subDistrict} ${district}`, //เขต
-                        DC_add3: `${province}`, //10500, // รหัสไปรษณีย์
-                        DC_tel: getMobile, //'029797000',
-                        DC_zone: '', //'ZON-TEST-01'
-                    };
-
-                    console.log('📦 addressBulidMacFive:', addressBulidMacFive);
-
-                    // const formEncodedData = qs.stringify(addressBulidMacFive);
-
-                    // 1. ✅ เรียกใช้ token ก่อนยิง API ไป Mac Five
-                    const token = await this.getAuthToken();
-
-                    // 2. 🔃 สร้าง addressBulidMacFive → qs.stringify แล้วยิงไป Mac Five
-                    const formEncodedData = qs.stringify(addressBulidMacFive);
-
-                    // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
-
-                    //Api Mac 5 
-                    try {
-                        const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
+                //Api Database Local
+                try {
+                    const res = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_delivery_address.php`, addressData,
+                        {
                             headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                                'Authorization': `Bearer ${token}` // ถ้าต้องการใช้ token ใน header
+                                'Content-Type': 'application/json',
                             }
+                        }
+                    );
+                    console.log('📦 ส่งสำเร็จ:', res.data);
+
+                    // return;
+
+                    if (res.data.success === true) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ส่งข้อมูลสำเร็จ',
+                            text: 'ข้อมูลที่อยู่ถูกบันทึกเรียบร้อยแล้ว',
                         });
-                        console.log('📦 ส่งสำเร็จ:', response.data);
+
+                        localStorage.setItem('address_id', res.data.id)
+                        const address_id = res.data.id;
+                        // const addressData = JSON.parse(localStorage.getItem('address_id') || 'null');
+                        // const address_id = addressData?.data.id || null;
+                        console.log('📦 address_id:', address_id);
+
+                        const getaddress_id = JSON.parse(localStorage.getItem('address_id')) || null;
+                        console.log('📦 getaddress_id:', getaddress_id);
+
+
+                        // ก้อนข้อมูลที่อยู่สำหรับส่งไปยัง Mac 5
+                        const addressBulidMacFive = {
+                            DC_code: getCustomer_no, //'DEL-REST-01', // AP 
+                            DC_id: getaddress_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
+                            DC_add1: this.form.detail,
+                            DC_add2: `แขวง ${subDistrict} ${district}`, //เขต
+                            DC_add3: `${province}`, //10500, // รหัสไปรษณีย์
+                            DC_tel: getMobile, //'029797000',
+                            DC_zone: '', //'ZON-TEST-01'
+                        };
+
+                        console.log('📦 addressBulidMacFive:', addressBulidMacFive);
+
+                        const formJsonData = addressBulidMacFive;
+
+                        // const formEncodedData = qs.stringify(addressBulidMacFive);
+
+                        // 1. ✅ เรียกใช้ token ก่อนยิง API ไป Mac Five
+                        const token = await this.getAuthToken();
+
+                        // 2. 🔃 สร้าง addressBulidMacFive → qs.stringify แล้วยิงไป Mac Five
+                        const formEncodedData = qs.stringify(addressBulidMacFive);
 
                         // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
 
-                        // localStorage.setItem('deliveryAddress', response.data);
-                        this.$emit('submitted', addressBulidMacFive);
-                        this.$emit('close');
-                    } catch (err) {
-                        console.error('❌ ส่งไม่สำเร็จ:', err);
-                        alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+                        //Api Mac 5 
+                        try {
+                            const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                    'Authorization': `Bearer ${token}` // ถ้าต้องการใช้ token ใน header
+                                }
+                            });
+                            console.log('📦 ส่งสำเร็จ:', response.data);
+
+                            // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+                            // localStorage.setItem('deliveryAddress', response.data);
+                            this.$emit('submitted', formJsonData);
+                            this.$emit('close');
+                        } catch (err) {
+                            console.error('❌ ส่งไม่สำเร็จ:', err);
+                            alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+                        }
+
+
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'ไม่สามารถบันทึกข้อมูลที่อยู่ได้',
+                        });
                     }
 
+                    return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
 
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
-                        text: 'ไม่สามารถบันทึกข้อมูลที่อยู่ได้',
-                    });
+                    localStorage.setItem('deliveryAddress', JSON.stringify(addressData));
+                    this.$emit('submitted', addressData);
+                    this.$emit('close');
+                } catch (err) {
+                    console.error('❌ ส่งไม่สำเร็จ:', err);
+                    alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
                 }
 
-                return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
-
-                localStorage.setItem('deliveryAddress', JSON.stringify(addressData));
-                this.$emit('submitted', addressData);
-                this.$emit('close');
-            } catch (err) {
-                console.error('❌ ส่งไม่สำเร็จ:', err);
-                alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
             }
 
             // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
 
-            // const getaddress_id = JSON.parse(localStorage.getItem('address_id')) || null;
-            // console.log('📦 getaddress_id:', getaddress_id);
-
-            // const addressBulidMacFive = {
-            //     DC_code: getCustomer_no, //'DEL-REST-01', // AP 
-            //     DC_id: getCustomer_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
-            //     DC_add1: this.form.detail,
-            //     DC_add2: `แขวง ${subDistrict} เขต ${district}`,
-            //     DC_add3: `${province}`, //10500, // รหัสไปรษณีย์
-            //     DC_tel: getMobile, //'029797000',
-            //     DC_zone: '', //'ZON-TEST-01'
-            // };
-
-            // console.log('📦 addressBulidMacFive:', addressBulidMacFive);
-
-            // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
-
-            // //Api Mac 5 
-            // try {
-            //     const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, addressBulidMacFive);
-            //     console.log('📦 ส่งสำเร็จ:', response.data);
-
-            //     // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
-
-            //     localStorage.setItem('deliveryAddress', JSON.stringify(addressData));
-            //     this.$emit('submitted', addressData);
-            //     this.$emit('close');
-            // } catch (err) {
-            //     console.error('❌ ส่งไม่สำเร็จ:', err);
-            //     alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
-            // }
         }
     }
 };
+
+</script>
+
+<style scoped></style>
+
+
+<!-- 
+
 //     async submitAddress() {
 //         const addressData = {
 //             DC_code: 'DEL-REST-01',
@@ -381,9 +484,9 @@ export default {
 //         }
 //     }
 // }
-</script>
 
-<style scoped></style>
+-->
+
 
 <!-- 
   import provinces from '@/assets/thailand/api_province.json'
@@ -399,3 +502,39 @@ const selectedAmphur = ref('')
 const filteredTambons = computed(() =>
   tambons.filter(t => t.amphure_code === selectedAmphur.value)
 ) -->
+
+
+<!-- 
+// return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+// const getaddress_id = JSON.parse(localStorage.getItem('address_id')) || null;
+// console.log('📦 getaddress_id:', getaddress_id);
+
+// const addressBulidMacFive = {
+//     DC_code: getCustomer_no, //'DEL-REST-01', // AP 
+//     DC_id: getCustomer_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
+//     DC_add1: this.form.detail,
+//     DC_add2: `แขวง ${subDistrict} เขต ${district}`,
+//     DC_add3: `${province}`, //10500, // รหัสไปรษณีย์
+//     DC_tel: getMobile, //'029797000',
+//     DC_zone: '', //'ZON-TEST-01'
+// };
+
+// console.log('📦 addressBulidMacFive:', addressBulidMacFive);
+
+// return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+// //Api Mac 5 
+// try {
+//     const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, addressBulidMacFive);
+//     console.log('📦 ส่งสำเร็จ:', response.data);
+
+//     // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
+
+//     localStorage.setItem('deliveryAddress', JSON.stringify(addressData));
+//     this.$emit('submitted', addressData);
+//     this.$emit('close');
+// } catch (err) {
+//     console.error('❌ ส่งไม่สำเร็จ:', err);
+//     alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
+// } -->

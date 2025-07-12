@@ -458,7 +458,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                    }}</p>
+                        }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -483,7 +483,27 @@
             </div>
 
             <!-- รวม -->
+            <!-- รวม -->
             <div class="mt-6 text-right space-y-1">
+                <div class="text-gray-700">มูลค่ารวมก่อนภาษี:
+                    <span class="ml-2 text-gray-700">{{ totalAmountBeforeDiscount.toFixed(2) }}</span>
+                </div>
+
+                <div class="text-gray-700 flex items-center justify-end">
+                    <input type="checkbox" v-model="isVatIncluded" id="vatCheckbox" class="mr-2" />
+                    <label for="vatCheckbox">ภาษีมูลค่าเพิ่ม (7%)</label>
+                    <span class="ml-2 text-gray-700">
+                        {{ isVatIncluded ? (totalAmountBeforeDiscount * 0.07).toFixed(2) : '0.00' }}
+                    </span>
+                </div>
+
+                <div class="text-xl font-bold text-purple-700 mt-2">
+                    มูลค่ารวมสุทธิ:
+                    <span class="ml-2 text-blue-600">{{ grandTotal }}</span>
+                </div>
+            </div>
+
+            <!-- <div class="mt-6 text-right space-y-1">
                 <div class="text-gray-700">มูลค่ารวมก่อนภาษี: <span class="ml-2 text-gray-700">{{
                     totalAmountBeforeDiscount.toFixed(2) }}</span></div>
                 <div class="text-gray-700">ภาษีมูลค่าเพิ่ม (7%): <span class="ml-2 text-gray-700">{{
@@ -493,7 +513,7 @@
                 <div class="text-xl font-bold text-purple-700 mt-2">
                     มูลค่ารวมสุทธิ: <span class="ml-2 text-blue-600">{{ grandTotal }}</span>
                 </div>
-            </div>
+            </div> -->
         </div>
 
 
@@ -755,10 +775,12 @@ export default {
     data() {
         return {
 
-            // ✅ ตัวแปรควบคุม popup
+            isVatIncluded: true, //  เริ่มต้นให้คิดภาษี
+
+            // ตัวแปรควบคุม popup
             showAddressPopup: false, // ควบคุมการแสดง popup ที่อยู่]
 
-            // ✅ เก็บข้อมูลที่อยู่ที่เลือกจาก popup
+            //  เก็บข้อมูลที่อยู่ที่เลือกจาก popup
             selectedAddress: [],
 
             isConfirmed: false, // สำหรับควบคุมปุ่ม "ยืนยันการบันทึก"
@@ -880,6 +902,10 @@ export default {
     },
 
     watch: {
+        isVatIncluded(newVal) {
+            this.formData.taxType = newVal ? 'รวมภาษี' : 'ไม่รวมภาษี'
+        },
+
         // ✅ watch ทุก field ที่ต้องการทีละตัว
         'formData.deliveryDate'(newVal) {
             console.log("deliveryDate เปลี่ยนเป็น:", newVal);
@@ -901,10 +927,28 @@ export default {
     },
 
     computed: {
+        // totalAmountBeforeDiscount() {
+        //     const subtotal = this.selectedProducts.reduce((sum, product) => {
+        //         const qty = product.pro_quantity || 0;
+        //         // const qty = product.qty || 0;
+        //         const price = product.pro_unit_price || 0;
+        //         const discount = product.discount || 0;
+        //         return sum + (qty * price - discount);
+        //     }, 0);
+        //     const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
+        //     const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
+        //     const total = subtotal + deliveryFee - totalDiscount;
+        //     return total < 0 ? 0 : total;
+        // },
+        // grandTotal() {
+        //     const netBeforeVat = this.totalAmountBeforeDiscount;
+        //     const vat = netBeforeVat * 0.07;
+        //     return (netBeforeVat + vat).toFixed(2);
+        // },
+
         totalAmountBeforeDiscount() {
             const subtotal = this.selectedProducts.reduce((sum, product) => {
                 const qty = product.pro_quantity || 0;
-                // const qty = product.qty || 0;
                 const price = product.pro_unit_price || 0;
                 const discount = product.discount || 0;
                 return sum + (qty * price - discount);
@@ -916,10 +960,9 @@ export default {
         },
         grandTotal() {
             const netBeforeVat = this.totalAmountBeforeDiscount;
-            const vat = netBeforeVat * 0.07;
+            const vat = this.isVatIncluded ? netBeforeVat * 0.07 : 0;
             return (netBeforeVat + vat).toFixed(2);
         },
-
         // ตรวจสอบว่าเป็นหน้าแก้ไขหรือสร้างใหม่
         isCreatePage() {
             return this.$route.path === '/createsalelist'
@@ -1804,17 +1847,17 @@ export default {
                 }
 
                 if (resData.success) {
-                this.isReadOnly = true;
-                this.isConfirmed = true;
+                    this.isReadOnly = true;
+                    this.isConfirmed = true;
 
-                // กันย้อนแก้ในเครื่องนี้ (optional)
-                const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
-                if (!locked.includes(docNo)) {
-                    locked.push(docNo);
-                    localStorage.setItem('lockedDocumentNos', JSON.stringify(locked));
-                }
+                    // กันย้อนแก้ในเครื่องนี้ (optional)
+                    const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
+                    if (!locked.includes(docNo)) {
+                        locked.push(docNo);
+                        localStorage.setItem('lockedDocumentNos', JSON.stringify(locked));
+                    }
 
-                Swal.fire('สำเร็จ!', 'รายการถูกล็อกแล้ว', 'success');
+                    Swal.fire('สำเร็จ!', 'รายการถูกล็อกแล้ว', 'success');
                 } else {
                     Swal.fire('ผิดพลาด', resData.message, 'error');
                 }
@@ -2012,7 +2055,10 @@ export default {
 
                     const total = this.totalprice(product);
 
+                    console.log('✅ check: product', product);
+
                     return {
+                        item_id: product.item_id ?? 0, // ✅ ใส่ id เดิมถ้ามี
                         pro_id: product.pro_id,
                         pro_erp_title: product.pro_erp_title,
                         pro_name: product.pro_erp_title,
@@ -2028,7 +2074,7 @@ export default {
                 });
 
 
-                console.log("🔍 log value this.productList:", this.formData.productList)
+                console.log("🔍sadsadsa log value this.productList:", this.formData.productList)
 
                 this.formData.final_total_price = this.grandTotal;
 
@@ -2060,7 +2106,7 @@ export default {
                         title: 'กรุณาเลือกที่อยู่จัดส่ง',
                     });
                     return;
-                }else if(!this.selectedAddress || Object.keys(this.selectedAddress).length === 0){
+                } else if (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) {
                     Swal.fire({
                         icon: 'warning',
                         title: 'กรุณาเลือกที่อยู่จัดส่ง',
@@ -2112,6 +2158,7 @@ export default {
 
         async loadDocumentData(documentNo) {
             try {
+
                 const response = await axios.get(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/get_sale_order.php?documentNo=${documentNo}`);
 
                 console.log("😂 Log Value response: ", response);
@@ -2176,7 +2223,12 @@ export default {
                     // const getSite_id = resData.data.data.deliveryAddress;
                     // console.log("📄 ข้อมูล Docmentที่โหลด:", getSite_id);
 
+                    console.log("🔍 ก่อน map this.selectedProducts:", this.selectedProducts);
+
+
                     this.selectedProducts = resData.data.productList.map(product => {
+
+                        console.log("🛠️ กำลัง map product:", product); // 👈 log ตรงนี้เช็กแต่ละตัว
                         // const matchedPromotions = (resData.data.promotions || []).filter(p => p.pro_activity_id === product.pro_activity_id);
                         // const matchedPromotions = (resData.data.promotions || []).filter(p => {
                         //     console.log("🔍 เช็ก promo.pro_activity_id =", p.pro_activity_id, "vs product =", product.pro_activity_id);
@@ -2189,6 +2241,7 @@ export default {
                         // console.log("🔍 เช็ก matchedPromotions =", matchedPromotions);
 
                         const productObj = {
+                            item_id: product.id,
                             pro_id: product.pro_id,
                             pro_erp_title: product.pro_name,
                             pro_quantity: product.qty,
@@ -2241,6 +2294,8 @@ export default {
                     // }
 
                     // console.log("📦 ข้อมูลสินค้า:", grouped);
+
+                    // console.log("🧾 this.formData.productList (ส่งเข้า backend):", this.formData.productList);
 
                     // 👉 เติมข้อมูล promotions และ gifts ให้กับสินค้า index 0 เท่านั้น (ต่อกลุ่ม)
                     // if (this.selectedProducts.length > 0) {
@@ -2439,6 +2494,7 @@ export default {
                 } else {
 
                     this.selectedProducts.push({
+                        item_id: 0, // 📌 ใช้ 0 ชั่วคราว กรณียังไม่ไม่ได้เพิ่มตัวของสินค้าลง Database 
                         pro_id: item.pro_sku_price_id,
                         activity_id: (item.st === false || item.st === 'false' || item.st == null) ? 0 : item.pro_activity_id, //activityId ,
                         // activity_id: item.st == false?0 : activityId, //activityId ,

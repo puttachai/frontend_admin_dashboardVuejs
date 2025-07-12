@@ -89,7 +89,8 @@
         <tbody v-if="!isLoading">
           <tr v-for="item in paginatedProducts" :key="item.id">
             <td class="px-4 py-2 border text-center">
-              <input type="checkbox" v-model="selectedIds" :value="item.id" />
+              <input type="checkbox" v-model="selectedIds" :checked="allSelectedIds.includes(item.id)"
+                @change="toggleSelectProduct(item.id, $event.target.checked)" :value="item.id" />
             </td>
 
             <td class="px-4 py-4 border text-center">
@@ -187,6 +188,11 @@ const pageCurrent = ref(1)
 const pageSize = ref(10)
 
 const selectedIds = ref([])
+const allSelectedIds = ref([]); // ✅ เก็บ ID ของสินค้าทุกหน้าที่ถูกเลือก
+
+const selectedProducts = ref([]);
+const showProductSelector = ref(false);
+
 const dataselect = ref([])
 const error = ref('')
 
@@ -196,6 +202,7 @@ const keyword_sku_no = ref('');
 const dataselectsku_no = ref([]);
 
 const memberType = ref('');
+
 
 const paginatedProducts = computed(() => {
   return tableData.value;
@@ -237,19 +244,60 @@ watch(selectedIds, (newVal) => {
 //   }
 // });
 
-// function เลือกสินค้าทั้งหมด
-function toggleSelectAll(event) {
-  if (event.target.checked) {
-    const pageIds = paginatedProducts.value.map(item => item.id)
-    selectedIds.value = [...new Set([...selectedIds.value, ...pageIds])]
+// function toggleSelectProduct(productId, checked) {
+//   if (checked) {
+//     if (!allSelectedIds.value.includes(productId)) {
+//       allSelectedIds.value.push(productId);
+//     }
+//   } else {
+//     allSelectedIds.value = allSelectedIds.value.filter(id => id !== productId);
+//   }
+// }
 
-    console.log('toggleSelectAll selectedIds:', pageIds);
+function toggleSelectProduct(productId, checked) {
+  if (checked) {
+    if (!allSelectedIds.value.includes(productId)) {
+      allSelectedIds.value.push(productId);
+    }
   } else {
-    const pageIds = paginatedProducts.value.map(item => item.id)
-    selectedIds.value = selectedIds.value.filter(id => !pageIds.includes(id))
-    console.log('Error selectedIds:', pageIds);
+    allSelectedIds.value = allSelectedIds.value.filter(id => id !== productId);
   }
+
+  // 👇 อัปเดต selectedIds ให้แสดงค่าบนหน้าปัจจุบันให้ตรงกับ allSelectedIds
+  const pageIds = paginatedProducts.value.map(item => item.id);
+  selectedIds.value = allSelectedIds.value.filter(id => pageIds.includes(id));
 }
+
+
+function toggleSelectAll(event) {
+  const pageIds = paginatedProducts.value.map(item => item.id);
+
+  if (event.target.checked) {
+    allSelectedIds.value = [...new Set([...allSelectedIds.value, ...pageIds])];
+  } else {
+    allSelectedIds.value = allSelectedIds.value.filter(id => !pageIds.includes(id));
+  }
+
+  // 👇 อัปเดต selectedIds เช่นเดียวกัน
+  selectedIds.value = allSelectedIds.value.filter(id => pageIds.includes(id));
+}
+
+
+
+
+// // function เลือกสินค้าทั้งหมด
+// function toggleSelectAll(event) {
+//   if (event.target.checked) {
+//     const pageIds = paginatedProducts.value.map(item => item.id)
+//     selectedIds.value = [...new Set([...selectedIds.value, ...pageIds])]
+
+//     console.log('toggleSelectAll selectedIds:', pageIds);
+//   } else {
+//     const pageIds = paginatedProducts.value.map(item => item.id)
+//     selectedIds.value = selectedIds.value.filter(id => !pageIds.includes(id))
+//     console.log('Error selectedIds:', pageIds);
+//   }
+// }
 
 
 function validateAmount(item) {
@@ -262,21 +310,61 @@ function validateAmount(item) {
 
 
 function confirmSelection() {
-  const selectedProducts = tableData.value
-    // const selectedProducts = props.productList
-    .filter(p => selectedIds.value.includes(p.id))
+  // const selectedProducts = tableData.value
+  // const selectedProducts = props.productList
+  // .filter(p => selectedIds.value.includes(p.id))
+  // .map(p => ({
+  //   pro_id: p.id,
+  //   pro_erp_title: p.erp_title,
+  //   pro_sn: p.sn,
+  //   pro_images: p.image,
+  //   pro_quantity: p.amount || 1, // ใช้ amount ถ้าไม่มีให้ใช้ 1
+  //   pro_unit_price: p.price,
+  //   pro_unit: p.units,
+  //   // qty: 1,
+  //   // discount: p.discount
+  // }));
+
+  // const selectedProducts = props.productList.filter(p =>
+  //   allSelectedIds.value.includes(p.id)
+  // );
+
+  const selectedProducts = props.productList
+    .filter(p => allSelectedIds.value.includes(p.id))
     .map(p => ({
       pro_id: p.id,
       pro_erp_title: p.erp_title,
       pro_sn: p.sn,
       pro_images: p.image,
-      pro_quantity: p.amount || 1, // ใช้ amount ถ้าไม่มีให้ใช้ 1
+      pro_quantity: p.amount || 1,
       pro_unit_price: p.price,
       pro_unit: p.units,
-      // qty: 1,
-      // discount: p.discount
+      pro_stock: p.stock,
+      pro_goods_sku_text: p.goods_sku_text,
+      promotions: p.promotions || [],
+      gifts: p.gifts || [],
+      activity_id: p.activity_id ?? null,
+      st: p.st ?? 0
     }));
 
+
+  // const selectedProducts = tableData.value
+  //   .filter(p => selectedIds.value.includes(p.id))
+  //   .map(p => ({
+  //     pro_id: p.id,
+  //     pro_erp_title: p.erp_title,
+  //     pro_sn: p.sn,
+  //     pro_images: p.image,
+  //     pro_quantity: p.amount || 1, // ใช้ amount ถ้าไม่มีให้ใช้ 1
+  //     pro_unit_price: p.price,
+  //     pro_unit: p.units,
+  //   }));
+
+
+
+  console.log("✅ รวมสินค้าทุกหน้าที่เลือก:", selectedProducts);
+
+  emit("select-products", selectedProducts); // ✅ ส่งกลับไปหน้า parent
   console.log("✅ SelectedProducts ถูกแปลงแล้ว:", selectedProducts);
   emit('select-products', selectedProducts);
   emit('close');

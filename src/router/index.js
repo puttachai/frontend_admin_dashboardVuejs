@@ -21,6 +21,9 @@ import SignupForm from '../components/SignupForm.vue'
 
 // console.log('Check isAuthLayout: ', isAuthLayout);
 
+const getCustomer_id = localStorage.getItem('selectDataCustomerRow');
+
+console.log('Check getCustomer_id: ',getCustomer_id);
 
 
 // const router = createRouter({

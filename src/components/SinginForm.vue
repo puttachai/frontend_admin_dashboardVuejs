@@ -1,6 +1,6 @@
 <template>
   <div class="w-full md:w-1/2 p-10">
-    <h4 class="text-2xl font-semibold text-center">Login to Your Account</h4>
+    <h4 class="text-2xl text-gray-500 font-semibold text-center">Login to Your Account</h4>
     <p class="text-center text-gray-500 mb-8">
       Log in to your account so you can continue building <br />
       and editing your onboarding flows

@@ -14,73 +14,61 @@
             </button>
         </div> -->
         <!-- กล่องรวม breadcrumb + action bar -->
-        <div
-            class="fixed top-16 left-16 right-0 bg-white rounded-lg p-4 shadow-lg z-50 justify-between items-center responsive-action-bar">
-            <!-- <div class="fixed top-16 left-16 right-0 bg-white bg-opacity-50 rounded-lg p-4 shadow-lg z-50 justify-between items-center"> -->
-            <!-- Breadcrumb -->
-            <nav class="text-sm text-gray-600 mb-2">
-                <ul class="flex items-center space-x-1">
-                    <li>
-                        <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
-                        <span class="mx-1 text-gray-400">›</span>
-                    </li>
-                    <li>
-                        <router-link to="/createsalelist" @click.native="reloadPage"
-                            class="text-purple-600 font-medium hover:text-purple-800 transition">
-                            Create Sale List
-                        </router-link>
-                    </li>
-                </ul>
-            </nav>
+        <!-- กล่องรวม breadcrumb + action bar -->
+        <div class="fixed top-16 left-16 right-0 bg-white rounded-lg p-4 shadow-lg z-50 responsive-action-bar">
 
-            <!-- Action Bar -->
-            <div class="flex justify-between items-center">
-                <!-- Left -->
-                <router-link to="/createsalelist" @click.native="reloadPage"
-                    class="group flex items-center gap-2 text-purple-600 hover:text-purple-800 transition">
-                    <span class="material-icons group-hover:animate-bounce">shopping_bag</span>
-                    <span class="text font-medium text-md">Create Sale Order</span>
-                </router-link>
+            <!-- Breadcrumb + ActionBar inline -->
+            <div class="flex flex-wrap md:flex-nowrap justify-between  items-center gap-4">
 
-                <div :class="[
-                    'gap-4 grid',
-                    visibleButtons.length === 1 ? 'grid-cols-1 place-items-center' : 'grid-cols-1 md:grid-cols-2'
-                ]">
+                <!-- Breadcrumb -->
+                <nav class="text-sm text-gray-600">
+                    <ul class="flex items-center space-x-1">
+                        <li>
+                            <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
+                            <span class="mx-1 text-gray-400">›</span>
+                        </li>
+                        <li>
+                            <router-link to="/createsalelist" @click.native="reloadPage"
+                                class="text-purple-600 font-medium hover:text-purple-800 transition">
+                                Create Sale List
+                            </router-link>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- Action Bar -->
+                <div class="flex flex-wrap justify-end gap-3 responsive-action-buttons md:gap-4 md:flex-nowrap">
+
                     <!-- ปุ่ม แก้ไข -->
                     <button v-if="isReadOnly" @click="enableEditMode"
-                        class="bg-yellow-500 text-white py-2 px-6 rounded-md hover:bg-yellow-600">
+                        class="bg-yellow-500 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-yellow-600">
                         แก้ไข
                     </button>
 
-                    <!-- ปุ่ม บันทึก (เฉพาะเมื่อ path คือ /createsalelist) class="bg-purple-700 w-full text-white py-2 px-6 rounded-md hover:bg-purple-800">-->
+                    <!-- ปุ่ม บันทึก -->
                     <button v-if="!isReadOnly && isCreatePage" @click="saveDocument"
-                        class="flex items-center gap-2 bg-purple-700 text-white py-2 px-6 rounded-md hover:bg-purple-800 transition duration-300 shadow hover:shadow-lg">
+                        class="flex items-center gap-2 bg-purple-700 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-purple-800 transition duration-300 shadow hover:shadow-lg">
                         <span class="material-icons">save</span>
                         <span>บันทึก</span>
                     </button>
 
-                    <!-- ปุ่ม บันทึกการแก้ไข (เฉพาะเมื่อมี documentNo และไม่ใช่หน้า create) -->
+                    <!-- ปุ่ม บันทึกการแก้ไข -->
                     <button v-if="!isReadOnly && formData.documentNo && !isCreatePage" @click="updateDocument"
-                        class="bg-green-600 w-full text-white py-2 px-6 rounded-md hover:bg-green-700">
+                        class="bg-green-600 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700">
                         บันทึกการแก้ไข
                     </button>
 
-                    <!-- ✅ ปุ่มยืนยันบันทึก ปรากฏเฉพาะกรณีแก้ไข -->
+                    <!-- ปุ่มยืนยันการบันทึก -->
                     <button v-if="!isReadOnly && formData.documentNo && !isConfirmed && !isCreatePage"
                         @click="confirmFinalSave"
-                        class="bg-red-600 w-full text-white py-2 px-6 rounded-md hover:bg-red-700">
+                        class="bg-red-600 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-red-700">
                         ยืนยันการบันทึก (ไม่สามารถแก้ไขได้อีก)
                     </button>
-                </div>
 
-                <!-- Right -->
-                <!-- <button type="button" @click="saveDocument"
-                    class="flex items-center gap-2 bg-purple-700 text-white py-2 px-6 rounded-md hover:bg-purple-800 transition duration-300 shadow hover:shadow-lg">
-                    <span class="material-icons">save</span>
-                    <span>บันทึก</span>
-                </button> -->
+                </div>
             </div>
         </div>
+
 
 
 
@@ -209,24 +197,27 @@
 
                         <!-- เงื่อนไขแสดงเพิ่มเติม -->
                         <div v-if="showMore">
-                            <div>
+                            <div class="">
                                 <label class="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์ลูกค้า</label>
                                 <input type="text" v-model="formData.phone" :readonly="isReadOnly"
                                     class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                             </div>
 
-                            <div>
+                            <div class="mt-4">
                                 <label class="block text-sm font-medium text-gray-700">อีเมลลูกค้า</label>
                                 <input type="text" v-model="formData.email" :readonly="isReadOnly"
                                     class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
                             </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">ที่อยู่ลูกค้า</label>
-                                <input type="text" v-model="formData.address" :readonly="isReadOnly"
+                            <div class="mt-4">
+                                <label class="block text-sm font-medium text-gray-700">ที่อยู่ลูกค้า
+                                    <span class="text-red-500 text-xs">*</span>
+                                    <span class="text-red-500 text-xs">กรุณากรอกข้อมูลนี้ที่แบบฟอร์มที่ 3 ข้อมูลที่อยู่ผู้รับ</span>
+                                </label>
+                                <input type="text" v-model="formData.address" disabled :readonly="isReadOnly"
                                     class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
-                                <p v-if="formTouched && errors.address" class="text-red-500 text-sm mt-1">{{
-                                    errors.address }}</p>
+                                <!-- <p v-if="formTouched && errors.address" class="text-red-500 text-sm mt-1">{{
+                                    errors.address }}</p> -->
                             </div>
                         </div>
                     </form>
@@ -236,6 +227,8 @@
                         class="mt-4 text-purple-600 hover:underline focus:outline-none">
                         {{ showMore ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼' }}
                     </button>
+                    <p v-if="formTouched && errors.address" class="text-red-500 text-sm mt-1">{{
+                        errors.address }}</p>
                 </div>
 
             </div>
@@ -331,7 +324,7 @@
                             <th class="px-4 py-2 border">ชื่อสินค้า *</th>
                             <th class="px-4 py-2 border">สี</th>
                             <th class="px-4 py-2 border">จำนวน *</th>
-                            <th class="px-4 py-2 border">คงเหลือ *</th>
+                            <!-- <th class="px-4 py-2 border">คงเหลือ *</th> -->
                             <th class="px-4 py-2 border">มูลค่าต่อหน่วย *</th>
                             <th class="px-4 py-2 border">ส่วนลดต่อหน่วย</th>
                             <th class="px-4 py-2 border">รวม</th>
@@ -370,7 +363,7 @@
                                             class="w-full px-2 py-1 border rounded" />
                                     </td> -->
                                     <td class="px-4 py-2 border">{{ product.pro_quantity }}</td>
-                                    <td class="px-4 py-2 border">{{ product.pro_stock }}</td>
+                                    <!-- <td class="px-4 py-2 border">{{ product.pro_stock }}</td> -->
                                     <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
                                     <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
                                     <td class="px-4 py-2 border">{{ totalprice(product) }}</td>
@@ -441,12 +434,15 @@
                 </table>
             </div>
 
-
+            
 
             <!-- ช่องทางจัดส่ง -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <div>
-                    <label class="block font-medium mb-1 text-gray-700">ช่องทางจัดส่ง</label>
+                    <label class="block font-medium mb-1 text-gray-700">ช่องทางจัดส่ง
+                        <span class="text-red-500 text-xs">*</span>
+                        <span class="text-red-500 text-xs">จำเป็นต้องกรอกข้อมูลนี้</span>
+                    </label>
                     <select v-model="formData.deliveryType" placeholder="ช่องทางจัดส่ง" :disabled="isReadOnly"
                         style="margin: 0.4rem;" class="w-full border px-3 py-2 rounded text-gray-700">
 
@@ -531,11 +527,15 @@
                     <div class="space-y-4">
 
                         <div>
-                            <label class="text-sm text-gray-700 block mb-1">ชื่อผู้รับ</label>
+                            <label class="text-sm text-gray-700 block mb-1">
+                                ชื่อผู้รับ
+                                <span class="text-red-500 text-xs ml-1">*</span>
+                                <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
+                            </label>
                             <input type="text" v-model="formData.receiverName" :readonly="isReadOnly"
                                 class="w-full text-gray-700 border rounded px-3 py-2" />
-                            <p v-if="formTouched && errors.receiverName" class="text-red-500 text-sm mt-1">{{
-                                errors.receiverName }}
+                            <p v-if="formTouched && errors.receiverName" class="text-red-500 text-sm mt-1">
+                                {{ errors.receiverName }}
                             </p>
                         </div>
 
@@ -545,7 +545,10 @@
                         </div> -->
 
                         <div>
-                            <label class="text-sm text-gray-700 block mb-1">เบอร์โทรศัพท์ผู้รับ</label>
+                            <label class="text-sm text-gray-700 block mb-1">เบอร์โทรศัพท์ผู้รับ
+                                <span class="text-red-500 text-xs ml-1">*</span>
+                                <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
+                            </label>
                             <input type="tel" v-model="formData.receiverPhone" :readonly="isReadOnly"
                                 class="w-full text-gray-700 border rounded px-3 py-2" />
                             <p v-if="formTouched && errors.receiverPhone" class="text-red-500 text-sm mt-1">{{
@@ -561,12 +564,16 @@
                                     class="w-full text-gray-700 border rounded px-3 py-2" />
                             </div>
 
-                            <div>
-                                <label class="text-sm text-gray-700 block mb-1">ที่อยู่/จัดส่ง</label>
-
-                                <textarea rows="4" v-model="formData.receiverAddress" :readonly="isReadOnly"
+                            <div class="mt-4">
+                                <label class="text-sm text-gray-700 block mb-1">ที่อยู่/จัดส่ง
+                                    <span class="text-red-500 text-xs ml-1">*</span>
+                                    <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
+                                </label>
+                                <textarea rows="4" v-model="formData.receiverAddress" disabled :readonly="isReadOnly"
                                     class="w-full text-gray-700 border rounded px-3 py-2 resize-none">
                         </textarea>
+                            </div>
+                            <div>
 
                                 <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
                                 <div class="bottom-6 right-6 z-50 justify-self-end">
@@ -599,10 +606,20 @@
                 </div>
 
                 <!-- ปุ่ม Show More / Show Less -->
-                <button @click="showMoreAdress = !showMoreAdress" type="button"
+                <!-- <button @click="showMoreAdress = !showMoreAdress" type="button"
                     class="mt-4 text-purple-600 hover:underline focus:outline-none">
-                    {{ showMoreAdress ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼' }}
-                </button>
+                    {{ showMoreAdress ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼ ' }}
+                </button> -->
+                <div class="mt-4 flex items-center space-x-2">
+                    <button @click="showMoreAdress = !showMoreAdress" type="button"
+                        class="text-purple-600 hover:underline focus:outline-none">
+                        {{ showMoreAdress ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼ ' }}
+                    </button>
+
+                    <!-- ✅ เพิ่มข้อความแจ้งเตือนด้านข้างปุ่ม -->
+                    <span class="text-red-500 text-xs">*</span>
+                    <span class="text-red-500 text-xs">จำเป็นต้องกรอกข้อมูลนี้</span>
+                </div>
 
             </div>
 
@@ -650,7 +667,10 @@
                         errors.deliveryDate }} </p>
 
                     <div>
-                        <label class="text-sm text-gray-700 block mb-1">Tracking No.</label>
+                        <label class="text-sm text-gray-700 block mb-1">Tracking No.
+                            <span class="text-red-500 text-xs ml-1">*</span>
+                            <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
+                        </label>
                         <input type="text" v-model="formData.trackingNo" :readonly="isReadOnly"
                             class="w-full text-gray-700 border rounded px-3 py-2" />
                         <p v-if="formTouched && errors.trackingNo" class="text-red-500 text-sm mt-1">{{
@@ -749,6 +769,8 @@ flatpickr.localize(Thai)
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
+
+console.log('adadasdsadadasdadasdadasdasda', BASE_URL_LOCAL);
 
 const BASE_URL_MAC_FIVEL = import.meta.env.VITE_API_URL_MAC_FIVELE;
 const BASE_URL_AUTH = import.meta.env.VITE_API_URL_AUTH;
@@ -1149,10 +1171,10 @@ export default {
                 fullName: 'ชื่อลูกค้า',
                 customerCode: 'รหัสลูกค้า',
                 phone: 'เบอร์โทร',
-                address: 'ที่อยู่',
+                // address: 'ที่อยู่',
                 receiverName: 'ชื่อผู้รับ',
                 receiverPhone: 'เบอร์ผู้รับ',
-                receiverEmail: 'อีเมลผู้รับ',
+                // receiverEmail: 'อีเมลผู้รับ',
                 receiverAddress: 'ที่อยู่ผู้รับ',
                 deliveryDate: 'วันที่จัดส่ง',
                 trackingNo: 'เลขติดตาม',
@@ -1254,7 +1276,7 @@ export default {
                 };
 
                 const docResponse = await axios.post(
-                    'http://localhost/api_admin_dashboard/backend/api/post_documentrunning.php',
+                    `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_documentrunning.php`,
                     docRunningPayload,
                     {
                         // headers: { 'Content-Type': 'application/json' }
@@ -1391,6 +1413,7 @@ export default {
 
             // เพื่อมข้อมูล FormData
             try {
+                console.log('adadasdsadadasdadasdadasdasda', BASE_URL_LOCAL);
                 const response = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_sale_order.php`, payload, {
                     // headers: { 'Content-Type': 'application/json' },
                 });
@@ -2730,6 +2753,19 @@ input {
         display: block; /* แสดงข้อมูลเพิ่มเติม 
     } */
 
+}
+
+@media (max-width: 667px) {
+    .responsive-action-buttons button {
+        font-size: 0.75rem;
+        /* ลดขนาดตัวอักษร */
+        padding: 0.5rem 0.75rem;
+        /* ลดขนาดปุ่ม */
+    }
+
+    .responsive-action-buttons {
+        justify-content: center;
+    }
 }
 
 /* @media (max-width: 500px) {

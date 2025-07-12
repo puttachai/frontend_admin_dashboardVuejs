@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[110]">
     <div class="bg-white z-20 rounded-lg shadow-lg p-6 w-[90%] max-w-6xl max-h-[90vh] overflow-y-auto">
 
       <!-- Search Section -->
@@ -7,159 +7,141 @@
         <!-- Search Icon -->
         <span class="material-icons text-gray-600" style="font-size: 28px;">search</span>
         <!-- Search Input -->
-        <input class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          v-model="keyword" placeholder="ค้นหา..." @input="onInput" confirm-type="search" />
-        <div class="">
+        <input
+          class="w-full min-w-[200px] p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          v-model="keyword"
+          placeholder="ค้นหา..."
+          @input="onInput"
+        />
+        <div>
           <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 mb-16 text-4xl">&times;</button>
         </div>
       </div>
 
       <div class="text-sm text-gray-500 mt-2">
-        * สามารถ ค้นหาได้ ชื่อรายการสินค้าที่เข้าร่วมโปรโมชั่น, รหัสสินค้าที่ร่วมโปรโมชั่น
+        * สามารถค้นหาได้จากชื่อรายการสินค้าที่เข้าร่วมโปรโมชั่น, รหัสสินค้าที่ร่วมโปรโมชั่น
       </div>
 
       <!-- Header -->
-      <div class="flex items-center mb-4">
-
+      <div class="flex items-center mb-4 mt-2">
         <div class="flex-1">
           <h2 class="text-xl text-gray-700 font-bold">เลือกรายการสินค้าที่เข้าร่วมโปรโมชั่น</h2>
         </div>
-
         <div class="flex gap-4">
           <div class="text-sm font-semibold text-gray-500 mt-2">
             ประเภทสมาชิก: {{ memberType }}
           </div>
-          <!-- แสดงว่าเป็น level อะไร -->
-          <!-- <div class="">
-            <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 text-2xl">&times;</button>
-          </div> -->
         </div>
-
       </div>
 
+      <!-- Table Section -->
+      <div class="overflow-x-auto mt-4">
+        <table class="min-w-[1000px] w-full border text-sm">
+          <thead class="bg-gray-100 text-gray-700">
+            <tr>
+              <th class="px-4 py-2 border text-center">
+                <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected" />
+              </th>
+              <th class="px-4 py-2 border text-center">รูปภาพ</th>
+              <th class=" px-4 py-2 border w-[500px]">ชื่อสินค้า (ERP)</th> <!-- w-[300px]-->
+              <th class="px-4 py-2 border min-w-[220px] text-left">
+                <div class="flex gap-1">
+                  <input
+                    type="text"
+                    v-model="keyword_promotion_no"
+                    placeholder="ค้นหา โปรโมชั่น"
+                    @focus="dropdownOpenIndex = 'header'"
+                    class="min-w-[150px] flex-1 px-2 py-1 border border-gray-300 rounded-md focus:outline-none"
+                  />
+                  <button
+                    @click="searchPromotion_no"
+                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
+                  >
+                    ค้นหา
+                  </button>
+                </div>
+              </th>
+              <th class="px-4 py-2 border">รหัสสินค้า</th>
+              <th class="px-4 py-2 border text-center">จำนวน</th>
+              <th class="px-4 py-2 border text-center">คงเหลือ</th>
+              <th class="px-4 py-2 border">หมายเลขซีเรียล</th>
+              <th class="px-4 py-2 border">สี</th>
+              <th class="px-4 py-2 border">ราคา</th>
+              <th class="px-4 py-2 border">Units</th>
+            </tr>
+          </thead>
 
+          <tbody v-if="isLoading">
+            <tr>
+              <td colspan="11" class="py-10 text-center">
+                <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                  viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
+              </td>
+            </tr>
+          </tbody>
 
-      <!-- Table -->
-      <table class="min-w-full border text-sm">
-        <thead class="bg-gray-100 text-gray-700">
-          <tr>
-            <!-- ช่องเลือกทั้งหมด -->
-            <th class="px-4 py-2 border text-center">
-              <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected" />
-            </th>
+          <tbody v-if="!isLoading">
+            <tr v-for="item in paginatedPromotion" :key="item.id">
+              <td class="px-4 py-2 border text-center">
+                <input type="checkbox" v-model="selectedIds" :value="item.id" />
+              </td>
+              <td class="px-4 py-4 border text-center">
+                <template v-if="item.image">
+                  <img :src="item.image || BASE_URL_IMAGE + item.image" alt="product"
+                    class="w-10 h-10 rounded-full mx-auto" />
+                </template>
+                <template v-else>
+                  <span class="material-icons text-gray-400 text-4xl">broken_image</span>
+                </template>
+              </td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.title }}
 
-            <!-- รูปภาพสินค้า -->
-            <th class="px-4 py-2 border text-center">รูปภาพ</th>
-            <th class="px-4 py-2 border">ชื่อสินค้า (ERP)</th>
-            <!-- ช่องค้นหาชื่อโปรโมชั่น -->
-            <th class="px-4 py-2 border w-[200px] text-left">
-              <div class="flex gap-1">
-                <input type="text" v-model="keyword_promotion_no" placeholder="ค้นหา โปรโมชั่น"
-                  @focus="dropdownOpenIndex = 'header'"
-                  class="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none" />
-                <button @click="searchPromotion_no" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
-                  ค้นหา
-                </button>
-              </div>
-            </th>
-
-            <!-- ข้อมูลที่ต้องการแสดง -->
-
-            <th class="px-4 py-2 border">รหัสสินค้า</th>
-            <!-- <th class="px-4 py-2 border">Activity Code</th> -->
-            <th class="px-4 py-2 border text-center">จำนวน</th>
-            <th class="px-4 py-2 border text-center">คงเหลือ</th>
-            <!-- <th class="px-4 py-2 border">Goods Price</th> -->
-            <th class="px-4 py-2 border">หมายเลขซีเรียล</th>
-            <th class="px-4 py-2 border">สี</th>
-            <th class="px-4 py-2 border">ราคา</th>
-            <th class="px-4 py-2 border">Units</th>
-            <!-- <th class="px-4 py-2 border">โปรโมชั่นที่เลือก</th> -->
-          </tr>
-        </thead>
-
-        <!-- Loading Spinner -->
-        <!-- <div v-if="isLoading" class="flex justify-center items-center h-40">
-          <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z">
-            </path>
-          </svg>
-        </div> -->
-
-        <!-- ถ้ากำลังโหลด -->
-        <tbody v-if="isLoading">
-          <tr>
-            <td colspan="10" class="py-10 text-center">
-              <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-              </svg>
-              <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
-            </td>
-          </tr>
-        </tbody>
-
-        <tbody v-if="!isLoading">
-          <tr v-for="item in paginatedPromotion" :key="item.id">
-            <!-- เช็คบ็อกซ์ -->
-            <td class="px-4 py-2 border text-center">
-              <input type="checkbox" v-model="selectedIds" :value="item.id" />
-            </td>
-
-            <!-- รูปภาพ -->
-            <td class="px-4 py-4 border text-center">
-              <template v-if="item.image">
-                <!-- BASE_URL_IMAGE +  -->
-                <img :src="item.image" alt="product" class="w-10 h-10 rounded-full mx-auto" />
-              </template>
-              <template v-else>
-                <span class="material-icons text-gray-400 text-4xl">broken_image</span>
-              </template>
-            </td>
-
-            <!-- ค้นหาด้วยรหัสโปรโมชั่น -->
-            <td class="px-4 text-gray-700 py-2 border">{{ item.title }}</td>
-            <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code ?? 'ไม่มีข้อมูล' }}</td>
-
-            <!-- ข้อมูลจาก API -->
-            <!-- <td class="px-4 py-2 border">{{ item.title }}</td> -->
-            <td class="px-4 text-gray-700 py-2 border">{{ item.goods_id }}</td>
-            <td class="px-4 text-gray-700 py-2 border text-center">
-              <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
-                v-model.number="item.amount" :min="0" :max="item.stock" @input="validateAmount(item)" placeholder="0" />
-            </td>
-            <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
-            <!-- <td class="px-4 text-gray-700 py-2 border text-center">
-              <input type="number" min="1" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
-                v-model.number="item.quantity" placeholder="0" />
-               //////@input="onQuantityChange(item)" 
-            </td> -->
-
-            <!-- <td class="px-4 py-2 border">{{ item.activity_code }}</td> -->
-            <!-- <td class="px-4 py-2 border">{{ item.goods_price ?? '-'}}</td> -->
-            <td class="px-4 text-gray-700 py-2 border">{{ item.sn ?? '-' }}</td>
-            <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? '-' }}</td>
-            <td class="px-4 text-gray-700 py-2 border">{{ item.price ?? '-' }}</td>
-            <!-- <td class="px-4 py-2 border">{{ item.price ?? '-' }}</td> -->
-            <td class="px-4 text-gray-700 py-2 border">{{ item.units ?? '-' }}</td>
-            <!-- <td class="px-4 py-2 border">โปรโมชั่น: <span v-for="(promo, index) in props.selectedPromotion"
-                :key="promo.pro_m_id">
-                {{ promo.pro_m_title }}<span v-if="index < props.selectedPromotion.length - 1">, </span>
-              </span></td> -->
-          </tr>
-        </tbody>
-      </table>
-
+                <div type="text"
+                  class="w-60 text-center">
+                 
+                </div>
+                
+              </td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code ?? 'ไม่มีข้อมูล' }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.goods_id }}</td>
+              <td class="px-4 text-gray-700 py-2 border text-center">
+                <input
+                  type="number"
+                  class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
+                  v-model.number="item.amount"
+                  :min="0"
+                  :max="item.stock"
+                  @input="validateAmount(item)"
+                  placeholder="0"
+                />
+              </td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.sn ?? '-' }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? '-' }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.price ?? '-' }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.units ?? '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <!-- Pagination -->
       <ConfigProvider :globalConfig="enConfig">
-        <div class="overflow-auto mt-4">
-          <!-- v-model:page-size="pageSize" -->
-          <pagination v-model:current="pageCurrent" v-model:page-size="pageSize" :total="total" show-page-size
-            :prev-button-props="{ content: '⏪' }" :next-button-props="{ content: '⏩' }" @change="onPaginationChange" />
+        <div class="w-fit mt-4">
+        <!-- <div class="overflow-auto mt-4"> -->
+          <pagination
+            v-model:current="pageCurrent"
+            v-model:page-size="pageSize"
+            :total="total"
+            show-page-size
+            :prev-button-props="{ content: '⏪' }"
+            :next-button-props="{ content: '⏩' }"
+            @change="onPaginationChange"
+          />
         </div>
       </ConfigProvider>
 
@@ -171,8 +153,6 @@
       </div>
     </div>
   </div>
-
-
 </template>
 
 <script setup>
@@ -363,6 +343,8 @@ function confirmSelection() {
 
   }))
 
+
+
   console.log("✅ selectedPromotionProducts ถูกแปลงแล้ว:", selectedPromotionProducts);
   console.log("✅ selectedPromotionsInfo ถูกแปลงแล้ว:", selectedPromotionsInfo);
 
@@ -382,280 +364,248 @@ const searchPromotion_no = async () => {
     try {
 
 
-      const gettoken = localStorage.getItem('token');
-      console.log("log value token:", gettoken);
+      // const gettoken = localStorage.getItem('token');
+      // console.log("log value token:", gettoken);
 
-      // ?from=specialprice
-      const response = await axios.post(
-        `${BASE_URL}/goods2/activityList`,
-        {
-          version: '2.0.2',
-          // keywords: keyword.value,
-          keywords: keyword_promotion_no.value,
-          level: getLevel
-        }, //  body 
-        {
-          params: {
-            "from": "specialprice"
-          },
-          headers: {
-            'Content-Type': 'application/json',
-            'token': gettoken
-          }
-        }
-      );
+      // // ?from=specialprice
+      // const response = await axios.post(
+      //   `${BASE_URL}/goods2/activityList`,
+      //   {
+      //     version: '2.0.2',
+      //     // keywords: keyword.value,
+      //     keywords: keyword_promotion_no.value,
+      //     level: getLevel
+      //   }, //  body 
+      //   {
+      //     params: {
+      //       "from": "specialprice"
+      //     },
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //       'token': gettoken
+      //     }
+      //   }
+      // );
 
-      console.log("IF searchSku response:", response);
-      // console.log("IF searchSku total:", response.data.data.item_count);
-
-      if (response.data.code === 1) {
-        const rawData = response.data.data;
-
-        // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
-        const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
-
-        const filtered = rawData.filter((item) =>
-          item.title.toLowerCase().includes(keywordToSearch)
-        );
-
-        console.log("Filtered promotions:", filtered);
-
-        dataselectpromotion_no.value = filtered;
-        tableData.value = [...filtered];
-        total.value = filtered.length;
-        pageSize.value = (total.value < pageSize.value)
-          ? total.value
-          : parseInt(pageSize.value);
-      }
-
-    } catch (err) {
-      console.error("searchSku error:", err);
-    }
-  } else {
-    try {
-
-      const gettoken = localStorage.getItem('token');
-      console.log("log value token:", gettoken);
-
-      // ?from=specialprice
-      const response = await axios.post(
-        `${BASE_URL}/goods2/activityList`,
-        {
-          version: '2.0.2',
-          pageSize: pageSize.value,
-          pageCurrent: pageCurrent.value,
-          // keywords: keyword.value,
-          keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
-          level: getLevel
-        }, //  body 
-        {
-          params: {
-            "from": "specialprice"
-          },
-          headers: {
-            'Content-Type': 'application/json',
-            'token': gettoken
-          }
-        }
-      );
-
-      console.log("IF searchSku response:", response);
-      // console.log("IF searchSku total:", response.data.data.item_count);
-
-      if (response.data.code === 1) {
-        const rawData = response.data.data;
-
-        console.log("rawData:", rawData);
-
-        // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
-        const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
-
-        const filtered = rawData.filter((item) =>
-          item.title?.toLowerCase().includes(keywordToSearch) ||
-          item.erp_title?.toLowerCase().includes(keywordToSearch) ||
-          item.activity_code?.toLowerCase().includes(keywordToSearch) ||
-          item.activity_id?.toLowerCase().includes(keywordToSearch) ||
-          item.note?.toLowerCase().includes(keywordToSearch) ||
-          item.ML_Note?.toLowerCase().includes(keywordToSearch)
-        );
-
-
-        console.log("Filtered promotions:", filtered);
-
-        dataselectpromotion_no.value = filtered;
-        tableData.value = [...filtered];
-        total.value = filtered.length;
-        pageSize.value = (total.value < pageSize.value)
-          ? total.value
-          : parseInt(pageSize.value);
-      }
-
-    } catch (err) {
-      console.error("searchSku error:", err);
-    }
-    //satisfies
-  }
-};
-
-
-async function SearchPromotionSubmit() {
-  clearTimeout(searchTimer.value);
-
-
-  const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
-
-  const getLevel = getLevelSS?.data2?.level ?? 0;
-  console.log("Log getLevel: ", getLevel);
-
-  // แปลงค่า getLevel เป็นชื่อสมาชิก
-  // let memberType = '';
-  if (getLevel === 0) {
-    memberType.value = 'Member End User';
-  } else if (getLevel === 1) {
-    memberType.value = 'Member A';
-  } else if (getLevel === 7) {
-    memberType.value = 'Member B';
-  } else if (getLevel === 10) {
-    memberType.value = 'Member A+';
-  } else {
-    memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
-  }
-
-  console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
-
-
-  if (!keyword.value.trim()) {
-
-    try {
-
-      const gettoken = localStorage.getItem('token');
-      console.log("log value token:", gettoken);
-
-      // ?from=specialprice
-      const response = await axios.post(
-        `${BASE_URL}/goods2/activityList`,
-        {
-          version: '2.0.2',
-          // keywords: keyword.value,
-          keywords: keyword.value,
-          level: getLevel
-        }, //  body 
-        {
-          params: {
-            "from": "specialprice"
-          },
-          headers: {
-            'Content-Type': 'application/json',
-            'token': gettoken
-          }
-        }
-      );
-
-      // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
-      //   version: '2.0.2',
-      //   pageSize: pageSize.value,
-      //   pageCurrent: pageCurrent.value,
-      //   keywords: keyword_promotion_no.value,
-      //   level: getLevel
-      // });
-
-      console.log("IF searchSku response:", response);
-      // console.log("IF searchSku total:", response.data.data.item_count);
-
-      if (response.data.code === 1) {
-        const rawData = response.data.data;
-
-        // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
-        const keywordToSearch = keyword.value.trim().toLowerCase();
-
-        const filtered = rawData.filter((item) =>
-          item.title.toLowerCase().includes(keywordToSearch)
-        );
-
-        console.log("Filtered promotions:", filtered);
-
-        dataselectpromotion_no.value = filtered;
-        tableData.value = [...filtered];
-        total.value = filtered.length;
-        pageSize.value = (total.value < pageSize.value)
-          ? total.value
-          : parseInt(pageSize.value);
-      }
+      // console.log("IF searchSku response:", response);
+      // // console.log("IF searchSku total:", response.data.data.item_count);
 
       // if (response.data.code === 1) {
-      //   total.value = response.data.data.item_count;
-      //   dataselectpromotion_no.value = response.data.data.data2;
-      //   tableData.value = [...dataselectpromotion_no.value];
-      //   pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
+      //   const rawData = response.data.data;
+
+      //   // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
+      //   const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
+
+      //   const filtered = rawData.filter((item) =>
+      //     item.title.toLowerCase().includes(keywordToSearch)
+      //   );
+
+      //   console.log("Filtered promotions:", filtered);
+
+      //   dataselectpromotion_no.value = filtered;
+      //   tableData.value = [...filtered];
+      //   total.value = filtered.length;
+      //   pageSize.value = (total.value < pageSize.value)
+      //     ? total.value
+      //     : parseInt(pageSize.value);
       // }
+
+      const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+      const getLevel = getLevelSS?.data2?.level ?? 0;
+
+      if (getLevel === 0) {
+        memberType.value = 'Member End User';
+      } else if (getLevel === 1) {
+        memberType.value = 'Member A';
+      } else if (getLevel === 7) {
+        memberType.value = 'Member B';
+      } else if (getLevel === 10) {
+        memberType.value = 'Member A+';
+      } else {
+        memberType.value = 'Unknown Member';
+      }
+
+      try {
+        const gettoken = localStorage.getItem('token');
+
+        const requests = props.selectedPromotion.map(async promo => {
+          const activity_id = promo.pro_m_id;
+
+          const response = await axios.post(
+            `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=${keyword_promotion_no.value}`,
+            {},
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                token: gettoken
+              }
+            }
+          );
+
+          console.log('Log Value response: ', response)
+
+          if (response.data.code === 1) {
+            const activityData = response.data.data;
+
+            console.log('Log Value activityData: ', activityData)
+
+            const skuList = activityData.activity_sku_price || [];
+
+            // ฟิลเตอร์ข้อมูลด้วย keyword
+            const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
+
+            const filteredList = skuList.filter((sku) =>
+              sku.title?.toLowerCase().includes(keywordToSearch) ||
+              sku.erp_title?.toLowerCase().includes(keywordToSearch) ||
+              sku.goods_sku_text?.toLowerCase().includes(keywordToSearch) ||
+              sku.sn?.toLowerCase().includes(keywordToSearch)
+            );
+
+            console.log('Log Value keywordToSearch: ', keywordToSearch)
+
+            // เพิ่มข้อมูลโปรโมชันประกอบเข้าไป (เหมือน getPromotionProducts)
+            return filteredList.map(sku => ({
+              ...sku,
+              activity_id: activityData.id || 0,
+              goods_id: sku.goods_id,
+              pro_sku_price_id: sku.sku_price_id,
+              erp_title: sku.erp_title,
+              title: sku.title,
+              image: sku.image,
+              goods_price: sku.goods_price,
+
+              activity_code: activityData.activity_code,
+              pro_m_code: activityData.activity_code,
+              pro_acm_id: activityData.id,
+              sn: sku.sn,
+              goods_sku_text: sku.goods_sku_text,
+              units: sku.units
+            }));
+          } else {
+            return []; // หากไม่มีข้อมูล
+          }
+        });
+
+        const allResultsArrays = await Promise.all(requests);
+        const allResults = allResultsArrays.flat();
+
+        tableData.value = allResults;
+        dataselectpromotion_no.value = allResults;
+        total.value = allResults.length;
+        pageSize.value = (total.value < pageSize.value)
+          ? total.value
+          : parseInt(pageSize.value);
+
+        console.log("✅ ผลลัพธ์จากการค้นหา:", allResults);
+      } catch (err) {
+        console.error("❌ SearchPromotionSubmit error:", err);
+      }
+
     } catch (err) {
       console.error("searchSku error:", err);
     }
   } else {
     try {
 
-      const gettoken = localStorage.getItem('token');
-      console.log("log value token:", gettoken);
+      clearTimeout(searchTimer.value);
 
-      
-  const requests = props.selectedPromotion.map(async promo => {
-  const activity_id = promo.pro_m_id;
+      const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+      const getLevel = getLevelSS?.data2?.level ?? 0;
 
-    const response = await axios.post(
-      `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=${keyword.value}`,
-      {},
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          token: gettoken
-        }
+      if (getLevel === 0) {
+        memberType.value = 'Member End User';
+      } else if (getLevel === 1) {
+        memberType.value = 'Member A';
+      } else if (getLevel === 7) {
+        memberType.value = 'Member B';
+      } else if (getLevel === 10) {
+        memberType.value = 'Member A+';
+      } else {
+        memberType.value = 'Unknown Member';
       }
-    );
 
-    console.log("IF searchSku response:", response);
+      try {
+        const gettoken = localStorage.getItem('token');
 
-    // const activityData = response.data.data;
-      
-      if (response.data.code === 1) {
-        const rawData = response.data.data;
+        const requests = props.selectedPromotion.map(async promo => {
+          const activity_id = promo.pro_m_id;
 
-        console.log("rawData:", rawData);
+          const response = await axios.post(
+            `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=${keyword.value + '$_' + keyword_promotion_no.value + '_$'}`,
+            {},
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                token: gettoken
+              }
+            }
+          );
 
-        
-        const keywordToSearch = keyword.value.trim().toLowerCase();
+          console.log('Log Value response: ', response)
 
-          const filtered = rawData.filter((item) =>
-          item.title?.toLowerCase().includes(keywordToSearch) ||
-          item.erp_title?.toLowerCase().includes(keywordToSearch) ||
-          item.activity_code?.toLowerCase().includes(keywordToSearch) ||
-          item.activity_id?.toLowerCase().includes(keywordToSearch) ||
-          item.note?.toLowerCase().includes(keywordToSearch) ||
-          item.ML_Note?.toLowerCase().includes(keywordToSearch)
-        );
+          if (response.data.code === 1) {
+            const activityData = response.data.data;
 
+            console.log('Log Value activityData: ', activityData)
 
-        console.log("Filtered promotions:", filtered);
+            const skuList = activityData.activity_sku_price || [];
 
-        dataselectpromotion_no.value = filtered;
-        tableData.value = [...filtered];
-        total.value = filtered.length;
+            // ฟิลเตอร์ข้อมูลด้วย keyword
+            const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
+
+            const filteredList = skuList.filter((sku) =>
+              sku.title?.toLowerCase().includes(keywordToSearch) ||
+              sku.erp_title?.toLowerCase().includes(keywordToSearch) ||
+              sku.goods_sku_text?.toLowerCase().includes(keywordToSearch) ||
+              sku.sn?.toLowerCase().includes(keywordToSearch)
+            );
+
+            console.log('Log Value keywordToSearch: ', keywordToSearch)
+
+            // เพิ่มข้อมูลโปรโมชันประกอบเข้าไป (เหมือน getPromotionProducts)
+            return filteredList.map(sku => ({
+              ...sku,
+              activity_id: activityData.id || 0,
+              goods_id: sku.goods_id,
+              pro_sku_price_id: sku.sku_price_id,
+              erp_title: sku.erp_title,
+              title: sku.title,
+              image: sku.image,
+              goods_price: sku.goods_price,
+
+              activity_code: activityData.activity_code,
+              pro_m_code: activityData.activity_code,
+              pro_acm_id: activityData.id,
+              sn: sku.sn,
+              goods_sku_text: sku.goods_sku_text,
+              units: sku.units
+            }));
+          } else {
+            return []; // หากไม่มีข้อมูล
+          }
+        });
+
+        const allResultsArrays = await Promise.all(requests);
+        const allResults = allResultsArrays.flat();
+
+        tableData.value = allResults;
+        dataselectpromotion_no.value = allResults;
+        total.value = allResults.length;
         pageSize.value = (total.value < pageSize.value)
           ? total.value
           : parseInt(pageSize.value);
+
+        console.log("✅ ผลลัพธ์จากการค้นหา:", allResults);
+      } catch (err) {
+        console.error("❌ SearchPromotionSubmit error:", err);
       }
 
+      // const gettoken = localStorage.getItem('token');
+      // console.log("log value token:", gettoken);
 
-  });
-
-    // ส่งทุก request พร้อมกัน
-    const allResultsArrays = await Promise.all(requests);
-    const allResults = allResultsArrays.flat(); // รวมทุก array เข้าเป็น array เดียว
-
-    tableData.value = allResults;
-
-      // ?from=specialprice
+      // // ?from=specialprice
       // const response = await axios.post(
-      //   `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=`,
+      //   `${BASE_URL}/goods2/activityList`,
       //   {
       //     version: '2.0.2',
       //     pageSize: pageSize.value,
@@ -675,13 +625,141 @@ async function SearchPromotionSubmit() {
       //   }
       // );
 
-      
+      // console.log("IF searchSku response:", response);
+      // // console.log("IF searchSku total:", response.data.data.item_count);
+
+      // if (response.data.code === 1) {
+      //   const rawData = response.data.data;
+
+      //   console.log("rawData:", rawData);
+
+      //   // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
+      //   const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
+
+      //   const filtered = rawData.filter((item) =>
+      //     item.title?.toLowerCase().includes(keywordToSearch) ||
+      //     item.erp_title?.toLowerCase().includes(keywordToSearch) ||
+      //     item.activity_code?.toLowerCase().includes(keywordToSearch) ||
+      //     item.activity_id?.toLowerCase().includes(keywordToSearch) ||
+      //     item.note?.toLowerCase().includes(keywordToSearch) ||
+      //     item.ML_Note?.toLowerCase().includes(keywordToSearch)
+      //   );
+
+
+      //   console.log("Filtered promotions:", filtered);
+
+      //   dataselectpromotion_no.value = filtered;
+      //   tableData.value = [...filtered];
+      //   total.value = filtered.length;
+      //   pageSize.value = (total.value < pageSize.value)
+      //     ? total.value
+      //     : parseInt(pageSize.value);
+      // }
+
     } catch (err) {
       console.error("searchSku error:", err);
     }
     //satisfies
   }
 };
+
+
+
+async function SearchPromotionSubmit() {
+  clearTimeout(searchTimer.value);
+
+  const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+  const getLevel = getLevelSS?.data2?.level ?? 0;
+
+  if (getLevel === 0) {
+    memberType.value = 'Member End User';
+  } else if (getLevel === 1) {
+    memberType.value = 'Member A';
+  } else if (getLevel === 7) {
+    memberType.value = 'Member B';
+  } else if (getLevel === 10) {
+    memberType.value = 'Member A+';
+  } else {
+    memberType.value = 'Unknown Member';
+  }
+
+  try {
+    const gettoken = localStorage.getItem('token');
+
+    const requests = props.selectedPromotion.map(async promo => {
+      const activity_id = promo.pro_m_id;
+
+      const response = await axios.post(
+        `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=${keyword.value}`,
+        {},
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            token: gettoken
+          }
+        }
+      );
+
+      console.log('Log Value response: ', response)
+
+      if (response.data.code === 1) {
+        const activityData = response.data.data;
+
+        console.log('Log Value activityData: ', activityData)
+
+        const skuList = activityData.activity_sku_price || [];
+
+        // ฟิลเตอร์ข้อมูลด้วย keyword
+        const keywordToSearch = keyword.value.trim().toLowerCase();
+
+        const filteredList = skuList.filter((sku) =>
+          sku.title?.toLowerCase().includes(keywordToSearch) ||
+          sku.erp_title?.toLowerCase().includes(keywordToSearch) ||
+          sku.goods_sku_text?.toLowerCase().includes(keywordToSearch) ||
+          sku.sn?.toLowerCase().includes(keywordToSearch)
+        );
+
+        console.log('Log Value keywordToSearch: ', keywordToSearch)
+
+        // เพิ่มข้อมูลโปรโมชันประกอบเข้าไป (เหมือน getPromotionProducts)
+        return filteredList.map(sku => ({
+          ...sku,
+          activity_id: activityData.id || 0,
+          goods_id: sku.goods_id,
+          pro_sku_price_id: sku.sku_price_id,
+          erp_title: sku.erp_title,
+          title: sku.title,
+          image: sku.image,
+          goods_price: sku.goods_price,
+
+          activity_code: activityData.activity_code,
+          pro_m_code: activityData.activity_code,
+          pro_acm_id: activityData.id,
+          sn: sku.sn,
+          goods_sku_text: sku.goods_sku_text,
+          units: sku.units
+        }));
+      } else {
+        return []; // หากไม่มีข้อมูล
+      }
+    });
+
+    const allResultsArrays = await Promise.all(requests);
+    const allResults = allResultsArrays.flat();
+
+    tableData.value = allResults;
+    dataselectpromotion_no.value = allResults;
+    total.value = allResults.length;
+    pageSize.value = (total.value < pageSize.value)
+      ? total.value
+      : parseInt(pageSize.value);
+
+    console.log("✅ ผลลัพธ์จากการค้นหา:", allResults);
+  } catch (err) {
+    console.error("❌ SearchPromotionSubmit error:", err);
+  }
+}
+
 
 //page = 1
 async function getPromotionProducts() {
@@ -797,6 +875,8 @@ async function submittedProduct(selectedProducts) {
 
       console.log("🤯🤯 Log emitTitles:", emitTitles);
 
+      
+
       // const emitTitles = data.map(item => item.pro_title || item.pro_erp_title).join(', ');
       console.log("✅ Items:", items);
       console.log("✅ Gifts:", gifts);
@@ -846,78 +926,6 @@ async function submittedProduct(selectedProducts) {
   }
 }
 
-// async function submittedProduct(selectedProducts) {
-//   const gettoken = localStorage.getItem('token');
-
-//   try {
-//     const response = await axios.post(
-//       `${BASE_URL}/cart_out/index`,
-//       { products: selectedProducts },
-//       { headers: { 'Content-Type': 'application/json', 'token': gettoken } }
-//     );
-
-//     console.log("✅ Response from API:", response);
-
-//     if (response.data.code === 1) {
-//       const data = response.data.data.products || [];
-
-//       console.log("Check Value data:", data);
-
-//       // สร้าง emitTitles (ข้อมูลจาก selectedProducts)
-//       const emitTitles = selectedProducts.map(p => ({
-//         pro_goods_id: p.pro_goods_id || 0,
-//         pro_activity_id: p.pro_activity_id || 0,
-//         pro_erp_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',
-//         pro_goods_price: p.pro_goods_price || 0,
-//         pro_sn: p.pro_sn || '',
-//         pro_units: p.pro_units || '',
-//       }));
-
-//       // จัดกลุ่มข้อมูลตาม pro_activity_id
-//       const groupedData = data.reduce((acc, item) => {
-//         const activityId = item.pro_activity_id;
-
-//         if (!acc[activityId]) {
-//           acc[activityId] = {
-//             items: [],
-//             gifts: [],
-//             promotions: [],
-//             emitTitles: emitTitles.filter(e => e.pro_activity_id === activityId) // 🟢 เพิ่ม emitTitles ที่ตรงกัน
-//           };
-//         }
-
-//         if (item.note === 'รายการ') {
-//           acc[activityId].items.push(item);
-//         } else if (item.note === 'ของแถม') {
-//           acc[activityId].gifts.push(item);
-//         } else if (item.note === 'โปรโมชั่น') {
-//           acc[activityId].promotions.push(item);
-//         }
-
-//         return acc;
-//       }, {});
-
-//       console.log("🔁 Grouped Data with emitTitles:", groupedData);
-
-//       emit('selectPromotionProducts', groupedData);
-//       emit('close');
-//     } else {
-//       Swal.fire({
-//         title: 'เกิดข้อผิดพลาด',
-//         text: response.data.message || 'โปรดลองใหม่ภายหลัง',
-//         icon: 'error',
-//       });
-//     }
-//   } catch (err) {
-//     console.error("❌ Error in submittedProduct:", err);
-//     Swal.fire({
-//       title: 'เกิดข้อผิดพลาด',
-//       text: err.message || 'โปรดลองใหม่ภายหลัง',
-//       icon: 'error',
-//     });
-//   }
-// }
-
 
 
 // function mounted() {
@@ -941,7 +949,335 @@ onMounted(() => {
 </script>
 
 
+<!-- /* <style scoped>
 
+.xl-size{
+  width: 500px !important; 
+}
+
+</style> */ -->
+
+
+<!-- // async function submittedProduct(selectedProducts) {
+  //   const gettoken = localStorage.getItem('token');
+  
+  //   try {
+  //     const response = await axios.post(
+  //       `${BASE_URL}/cart_out/index`,
+  //       { products: selectedProducts },
+  //       { headers: { 'Content-Type': 'application/json', 'token': gettoken } }
+  //     );
+  
+  //     console.log("✅ Response from API:", response);
+  
+  //     if (response.data.code === 1) {
+  //       const data = response.data.data.products || [];
+  
+  //       console.log("Check Value data:", data);
+  
+  //       // สร้าง emitTitles (ข้อมูลจาก selectedProducts)
+  //       const emitTitles = selectedProducts.map(p => ({
+  //         pro_goods_id: p.pro_goods_id || 0,
+  //         pro_activity_id: p.pro_activity_id || 0,
+  //         pro_erp_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',
+  //         pro_goods_price: p.pro_goods_price || 0,
+  //         pro_sn: p.pro_sn || '',
+  //         pro_units: p.pro_units || '',
+  //       }));
+  
+  //       // จัดกลุ่มข้อมูลตาม pro_activity_id
+  //       const groupedData = data.reduce((acc, item) => {
+  //         const activityId = item.pro_activity_id;
+  
+  //         if (!acc[activityId]) {
+  //           acc[activityId] = {
+  //             items: [],
+  //             gifts: [],
+  //             promotions: [],
+  //             emitTitles: emitTitles.filter(e => e.pro_activity_id === activityId) // 🟢 เพิ่ม emitTitles ที่ตรงกัน
+  //           };
+  //         }
+  
+  //         if (item.note === 'รายการ') {
+  //           acc[activityId].items.push(item);
+  //         } else if (item.note === 'ของแถม') {
+  //           acc[activityId].gifts.push(item);
+  //         } else if (item.note === 'โปรโมชั่น') {
+  //           acc[activityId].promotions.push(item);
+  //         }
+  
+  //         return acc;
+  //       }, {});
+  
+  //       console.log("🔁 Grouped Data with emitTitles:", groupedData);
+  
+  //       emit('selectPromotionProducts', groupedData);
+  //       emit('close');
+  //     } else {
+  //       Swal.fire({
+  //         title: 'เกิดข้อผิดพลาด',
+  //         text: response.data.message || 'โปรดลองใหม่ภายหลัง',
+  //         icon: 'error',
+  //       });
+  //     }
+  //   } catch (err) {
+  //     console.error("❌ Error in submittedProduct:", err);
+  //     Swal.fire({
+  //       title: 'เกิดข้อผิดพลาด',
+  //       text: err.message || 'โปรดลองใหม่ภายหลัง',
+  //       icon: 'error',
+  //     });
+  //   }
+  // } -->
+
+
+<!-- 
+// async function SearchPromotionSubmit() {
+  //   clearTimeout(searchTimer.value);
+  
+  
+  //   const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+  
+  //   const getLevel = getLevelSS?.data2?.level ?? 0;
+  //   console.log("Log getLevel: ", getLevel);
+  
+  //   // แปลงค่า getLevel เป็นชื่อสมาชิก
+  //   // let memberType = '';
+  //   if (getLevel === 0) {
+  //     memberType.value = 'Member End User';
+  //   } else if (getLevel === 1) {
+  //     memberType.value = 'Member A';
+  //   } else if (getLevel === 7) {
+  //     memberType.value = 'Member B';
+  //   } else if (getLevel === 10) {
+  //     memberType.value = 'Member A+';
+  //   } else {
+  //     memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
+  //   }
+  
+  //   console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
+  
+  
+  //   if (!keyword.value.trim()) {
+  
+  //     try {
+  
+  //       const gettoken = localStorage.getItem('token');
+  //       console.log("log value token:", gettoken);
+  
+  
+  //       const requests = props.selectedPromotion.map(async promo => {
+  //         const activity_id = promo.pro_m_id;
+  
+  //         const response = await axios.post(
+  //           `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=${keyword.value}`,
+  //           {},
+  //           {
+  //             headers: {
+  //               'Content-Type': 'application/json',
+  //               token: gettoken
+  //             }
+  //           }
+  //         );
+  
+  //         console.log("IF searchSku response:", response);
+  
+  //         // const activityData = response.data.data;
+  
+  //         if (response.data.code === 1) {
+  //           const rawData = response.data.data;
+  
+  //           console.log("rawData:", rawData);
+  
+  
+  //           const keywordToSearch = keyword.value.trim().toLowerCase();
+  
+  //           const filtered = rawData.filter((item) =>
+  //             item.title?.toLowerCase().includes(keywordToSearch) ||
+  //             item.erp_title?.toLowerCase().includes(keywordToSearch) ||
+  //             item.activity_code?.toLowerCase().includes(keywordToSearch) ||
+  //             item.activity_id?.toLowerCase().includes(keywordToSearch) ||
+  //             item.note?.toLowerCase().includes(keywordToSearch) ||
+  //             item.ML_Note?.toLowerCase().includes(keywordToSearch)
+  //           );
+  
+  //           console.log("Filtered promotions:", filtered);
+  
+  //           dataselectpromotion_no.value = filtered;
+  //           tableData.value = [...filtered];
+  //           total.value = filtered.length;
+  //           pageSize.value = (total.value < pageSize.value)
+  //             ? total.value
+  //             : parseInt(pageSize.value);
+  //         }
+  
+  
+  //       });
+  
+  //       // ส่งทุก request พร้อมกัน
+  
+  //       const allResultsArrays = await Promise.all(requests);
+  //       const allResults = allResultsArrays.flat(); // รวมทุก array เข้าเป็น array เดียว
+  
+  //       tableData.value = allResults;
+  
+  
+  //       // const gettoken = localStorage.getItem('token');
+  //       // console.log("log value token:", gettoken);
+  
+  //       // // ?from=specialprice
+  //       // const response = await axios.post(
+  //       //   `${BASE_URL}/goods2/activityList`,
+  //       //   {
+  //       //     version: '2.0.2',
+  //       //     // keywords: keyword.value,
+  //       //     keywords: keyword.value,
+  //       //     level: getLevel
+  //       //   }, //  body 
+  //       //   {
+  //       //     params: {
+  //       //       "from": "specialprice"
+  //       //     },
+  //       //     headers: {
+  //       //       'Content-Type': 'application/json',
+  //       //       'token': gettoken
+  //       //     }
+  //       //   }
+  //       // );
+  
+  //       // // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+  //       // //   version: '2.0.2',
+  //       // //   pageSize: pageSize.value,
+  //       // //   pageCurrent: pageCurrent.value,
+  //       // //   keywords: keyword_promotion_no.value,
+  //       // //   level: getLevel
+  //       // // });
+  
+  //       // console.log("IF searchSku response:", response);
+  //       // // console.log("IF searchSku total:", response.data.data.item_count);
+  
+  //       // if (response.data.code === 1) {
+  //       //   const rawData = response.data.data;
+  
+  //       //   // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
+  //       //   const keywordToSearch = keyword.value.trim().toLowerCase();
+  
+  //       //   const filtered = rawData.filter((item) =>
+  //       //     item.title.toLowerCase().includes(keywordToSearch)
+  //       //   );
+  
+  //       //   console.log("Filtered promotions:", filtered);
+  
+  //       //   dataselectpromotion_no.value = filtered;
+  //       //   tableData.value = [...filtered];
+  //       //   total.value = filtered.length;
+  //       //   pageSize.value = (total.value < pageSize.value)
+  //       //     ? total.value
+  //       //     : parseInt(pageSize.value);
+  //       // }
+  
+  //       ///////////////////////////////////
+  
+  //       // if (response.data.code === 1) {
+  //       //   total.value = response.data.data.item_count;
+  //       //   dataselectpromotion_no.value = response.data.data.data2;
+  //       //   tableData.value = [...dataselectpromotion_no.value];
+  //       //   pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
+  //       // }
+  //     } catch (err) {
+  //       console.error("searchSku error:", err);
+  //     }
+  //   } else {
+  //     try {
+  
+  //       const gettoken = localStorage.getItem('token');
+  //       console.log("log value token:", gettoken);
+  
+  
+  //       const requests = props.selectedPromotion.map(async promo => {
+  //         const activity_id = promo.pro_m_id;
+  
+  //         const response = await axios.post(
+  //           `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=${keyword.value}`,
+  //           {},
+  //           {
+  //             headers: {
+  //               'Content-Type': 'application/json',
+  //               token: gettoken
+  //             }
+  //           }
+  //         );
+  
+  //         console.log("IF searchSku response:", response);
+  
+  //         // const activityData = response.data.data;
+  
+  //         if (response.data.code === 1) {
+  //           const rawData = response.data.data;
+  
+  //           console.log("rawData:", rawData);
+  
+  
+  //           const keywordToSearch = keyword.value.trim().toLowerCase();
+  
+  //           const filtered = rawData.filter((item) =>
+  //             item.title?.toLowerCase().includes(keywordToSearch) ||
+  //             item.erp_title?.toLowerCase().includes(keywordToSearch) ||
+  //             item.activity_code?.toLowerCase().includes(keywordToSearch) ||
+  //             item.activity_id?.toLowerCase().includes(keywordToSearch) ||
+  //             item.note?.toLowerCase().includes(keywordToSearch) ||
+  //             item.ML_Note?.toLowerCase().includes(keywordToSearch)
+  //           );
+  
+  
+  //           console.log("Filtered promotions:", filtered);
+  
+  //           dataselectpromotion_no.value = filtered;
+  //           tableData.value = [...filtered];
+  //           total.value = filtered.length;
+  //           pageSize.value = (total.value < pageSize.value)
+  //             ? total.value
+  //             : parseInt(pageSize.value);
+  //         }
+  
+  
+  //       });
+  
+  //       // ส่งทุก request พร้อมกัน
+  //       const allResultsArrays = await Promise.all(requests);
+  //       const allResults = allResultsArrays.flat(); // รวมทุก array เข้าเป็น array เดียว
+  
+  //       tableData.value = allResults;
+  
+  //       // ?from=specialprice
+  //       // const response = await axios.post(
+  //       //   `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=`,
+  //       //   {
+  //       //     version: '2.0.2',
+  //       //     pageSize: pageSize.value,
+  //       //     pageCurrent: pageCurrent.value,
+  //       //     // keywords: keyword.value,
+  //       //     keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
+  //       //     level: getLevel
+  //       //   }, //  body 
+  //       //   {
+  //       //     params: {
+  //       //       "from": "specialprice"
+  //       //     },
+  //       //     headers: {
+  //       //       'Content-Type': 'application/json',
+  //       //       'token': gettoken
+  //       //     }
+  //       //   }
+  //       // );
+  
+  
+  //     } catch (err) {
+  //       console.error("searchSku error:", err);
+  //     }
+  //     //satisfies
+  //   }
+  // }; -->
 
 <!-- // async function getPromotionProducts() {
   //   // async function getPromotion(page = 1) {

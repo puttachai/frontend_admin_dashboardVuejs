@@ -1,9 +1,9 @@
 <template>
   <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99]">
-    <div class="bg-white z-20 rounded-lg shadow-lg p-6 w-[90%] max-w-6xl max-h-[90vh] overflow-y-auto">
+    <div class="bg-white z-20 rounded-lg shadow-lg p-4 w-[90%] max-w-6xl max-h-[90vh] overflow-y-auto">
 
       <!-- Search Section -->
-      <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-4 ">
         <!-- Search Icon -->
         <span class="material-icons text-gray-600" style="font-size: 28px;">search</span>
         <!-- Search Input -->
@@ -42,109 +42,118 @@
       <Promotion_ProductSelector v-if="showPromotionProductSelector" :selectedPromotion="selectedPromotion"
         @close="showPromotionProductSelector = false" @select-promotion_products="handleSelectedProducts" />
 
-      <!-- Table -->
-      <table class="min-w-full border text-sm">
-        <thead class="bg-gray-100 text-gray-700">
-          <tr>
+      <!-- Table Section -->
+      <div class="overflow-x-auto mt-4">
+        <!-- Table -->
+        <table class="min-w-[1000px] w-full border text-sm">
+          <!-- <table class="min-w-full border text-sm"> -->
+          <thead class="bg-gray-100 text-gray-700">
+            <tr>
 
-            <th class="px-4 py-2 border text-center">
-              <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected" />
-            </th>
+              <th class="px-4 py-2 border text-center">
+                <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected" />
+              </th>
 
-            <th class="px-4 py-2 border">รูปภาพ</th>
-            <th class="px-4 py-2 border">ชื่อโปรโมชั่น</th>
-            <!-- <th class="px-4 py-2 border">สี</th> -->
-            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600 relative">
-              <!-- Input ช่องค้นหา -->
-              <div class="flex gap-1">
-                <input type="text" v-model="keyword_promotion_no" placeholder="ค้นหา โปรโมชั่น"
-                  @focus="dropdownOpenIndex = 'header'"
-                  class="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none" />
-                <!-- ปุ่มค้นหา -->
-                <button @click="searchPromotion_no" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
-                  ค้นหา
-                </button>
-              </div>
-            </th>
+              <th class="px-4 py-2 border">รูปภาพ</th>
+              <th class="px-4 py-2 border">ชื่อโปรโมชั่น</th>
+              <!-- <th class="px-4 py-2 border">สี</th> -->
+              <th class="px-4 py-2 text-left text-sm font-medium text-gray-600 relative">
+                <!-- Input ช่องค้นหา -->
+                <div class="flex gap-1">
+                  <input type="text" v-model="keyword_promotion_no" placeholder="ค้นหา โปรโมชั่น"
+                    @focus="dropdownOpenIndex = 'header'"
+                    class="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none" />
+                  <!-- ปุ่มค้นหา -->
+                  <button @click="searchPromotion_no"
+                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    ค้นหา
+                  </button>
+                </div>
+              </th>
 
-            <th class="px-4 py-2 border w-[120px]">รหัสโปรโมชั่น</th>
-            <th class="px-4 py-2 border w-[120px]">สมาชิก</th>
-            <!-- <th class="px-4 py-2 border">รายละเอียด</th> -->
-            <th v-if="false" class="px-4 py-2 border">promotion_Day||Months</th>
-            <!-- <th class="px-4 py-2 border">หน่วย</th>
+              <th class="px-4 py-2 border w-[120px]">รหัสโปรโมชั่น</th>
+              <th class="px-4 py-2 border w-[120px]">สมาชิก</th>
+              <!-- <th class="px-4 py-2 border">รายละเอียด</th> -->
+              <th v-if="false" class="px-4 py-2 border">promotion_Day||Months</th>
+              <!-- <th class="px-4 py-2 border">หน่วย</th>
             <th class="px-4 py-2 border">ราคาขาย</th> -->
-          </tr>
-        </thead>
+            </tr>
+          </thead>
 
-        <!-- ถ้ากำลังโหลด -->
-        <tbody v-if="isLoading">
-          <tr>
-            <td colspan="10" class="py-10 text-center">
-              <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-              </svg>
-              <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
-            </td>
-          </tr>
-        </tbody>
+          <!-- ถ้ากำลังโหลด -->
+          <tbody v-if="isLoading">
+            <tr>
+              <td colspan="10" class="py-10 text-center">
+                <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                  viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
+              </td>
+            </tr>
+          </tbody>
 
-        <tbody v-if="paginatedPromotion.length === 0 && !isLoading">
-          <tr>
-            <td colspan="10" class="py-10 text-center">
-              <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-              </svg>
-              <div class="mt-2 text-gray-500">โปรดทำการเลือก ร้านค้าของลูกค้าก่อนทำรายการ</div>
-            </td>
-          </tr>
-        </tbody>
+          <tbody v-if="paginatedPromotion.length === 0 && !isLoading">
+            <tr>
+              <td colspan="10" class="py-10 text-center">
+                <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                  viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <div class="mt-2 text-gray-500">โปรดทำการเลือก ร้านค้าของลูกค้าก่อนทำรายการ</div>
+              </td>
+            </tr>
+          </tbody>
 
-        <tbody v-if="!isLoading">
-          <tr v-for="item in paginatedPromotion" :key="item.id">
-            <td class="px-4 py-2 border text-center">
-              <input type="checkbox" v-model="selectedIds" :value="item.id" />
-            </td>
+          <tbody v-if="!isLoading">
+            <tr v-for="item in paginatedPromotion" :key="item.id">
+              <td class="px-4 py-2 border text-center">
+                <input type="checkbox" v-model="selectedIds" :value="item.id" />
+              </td>
 
-            <td class="px-4 py-4 border text-center">
-              <template v-if="item.image">
-                <img :src="BASE_URL_IMAGE + item.image" alt="products" class="w-10 h-10 rounded-full mx-auto">
-              </template>
-              <template v-else>
-                <span class="material-icons text-gray-400 text-4xl">broken_image</span>
-              </template>
-            </td>
+              <td class="px-4 py-4 border text-center">
+                <template v-if="item.image">
+                  <img :src="BASE_URL_IMAGE + item.image" alt="products" class="w-10 h-10 rounded-full mx-auto">
+                </template>
+                <template v-else>
+                  <span class="material-icons text-gray-400 text-4xl">broken_image</span>
+                </template>
+              </td>
 
-            <td class="px-4 text-gray-700 py-2 border">{{ item.title }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.title }}</td>
 
-            <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code ?? 'ไม่มีโปรโมชั่น' }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code ?? 'ไม่มีโปรโมชั่น' }}</td>
 
-            <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code }}</td>
-            <td class="px-4 text-gray-700 py-2 border">{{ item.level }}</td>
-            <!-- <td class="px-4 py-2 border">{{ item.titledetail }}</td> -->
-            <td v-if="false" class="px-4 text-gray-700 py-2 border">{{ item.promotion_index }}</td>
-            <!-- <td class="px-4 py-2 border">{{ item.units }}</td> -->
-            <!-- <td class="px-4 py-2 border">{{ item.price }}</td> -->
+              <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.level }}</td>
+              <!-- <td class="px-4 py-2 border">{{ item.titledetail }}</td> -->
+              <td v-if="false" class="px-4 text-gray-700 py-2 border">{{ item.promotion_index }}</td>
+              <!-- <td class="px-4 py-2 border">{{ item.units }}</td> -->
+              <!-- <td class="px-4 py-2 border">{{ item.price }}</td> -->
 
-            <!-- <td class="px-4 py-2 border">{{ item.pro_name }}</td>
+              <!-- <td class="px-4 py-2 border">{{ item.pro_name }}</td>
             <td class="px-4 py-2 border">{{ item.pro_quantity }}</td>
             <td class="px-4 py-2 border">{{ item.pro_status }}</td>
             <td class="px-4 py-2 border">{{ item.pro_unit_price }}</td> -->
-          </tr>
-        </tbody>
-      </table>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Pagination -->
+        <ConfigProvider :globalConfig="enConfig">
+          <div class="w-fit mt-4 px-4 ">
+          <!-- <div class="overflow-auto mt-4 "> -->
+            <!-- v-model:page-size="pageSize" -->
+            <pagination v-model:current="pageCurrent" v-model:page-size="pageSize" :total="total" show-page-size
+              :prev-button-props="{ content: '⏪' }" :next-button-props="{ content: '⏩' }"
+              @change="onPaginationChange" />
+          </div>
+        </ConfigProvider>
+      </div>
 
-      <!-- Pagination -->
-      <ConfigProvider :globalConfig="enConfig">
-        <div class="overflow-auto mt-4">
-          <!-- v-model:page-size="pageSize" -->
-          <pagination v-model:current="pageCurrent" v-model:page-size="pageSize" :total="total" show-page-size
-            :prev-button-props="{ content: '⏪' }" :next-button-props="{ content: '⏩' }" @change="onPaginationChange" />
-        </div>
-      </ConfigProvider>
+
+
 
       <!-- Confirm Button -->
       <div class="text-right mt-4">

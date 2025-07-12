@@ -456,8 +456,8 @@ export default {
             });
 
             console.log("log response 458: ", response);
-            console.log("adsd row: ",row);
-            console.log('adasdafsad: ',response.data);
+            console.log("log row: ",row);
+            console.log('response.data: ',response.data);
 
             if (response.data.code === 1) {
 

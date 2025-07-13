@@ -20,7 +20,8 @@
         <div class="flex flex-wrap md:flex-nowrap justify-between  items-center gap-4">
 
           <!-- เพิ่มปุ่มย้อนกลับ -->
-          <button @click="goBackToPromotionSelector" class="text-purple-600 font-medium hover:text-purple-800 transition px-4 py-2 border  border-purple-600 hover:border-purple-600 rounded">
+          <button @click="goBackToPromotionSelector"
+            class="text-purple-600 font-medium hover:text-purple-800 transition px-4 py-2 border  border-purple-600 hover:border-purple-600 rounded">
             ← ย้อนกลับ
           </button>
 
@@ -300,6 +301,17 @@ function validateAmount(item) {
   } else if (item.amount > item.stock) {
     item.amount = item.stock;
   }
+  
+  // ✅ เพิ่ม logic ติ๊ก checkbox อัตโนมัติ
+  if (item.amount > 0) {
+    if (!selectedIds.value.includes(item.id)) {
+      selectedIds.value.push(item.id);
+    }
+  } else {
+    // ถ้าใส่ 0 หรือลบออก ให้เอาออกจาก selectedIds
+    selectedIds.value = selectedIds.value.filter(id => id !== item.id);
+  }
+
 }
 
 function confirmSelection() {
@@ -309,39 +321,55 @@ function confirmSelection() {
 
   const selectedPromotionProducts = tableData.value
     .filter(p => selectedIds.value.includes(p.id))
-    .map(p => {
+    // .map(p => {
+    .map(p => ({
 
       // 🔍 ดึง matchedPrice จาก condition_price ตามชื่อสมาชิก
       // const condPrice = p.condition_price?.[0]?.price || [];
       // const found = condPrice.find(priceItem => priceItem.name === memberType.value);
       // const matchedPrice = found ? found.price : '-';
 
-      return {
-        pro_activity_id: p.activity_id, // 1167
-        // pro_id: p.activity_id, // 1167
-        pro_goods_id: p.goods_id, // 13872
-        pro_goods_price: p.goods_price, // "215.00"
-        pro_sku_price_id: p.id, //sku_price_id // 50983 
-        pro_goods_num: p.amount || 0, // 1 
-        stock: p.stock || 0,
-        // pro_quantity: p.quantity || 0, // 1 
-        pro_image: p.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.jpg   
-        pro_erp_title: p.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP" 
+      // return {
+      pro_activity_id: p.activity_id, // 1167
+      // pro_id: p.activity_id, // 1167
+      pro_goods_id: p.goods_id, // 13872
+      pro_goods_price: p.goods_price, // "215.00"
+      pro_sku_price_id: p.id, //sku_price_id // 50983 
+      pro_goods_num: p.amount || 0, // 1 
+      stock: p.stock || 0,
+      // pro_quantity: p.quantity || 0, // 1 
+      pro_image: p.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.jpg   
+      pro_erp_title: p.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP" 
 
-        //
-        pro_title: p.title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
+      //
+      pro_title: p.title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
 
-        // 
-        pro_code: p.activity_code, // x
-        pro_m_code: p.pro_m_code, // x 
-        // pro_goods_sku_text: p.goods_sku_text, // x
-        pro_sn: p.sn, //"2010102DP0057" x
-        pro_units: p.units, // "PCS" x
-        // pro_goods_price: matchedPrice,
-        // pro_goods_price: p.goods_price,
-      }
+      // 
+      pro_code: p.activity_code, // x
+      pro_m_code: p.pro_m_code, // x 
+      // pro_goods_sku_text: p.goods_sku_text, // x
+      pro_sn: p.sn, //"2010102DP0057" x
+      pro_units: p.units, // "PCS" x
+      // pro_goods_price: matchedPrice,
+      // pro_goods_price: p.goods_price,
+      // }
 
+      // });
+    }));
+
+  const invalidProducts = selectedPromotionProducts.filter(a => a.pro_goods_num < 1);
+
+  console.log('Check invalidProducts', invalidProducts);
+
+  if (invalidProducts.length > 0) {
+    const invalidNames = invalidProducts.map(n => `• ${n.pro_title || pro_erp_title} จำนวน: ${n.pro_goods_num} `).join('\n');
+    Swal.fire({
+      icon: 'warning',
+      title: 'พบสินค้าที่จำนวนไม่ถูกต้อง ❌',
+      html: `กรุณาตรวจสอบจำนวนสินค้าให้ถูกต้องก่อนดำเนินการ:<br><pre>${invalidNames}</pre>`
     });
+    return; // ❌ ยกเลิกการส่ง
+  }
 
   const selectedPromotionsInfo = props.selectedPromotion.map(p => ({
 
@@ -371,53 +399,6 @@ const searchPromotion_no = async () => {
 
   if (!keyword_promotion_no.value.trim()) {
     try {
-
-
-      // const gettoken = localStorage.getItem('token');
-      // console.log("log value token:", gettoken);
-
-      // // ?from=specialprice
-      // const response = await axios.post(
-      //   `${BASE_URL}/goods2/activityList`,
-      //   {
-      //     version: '2.0.2',
-      //     // keywords: keyword.value,
-      //     keywords: keyword_promotion_no.value,
-      //     level: getLevel
-      //   }, //  body 
-      //   {
-      //     params: {
-      //       "from": "specialprice"
-      //     },
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //       'token': gettoken
-      //     }
-      //   }
-      // );
-
-      // console.log("IF searchSku response:", response);
-      // // console.log("IF searchSku total:", response.data.data.item_count);
-
-      // if (response.data.code === 1) {
-      //   const rawData = response.data.data;
-
-      //   // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
-      //   const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
-
-      //   const filtered = rawData.filter((item) =>
-      //     item.title.toLowerCase().includes(keywordToSearch)
-      //   );
-
-      //   console.log("Filtered promotions:", filtered);
-
-      //   dataselectpromotion_no.value = filtered;
-      //   tableData.value = [...filtered];
-      //   total.value = filtered.length;
-      //   pageSize.value = (total.value < pageSize.value)
-      //     ? total.value
-      //     : parseInt(pageSize.value);
-      // }
 
       const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
       const getLevel = getLevelSS?.data2?.level ?? 0;
@@ -608,62 +589,6 @@ const searchPromotion_no = async () => {
       } catch (err) {
         console.error("❌ SearchPromotionSubmit error:", err);
       }
-
-      // const gettoken = localStorage.getItem('token');
-      // console.log("log value token:", gettoken);
-
-      // // ?from=specialprice
-      // const response = await axios.post(
-      //   `${BASE_URL}/goods2/activityList`,
-      //   {
-      //     version: '2.0.2',
-      //     pageSize: pageSize.value,
-      //     pageCurrent: pageCurrent.value,
-      //     // keywords: keyword.value,
-      //     keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
-      //     level: getLevel
-      //   }, //  body 
-      //   {
-      //     params: {
-      //       "from": "specialprice"
-      //     },
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //       'token': gettoken
-      //     }
-      //   }
-      // );
-
-      // console.log("IF searchSku response:", response);
-      // // console.log("IF searchSku total:", response.data.data.item_count);
-
-      // if (response.data.code === 1) {
-      //   const rawData = response.data.data;
-
-      //   console.log("rawData:", rawData);
-
-      //   // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
-      //   const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
-
-      //   const filtered = rawData.filter((item) =>
-      //     item.title?.toLowerCase().includes(keywordToSearch) ||
-      //     item.erp_title?.toLowerCase().includes(keywordToSearch) ||
-      //     item.activity_code?.toLowerCase().includes(keywordToSearch) ||
-      //     item.activity_id?.toLowerCase().includes(keywordToSearch) ||
-      //     item.note?.toLowerCase().includes(keywordToSearch) ||
-      //     item.ML_Note?.toLowerCase().includes(keywordToSearch)
-      //   );
-
-
-      //   console.log("Filtered promotions:", filtered);
-
-      //   dataselectpromotion_no.value = filtered;
-      //   tableData.value = [...filtered];
-      //   total.value = filtered.length;
-      //   pageSize.value = (total.value < pageSize.value)
-      //     ? total.value
-      //     : parseInt(pageSize.value);
-      // }
 
     } catch (err) {
       console.error("searchSku error:", err);

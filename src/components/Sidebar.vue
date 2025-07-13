@@ -36,6 +36,10 @@
                 <span class="material-icons">list_alt</span>
                 <span class="text">List User Employee</span>
             </router-link>
+            <router-link class="button" to="/saleorder">
+                <span class="material-icons">receipt_long</span>
+                <span class="text">List Sale Order</span>
+            </router-link>
             <router-link class="button" to="/customer">
                 <span class="material-icons">person</span>
                 <span class="text">Customer</span>

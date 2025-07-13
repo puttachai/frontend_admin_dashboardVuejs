@@ -147,6 +147,19 @@ const routes = [
       component: CreateSaleList, // หรือไฟล์ Vue ที่เกี่ยวข้อง
       meta: { requiresAuth: true },
     },
+
+    {
+      path: '/saleorder',
+      name: 'saleorder',
+      component: () => import('../views/SaleOrderList.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/saleorder/:id',
+      name: 'saleorderdetail',
+      component: () => import('../components/listSaleOrder/SaleOrderDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
       
     {
       path: '/about',

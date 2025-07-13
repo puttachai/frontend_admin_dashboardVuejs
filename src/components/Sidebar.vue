@@ -14,7 +14,7 @@
         <div class="menu-toggle-wrap">
             <button class="menu-toggle" @click="ToggleMenu">
                 <span class="material-icons">keyboard_double_arrow_right</span>
-                
+
             </button>
         </div>
 
@@ -36,13 +36,13 @@
                 <span class="material-icons">list_alt</span>
                 <span class="text">List User Employee</span>
             </router-link>
-            <router-link class="button" to="/createsalelist">
-                <span class="material-icons">assignment_add</span>
-                <span class="text">Create a sales list</span>
-            </router-link>
             <router-link class="button" to="/customer">
                 <span class="material-icons">person</span>
                 <span class="text">Customer</span>
+            </router-link>
+            <router-link class="button" to="/createsalelist">
+                <span class="material-icons">assignment_add</span>
+                <span class="text">Create a sales list</span>
             </router-link>
             <router-link class="button" to="/about">
                 <span class="material-icons">visibility</span>
@@ -90,9 +90,11 @@ aside {
     // left: 0;
     // height: 100vh;
     // z-index: 50;
-    top: 4rem; /* ✅ กำหนดให้ไม่ทับ navbar */
+    top: 4rem;
+    /* ✅ กำหนดให้ไม่ทับ navbar */
     left: 0;
-    height: calc(100vh - 4rem); /* ✅ ลดความสูงลงจาก navbar */
+    height: calc(100vh - 4rem);
+    /* ✅ ลดความสูงลงจาก navbar */
     // z-index: 40; /* ต่ำกว่า navbar ที่ z-50 */
     z-index: 55;
     display: flex;
@@ -127,7 +129,7 @@ aside {
                 // cursor: pointer;
                 position: static;
                 z-index: 99;
-                
+
             }
 
         }
@@ -142,26 +144,26 @@ aside {
         position: relative;
         top: 0;
         transition: 0.2s ease-out;
-        
-        
+
+
 
         .menu-toggle {
             transition: 0.2s ease-out;
-            
+
 
             .material-icons {
                 font-size: 2rem;
                 color: var(--light);
-                
+
             }
 
             //ปรับสีตอนชี้ iconพร้อมขยับทางแกน x
             &:hover {
-                
+
                 .material-icons {
                     color: var(--primary);
                     transform: translateX(0.5rem);
-                    
+
                 }
             }
         }
@@ -255,9 +257,9 @@ aside {
     }
 
     @media (max-width: 430px) {
-       
+
         // margin-left: 0rem;
-      
+
     }
 
     @media (max-width: 768px) {

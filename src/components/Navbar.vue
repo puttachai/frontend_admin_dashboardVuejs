@@ -56,7 +56,7 @@
                 <span class="absolute -inset-1.5" />
                 <span class="sr-only">Open user menu</span>
 
-                <span class="text-white text-smls truncate max-w-[250px] overflow-hidden whitespace-nowrap">
+                <span class="text-white text-smls truncate smls:max-w-[350px] sm:max-w-[250px] overflow-hidden whitespace-nowrap">
                   ยินดีต้อนรับคุณ {{ contact }} {{ account }}
                 </span>
 
@@ -119,8 +119,9 @@
 
 <script>
 import Swal from 'sweetalert2'
-import { ref, onMounted, createApp } from 'vue'
+import { ref, onMounted, createApp, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { eventBus } from '@/utils/eventBus'
 
 import {
   Disclosure,
@@ -154,17 +155,56 @@ export default {
     const image_path = ref('')
 
     //โหลดค่าจาก localStorage ตอน component mount
-    onMounted(() => {
-      loadUserData()
+    // onMounted(() => {
+    //   loadUserData()
+      
+    // })
 
-    })
 
+    // function loadUserData() {
+    //   account.value = localStorage.getItem('account') || ''
+    //   contact.value = JSON.parse(localStorage.getItem('selectDataCustomer'))?.data2.contact || ''
+    //   image_path.value = localStorage.getItem('image_path') || ''
+    // }
 
-    function loadUserData() {
-      account.value = localStorage.getItem('account') || ''
+    const loadUserData = () => {
+    account.value = localStorage.getItem('account') || ''
+    try {
       contact.value = JSON.parse(localStorage.getItem('selectDataCustomer'))?.data2.contact || ''
-      image_path.value = localStorage.getItem('image_path') || ''
+    } catch {
+      contact.value = ''
     }
+    image_path.value = localStorage.getItem('image_path') || ''
+  }
+
+  // ✅ โหลดครั้งแรก
+  onMounted(() => {
+    loadUserData()
+
+    // ✅ ฟัง event เวลามีการเปลี่ยน localStorage
+    // window.addEventListener('storage', handleStorageChange)
+     // 👂 ฟัง custom event
+  eventBus.on('customerChanged', loadUserData)
+  })
+
+  // onBeforeUnmount(() => {
+  //   window.removeEventListener('storage', handleStorageChange)
+  // })
+
+  onBeforeUnmount(() => {
+  eventBus.off('customerChanged', loadUserData)
+})
+
+
+  // const handleStorageChange = (event) => {
+  //   if (
+  //     event.key === 'selectDataCustomer' ||
+  //     event.key === 'account' ||
+  //     event.key === 'image_path'
+  //   ) {
+  //     loadUserData()
+  //   }
+  // }
 
     // โหลดค่าจาก localStorage ตอน component mount
     // onMounted(() => {
@@ -200,6 +240,7 @@ export default {
           // localStorage.removeItem('account')
           localStorage.removeItem('image_path')
           localStorage.removeItem('selectDataCustomer')
+          localStorage.removeItem('selectDataCustomerRow')
 
           router.push('/')
         } catch (error) {

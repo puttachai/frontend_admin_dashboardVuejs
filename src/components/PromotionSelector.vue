@@ -61,8 +61,8 @@
                 <!-- Input ช่องค้นหา -->
                 <div class="flex gap-1">
                   <input type="text" v-model="keyword_promotion_no" placeholder="ค้นหา โปรโมชั่น"
-                    @focus="dropdownOpenIndex = 'header'"
-                    class="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none" />
+                    @focus="dropdownOpenIndex = 'header'" style="margin-top: 0 !important;"
+                    class="w-full px-3 py-1 border border-gray-300 rounded-md focus:outline-none" />
                   <!-- ปุ่มค้นหา -->
                   <button @click="searchPromotion_no"
                     class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">

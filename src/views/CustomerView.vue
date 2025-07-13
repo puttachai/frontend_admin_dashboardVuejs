@@ -128,6 +128,7 @@ import { useRouter } from 'vue-router';
 // import { Pagination } from 'tdesign-vue-next';
 import { Pagination, ConfigProvider } from 'tdesign-vue-next'
 import enConfig from 'tdesign-vue-next/es/locale/en_US'
+import { eventBus } from '@/utils/eventBus'
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 console.log("Show BASE_URL: ", BASE_URL);
@@ -456,8 +457,8 @@ export default {
             });
 
             console.log("log response 458: ", response);
-            console.log("log row: ",row);
-            console.log('response.data: ',response.data);
+            console.log("log row: ", row);
+            console.log('response.data: ', response.data);
 
             if (response.data.code === 1) {
 
@@ -478,6 +479,11 @@ export default {
                 console.log('log selectDataCustomerRow: ', selectDataCustomerRow);
                 console.log('log gettoken: ', gettoken);
 
+                // 🔥 กระตุ้นให้องค์ประกอบอื่น (เช่น Navbar) รับรู้การเปลี่ยนแปลง
+                // window.dispatchEvent(new Event('storage'))
+
+                // 🔥 แจ้งให้ Navbar โหลดใหม่
+                eventBus.emit('customerChanged')
 
                 // window.location.reload();
 

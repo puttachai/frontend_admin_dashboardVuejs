@@ -212,7 +212,8 @@
                             <div class="mt-4">
                                 <label class="block text-sm font-medium text-gray-700">ที่อยู่ลูกค้า
                                     <span class="text-red-500 text-xs">*</span>
-                                    <span class="text-red-500 text-xs">กรุณากรอกข้อมูลนี้ที่แบบฟอร์มที่ 3 ข้อมูลที่อยู่ผู้รับ</span>
+                                    <span class="text-red-500 text-xs">กรุณากรอกข้อมูลนี้ที่แบบฟอร์มที่ 3
+                                        ข้อมูลที่อยู่ผู้รับ</span>
                                 </label>
                                 <input type="text" v-model="formData.address" disabled :readonly="isReadOnly"
                                     class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
@@ -312,8 +313,8 @@
 
             <!-- Popup ตัวที่สอง -->
             <Promotion_ProductSelector v-if="showPromotionProductSelector" :selectedPromotion="selectedPromotion"
-                @close="showPromotionProductSelector = false"
-                @selectPromotionProducts="handleSelectedPromotionProducts" />
+                @close="showPromotionProductSelector = false" @selectPromotionProducts="handleSelectedPromotionProducts"
+                @go-back="handleBackToPromotion" />
 
             <div class="overflow-x-auto">
                 <table class="min-w-full border text-sm">
@@ -434,7 +435,7 @@
                 </table>
             </div>
 
-            
+
 
             <!-- ช่องทางจัดส่ง -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
@@ -454,7 +455,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -1071,6 +1072,7 @@ export default {
 
             if (this.customerData?.data2) {
                 this.formData.fullName = this.customerData.data2.contact || '';
+                this.formData.receiverName = this.customerData.data2.contact || '';
                 this.formData.customerCode = this.customerData.data2.customer_no || '';
                 this.formData.phone = this.customerData.data2.mobile || '';
             } else {
@@ -1418,11 +1420,22 @@ export default {
                     // headers: { 'Content-Type': 'application/json' },
                 });
 
-                console.log("fdsffffadfdfs Log Value Data: ", response.data);
+                console.log(" Log Value Data: ", response.data);
 
                 const resData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
                 if (resData.success) {
                     // เก็บ documentNo ลง localStorage
+
+                    ///////////////////////////////////////////
+                    const order_ids = resData.order_id;
+                    console.log('order_ids', order_ids);
+                    const newDocumentNo = resData.newDocumentNo;
+                    console.log('newDocumentNo', newDocumentNo);
+
+                    localStorage.setItem('order_id', order_ids);
+                    localStorage.setItem('newDocumentNo', newDocumentNo);
+                    /////////////////////////////////////////////////////////
+
                     const documentNo = this.formData.documentNo;
                     localStorage.setItem('documentNo', documentNo);
 
@@ -2446,12 +2459,22 @@ export default {
 
             // ✅ แสดงผลใน UI
             this.formData.receiverAddress = fullAddress;
+            this.formData.address = fullAddress;
             this.formData.receiverPhone = DC_tel;
             console.log('📍 ที่อยู่ที่เลือก:', this.formData.receiverAddress);
             console.log('📍object ที่อยู่ที่เลือก:', this.selectedAddress);
 
             // 📌 ใส่ไว้ใน saveDocument()
             // await this.saveDocument(addressData);
+        },
+
+        handleBackToPromotion() {
+            this.showPromotionProductSelector = false
+
+            // 🔁 ใช้ delay เล็กน้อยเพื่อให้ UI สลับได้ลื่นขึ้น
+            setTimeout(() => {
+                this.showPromotionSelector = true
+            }, 100)
         },
 
         //handleSelectedProducts

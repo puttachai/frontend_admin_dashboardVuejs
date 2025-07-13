@@ -3,18 +3,42 @@
     <div class="bg-white z-20 rounded-lg shadow-lg p-6 w-[90%] max-w-6xl max-h-[90vh] overflow-y-auto">
 
       <!-- Search Section -->
-      <div class="flex items-center space-x-4">
-        <!-- Search Icon -->
-        <span class="material-icons text-gray-600" style="font-size: 28px;">search</span>
-        <!-- Search Input -->
-        <input
-          class="w-full min-w-[200px] p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          v-model="keyword"
-          placeholder="ค้นหา..."
-          @input="onInput"
-        />
-        <div>
-          <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 mb-16 text-4xl">&times;</button>
+      <div class="grid items-center ">
+        <div class="flex items-center space-x-4">
+
+          <!-- Search Icon -->
+          <span class="material-icons text-gray-600" style="font-size: 28px;">search</span>
+          <!-- Search Input -->
+          <input
+            class="w-full min-w-[200px] p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            v-model="keyword" placeholder="ค้นหา..." @input="onInput" />
+          <div>
+            <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 mb-16 text-4xl">&times;</button>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap md:flex-nowrap justify-between  items-center gap-4">
+
+          <!-- เพิ่มปุ่มย้อนกลับ -->
+          <button @click="goBackToPromotionSelector" class="text-purple-600 font-medium hover:text-purple-800 transition px-4 py-2 border  border-purple-600 hover:border-purple-600 rounded">
+            ← ย้อนกลับ
+          </button>
+
+          <!-- Breadcrumb -->
+          <!-- <nav class="text-sm text-gray-600 pb-4">
+            <ul class="flex items-center space-x-1">
+              <li>
+                <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
+                <span class="mx-1 text-gray-400">›</span>
+              </li>
+              <li>
+                <router-link to="/createsalelist" @click.native="reloadPage"
+                  class="text-purple-600 font-medium hover:text-purple-800 transition">
+                  Create Sale List
+                </router-link>
+              </li>
+            </ul>
+          </nav> -->
         </div>
       </div>
 
@@ -44,23 +68,19 @@
               </th>
               <th class="px-4 py-2 border text-center">รูปภาพ</th>
               <th class=" px-4 py-2 border w-[500px]">ชื่อสินค้า (ERP)</th> <!-- w-[300px]-->
-              <th class="px-4 py-2 border min-w-[220px] text-left">
-                <div class="flex gap-1">
-                  <input
-                    type="text"
-                    v-model="keyword_promotion_no"
-                    placeholder="ค้นหา โปรโมชั่น"
-                    @focus="dropdownOpenIndex = 'header'"
-                    class="min-w-[150px] flex-1 px-2 py-1 border border-gray-300 rounded-md focus:outline-none"
-                  />
-                  <button
-                    @click="searchPromotion_no"
-                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 whitespace-nowrap"
-                  >
+              <th class="px-4 border min-w-[220px] text-left">
+                <div class="flex gap-1 items-stretch">
+                  <input type="text" v-model="keyword_promotion_no" placeholder="ค้นหา โปรโมชั่น"
+                    @focus="dropdownOpenIndex = 'header'" style="margin-top: 0 !important;"
+                    class="flex-1 border border-gray-300 rounded-md focus:outline-none " />
+                  <!--px-3 py-1.5 h-full h-full -->
+                  <button @click="searchPromotion_no"
+                    class="px-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 whitespace-nowrap ">
                     ค้นหา
-                  </button>
+                  </button><!--px-3 py-1.5 -->
                 </div>
               </th>
+
               <th class="px-4 py-2 border">รหัสสินค้า</th>
               <th class="px-4 py-2 border text-center">จำนวน</th>
               <th class="px-4 py-2 border text-center">คงเหลือ</th>
@@ -100,24 +120,17 @@
               </td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.title }}
 
-                <div type="text"
-                  class="w-60 text-center">
-                 
+                <div type="text" class="w-60 text-center">
+
                 </div>
-                
+
               </td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code ?? 'ไม่มีข้อมูล' }}</td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.goods_id }}</td>
               <td class="px-4 text-gray-700 py-2 border text-center">
-                <input
-                  type="number"
-                  class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
-                  v-model.number="item.amount"
-                  :min="0"
-                  :max="item.stock"
-                  @input="validateAmount(item)"
-                  placeholder="0"
-                />
+                <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
+                  v-model.number="item.amount" :min="0" :max="item.stock" @input="validateAmount(item)"
+                  placeholder="0" />
               </td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.sn ?? '-' }}</td>
@@ -132,16 +145,9 @@
       <!-- Pagination -->
       <ConfigProvider :globalConfig="enConfig">
         <div class="w-fit mt-4">
-        <!-- <div class="overflow-auto mt-4"> -->
-          <pagination
-            v-model:current="pageCurrent"
-            v-model:page-size="pageSize"
-            :total="total"
-            show-page-size
-            :prev-button-props="{ content: '⏪' }"
-            :next-button-props="{ content: '⏩' }"
-            @change="onPaginationChange"
-          />
+          <!-- <div class="overflow-auto mt-4"> -->
+          <pagination v-model:current="pageCurrent" v-model:page-size="pageSize" :total="total" show-page-size
+            :prev-button-props="{ content: '⏪' }" :next-button-props="{ content: '⏩' }" @change="onPaginationChange" />
         </div>
       </ConfigProvider>
 
@@ -187,7 +193,7 @@ const props = defineProps({
 
 
 
-const emit = defineEmits(['close', 'selectPromotionProducts', 'page-change'])
+const emit = defineEmits(['close', 'selectPromotionProducts', 'page-change', 'go-back'])
 // const emit = defineEmits(['close', 'select-promotion_products', 'page-change'])
 
 const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
@@ -233,6 +239,9 @@ const paginatedPromotion = computed(() => {
   return tableData.value.slice(start, end);
 });
 
+function goBackToPromotionSelector() {
+  emit('go-back')  // 🔁 แจ้ง parent ให้เปิด popup ตัวแรกอีกครั้ง
+}
 
 function onPaginationChange(pageInfo) {
   pageCurrent.value = pageInfo.current;
@@ -875,7 +884,7 @@ async function submittedProduct(selectedProducts) {
 
       console.log("🤯🤯 Log emitTitles:", emitTitles);
 
-      
+
 
       // const emitTitles = data.map(item => item.pro_title || item.pro_erp_title).join(', ');
       console.log("✅ Items:", items);

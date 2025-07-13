@@ -10,6 +10,7 @@ import CustomerView from '../views/CustomerView.vue'
 import AuthLayout from '../components/AuthLayout.vue'
 import SinginForm from '../components/SinginForm.vue'
 import SignupForm from '../components/SignupForm.vue'
+import Swal from 'sweetalert2'
 // import { useRoute } from 'vue-router'
 // import { computed } from 'vue'
 
@@ -25,6 +26,20 @@ const getCustomer_id = localStorage.getItem('selectDataCustomerRow');
 
 console.log('Check getCustomer_id: ',getCustomer_id);
 
+const customerData = JSON.parse(getCustomer_id);
+
+if(Array.isArray(getCustomer_id)){
+  customerData.array.forEach(item, index => {
+    console.log(`🟢 Row ${index + 1}`, item);
+    // เช่น เข้าถึงฟิลด์ชื่อ
+    console.log('ชื่อ:', item.name);
+  });
+}else{
+  console.log('ไม่ใช่ Array:', customerData);
+  
+}
+
+// const customer_id = customerData.customer_id;
 
 // const router = createRouter({
 //   history: createWebHistory(import.meta.env.BASE_URL),
@@ -105,6 +120,7 @@ const routes = [
       // ซึ่งจะโหลดไฟล์นั้นแบบ lazy-load (โหลดเมื่อมีการเข้า route นั้นเท่านั้น)
       component: TechStackView,
     },
+    
     {
       path: '/customer',
       name: 'customer',
@@ -114,7 +130,7 @@ const routes = [
       // ซึ่งจะโหลดไฟล์นั้นแบบ lazy-load (โหลดเมื่อมีการเข้า route นั้นเท่านั้น)
       component: CustomerView,
     },
-      
+    
     {
       path: '/createsalelist',
       name: 'createsalelist',
@@ -163,14 +179,58 @@ const routes = [
   
 
   // ถ้าไม่ได้ login โดยไม่มี token จะไม่สามารถเข้าถึงเนื้อหาในหน้า DashBoard
-  router.beforeEach((to, from, next) => {
-    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
-    if (to.meta.requiresAuth && !isAuthenticated) {
-      next('/')
-    } else {
-      next()
-    }
-  })
+  // router.beforeEach((to, from, next) => {
+  //   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true'
+  //   if (to.meta.requiresAuth && !isAuthenticated) {
+  //     next('/')
+  //   } else {
+  //     next()
+  //   }
+  // })
+
+  // ✅ ⬇️ วางไว้ที่นี่ หลังสร้าง router แล้ว
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const customerRaw = localStorage.getItem('selectDataCustomerRow');
+  let customer_id = null;
+
+  try {
+    const customerData = JSON.parse(customerRaw);
+    customer_id = customerData?.customer_id;
+    console.log('check customer_id : ',customer_id);
+  } catch (err) {
+    console.warn('❌ JSON parse failed:', err);
+  }
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return next('/');
+  }
+
+  // ❗ ป้องกันเข้า /createsalelist ถ้าไม่มี customer_id
+  if (to.name === 'createsalelist' && !customer_id) {
+    // alert('กรุณาเลือกข้อมูลลูกค้าก่อนเข้าสร้างรายการขาย');
+    Swal.fire({
+          title: 'กรุณาเลือกร้านค้าของลูกค้า',
+          text: 'กรุณาเลือกข้อมูลลูกค้าก่อนเข้าสร้างรายการขาย',
+          icon: 'error',
+      });
+    return next('/customer');
+  }
+
+//   if(to.name === 'saleList' && !customer_id && !order_id){
+//     Swal.fire({
+//       title: 'ไม่มีข้อมูล',
+//       text: 'ไม้สารมารถเข้าได้จาก รายการสั่งซื้อของลูกค้ารายการนี้',
+//       icon: 'error',
+//   });
+// return next('/createsalelist');
+//   }
+
+  next(); // ✅ ผ่านทุกเงื่อนไข
+});
+
+
+// ✅ แล้ว export router
   
 
 export default router

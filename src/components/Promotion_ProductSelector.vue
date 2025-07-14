@@ -314,85 +314,6 @@ function validateAmount(item) {
 
 }
 
-function confirmSelection() {
-
-  // activity_code :"P02-ZZ-9999"
-  // activity_id :1178
-
-  const selectedPromotionProducts = tableData.value
-    .filter(p => selectedIds.value.includes(p.id))
-    // .map(p => {
-    .map(p => ({
-
-      // 🔍 ดึง matchedPrice จาก condition_price ตามชื่อสมาชิก
-      // const condPrice = p.condition_price?.[0]?.price || [];
-      // const found = condPrice.find(priceItem => priceItem.name === memberType.value);
-      // const matchedPrice = found ? found.price : '-';
-
-      // return {
-      pro_activity_id: p.activity_id, // 1167
-      // pro_id: p.activity_id, // 1167
-      pro_goods_id: p.goods_id, // 13872
-      pro_goods_price: p.goods_price, // "215.00"
-      pro_sku_price_id: p.id, //sku_price_id // 50983 
-      pro_goods_num: p.amount || 0, // 1 
-      stock: p.stock || 0,
-      // pro_quantity: p.quantity || 0, // 1 
-      pro_image: p.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.jpg   
-      pro_erp_title: p.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP" 
-
-      //
-      pro_title: p.title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
-
-      // 
-      pro_code: p.activity_code, // x
-      pro_m_code: p.pro_m_code, // x 
-      // pro_goods_sku_text: p.goods_sku_text, // x
-      pro_sn: p.sn, //"2010102DP0057" x
-      pro_units: p.units, // "PCS" x
-      // pro_goods_price: matchedPrice,
-      // pro_goods_price: p.goods_price,
-      // }
-
-      // });
-    }));
-
-  const invalidProducts = selectedPromotionProducts.filter(a => a.pro_goods_num < 1);
-
-  console.log('Check invalidProducts', invalidProducts);
-
-  if (invalidProducts.length > 0) {
-    const invalidNames = invalidProducts.map(n => `• ${n.pro_title || pro_erp_title} จำนวน: ${n.pro_goods_num} `).join('\n');
-    Swal.fire({
-      icon: 'warning',
-      title: 'พบสินค้าที่จำนวนไม่ถูกต้อง ❌',
-      html: `กรุณาตรวจสอบจำนวนสินค้าให้ถูกต้องก่อนดำเนินการ:<br><pre>${invalidNames}</pre>`
-    });
-    return; // ❌ ยกเลิกการส่ง
-  }
-
-  const selectedPromotionsInfo = props.selectedPromotion.map(p => ({
-
-    pro_m_id: p.pro_m_id, //pro_m_id: 1176
-    pro_m_title: p.pro_m_title,
-    pro_acm_id: p.pro_acm_id,
-    pro_m_images: p.pro_m_images,
-
-  }))
-
-
-
-  console.log("✅ selectedPromotionProducts ถูกแปลงแล้ว:", selectedPromotionProducts);
-  console.log("✅ selectedPromotionsInfo ถูกแปลงแล้ว:", selectedPromotionsInfo);
-
-  submittedProduct(selectedPromotionProducts);
-  // emit('select-promotion_products', {
-  //   products: selectedPromotionProducts,
-  //   promotions: selectedPromotionsInfo
-
-  // });
-  // emit('close');
-}
 
 const searchPromotion_no = async () => {
   clearTimeout(searchTimer.value);
@@ -695,6 +616,7 @@ async function SearchPromotionSubmit() {
 }
 
 
+
 //page = 1
 async function getPromotionProducts() {
   isLoading.value = true;
@@ -758,6 +680,87 @@ async function getPromotionProducts() {
 }
 
 
+
+function confirmSelection() {
+
+// activity_code :"P02-ZZ-9999"
+// activity_id :1178
+
+const selectedPromotionProducts = tableData.value
+  .filter(p => selectedIds.value.includes(p.id))
+  // .map(p => {
+  .map(p => ({
+
+    // 🔍 ดึง matchedPrice จาก condition_price ตามชื่อสมาชิก
+    // const condPrice = p.condition_price?.[0]?.price || [];
+    // const found = condPrice.find(priceItem => priceItem.name === memberType.value);
+    // const matchedPrice = found ? found.price : '-';
+
+    // return {
+    pro_activity_id: p.activity_id, // 1167
+    // pro_id: p.activity_id, // 1167
+    pro_goods_id: p.goods_id, // 13872
+    pro_goods_price: p.goods_price, // "215.00"
+    pro_sku_price_id: p.id, //sku_price_id // 50983 
+    pro_goods_num: p.amount || 0, // 1 
+    stock: p.stock || 0,
+    // pro_quantity: p.quantity || 0, // 1 
+    pro_image: p.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.jpg   
+    pro_erp_title: p.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP" 
+
+    //
+    pro_title: p.title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
+
+    // 
+    pro_code: p.activity_code, // x
+    pro_m_code: p.pro_m_code, // x 
+    // pro_goods_sku_text: p.goods_sku_text, // x
+    pro_sn: p.sn, //"2010102DP0057" x
+    pro_units: p.units, // "PCS" x
+    // pro_goods_price: matchedPrice,
+    // pro_goods_price: p.goods_price,
+    // }
+
+    // });
+  }));
+
+const invalidProducts = selectedPromotionProducts.filter(a => a.pro_goods_num < 1);
+
+console.log('Check invalidProducts', invalidProducts);
+
+if (invalidProducts.length > 0) {
+  const invalidNames = invalidProducts.map(n => `• ${n.pro_title || pro_erp_title} จำนวน: ${n.pro_goods_num} `).join('\n');
+  Swal.fire({
+    icon: 'warning',
+    title: 'พบสินค้าที่จำนวนไม่ถูกต้อง ❌',
+    html: `กรุณาตรวจสอบจำนวนสินค้าให้ถูกต้องก่อนดำเนินการ:<br><pre>${invalidNames}</pre>`
+  });
+  return; // ❌ ยกเลิกการส่ง
+}
+
+const selectedPromotionsInfo = props.selectedPromotion.map(p => ({
+
+  pro_m_id: p.pro_m_id, //pro_m_id: 1176
+  pro_m_title: p.pro_m_title,
+  pro_acm_id: p.pro_acm_id,
+  pro_m_images: p.pro_m_images,
+
+}))
+
+
+console.log("✅ selectedPromotionProducts ถูกแปลงแล้ว:", selectedPromotionProducts);
+console.log("✅ selectedPromotionsInfo ถูกแปลงแล้ว:", selectedPromotionsInfo);
+
+submittedProduct(selectedPromotionProducts);
+// emit('select-promotion_products', {
+//   products: selectedPromotionProducts,
+//   promotions: selectedPromotionsInfo
+
+// });
+// emit('close');
+}
+
+
 async function submittedProduct(selectedProducts) {
   // isLoading.value = true; // เริ่มโหลด
 
@@ -798,24 +801,12 @@ async function submittedProduct(selectedProducts) {
       const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
       const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
       const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
-      // const items = data.filter(item => item.pro_goods_id !== 0 && item?.note === 'รายการ');
-      // const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.note === 'ของแถม');
-      // const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.note === 'โปรโมชั่น');
-
-      // const items = data.filter(item => item.pro_goods_id !== 0 && item.ML_Note === 'item');
-      // const itemsMonth = data.filter(item => item.pro_goods_id !== 0 && item.ML_Note === 'itemmonth');
-
-      // const giftsDay = data.filter(item => item.pro_goods_id !== 0 && item.ML_Note === 'zengsopng_day');
-      // const giftsMonth = data.filter(item => item.pro_goods_id !== 0 && item.ML_Note === 'zengsopng_month');
-
-      // const promotionsDay = data.filter(item => item.pro_activity_id !== 0 && item.ML_Note === 'promotion_day');
-      // const promotionsMonth = data.filter(item => item.pro_activity_id !== 0 && item.ML_Note === 'promotion_month');
-
 
       const emitTitles = selectedProducts.map(p => ({
         pro_goods_id: p.pro_goods_id || 0,
         pro_activity_id: p.pro_activity_id || 0,
-        pro_erp_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',
+        pro_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',
+        pro_erp_title: p.pro_erp_title || '(ไม่มีชื่อ)',
         pro_goods_price: p.pro_goods_price || 0,
         pro_sn: p.pro_sn || '',
         pro_units: p.pro_units || '',
@@ -861,16 +852,6 @@ async function submittedProduct(selectedProducts) {
         gifts,
         promotions,
         emitTitles
-
-        //------
-        // items,
-        // itemsMonth,
-        // giftsDay,
-        // giftsMonth,
-        // promotionsDay,
-        // promotionsMonth,
-        // emitTitles,
-
       });
 
       emit('close'); // 

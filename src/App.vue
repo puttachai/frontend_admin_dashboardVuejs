@@ -54,9 +54,23 @@ import { ConfigProvider } from 'tdesign-vue-next'
 
 <script>
 
-import { ref } from 'vue'
+// import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
+import i18n from './i18n'
 
 const isSidebarVisible = ref(true)
+
+
+onMounted(() => {
+  const savedLocale = localStorage.getItem('locale')
+  if (savedLocale) {
+    i18n.global.locale.value = savedLocale
+  }
+})
+
+watch(() => i18n.global.locale.value, (newLocale) => {
+  localStorage.setItem('locale', newLocale)
+})
 
 // Responsive check (auto hide on small screen)
 if (window.innerWidth <= 430) {

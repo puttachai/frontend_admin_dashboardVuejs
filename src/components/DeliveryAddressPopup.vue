@@ -1,14 +1,14 @@
 <template>
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
         <div class="w-full max-w-md bg-white rounded-lg p-6 shadow-xl">
-            <h2 class="text-lg font-semibold mb-4">กรอกข้อมูลที่อยู่/จัดส่ง</h2>
+            <h2 class="text-lg text-gray-600 font-semibold mb-4">กรอกข้อมูลที่อยู่/จัดส่ง</h2>
             <form @submit.prevent="submitAddress">
                 <div class="space-y-4">
                     <!-- จังหวัด -->
                     <div>
-                        <label class="text-sm">จังหวัด</label>
+                        <label class="text-sm text-gray-600">จังหวัด</label>
                         <select v-model="form.province_id" @change="onProvinceChange"
-                            class="w-full border rounded px-3 py-2">
+                            class="w-full text-gray-600 border rounded px-3 py-2">
                             <option value="">-- กรุณาเลือกจังหวัด --</option>
                             <option v-for="p in provinces" :key="p.id" :value="p.id">{{ p.name_th }}</option>
                         </select>
@@ -16,9 +16,9 @@
 
                     <!-- เขต/อำเภอ -->
                     <div>
-                        <label class="text-sm">เขต/อำเภอ</label>
+                        <label class="text-sm text-gray-600">เขต/อำเภอ</label>
                         <select v-model="form.amphure_id" @change="onAmphureChange"
-                            class="w-full border rounded px-3 py-2">
+                            class="w-full text-gray-600 border rounded px-3 py-2">
                             <option value="">-- กรุณาเลือกอำเภอ --</option>
                             <option v-for="a in amphures" :key="a.id" :value="a.id">{{ a.name_th }}</option>
                         </select>
@@ -26,8 +26,8 @@
 
                     <!-- ตำบล/แขวง -->
                     <div>
-                        <label class="text-sm">แขวง/ตำบล</label>
-                        <select v-model="form.tambon_id" class="w-full border rounded px-3 py-2">
+                        <label class="text-sm text-gray-600">แขวง/ตำบล</label>
+                        <select v-model="form.tambon_id" class="w-full text-gray-600 border rounded px-3 py-2">
                             <option value="">-- กรุณาเลือกตำบล --</option>
                             <option v-for="t in tambons" :key="t.id" :value="t.id">{{ t.name_th }}</option>
                         </select>
@@ -35,8 +35,8 @@
 
                     <!-- ที่อยู่เพิ่มเติม -->
                     <div>
-                        <label class="text-sm">ที่อยู่เพิ่มเติม</label>
-                        <textarea v-model="form.detail" rows="3" class="w-full border rounded px-3 py-2"
+                        <label class="text-sm text-gray-600">ที่อยู่เพิ่มเติม</label>
+                        <textarea v-model="form.detail" rows="3" class="w-full text-gray-600 border rounded px-3 py-2"
                             required></textarea>
                     </div>
 

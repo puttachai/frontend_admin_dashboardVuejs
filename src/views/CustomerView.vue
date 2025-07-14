@@ -54,9 +54,11 @@
                             <div class="flex flex-row sm:flex-row items-center justify-center gap-2">
                                 <input type="text" v-model="keyword_sale_no" placeholder="ค้นหา Sale"
                                     @focus="dropdownOpenIndex = 'header'"
-                                    class="w-36 smls:w-48 px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm placeholder-gray-400 focus:ring-2 focus:ring-indigo-300 focus:outline-none" />
+                                    class="w-[200px] py-1.5 border border-gray-300 rounded-md shadow-sm text-sm placeholder-gray-400 focus:ring-2 focus:ring-indigo-300 focus:outline-none" 
+                                    style="margin-top: 0 !important;"
+                                    />
                                 <button @click="searchSaleId"
-                                    class="search flex mt-1.5 items-center gap-1 px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition">
+                                    class="search flex items-center gap-1 px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition">
                                     <span class="material-icons text-sm">search</span>
                                     ค้นหา
                                 </button>
@@ -137,10 +139,10 @@ const error = ref('');
 let timer = null;
 let arr = [];
 
-const account = localStorage.getItem('account')
-const password = localStorage.getItem('password')
-console.log("Log Value: ", account);
-console.log("Log Value: ", password);
+// const account = localStorage.getItem('account')
+// const password = localStorage.getItem('password')
+// console.log("Log Value: ", account);
+// console.log("Log Value: ", password);
 
 const router = useRouter()
 //  import {
@@ -157,6 +159,8 @@ export default {
 
     data() {
         return {
+            account: localStorage.getItem('account') || '',
+            password: localStorage.getItem('password') || '',
             dropdownOpenIndex: null,
             searchText: [],
             selectedSale: [],
@@ -209,14 +213,28 @@ export default {
     },
     created() {
 
-        this.accountLoginSubmit();
+        // this.accountLoginSubmit();
         // this.searchSaleId();
         // accountLoginSubmit();
+        const account = localStorage.getItem('account');
+        const password = localStorage.getItem('password');
+
+        if (account && password) {
+            this.accountLoginSubmit();
+        } else {
+            console.warn('⛔ ไม่พบ account/password ใน localStorage');
+            this.isLoading = false;
+        }
     },
-    watch() {
+    // watch() {
 
-        this.accountLoginSubmit();
+    //     this.accountLoginSubmit();
 
+    // },
+    watch: {
+        keyword(newVal) {
+            this.accountLoginSubmit();
+        }
     },
 
     onShow() {
@@ -299,60 +317,71 @@ export default {
 
             this.isLoading = true;
 
-            const response = await axios.post(`${BASE_URL}/user/accountLogin4`, {
-                account: account,
-                // account: that.$Route.query.account,
-                password: password,
-                customer: '',
-                version: '2.0.2',
-                pageCurrent: this.pageCurrent,
-                keyword: this.keyword,
-                pageSize: 15
-                // mobile: mobile.value,
-                // password: password.value
-            }, {
-                // withCredentials: true,
-                headers: {
-                    'Content-Type': 'application/json'
+            try {
+                const response = await axios.post(`${BASE_URL}/user/accountLogin4`, {
+                    account: this.account,
+                    password: this.password,
+                    // account: account,
+                    // account: that.$Route.query.account,
+                    // password: password,
+                    customer: '',
+                    version: '2.0.2',
+                    pageCurrent: this.pageCurrent,
+                    keyword: this.keyword,
+                    pageSize: 15
+                    // mobile: mobile.value,
+                    // password: password.value
+                }, {
+                    // withCredentials: true,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log("🔁 pageCurrent ส่งไป:", this.pageCurrent);
+                console.log("📦 response data___:", response.data.data.data.data2);
+                console.log("📦 response data:", response.data);
+
+
+                // console.log(response.data.data.data.data2);
+                const saleNos = response.data.data.data.data2.map(item => item.sale_no);
+                console.log("🧾 รายการ sale_no ทั้งหมด:", saleNos);
+
+                if (response.data.code == 1) {
+
+                    this.total = response.data.data.data.customer_count;
+                    // this.dataselect = response.data.data.data.data2;
+                    this.tableData = response.data.data.data.data2;
+                    console.log("🧾 รายการ this.tableData ทั้งหมด:", this.tableData);
+
+                    // this.pageSize = (this.total<this.pageSize) ?this.total:this.pageSize;
+                    this.pageSize = (this.total < this.pageSize) ? this.total : parseInt(this.pageSize);
+
+                    console.log((this.total + ' ' + parseInt(this.pageSize)));
+
+                    console.log("Log total: ", this.total);
+                    console.log("Log this.tableData: ", this.tableData);
+
+                    this.isLoading = false;
+
+                    // return;
+
+                } else {
+                    // error.value = response.data.message || 'failed'
+                    console.warn("❌ ไม่สามารถโหลดข้อมูลได้", response.data.message);
+                    // Swal.fire({
+                    //     title: 'ล็อกอินไม่สำเร็จ',
+                    //     text: error.value || 'โปรดลองใหม่ภายหลัง',
+                    //     icon: 'error',
+                    // });
                 }
-            });
 
-            console.log("🔁 pageCurrent ส่งไป:", this.pageCurrent);
-            console.log("📦 response data___:", response.data.data.data.data2);
-            console.log("📦 response data:", response.data);
-
-
-            // console.log(response.data.data.data.data2);
-            const saleNos = response.data.data.data.data2.map(item => item.sale_no);
-            console.log("🧾 รายการ sale_no ทั้งหมด:", saleNos);
-
-            if (response.data.code == 1) {
-
-                this.total = response.data.data.data.customer_count;
-                // this.dataselect = response.data.data.data.data2;
-                this.tableData = response.data.data.data.data2;
-                console.log("🧾 รายการ this.tableData ทั้งหมด:", this.tableData);
-
-                // this.pageSize = (this.total<this.pageSize) ?this.total:this.pageSize;
-                this.pageSize = (this.total < this.pageSize) ? this.total : parseInt(this.pageSize);
-
-                console.log((this.total + ' ' + parseInt(this.pageSize)));
-
-                console.log("Log total: ", this.total);
-                console.log("Log this.tableData: ", this.tableData);
-
+            } catch (error) {
+                console.error("❌ accountLoginSubmit error:", error);
+            } finally {
                 this.isLoading = false;
-
-                // return;
-
-            } else {
-                error.value = response.data.message || 'failed'
-                // Swal.fire({
-                //     title: 'ล็อกอินไม่สำเร็จ',
-                //     text: error.value || 'โปรดลองใหม่ภายหลัง',
-                //     icon: 'error',
-                // });
             }
+
 
         },
 
@@ -531,9 +560,9 @@ thead th {
         /* ลดขนาดตัวอักษร */
     }
 
-    input[type="text"] {
+    /* input[type="text"] {
         width: 100% !important;
-    }
+    } */
 
     thead .flex-col {
         flex-direction: column;

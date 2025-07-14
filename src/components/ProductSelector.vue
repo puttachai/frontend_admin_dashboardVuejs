@@ -7,7 +7,8 @@
         <!-- Search Icon -->
         <span class="material-icons text-gray-600" style="font-size: 28px;">search</span>
         <!-- Search Input -->
-        <input class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        <input
+          class="w-full p-2 text-gray-600 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           v-model="keyword" placeholder="ค้นหา..." @input="onInput" confirm-type="search" />
         <div class="">
           <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 mb-16 text-4xl">&times;</button>
@@ -38,111 +39,119 @@
       </div>
 
       <!-- Table -->
-      <table class="min-w-full border text-sm">
-        <thead class="bg-gray-100 text-gray-700">
-          <tr>
-            <th class="px-4 py-2 border text-center">
-              <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected" />
-            </th>
-            <!-- <th class="px-4 py-2 border">รูปภาพ</th>
+      <div class="overflow-x-auto mt-4">
+        <table class="min-w-full border text-sm">
+          <thead class="bg-gray-100 text-gray-700">
+            <tr>
+              <th class="px-4 py-2 border text-center">
+                <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected" />
+              </th>
+              <!-- <th class="px-4 py-2 border">รูปภาพ</th>
             <th class="px-4 py-2 border">ชื่อสินค้า</th>
             <th class="px-4 py-2 border">คงเหลือ</th>
             <th class="px-4 py-2 border">พร้อมขาย</th>
             <th class="px-4 py-2 border">ราคาขาย</th> -->
-            <th class="px-4 py-2 border">รูปภาพ</th>
-            <th class="px-4 py-2 border">ชื่อสินค้า</th>
-            <!-- <th class="px-4 py-2 border">สี</th> -->
-            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600 relative">
-              <!-- Input ช่องค้นหา -->
-              <div class="flex gap-1">
-                <input type="text" v-model="keyword_sku_no" placeholder="ค้นหา สี" @focus="dropdownOpenIndex = 'header'"
-                  class="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none" />
-                <!-- ปุ่มค้นหา -->
-                <button @click="searchSku" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
-                  ค้นหา
-                </button>
-              </div>
-            </th>
+              <th class="px-4 py-2 border">รูปภาพ</th>
+              <th class="px-4 py-2 border">ชื่อสินค้า</th>
+              <!-- <th class="px-4 py-2 border">สี</th> -->
+              <th class="px-4 py-2  text-sm font-medium text-gray-600 relative">
+                <!-- Input ช่องค้นหา -->
+                <div class="flex gap-1">
+                  <input type="text" v-model="keyword_sku_no" placeholder="ค้นหา สี"
+                    @focus="dropdownOpenIndex = 'header'" style="margin-top: 0 !important;"
+                    class="w-[170px]  py-1 border border-gray-300 rounded-md focus:outline-none" />
+                  <!-- ปุ่มค้นหา -->
+                  <button @click="searchSku" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    ค้นหา
+                  </button>
+                </div>
+              </th>
 
-            <th class="px-4 py-2 border">รหัสสินค้า</th>
-            <th class="px-4 py-2 border">จำนวน</th>
-            <th class="px-4 py-2 border">คงเหลือ</th>
-            <!-- <th class="px-4 py-2 border">promotion</th> -->
-            <th class="px-4 py-2 border">หน่วย</th>
-            <th class="px-4 py-2 border">ราคาขาย</th>
-          </tr>
-        </thead>
+              <th class="px-4 py-2 border">รหัสสินค้า</th>
+              <th class="px-4 py-2 border">จำนวน</th>
+              <th class="px-4 py-2 border">คงเหลือ</th>
+              <!-- <th class="px-4 py-2 border">promotion</th> -->
+              <th class="px-4 py-2 border">หน่วย</th>
+              <th class="px-4 py-2 border">ราคาขาย</th>
+            </tr>
+          </thead>
 
-        <tbody v-if="isLoading">
-          <tr>
-            <td colspan="10" class="py-10 text-center">
-              <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-              </svg>
-              <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
-            </td>
-          </tr>
-        </tbody>
+          <tbody v-if="isLoading">
+            <tr>
+              <td colspan="10" class="py-10 text-center">
+                <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                  viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
+              </td>
+            </tr>
+          </tbody>
 
-        <tbody v-if="!isLoading">
-          <tr v-for="item in paginatedProducts" :key="item.id">
-            <td class="px-4 py-2 border text-center">
-              <input type="checkbox" v-model="selectedIds" :checked="allSelectedIds.includes(item.id)"
-                @change="toggleSelectProduct(item.id, $event.target.checked)" :value="item.id" />
-            </td>
+          <tbody v-if="!isLoading">
+            <tr v-for="item in paginatedProducts" :key="item.id">
+              <td class="px-4 py-2 border text-center">
+                <input type="checkbox" v-model="selectedIds" :checked="allSelectedIds.includes(item.id)"
+                  @change="toggleSelectProduct(item.id, $event.target.checked)" :value="item.id" />
+              </td>
 
-            <td class="px-4 py-4 border text-center">
-              <template v-if="item.image">
-                <img :src="BASE_URL_IMAGE + item.image" alt="products" class="w-10 h-10 rounded-full mx-auto">
-              </template>
-              <template v-else>
-                <span class="material-icons text-gray-400 text-4xl">broken_image</span>
-              </template>
-            </td>
+              <td class="px-4 py-4 border text-center">
+                <template v-if="item.image">
+                  <img :src="BASE_URL_IMAGE + item.image" alt="products" class="w-10 h-10 rounded-full mx-auto">
+                </template>
+                <template v-else>
+                  <span class="material-icons text-gray-400 text-4xl">broken_image</span>
+                </template>
+              </td>
 
-            <td class="px-4 text-gray-700 py-2 border">{{ item.erp_title }}</td>
-            <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? 'ไม่มีสี' }}</td>
-            <td class="px-4 text-gray-700 py-2 border">{{ item.sn }}</td>
-            <!-- <td class="px-4 py-2 border">{{ item.promotion }}</td> -->
-            <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.stock || 0 }}</td> -->
-            <!-- <td class="px-4 text-gray-700 py-2 border">
+              <td class="px-4 text-gray-700 py-2 border">{{ item.erp_title }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? 'ไม่มีสี' }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.sn }}</td>
+              <!-- <td class="px-4 py-2 border">{{ item.promotion }}</td> -->
+              <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.stock || 0 }}</td> -->
+              <!-- <td class="px-4 text-gray-700 py-2 border">
               <input type="number" v-model.number="item.amount" min="1" placeholder="จำนวน"
                 class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
             </td> -->
-            <td class="px-4 text-gray-700 py-2 border text-center">
-              <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
-                v-model.number="item.amount" :min="1" :max="item.stock" @input="validateAmount(item)" placeholder="0" />
-            </td>
-            <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
-            <td class="px-4 text-gray-700 py-2 border">{{ item.units }}</td>
-            <td class="px-4 text-gray-700 py-2 border">{{ item.price }}</td>
+              <td class="px-4 text-gray-700 py-2 border text-center">
+                <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
+                  v-model.number="item.amount" :min="1" :max="item.stock" @input="validateAmount(item)"
+                  placeholder="0" />
+              </td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.units }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.price }}</td>
 
-            <!-- <td class="px-4 py-2 border">{{ item.pro_name }}</td>
+              <!-- <td class="px-4 py-2 border">{{ item.pro_name }}</td>
             <td class="px-4 py-2 border">{{ item.pro_quantity }}</td>
             <td class="px-4 py-2 border">{{ item.pro_status }}</td>
             <td class="px-4 py-2 border">{{ item.pro_unit_price }}</td> -->
-          </tr>
-        </tbody>
-      </table>
+            </tr>
+          </tbody>
+        </table>
 
-      <!-- Pagination -->
-      <ConfigProvider :globalConfig="enConfig">
-        <div class="overflow-auto mt-4">
-          <!-- v-model:page-size="pageSize" -->
-          <pagination v-model:current="pageCurrent" v-model:page-size="pageSize" :total="total" show-page-size
-            :prev-button-props="{ content: '⏪' }" :next-button-props="{ content: '⏩' }" @change="onPaginationChange" />
-        </div>
-      </ConfigProvider>
+        <!-- Pagination -->
+        <ConfigProvider :globalConfig="enConfig">
+          <div class=" w-fit mt-4">
+            <!-- v-model:page-size="pageSize" overflow-auto text-gray-600-->
+            <pagination v-model:current="pageCurrent" v-model:page-size="pageSize" :total="total" show-page-size
+              :prev-button-props="{ content: '⏪' }" :next-button-props="{ content: '⏩' }"
+              @change="onPaginationChange" />
+          </div>
+        </ConfigProvider>
 
+
+      </div>
       <!-- Confirm Button -->
       <div class="text-right mt-4">
         <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" @click="confirmSelection">
           เลือกสินค้า
         </button>
       </div>
+      
     </div>
+
   </div>
 
 

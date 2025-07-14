@@ -301,7 +301,7 @@ function validateAmount(item) {
   } else if (item.amount > item.stock) {
     item.amount = item.stock;
   }
-  
+
   // ✅ เพิ่ม logic ติ๊ก checkbox อัตโนมัติ
   if (item.amount > 0) {
     if (!selectedIds.value.includes(item.id)) {
@@ -757,6 +757,7 @@ async function getPromotionProducts() {
   isLoading.value = false;
 }
 
+
 async function submittedProduct(selectedProducts) {
   // isLoading.value = true; // เริ่มโหลด
 
@@ -791,10 +792,25 @@ async function submittedProduct(selectedProducts) {
       // const items = data.filter(item => item?.pro_goods_id !== 0 && !item?.pro_title && item?.note === 'รายการ');
       // const gifts = data.filter(item => item?.pro_goods_id !== 0 && item?.pro_title && item?.note === 'ของแถม');
       // const promotions = data.filter(item => item?.pro_goods_id === 0 && item?.pro_title && item?.note === 'โปรโมชั่น');
+
+        // ใช้ได้
       // แยกข้อมูลออกเป็น 3 ก้อน
-      const items = data.filter(item => item.pro_goods_id !== 0 && item?.note === 'รายการ');
-      const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.note === 'ของแถม');
-      const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.note === 'โปรโมชั่น');
+      const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
+      const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
+      const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
+      // const items = data.filter(item => item.pro_goods_id !== 0 && item?.note === 'รายการ');
+      // const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.note === 'ของแถม');
+      // const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.note === 'โปรโมชั่น');
+
+      // const items = data.filter(item => item.pro_goods_id !== 0 && item.ML_Note === 'item');
+      // const itemsMonth = data.filter(item => item.pro_goods_id !== 0 && item.ML_Note === 'itemmonth');
+
+      // const giftsDay = data.filter(item => item.pro_goods_id !== 0 && item.ML_Note === 'zengsopng_day');
+      // const giftsMonth = data.filter(item => item.pro_goods_id !== 0 && item.ML_Note === 'zengsopng_month');
+
+      // const promotionsDay = data.filter(item => item.pro_activity_id !== 0 && item.ML_Note === 'promotion_day');
+      // const promotionsMonth = data.filter(item => item.pro_activity_id !== 0 && item.ML_Note === 'promotion_month');
+
 
       const emitTitles = selectedProducts.map(p => ({
         pro_goods_id: p.pro_goods_id || 0,
@@ -809,14 +825,15 @@ async function submittedProduct(selectedProducts) {
 
       console.log("🤯🤯 Log emitTitles:", emitTitles);
 
-
-
       // const emitTitles = data.map(item => item.pro_title || item.pro_erp_title).join(', ');
+      // ใช้ได้
       console.log("✅ Items:", items);
       console.log("✅ Gifts:", gifts);
       console.log("✅ Promotions:", promotions);
 
+      // ใช้ได้
       console.log("🔁 Emit กลับไปหน้า parent:", { items, gifts, promotions, emitTitles });
+      // console.log("🔁 Emit กลับไปหน้า parent:", { items, itemsMonth, giftsDay, giftsMonth, promotionsDay, promotionsMonth});
       // ส่งข้อมูลกลับไปยังหน้าหลัก
 
       // ทำการตรวจสอบข้อมูลที่ได้รับกลับมา
@@ -839,10 +856,21 @@ async function submittedProduct(selectedProducts) {
 
       emit('selectPromotionProducts', {
         // emit('select-promotion_products', {
+          // ใช้ได้
         items,
         gifts,
         promotions,
         emitTitles
+
+        //------
+        // items,
+        // itemsMonth,
+        // giftsDay,
+        // giftsMonth,
+        // promotionsDay,
+        // promotionsMonth,
+        // emitTitles,
+
       });
 
       emit('close'); // 

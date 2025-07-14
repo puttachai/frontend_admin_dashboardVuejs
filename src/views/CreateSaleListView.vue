@@ -455,7 +455,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                    }}</p>
+                        }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -2650,29 +2650,26 @@ export default {
                         break;
 
                     case 'SIMILAR_SN_DIFFERENT_ACTIVITY':
-                        const selectedProductsToResend = [];
-
-                        if (similarItem) {
-                            selectedProductsToResend.push(similarItem);
-                        }
-
-                        selectedProductsToResend.push({
-                            item_id: 0,
-                            pro_id: item.pro_sku_price_id,
-                            activity_id: activityId,
-                            pro_activity_id: item.pro_activity_id,
-                            st: item.st,
-                            pro_erp_title: matchedTitle.pro_erp_title || item.pro_erp_title || '',
-                            pro_unit_price: item.pro_goods_price || '',
-                            pro_goods_sku_text: item.pro_goods_sku_text || '',
-                            pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
-                            pro_images: item.pro_image || '',
-                            pro_quantity: item.pro_goods_num || 0,
-                            pro_units: matchedTitle.pro_units || item.pro_units || '',
-                            pro_stock: matchedTitle.stock || 0,
-                            gifts: giftsDay,
-                            promotions: promotions
-                        });
+                        const selectedProductsToResend = [
+                            JSON.parse(JSON.stringify(similarItem)),
+                            {
+                                item_id: 0,
+                                pro_id: item.pro_sku_price_id,
+                                activity_id: activityId,
+                                pro_activity_id: item.pro_activity_id,
+                                st: item.st,
+                                pro_erp_title: matchedTitle.pro_erp_title || item.pro_erp_title || '',
+                                pro_unit_price: item.pro_goods_price || '',
+                                pro_goods_sku_text: item.pro_goods_sku_text || '',
+                                pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
+                                pro_images: item.pro_image || '',
+                                pro_quantity: item.pro_goods_num || 0,
+                                pro_units: matchedTitle.pro_units || item.pro_units || '',
+                                pro_stock: matchedTitle.stock || 0,
+                                gifts: giftsDay,
+                                promotions: promotions
+                            }
+                        ];
 
                         console.log('🚨 พบสินค้า pro_sn เดียวกัน แต่ activity_id ต่างกัน');
                         console.log('📦 เก่า:', similarItem);
@@ -2680,7 +2677,38 @@ export default {
                         console.log('📡 ส่ง selectedProductsToResend ไปยัง API:', selectedProductsToResend);
 
                         await this.submittedProduct(selectedProductsToResend);
-                        return; // ✅ หยุด loop และออกจากฟังก์ชัน
+                        return;
+                    // const selectedProductsToResend = [];
+
+                    // if (similarItem) {
+                    //     selectedProductsToResend.push(similarItem);
+                    // }
+
+                    // selectedProductsToResend.push({
+                    //     item_id: 0,
+                    //     pro_id: item.pro_sku_price_id,
+                    //     activity_id: activityId,
+                    //     pro_activity_id: item.pro_activity_id,
+                    //     st: item.st,
+                    //     pro_erp_title: matchedTitle.pro_erp_title || item.pro_erp_title || '',
+                    //     pro_unit_price: item.pro_goods_price || '',
+                    //     pro_goods_sku_text: item.pro_goods_sku_text || '',
+                    //     pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
+                    //     pro_images: item.pro_image || '',
+                    //     pro_quantity: item.pro_goods_num || 0,
+                    //     pro_units: matchedTitle.pro_units || item.pro_units || '',
+                    //     pro_stock: matchedTitle.stock || 0,
+                    //     gifts: giftsDay,
+                    //     promotions: promotions
+                    // });
+
+                    // console.log('🚨 พบสินค้า pro_sn เดียวกัน แต่ activity_id ต่างกัน');
+                    // console.log('📦 เก่า:', similarItem);
+                    // console.log('📦 ใหม่:', item);
+                    // console.log('📡 ส่ง selectedProductsToResend ไปยัง API:', selectedProductsToResend);
+
+                    // await this.submittedProduct(selectedProductsToResend);
+                    // return; // ✅ หยุด loop และออกจากฟังก์ชัน
                 }
             }
 

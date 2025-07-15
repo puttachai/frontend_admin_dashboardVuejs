@@ -260,7 +260,7 @@ export default {
           resolve() // script โหลดแล้ว
         } else {
           const script = document.createElement('script')
-          script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
+          script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit'
           script.async = true
           script.onload = resolve
           script.onerror = reject
@@ -270,15 +270,27 @@ export default {
     }
 
     // เพิ่มฟังก์ชันบน window ให้สามารถเรียกจาก script ได้
-    window.googleTranslateElementInit = () => {
+    window.googleTranslateElementInit = function () {
       new window.google.translate.TranslateElement({
         pageLanguage: 'th',
         includedLanguages: 'en,th,zh',
-        // layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-        layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL,
-        autoDisplay: false,
+        layout: window.google.translate.TranslateElement.InlineLayout.HORIZONTAL,
+        autoDisplay: false
       }, 'google_translate_element')
     }
+
+
+
+    // window.googleTranslateElementInit = () => {
+    //   new window.google.translate.TranslateElement({
+    //     pageLanguage: 'th',
+    //     includedLanguages: 'en,th,zh',
+    //     // layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+    //     // layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL,
+    //     layout: window.google?.translate?.TranslateElement?.InlineLayout?.HORIZONTAL || 0,
+    //     autoDisplay: false,
+    //   }, 'google_translate_element')
+    // }
 
     const loadUserData = () => {
       account.value = localStorage.getItem('account') || ''

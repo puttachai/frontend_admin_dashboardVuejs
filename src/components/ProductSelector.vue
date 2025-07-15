@@ -149,7 +149,7 @@
           เลือกสินค้า
         </button>
       </div>
-      
+
     </div>
 
   </div>
@@ -241,7 +241,8 @@ const isAllSelected = computed(() =>
 
 // เช็คว่าตอนนี้สินค้าได้ถูกเลือกเป็นรายการอะไรบ้าง
 watch(selectedIds, (newVal) => {
-  const selectedProducts = props.productList.filter(p =>
+  const selectedProducts = tableData.value.filter(p =>
+    // const selectedProducts = props.productList.filter(p =>
     newVal.includes(p.id)
   );
   console.log("สินค้าที่เลือกอยู่ตอนนี้:", selectedProducts);
@@ -338,21 +339,23 @@ function confirmSelection() {
   //   allSelectedIds.value.includes(p.id)
   // );
 
-  const selectedProducts = props.productList
+  const selectedProducts = tableData.value
+    // const selectedProducts = props.productList
     .filter(p => allSelectedIds.value.includes(p.id))
     .map(p => ({
-      pro_id: p.id,
+      pro_sku_price_id: p.id, // pro_sku_price_id
+      pro_goods_id: p.goods_id, // pro_goods_id
       pro_erp_title: p.erp_title,
       pro_sn: p.sn,
-      pro_images: p.image,
-      pro_quantity: p.amount || 1,
-      pro_unit_price: p.price,
+      pro_image: p.image, // pro_image
+      pro_goods_num: p.amount || 1, // pro_goods_num
+      pro_goods_price: p.price, // pro_goods_price
       pro_unit: p.units,
       pro_stock: p.stock,
-      pro_goods_sku_text: p.goods_sku_text,
+      // pro_goods_sku_text: p.goods_sku_text,
       promotions: p.promotions || [],
       gifts: p.gifts || [],
-      activity_id: p.activity_id ?? null,
+      pro_activity_id: p.activity_id ?? 0, //pro_activity_id
       st: p.st ?? 0
     }));
 
@@ -370,13 +373,16 @@ function confirmSelection() {
   //   }));
 
 
-
   console.log("✅ รวมสินค้าทุกหน้าที่เลือก:", selectedProducts);
 
-  emit("select-products", selectedProducts); // ✅ ส่งกลับไปหน้า parent
-  console.log("✅ SelectedProducts ถูกแปลงแล้ว:", selectedProducts);
-  emit('select-products', selectedProducts);
-  emit('close');
+  // return;
+
+  SelectProductProMonth(selectedProducts);
+
+  // emit("select-products", selectedProducts); // ✅ ส่งกลับไปหน้า parent
+  // console.log("✅ SelectedProducts ถูกแปลงแล้ว:", selectedProducts);
+  // emit('select-products', selectedProducts);
+  // emit('close');
 }
 
 const searchSku = async () => {
@@ -529,6 +535,132 @@ async function SearchProducstSubmit() {
   }
 }
 
+async function SelectProductProMonth(selectedProducts) {
+
+  isLoading.value = true;
+
+  const gettoken = localStorage.getItem('token');
+  console.log('Log Value gettoken: ',gettoken);
+  console.log('Log Value ProductWithMonth: ',selectedProducts);
+
+  try {
+
+    const response = await axios.post(
+      `${BASE_URL}/cart_out/index`,
+      {
+        products: selectedProducts, // ส่งข้อมูลที่เลือกไปยัง API
+      },
+      {
+
+        headers: {
+          'Content-Type': 'application/json',
+          'token': gettoken
+        }
+      }
+    );
+
+    console.log("✅ Response from API:", response);
+
+    // const getData
+
+    if (response.data.code !== 1) {
+      console.error("ค้นหาสินค้าไม่สำเร็จ:", response.data.msg);
+    }
+
+    if (response.data.code === 1) {
+      const data = response.data.data.products || [];
+
+      tableData.value = data;
+      console.log("Check Value tableData.value:", tableData.value);
+
+      // tableData.value = searchProducts.map(item => ({
+      //   ...item,
+      //   imageLoaded: false
+      // }));
+
+      const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
+      const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
+      const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
+
+      const emitTitles = selectedProducts.map(p => ({
+        pro_goods_id: p.pro_goods_id || 0,
+        pro_activity_id: p.pro_activity_id || 0,
+        pro_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',
+        pro_erp_title: p.pro_erp_title || '(ไม่มีชื่อ)',
+        pro_goods_price: p.pro_goods_price || 0,
+        pro_sn: p.pro_sn || '',
+        // pro_sn: p.pro_sn || '',
+        // pro_units: p.pro_units || '',
+        pro_units: p.pro_unit || '',
+        amount: p.pro_goods_num || 0,
+        stock: p.pro_stock || 0,
+        // stock: p.stock || 0,
+      }));
+
+      console.log("🤯🤯 Log emitTitles:", emitTitles);
+
+      // const emitTitles = data.map(item => item.pro_title || item.pro_erp_title).join(', ');
+      // ใช้ได้
+      console.log("✅ Items:", items);
+      console.log("✅ Gifts:", gifts);
+      console.log("✅ Promotions:", promotions);
+
+      // ใช้ได้
+      console.log("🔁 Emit กลับไปหน้า parent:", { items, gifts, promotions, emitTitles });
+      // console.log("🔁 Emit กลับไปหน้า parent:", { items, itemsMonth, giftsDay, giftsMonth, promotionsDay, promotionsMonth});
+      // ส่งข้อมูลกลับไปยังหน้าหลัก
+
+      // ทำการตรวจสอบข้อมูลที่ได้รับกลับมา
+      if (data.length > 0) {
+        Swal.fire({
+          title: 'สำเร็จ',
+          text: 'ข้อมูลถูกส่งกลับไปยังหน้าหลักเรียบร้อยแล้ว',
+          icon: 'success',
+        });
+
+      } else {
+        Swal.fire({
+          title: 'ไม่มีสินค้า',
+          text: 'ไม่พบสินค้าที่เลือกในระบบ!',
+          icon: 'warning',
+        });
+      }
+
+      console.log("📤 กำลัง emit selectPromotionProducts");
+
+      // return;
+
+      emit('selectProductsWithMonth', {
+        // emit('select-promotion_products', {
+          // ใช้ได้
+        items,
+        gifts,
+        promotions,
+        emitTitles
+      });
+
+      emit('close'); // 
+
+      isLoading.value = false; // โหลดเสร็จ
+    } else {
+      error.value = response.data.message || 'เกิดข้อผิดพลาด';
+      Swal.fire({
+        title: 'ค้นหาไม่สำเร็จ',
+        text: error.value,
+        icon: 'error'
+      });
+      // isLoading.value = false;
+    }
+  } catch (err) {
+    Swal.fire({
+      title: 'เกิดข้อผิดพลาด',
+      text: err.message || 'โปรดลองใหม่ภายหลัง',
+      icon: 'error'
+    });
+    // isLoading.value = false;
+  }
+}
+
 
 
 // function mounted() {
@@ -544,10 +676,10 @@ function onInput() {
 onMounted(() => {
   SearchProducstSubmit(); // โหลดสินค้าทั้งหมดรอบแรก
 
-  tableData.value = props.productList.map(item => ({
-    ...item,
-    amount: item.amount || 1
-  }))
+  // tableData.value = props.productList.map(item => ({
+  //   ...item,
+  //   amount: item.amount || 1
+  // }))
 });
 
 

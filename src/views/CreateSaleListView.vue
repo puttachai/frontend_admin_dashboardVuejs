@@ -302,7 +302,9 @@
 
             <!-- Popup Component -->
             <ProductSelector v-if="showProductSelector" :productList="Apiproducts" @close="showProductSelector = false"
-                @select-products="addSelectedProducts" />
+                @selectProductsWithMonth="addSelectedProductsWithmonth" />
+            <!-- <ProductSelector v-if="showProductSelector" :productList="Apiproducts" @close="showProductSelector = false"
+                @select-products="addSelectedProducts" /> -->
 
             <ProductSelector v-if="showProductSelectoronly" :productList="Apiproducts"
                 @close="showProductSelectoronly = false" @select-products="replaceProductInRow" />
@@ -455,7 +457,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -2398,16 +2400,31 @@ export default {
             };
         },
 
+        //
+        // addSelectedProducts(products) {
+        //     products.forEach(p => {
+        //         const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === p.pro_id);
+        //         if (!alreadyExists) {
+        //             // this.selectedProducts.push(p);
+        //             this.selectedProducts.push({
+        //                 pro_id: p.pro_id,
+        //                 pro_erp_title: p.pro_erp_title,
+        //                 pro_sn: p.pro_sn,
+        //                 pro_images: p.pro_images,
+        //                 pro_quantity: p.pro_quantity || 1,
+        //                 pro_unit_price: p.pro_unit_price,
+        //                 pro_unit: p.pro_unit,
+        //                 pro_stock: p.pro_stock,
+        //                 pro_goods_sku_text: p.pro_goods_sku_text,
+        //                 promotions: p.promotions || [],
+        //                 gifts: p.gifts || [],
+        //                 activity_id: p.activity_id ?? 0,
+        //                 st: p.st ?? 0
+        //             });
+        //         }
+        //     });
+        // },
 
-
-        addSelectedProducts(products) {
-            products.forEach(p => {
-                const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === p.pro_id);
-                if (!alreadyExists) {
-                    this.selectedProducts.push(p);
-                }
-            });
-        },
 
         SelectedPromotion(promotionData) {
             console.log('รับโปรโมชั่นจาก child:', promotionData)
@@ -2477,6 +2494,98 @@ export default {
             }, 100)
         },
 
+        //
+        addSelectedProductsWithmonth(payload) {
+            console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
+
+            const items = payload.items || [];
+            // const gifts = payload.gifts || [];
+            const giftsDay = payload.gifts || [];
+            const promotions = payload.promotions || [];
+            const emitTitles = payload.emitTitles || [];
+
+            console.log("✅ payload:", payload);
+
+            console.log("✅ Items:", items);
+            console.log("✅ Gifts:", giftsDay);
+            console.log("✅ Promotions:", promotions);
+            console.log("✅ EmitTitles:", emitTitles);
+
+            items.forEach(item => {
+                // const alreadyExists = this.selectedProducts.some(sp => sp.pro_id === item.pro_sku_price_id);
+
+                // หา emit title ที่ตรงกับสินค้า
+                const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id) || {};
+
+                // 👇 ตรวจซ้ำโดยใช้ sku_id + activity_id
+                // const alreadyExists = this.selectedProducts.find(sp =>
+
+                //     sp.pro_id === item.pro_sku_price_id && sp.activity_id === item.pro_activity_id 
+                // );
+                const activityId = item.st === false ? 0 : item.pro_activity_id;
+
+                console.log('item.pro_activity_id', item.pro_activity_id);
+                console.log('activityId', activityId);
+
+
+                const alreadyExists = this.selectedProducts.find(sp =>
+                    sp.pro_id === item.pro_sku_price_id &&
+                    sp.activity_id === activityId &&
+                    sp.st === item.st // ✅ ตรวจ st ด้วย
+                );
+                console.log("🧮 Chack selectedProducts: ", this.selectedProducts);
+                console.log("🧮 Chack pro_sku_price_id: ", item.pro_sku_price_id);
+
+                console.log("🧮 Chack pro_activity_id: ", item.pro_activity_id);
+                console.log("🧮 Chack alreadyExists: ", alreadyExists);
+                console.log("sss Chack item.st: ", item.st);
+                // const alreadyExists = this.selectedProducts.some(sp =>
+                //     sp.pro_id === item.pro_sku_price_id && sp.activity_id === item.pro_activity_id
+                // );
+
+                // if (!alreadyExists) {
+                if (alreadyExists) {
+                    // 🔁 ถ้ามีอยู่แล้ว → บวกจำนวนเพิ่ม
+                    alreadyExists.pro_quantity = parseInt(alreadyExists.pro_quantity) + parseInt(item.pro_goods_num || 0);
+                    console.log("🧮 เดิม:", alreadyExists.pro_quantity, "เพิ่ม:", item.pro_goods_num);
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'เพิ่มจำนวนสินค้าอยู่ในรายการแล้ว',
+                        text: `เพิ่มจำนวนสินค้า ${matchedTitle.pro_erp_title || item.pro_erp_title || ''} เป็น ${alreadyExists.pro_quantity} ชิ้น`,
+                    });
+                    // this.selectedProducts.push({ 
+                    //     pro_quantity: item.pro_quantity += item.pro_goods_num || 0,
+                    // });
+
+                } else {
+
+                    this.selectedProducts.push({
+                        item_id: 0, // 📌 ใช้ 0 ชั่วคราว กรณียังไม่ไม่ได้เพิ่มตัวของสินค้าลง Database 
+                        pro_id: item.pro_sku_price_id,
+                        activity_id: (item.st === false || item.st === 'false' || item.st == null) ? 0 : item.pro_activity_id, //activityId ,
+                        // activity_id: item.st == false?0 : activityId, //activityId ,
+                        pro_activity_id: (item.st === false || item.st === 'false' || item.st == null) ? 0 : item.pro_activity_id,
+                        // pro_activity_id: activityId,
+                        st: item.st, // ✅ เก็บค่า st ไว้ด้วย
+                        pro_erp_title: matchedTitle.pro_erp_title || item.pro_erp_title || '',
+                        pro_unit_price: item.pro_goods_price || item.pro_goods_price || '',
+                        pro_goods_sku_text: item.pro_goods_sku_text || '',
+                        pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
+                        pro_images: item.pro_image || '',
+                        pro_quantity: item.pro_goods_num || 0,
+                        pro_units: matchedTitle.pro_units || item.pro_units || '',
+                        pro_stock: matchedTitle.stock || 0,
+                        gifts: giftsDay,
+                        // gifts: gifts.filter(gift => gift.pro_activity_id == item.pro_activity_id),
+                        promotions: promotions,
+                        // promotions: promotions.filter(promo => promo.pro_activity_id == item.pro_activity_id),
+                        // promotions: promotions.filter(promo => promo.pro_activity_id == item.pro_activity_id),
+                    });
+                }
+            });
+
+            console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
+        },
 
         // //handleSelectedProducts
         async handleSelectedPromotionProducts(payload) {

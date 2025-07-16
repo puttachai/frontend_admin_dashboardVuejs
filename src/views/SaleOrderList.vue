@@ -43,7 +43,7 @@
               </td>
               <td class="p-3">
                 <router-link
-                  :to="{ name: 'saleOrderDetail', params: { id: order.id } }"
+                  :to="{ name: 'saleorderdetail', params: { id: order.id } }"
                 >
                   <button class="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
                     ตรวจสอบ
@@ -78,14 +78,45 @@
       maximumFractionDigits: 2,
     })
   
-  onMounted(async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/api_admin_dashboard/backend/api/get_sale_orders.php`)
-      saleOrders.value = response.data.orders || []
-      totalRows.value = response.data.total || response.data.orders.length
-    } catch (error) {
-      console.error('❌ Failed to load sale orders:', error)
-    }
+  // onMounted(async () => {
+  //   try {
+  //     const response = await axios.get(`${BASE_URL}/api_admin_dashboard/backend/api/get_sale_orders.php`)
+  //     saleOrders.value = response.data.orders || []
+  //     totalRows.value = response.data.total || response.data.orders.length
+  //   } catch (error) {
+  //     console.error('❌ Failed to load sale orders:', error)
+  //   }
+  // })
+
+  function generateMockOrders() {
+  const shops = ['ร้านสมชาย', 'ร้านป้าติ๋ม', 'ร้านข้าวแกง', 'ร้านน้ำปั่น', 'ร้านบิวตี้']
+  const statuses = ['ยังไม่ได้ตรวจสอบ', 'ตรวจสอบแล้ว']
+  const orders = []
+
+  for (let i = 1; i <= 15; i++) {
+    orders.push({
+      id: i,
+      sale_no: `H1-SO${1000 + i}`,
+      customer_code: `CUST${2000 + i}`,
+      shop_name: shops[Math.floor(Math.random() * shops.length)],
+      mobile: `08${Math.floor(10000000 + Math.random() * 89999999)}`,
+      total_amount: (Math.random() * 5000 + 100).toFixed(2),
+      total_paid: (Math.random() * 5000 + 100).toFixed(2),
+      created_at: new Date(Date.now() - Math.floor(Math.random() * 1_000_000_000)).toLocaleString(),
+      status: statuses[Math.floor(Math.random() * statuses.length)],
+    })
+  }
+
+  console.log('check Value orders: ',orders);
+  return orders
+}
+
+  onMounted(() => {
+    // แทนที่ API ด้วย mock data
+    saleOrders.value = generateMockOrders()
+    console.log('Check saleOrders.value: ',saleOrders.value);
+    totalRows.value = saleOrders.value.length
   })
+
   </script>
   

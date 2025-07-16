@@ -7,6 +7,9 @@ import TechStackView from '../views/TechStackView.vue'
 import CreateSaleList from '../views/CreateSaleListView.vue'
 import CustomerView from '../views/CustomerView.vue'
 
+import SaleOrderList from '@/views/SaleOrderList.vue'
+import SaleOrderDetail from '../components/listSaleOrder/SaleOrderDetailView.vue'
+
 import AuthLayout from '../components/AuthLayout.vue'
 import SinginForm from '../components/SinginForm.vue'
 import SignupForm from '../components/SignupForm.vue'
@@ -151,13 +154,21 @@ const routes = [
     {
       path: '/saleorder',
       name: 'saleorder',
-      component: () => import('../views/SaleOrderList.vue'),
+      component: SaleOrderList,
+      // component: () => import('../views/SaleOrderList.vue'),
       meta: { requiresAuth: true }
     },
+    // {
+    //   path: '/saleorder/:id',
+    //   name: 'saleorderdetail',
+    //   component: () => import('../components/listSaleOrder/SaleOrderDetailView.vue'),
+    //   meta: { requiresAuth: true }
+    // },
     {
-      path: '/saleorder/:id',
+      path: '/sale-order/:id',
       name: 'saleorderdetail',
-      component: () => import('../components/listSaleOrder/SaleOrderDetailView.vue'),
+      component: SaleOrderDetail,  // <-- ปรับ path ให้ตรงกับไฟล์ของคุณ
+      // component: () => import('@/views/SaleOrderDetail.vue')  // <-- ปรับ path ให้ตรงกับไฟล์ของคุณ
       meta: { requiresAuth: true }
     },
       

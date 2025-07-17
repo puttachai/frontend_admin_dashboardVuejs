@@ -316,74 +316,19 @@ function validateAmount(item) {
   } else if (item.amount > item.stock) {
     item.amount = item.stock;
   }
+
+  // logic ติ๊ก checkbox อัตโนมัติ
+  if (item.amount > 0) {
+    if (!selectedIds.value.includes(item.id)) {
+      selectedIds.value.push(item.id);
+    }
+  } else {
+    // ถ้าใส่ 0 หรือลบออก ให้เอาออกจาก selectedIds
+    selectedIds.value = selectedIds.value.filter(id => id !== item.id);
+  }
+
 }
 
-
-function confirmSelection() {
-  // const selectedProducts = tableData.value
-  // const selectedProducts = props.productList
-  // .filter(p => selectedIds.value.includes(p.id))
-  // .map(p => ({
-  //   pro_id: p.id,
-  //   pro_erp_title: p.erp_title,
-  //   pro_sn: p.sn,
-  //   pro_images: p.image,
-  //   pro_quantity: p.amount || 1, // ใช้ amount ถ้าไม่มีให้ใช้ 1
-  //   pro_unit_price: p.price,
-  //   pro_unit: p.units,
-  //   // qty: 1,
-  //   // discount: p.discount
-  // }));
-
-  // const selectedProducts = props.productList.filter(p =>
-  //   allSelectedIds.value.includes(p.id)
-  // );
-
-  const selectedProducts = tableData.value
-    // const selectedProducts = props.productList
-    .filter(p => allSelectedIds.value.includes(p.id))
-    .map(p => ({
-      pro_sku_price_id: p.id, // pro_sku_price_id
-      pro_goods_id: p.goods_id, // pro_goods_id
-      pro_erp_title: p.erp_title,
-      pro_sn: p.sn,
-      pro_image: p.image, // pro_image
-      pro_goods_num: p.amount || 1, // pro_goods_num
-      pro_goods_price: p.price, // pro_goods_price
-      pro_unit: p.units,
-      pro_stock: p.stock,
-      // pro_goods_sku_text: p.goods_sku_text,
-      promotions: p.promotions || [],
-      gifts: p.gifts || [],
-      pro_activity_id: p.activity_id ?? 0, //pro_activity_id
-      st: p.st ?? 0
-    }));
-
-
-  // const selectedProducts = tableData.value
-  //   .filter(p => selectedIds.value.includes(p.id))
-  //   .map(p => ({
-  //     pro_id: p.id,
-  //     pro_erp_title: p.erp_title,
-  //     pro_sn: p.sn,
-  //     pro_images: p.image,
-  //     pro_quantity: p.amount || 1, // ใช้ amount ถ้าไม่มีให้ใช้ 1
-  //     pro_unit_price: p.price,
-  //     pro_unit: p.units,
-  //   }));
-
-
-  console.log("✅ รวมสินค้าทุกหน้าที่เลือก:", selectedProducts);
-
-  // return;
-
-  SelectProductProMonth(selectedProducts);
-
-  // emit("select-products", selectedProducts); // ✅ ส่งกลับไปหน้า parent
-  // console.log("✅ SelectedProducts ถูกแปลงแล้ว:", selectedProducts);
-  // emit('select-products', selectedProducts);
-  // emit('close');
-}
 
 const searchSku = async () => {
   clearTimeout(searchTimer.value);
@@ -533,6 +478,72 @@ async function SearchProducstSubmit() {
     });
     // isLoading.value = false;
   }
+}
+
+function confirmSelection() {
+  // const selectedProducts = tableData.value
+  // const selectedProducts = props.productList
+  // .filter(p => selectedIds.value.includes(p.id))
+  // .map(p => ({
+  //   pro_id: p.id,
+  //   pro_erp_title: p.erp_title,
+  //   pro_sn: p.sn,
+  //   pro_images: p.image,
+  //   pro_quantity: p.amount || 1, // ใช้ amount ถ้าไม่มีให้ใช้ 1
+  //   pro_unit_price: p.price,
+  //   pro_unit: p.units,
+  //   // qty: 1,
+  //   // discount: p.discount
+  // }));
+
+  // const selectedProducts = props.productList.filter(p =>
+  //   allSelectedIds.value.includes(p.id)
+  // );
+
+  const selectedProducts = tableData.value
+    // const selectedProducts = props.productList
+    .filter(p => allSelectedIds.value.includes(p.id))
+    .map(p => ({
+      pro_sku_price_id: p.id, // pro_sku_price_id
+      pro_goods_id: p.goods_id, // pro_goods_id
+      pro_erp_title: p.erp_title,
+      pro_sn: p.sn,
+      pro_image: p.image, // pro_image
+      pro_goods_num: p.amount || 1, // pro_goods_num
+      pro_goods_price: p.price, // pro_goods_price
+      pro_unit: p.units,
+      pro_stock: p.stock,
+      // pro_goods_sku_text: p.goods_sku_text,
+      promotions: p.promotions || [],
+      gifts: p.gifts || [],
+      pro_activity_id: p.activity_id ?? 0, //pro_activity_id
+      st: p.st ?? 0
+    }));
+
+
+  // const selectedProducts = tableData.value
+  //   .filter(p => selectedIds.value.includes(p.id))
+  //   .map(p => ({
+  //     pro_id: p.id,
+  //     pro_erp_title: p.erp_title,
+  //     pro_sn: p.sn,
+  //     pro_images: p.image,
+  //     pro_quantity: p.amount || 1, // ใช้ amount ถ้าไม่มีให้ใช้ 1
+  //     pro_unit_price: p.price,
+  //     pro_unit: p.units,
+  //   }));
+
+
+  console.log("✅ รวมสินค้าทุกหน้าที่เลือก:", selectedProducts);
+
+  // return;
+
+  SelectProductProMonth(selectedProducts);
+
+  // emit("select-products", selectedProducts); // ✅ ส่งกลับไปหน้า parent
+  // console.log("✅ SelectedProducts ถูกแปลงแล้ว:", selectedProducts);
+  // emit('select-products', selectedProducts);
+  // emit('close');
 }
 
 async function SelectProductProMonth(selectedProducts) {

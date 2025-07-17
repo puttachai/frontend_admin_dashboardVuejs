@@ -177,6 +177,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 
 // const isLoading = ref(true) // สำหรับ loading spinner
 const isLoading = ref(false); // หรือ true ถ้าต้องการให้เริ่มต้นแสดง
+// const isLoading = ref(false); // หรือ true ถ้าต้องการให้เริ่มต้นแสดง
 
 // const props = defineProps({
 //   promotionList: Array,
@@ -189,6 +190,11 @@ const props = defineProps({
   selectedPromotion: {
     type: Array,
     required: true
+  },
+  selectProducts_old: {
+    type: Array,
+    required: false,
+    default: () => []
   }
 })
 
@@ -686,6 +692,21 @@ function confirmSelection() {
 // activity_code :"P02-ZZ-9999"
 // activity_id :1178
 
+// ✅ ใช้งานได้เลยโดยไม่ต้อง .value
+console.log('🔥 selectedProducts_old:', props.selectProducts_old);
+
+// ✅ ถ้าต้องการเก็บในตัวแปร
+// const get_productOld = props.selectedProducts_old;
+// console.log('🎯 get_productOld:', get_productOld);
+
+// const get_productOld = (props.selectProducts_old || []).map(p => p);
+
+const get_productOld_raw = (props.selectProducts_old || []).map(p => ({ ...p }));
+
+console.log('🎯 get_productOld:', get_productOld_raw);
+
+// return;
+
 const selectedPromotionProducts = tableData.value
   .filter(p => selectedIds.value.includes(p.id))
   // .map(p => {
@@ -724,19 +745,80 @@ const selectedPromotionProducts = tableData.value
     // });
   }));
 
-const invalidProducts = selectedPromotionProducts.filter(a => a.pro_goods_num < 1);
+  
 
-console.log('Check invalidProducts', invalidProducts);
+  const sum_products = [...get_productOld_raw, ...selectedPromotionProducts];
 
-if (invalidProducts.length > 0) {
-  const invalidNames = invalidProducts.map(n => `• ${n.pro_title || pro_erp_title} จำนวน: ${n.pro_goods_num} `).join('\n');
-  Swal.fire({
-    icon: 'warning',
-    title: 'พบสินค้าที่จำนวนไม่ถูกต้อง ❌',
-    html: `กรุณาตรวจสอบจำนวนสินค้าให้ถูกต้องก่อนดำเนินการ:<br><pre>${invalidNames}</pre>`
-  });
-  return; // ❌ ยกเลิกการส่ง
+console.log('Check: sum_products', sum_products);
+
+function groupBy(arr, keyFn) {
+  return arr.reduce((acc, item) => {
+    const groupKey = typeof keyFn === 'function' ? keyFn(item) : item[keyFn];
+
+    // ดึงจำนวนสินค้า โดย fallback เป็น 0 และแปลงเป็น int
+    const quantity =
+      Number(item.pro_goods_num) || Number(item.pro_quantity) || 0;
+
+    if (!acc[groupKey]) {
+      // ✅ เปลี่ยนชื่อ pro_images → pro_image ที่นี่
+      acc[groupKey] = {
+        ...item,
+        pro_goods_num: quantity,
+        pro_quantity: quantity,
+        pro_image: item.pro_images || item.pro_image || '', // ✅ ตั้งชื่อใหม่
+        pro_goods_price: item.pro_goods_price || item.pro_unit_price // ✅ ตั้งชื่อใหม่
+      };
+
+      // ❌ ลบ key เดิมถ้าไม่ต้องการให้ติดไปด้วย (เช่น pro_images)
+      delete acc[groupKey].pro_images;
+
+    } else {
+      // รวมจำนวนต่อจาก key เดิม
+      acc[groupKey].pro_goods_num =
+        Number(acc[groupKey].pro_goods_num) + quantity;
+      acc[groupKey].pro_quantity =
+        Number(acc[groupKey].pro_quantity) + quantity;
+    }
+
+    return acc;
+  }, {});
 }
+
+
+const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+const groupedArray = Object.values(grouped);
+
+
+const newproduct = [];
+
+Object.values(grouped).forEach(item => {
+  newproduct.push(item);
+});
+
+
+console.log('✅ Grouped  resultnewproduct:', newproduct);
+console.log('✅ Grouped  result groupedArray:', groupedArray);
+
+
+
+  // console.log('Check: selectedPromotionProducts',selectedPromotionProducts);
+
+
+// const invalidProducts = grouped.filter(a => a.pro_goods_num < 1);
+// // const invalidProducts = selectedPromotionProducts.filter(a => a.pro_goods_num < 1);
+
+
+// console.log('Check invalidProducts', invalidProducts);
+
+// if (invalidProducts.length > 0) {
+//   const invalidNames = invalidProducts.map(n => `• ${n.pro_title || pro_erp_title} จำนวน: ${n.pro_goods_num} `).join('\n');
+//   Swal.fire({
+//     icon: 'warning',
+//     title: 'พบสินค้าที่จำนวนไม่ถูกต้อง ❌',
+//     html: `กรุณาตรวจสอบจำนวนสินค้าให้ถูกต้องก่อนดำเนินการ:<br><pre>${invalidNames}</pre>`
+//   });
+//   return; // ❌ ยกเลิกการส่ง
+// }
 
 const selectedPromotionsInfo = props.selectedPromotion.map(p => ({
 
@@ -751,7 +833,12 @@ const selectedPromotionsInfo = props.selectedPromotion.map(p => ({
 console.log("✅ selectedPromotionProducts ถูกแปลงแล้ว:", selectedPromotionProducts);
 console.log("✅ selectedPromotionsInfo ถูกแปลงแล้ว:", selectedPromotionsInfo);
 
-submittedProduct(selectedPromotionProducts);
+console.log('Check: grouped 800 : ',newproduct);
+
+// return;
+
+submittedProduct(newproduct);
+// submittedProduct(selectedPromotionProducts);
 // emit('select-promotion_products', {
 //   products: selectedPromotionProducts,
 //   promotions: selectedPromotionsInfo
@@ -761,19 +848,25 @@ submittedProduct(selectedPromotionProducts);
 }
 
 
-async function submittedProduct(selectedProducts) {
+async function submittedProduct(newproduct) {
+// async function submittedProduct(selectedProducts) {
   // isLoading.value = true; // เริ่มโหลด
 
   const gettoken = localStorage.getItem('token');
   // ดึงชื่อสินค้าทั้งหมดออกมา (เป็น array ของชื่อ)
   // const selectedTitles = selectedProducts.map(p => p.pro_title || p.pro_erp_title );
 
+  console.log("grouped 823:", newproduct);
+  // console.log("selectedProducts:", selectedProducts);
+
+  // return;
 
   try {
     const response = await axios.post(
       `${BASE_URL}/cart_out/index`,
       {
-        products: selectedProducts, // ส่งข้อมูลที่เลือกไปยัง API
+        products: newproduct, // ส่งข้อมูลที่เลือกไปยัง API
+        // products: selectedProducts, // ส่งข้อมูลที่เลือกไปยัง API
       },
       {
 
@@ -786,6 +879,8 @@ async function submittedProduct(selectedProducts) {
 
     console.log("✅ Response from API:", response);
 
+    // return;
+
     if (response.data.code === 1) {
       const data = response.data.data.products || [];
 
@@ -797,12 +892,13 @@ async function submittedProduct(selectedProducts) {
       // const promotions = data.filter(item => item?.pro_goods_id === 0 && item?.pro_title && item?.note === 'โปรโมชั่น');
 
         // ใช้ได้
-      // แยกข้อมูลออกเป็น 3 ก้อน
-      const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
+      // แยกข้อมูลออกเป็น 3 ก้อน //  ,  
+      const items = data.filter(item => item.pro_goods_id !== 0  && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
       const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
-      const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
+      const promotions = data.filter(item => item.pro_activity_id !== 0 &&  item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
 
-      const emitTitles = selectedProducts.map(p => ({
+      const emitTitles = newproduct.map(p => ({
+      // const emitTitles = selectedProducts.map(p => ({
         pro_goods_id: p.pro_goods_id || 0,
         pro_activity_id: p.pro_activity_id || 0,
         pro_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',

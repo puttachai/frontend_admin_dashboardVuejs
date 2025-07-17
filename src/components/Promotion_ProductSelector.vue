@@ -129,8 +129,9 @@
               <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code ?? 'ไม่มีข้อมูล' }}</td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.goods_id }}</td>
               <td class="px-4 text-gray-700 py-2 border text-center">
+                <!-- max item.stock -->
                 <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
-                  v-model.number="item.amount" :min="0" :max="item.stock" @input="validateAmount(item)"
+                  v-model.number="item.amount" :min="0" :max="99999" @input="validateAmount(item)"
                   placeholder="0" />
               </td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
@@ -302,11 +303,11 @@ function toggleSelectAll(event) {
 }
 
 function validateAmount(item) {
-  if (item.amount < 0) {
-    item.amount = 0;
-  } else if (item.amount > item.stock) {
-    item.amount = item.stock;
-  }
+  // if (item.amount < 0) {
+  //   item.amount = 0;
+  // } else if (item.amount > item.stock) {
+  //   item.amount = item.stock;
+  // }
 
   // ✅ เพิ่ม logic ติ๊ก checkbox อัตโนมัติ
   if (item.amount > 0) {
@@ -766,7 +767,8 @@ function groupBy(arr, keyFn) {
         pro_goods_num: quantity,
         pro_quantity: quantity,
         pro_image: item.pro_images || item.pro_image || '', // ✅ ตั้งชื่อใหม่
-        pro_goods_price: item.pro_goods_price || item.pro_unit_price // ✅ ตั้งชื่อใหม่
+        pro_goods_price: item.pro_goods_price || item.pro_unit_price, // ✅ ตั้งชื่อใหม่
+        activity_id: item.activity_id || 0
       };
 
       // ❌ ลบ key เดิมถ้าไม่ต้องการให้ติดไปด้วย (เช่น pro_images)

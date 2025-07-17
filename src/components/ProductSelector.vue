@@ -92,9 +92,10 @@
           <tbody v-if="!isLoading">
             <tr v-for="item in paginatedProducts" :key="item.id">
               <td class="px-4 py-2 border text-center">
-                <input type="checkbox" v-model="selectedIds" :checked="allSelectedIds.includes(item.id)"
-                  @change="toggleSelectProduct(item.id, $event.target.checked)" :value="item.id" />
+                <input type="checkbox" v-model="selectedIds" 
+                   :value="item.id" />
               </td>
+              <!-- @change="toggleSelectProduct(item.id, $event.target.checked)" , :checked="allSelectedIds.includes(item.id)"-->
 
               <td class="px-4 py-4 border text-center">
                 <template v-if="item.image">
@@ -116,7 +117,7 @@
             </td> -->
               <td class="px-4 text-gray-700 py-2 border text-center">
                 <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
-                  v-model.number="item.amount" :min="1" :max="item.stock" @input="validateAmount(item)"
+                  v-model.number="item.amount" :min="0" :max="item.stock" @input="validateAmount(item)"
                   placeholder="0" />
               </td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
@@ -177,8 +178,17 @@ const props = defineProps({
   productList: Array,
   pageCurrent: Number,
   pageSize: Number,
-  total: Number
+  total: Number,
+
+  selectProducts_old_month: {
+    type: Array,
+    required: false,
+    default: () => []
+  }
 })
+
+
+
 
 const emit = defineEmits(['close', 'select-products', 'page-change'])
 
@@ -213,8 +223,14 @@ const dataselectsku_no = ref([]);
 const memberType = ref('');
 
 
+// const paginatedProducts = computed(() => {
+//   return tableData.value;
+// });
+
 const paginatedProducts = computed(() => {
-  return tableData.value;
+  const start = (pageCurrent.value - 1) * pageSize.value;
+  const end = start + pageSize.value;
+  return tableData.value.slice(start, end);
 });
 
 function onPaginationChange(pageInfo) {
@@ -264,35 +280,48 @@ watch(selectedIds, (newVal) => {
 //   }
 // }
 
-function toggleSelectProduct(productId, checked) {
-  if (checked) {
-    if (!allSelectedIds.value.includes(productId)) {
-      allSelectedIds.value.push(productId);
-    }
-  } else {
-    allSelectedIds.value = allSelectedIds.value.filter(id => id !== productId);
-  }
+//
+// function toggleSelectProduct(productId, checked) {
+//   if (checked) {
+//     if (!allSelectedIds.value.includes(productId)) {
+//       allSelectedIds.value.push(productId);
+//     }
+//   } else {
+//     allSelectedIds.value = allSelectedIds.value.filter(id => id !== productId);
+//   }
 
-  // 👇 อัปเดต selectedIds ให้แสดงค่าบนหน้าปัจจุบันให้ตรงกับ allSelectedIds
-  const pageIds = paginatedProducts.value.map(item => item.id);
-  selectedIds.value = allSelectedIds.value.filter(id => pageIds.includes(id));
-}
+//   // 👇 อัปเดต selectedIds ให้แสดงค่าบนหน้าปัจจุบันให้ตรงกับ allSelectedIds
+//   const pageIds = paginatedProducts.value.map(item => item.id);
+//   selectedIds.value = allSelectedIds.value.filter(id => pageIds.includes(id));
+// }
 
 
+// function toggleSelectAll(event) {
+//   const pageIds = paginatedProducts.value.map(item => item.id);
+
+//   if (event.target.checked) {
+//     allSelectedIds.value = [...new Set([...allSelectedIds.value, ...pageIds])];
+//   } else {
+//     allSelectedIds.value = allSelectedIds.value.filter(id => !pageIds.includes(id));
+//   }
+
+//   // 👇 อัปเดต selectedIds เช่นเดียวกัน
+//   selectedIds.value = allSelectedIds.value.filter(id => pageIds.includes(id));
+// }
+
+// function เลือกสินค้าทั้งหมด
 function toggleSelectAll(event) {
-  const pageIds = paginatedProducts.value.map(item => item.id);
-
   if (event.target.checked) {
-    allSelectedIds.value = [...new Set([...allSelectedIds.value, ...pageIds])];
+    const pageIds = paginatedProducts.value.map(item => item.id)
+    selectedIds.value = [...new Set([...selectedIds.value, ...pageIds])]
+
+    console.log('toggleSelectAll selectedIds:', pageIds);
   } else {
-    allSelectedIds.value = allSelectedIds.value.filter(id => !pageIds.includes(id));
+    const pageIds = paginatedProducts.value.map(item => item.id)
+    selectedIds.value = selectedIds.value.filter(id => !pageIds.includes(id))
+    console.log('Error selectedIds:', pageIds);
   }
-
-  // 👇 อัปเดต selectedIds เช่นเดียวกัน
-  selectedIds.value = allSelectedIds.value.filter(id => pageIds.includes(id));
 }
-
-
 
 
 // // function เลือกสินค้าทั้งหมด
@@ -500,27 +529,100 @@ function confirmSelection() {
   //   allSelectedIds.value.includes(p.id)
   // );
 
+  console.log('🔥 selectedProducts_old:', props.selectProducts_old_month);
+
+  // ✅ ถ้าต้องการเก็บในตัวแปร
+  // const get_productOld = props.selectedProducts_old;
+  // console.log('🎯 get_productOld:', get_productOld);
+
+  // const get_productOld = (props.selectProducts_old || []).map(p => p);
+
+  const get_productOld_raw = (props.selectProducts_old_month || []).map(p => ({ ...p }));
+
+  console.log('🎯 get_productOld:', get_productOld_raw);
+
   const selectedProducts = tableData.value
     // const selectedProducts = props.productList
-    .filter(p => allSelectedIds.value.includes(p.id))
+    .filter(p => selectedIds.value.includes(p.id))
     .map(p => ({
-      pro_sku_price_id: p.id, // pro_sku_price_id
+      pro_activity_id: p.activity_id ?? 0, // 1167
       pro_goods_id: p.goods_id, // pro_goods_id
+      pro_sku_price_id: p.id, // pro_sku_price_id
+      // pro_code: p.activity_code, // x
       pro_erp_title: p.erp_title,
+      pro_title: p.title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
       pro_sn: p.sn,
       pro_image: p.image, // pro_image
-      pro_goods_num: p.amount || 1, // pro_goods_num
-      pro_goods_price: p.price, // pro_goods_price
-      pro_unit: p.units,
-      pro_stock: p.stock,
+      pro_goods_num: p.amount || 0, // pro_goods_num
+      pro_quantity: p.amount || 0,
+      // pro_goods_price: p.price, // pro_goods_price
+      pro_goods_price: p.price, // "215.00"
+      pro_units: p.units,
+      stock: p.stock || 0,
+      // pro_m_code: p.pro_m_code, // x 
       // pro_goods_sku_text: p.goods_sku_text,
-      promotions: p.promotions || [],
-      gifts: p.gifts || [],
-      pro_activity_id: p.activity_id ?? 0, //pro_activity_id
-      st: p.st ?? 0
+      // promotions: p.promotions || [],
+      // gifts: p.gifts || [],
+      // st: p.st ?? 0
+        
     }));
 
 
+  const sum_products = [...get_productOld_raw, ...selectedProducts];
+
+  console.log('Check: sum_products', sum_products);
+
+
+
+
+  function groupBy(arr, keyFn) {
+    return arr.reduce((acc, item) => {
+      const groupKey = typeof keyFn === 'function' ? keyFn(item) : item[keyFn];
+
+      // ดึงจำนวนสินค้า โดย fallback เป็น 0 และแปลงเป็น int
+      const quantity =
+        Number(item.pro_goods_num) || Number(item.pro_quantity) || 0;
+
+      if (!acc[groupKey]) {
+        // ✅ เปลี่ยนชื่อ pro_images → pro_image ที่นี่
+        acc[groupKey] = {
+          ...item,
+          pro_goods_num: quantity,
+          pro_quantity: quantity,
+          pro_image: item.image || item.pro_image || '', // ✅ ตั้งชื่อใหม่
+          pro_goods_price: item.pro_goods_price || item.pro_unit_price, // ✅ ตั้งชื่อใหม่
+          activity_id: item.activity_id || 0
+        };
+
+        // ❌ ลบ key เดิมถ้าไม่ต้องการให้ติดไปด้วย (เช่น pro_images)
+        delete acc[groupKey].pro_images;
+
+      } else {
+        // รวมจำนวนต่อจาก key เดิม
+        acc[groupKey].pro_goods_num =
+          Number(acc[groupKey].pro_goods_num) + quantity;
+        acc[groupKey].pro_quantity =
+          Number(acc[groupKey].pro_quantity) + quantity;
+      }
+
+      return acc;
+    }, {});
+  }
+
+
+  const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+  const groupedArray = Object.values(grouped);
+
+
+  const newproduct = [];
+
+  Object.values(grouped).forEach(item => {
+    newproduct.push(item);
+  });
+
+
+  console.log('✅ Grouped  resultnewproduct:', newproduct);
+  console.log('✅ Grouped  result groupedArray:', groupedArray);
   // const selectedProducts = tableData.value
   //   .filter(p => selectedIds.value.includes(p.id))
   //   .map(p => ({
@@ -534,11 +636,11 @@ function confirmSelection() {
   //   }));
 
 
-  console.log("✅ รวมสินค้าทุกหน้าที่เลือก:", selectedProducts);
+  // console.log("✅ รวมสินค้าทุกหน้าที่เลือก:", selectedProducts);
 
   // return;
 
-  SelectProductProMonth(selectedProducts);
+  SelectProductProMonth(newproduct);
 
   // emit("select-products", selectedProducts); // ✅ ส่งกลับไปหน้า parent
   // console.log("✅ SelectedProducts ถูกแปลงแล้ว:", selectedProducts);
@@ -546,20 +648,22 @@ function confirmSelection() {
   // emit('close');
 }
 
-async function SelectProductProMonth(selectedProducts) {
+async function SelectProductProMonth(newproduct) {
 
   isLoading.value = true;
 
   const gettoken = localStorage.getItem('token');
-  console.log('Log Value gettoken: ',gettoken);
-  console.log('Log Value ProductWithMonth: ',selectedProducts);
+  console.log('Log Value gettoken: ', gettoken);
+  console.log('Log Value ProductWithMonth: ', newproduct);
+
+  // return;
 
   try {
 
     const response = await axios.post(
       `${BASE_URL}/cart_out/index`,
       {
-        products: selectedProducts, // ส่งข้อมูลที่เลือกไปยัง API
+        products: newproduct, // ส่งข้อมูลที่เลือกไปยัง API
       },
       {
 
@@ -593,7 +697,7 @@ async function SelectProductProMonth(selectedProducts) {
       const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
       const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
 
-      const emitTitles = selectedProducts.map(p => ({
+      const emitTitles = newproduct.map(p => ({
         pro_goods_id: p.pro_goods_id || 0,
         pro_activity_id: p.pro_activity_id || 0,
         pro_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',
@@ -643,7 +747,7 @@ async function SelectProductProMonth(selectedProducts) {
 
       emit('selectProductsWithMonth', {
         // emit('select-promotion_products', {
-          // ใช้ได้
+        // ใช้ได้
         items,
         gifts,
         promotions,

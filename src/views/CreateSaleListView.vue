@@ -335,7 +335,21 @@
                         </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody v-if="isLoading">
+                        <tr>
+                            <td colspan="10" class="py-10 text-center">
+                                <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                </svg>
+                                <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+
+                    <tbody v-if="!isLoading">
                         <!-- แสดงรายการสินค้า -->
                         <!-- 👉 Group by pro_activity_id -->
                         <template v-for="(group, activityId) in groupByActivityId(selectedProducts)" :key="activityId">
@@ -492,7 +506,7 @@
                 </div>
 
                 <div class="text-gray-700 flex items-center justify-end">
-                    <input type="checkbox" v-model="isVatIncluded" id="vatCheckbox" class="mr-2" />
+                    <input type="checkbox" v-model="isVatIncluded" id="vatCheckbox" :disabled="isReadOnly" class="mr-2" />
                     <label for="vatCheckbox">ภาษีมูลค่าเพิ่ม (7%)</label>
                     <span class="ml-2 text-gray-700">
                         {{ isVatIncluded ? (totalAmountBeforeDiscount * 0.07).toFixed(2) : '0.00' }}
@@ -748,7 +762,23 @@
 
     </div>
 
+    <div>
+        <!-- Loading Overlay -->
+        <div v-if="isLoading" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div class="text-center">
+                <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <div class="mt-2 text-white text-lg">กำลังโหลดข้อมูล...</div>
+            </div>
+        </div>
+        <!--  END Loading Overlay -->
+    </div>
+
 </template>
+
 
 <script>
 import { ref, onMounted, watch } from 'vue';
@@ -801,6 +831,8 @@ export default {
     },
     data() {
         return {
+
+            isLoading: false, // สำหรับ loading spinner
 
             isVatIncluded: true, //  เริ่มต้นให้คิดภาษี
 
@@ -919,6 +951,10 @@ export default {
                 warehouseCode: 'H1',
                 docType: 'SO',
             },
+
+            //form ที่โหลดมาตั้งต้นเพื่อเปรียบเทียบค่าว่ามีการเปลี่ยนแปลงก่อนอัปเดทไหม 
+            originalFormData: {},
+            originalSelectedProducts: [],
 
             selectedProducts: [], // ค่าเริ่มต้นเป็น array ว่าง
 
@@ -1196,7 +1232,6 @@ export default {
             };
 
 
-
             console.log("Log Value requiredFields: ", requiredFields);
 
             // for (const field of requiredFields) {
@@ -1238,6 +1273,7 @@ export default {
         },
 
         async saveDocument() {
+            this.isLoading = true;
 
             console.log('Save new document')
 
@@ -1465,6 +1501,7 @@ export default {
                     this.isReadOnly = true;
 
                     Swal.fire({ text: resData.message, icon: 'success' });
+                    this.isLoading = false;
                 } else {
                     Swal.fire({ text: 'asdadas', icon: 'error' });
                     console.log('resData', resData);
@@ -1482,6 +1519,7 @@ export default {
                 // await this.AddressInsertData(this.selectedAddress);
 
                 // Swal.fire({ text: resData.message, icon: 'success' });
+                this.isLoading = false;
             } catch (err) {
                 const message = err.response?.data?.message || err.message || 'Unknown error';
                 Swal.fire({ text: message, icon: 'error' });
@@ -2105,7 +2143,19 @@ export default {
                 return;
             }
 
+            // 🔍 ตรวจสอบว่ามีการเปลี่ยนแปลงหรือไม่
+            if (!this.isDataChanged()) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'ไม่มีข้อมูลเปลี่ยนแปลง',
+                    text: 'คุณยังไม่ได้แก้ไขข้อมูลใด ๆ',
+                });
+                return;
+            }
+
             try {
+
+                this.isLoading = true;
 
                 this.formData.productList = this.selectedProducts.map(product => {
 
@@ -2169,12 +2219,14 @@ export default {
                         title: 'กรุณาเลือกที่อยู่จัดส่ง',
                     });
                     return;
-                } else if (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'กรุณาเลือกที่อยู่จัดส่ง',
-                    });
                 }
+
+                // else if (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) {
+                //     Swal.fire({
+                //         icon: 'warning',
+                //         title: 'กรุณาเลือกที่อยู่จัดส่ง',
+                //     });
+                // }
 
                 // ✅ เพิ่ม selectedAddress เข้าไป
                 payload.append('deliveryAddress', JSON.stringify(this.selectedAddress));
@@ -2213,6 +2265,8 @@ export default {
                     Swal.fire({ text: resData.message, icon: 'error' });
                 }
 
+                this.isLoading = false;
+
                 // await this.AddressUpdaateData(this.selectedAddress);
             } catch (err) {
                 const message = err.response?.data?.message || err.message || 'Unknown error';
@@ -2220,8 +2274,17 @@ export default {
             }
         },
 
+        // ฟังก์ชันเปรียบเทียบข้อมูล
+        isDataChanged() {
+            const isFormChanged = JSON.stringify(this.formData) !== JSON.stringify(this.originalFormData);
+            const isProductChanged = JSON.stringify(this.selectedProducts) !== JSON.stringify(this.originalSelectedProducts);
+            return isFormChanged || isProductChanged;
+        },
+
+
         async loadDocumentData(documentNo) {
             try {
+                this.isLoading = true;
 
                 const response = await axios.get(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/sale_order/get_sale_order.php?documentNo=${documentNo}`);
 
@@ -2368,7 +2431,14 @@ export default {
                     // }
 
                     console.log("📄 ข้อมูลเอกสารที่โหลด:", this.formData);
-                    console.log("🛒 รายการสินค้า:", this.selectedProducts);
+                    console.log("🛒 รายการสินค้า:", this.selectedProducts)
+
+                    this.originalFormData = JSON.parse(JSON.stringify(this.formData)); // deep copy
+                    this.originalSelectedProducts = JSON.parse(JSON.stringify(this.selectedProducts));
+
+
+                    this.isLoading = false;
+                    ;
                 } else {
                     Swal.fire({ text: resData.message, icon: 'error' });
                 }
@@ -2377,6 +2447,7 @@ export default {
                 Swal.fire({ text: message, icon: 'error' });
             }
         },
+
 
         // new function 
         extractPromotionsAndGifts() {

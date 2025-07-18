@@ -26,21 +26,21 @@
         </thead>
 
         <tbody v-if="isLoading">
-            <tr>
-              <td colspan="11" class="py-10 text-center">
-                <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-                  viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                </svg>
-                <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
-              </td>
-            </tr>
-          </tbody>
+          <tr>
+            <td colspan="11" class="py-10 text-center">
+              <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
+            </td>
+          </tr>
+        </tbody>
 
         <tbody v-if="!isLoading">
           <tr v-for="order in filteredOrders" :key="order.id" class="border-b hover:bg-gray-50">
-          <!-- <tr v-for="order in saleOrders" :key="order.id" class="border-b hover:bg-gray-50"> -->
+            <!-- <tr v-for="order in saleOrders" :key="order.id" class="border-b hover:bg-gray-50"> -->
             <td class="p-3">{{ order.id }}</td>
             <td class="p-3">{{ order.sale_no }}</td>
             <td class="p-3">{{ order.customer_code }}</td>
@@ -61,7 +61,7 @@
               </span>
             </td>
             <td class="p-3">
-              <router-link :to="{ name: 'saleorderdetail', params: { id: order.id } }">
+              <router-link :to="{ name: 'saleorderdetail', params: { id: order.sale_no } }">
                 <button class="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
                   ตรวจสอบ
                 </button>
@@ -163,13 +163,11 @@ function convertThaiDateToISO(dateStr) {
   return dateObj.toISOString().split('T')[0] // yyyy-mm-dd
 }
 
-
-
 onMounted(async () => {
   try {
 
     isLoading.value = true;
-    
+
     const response = await axios.get(`${BASE_URL}/api_admin_dashboard/backend/api/list_sale_orders/get_list_sale_order.php`)
     console.log('Check log responseData:', response.data.data.list_order);
 
@@ -192,38 +190,7 @@ onMounted(async () => {
   } catch (error) {
     console.error('❌ Failed to load sale orders:', error)
   }
-})
+});
 
-
-
-//   function generateMockOrders() {
-//   const shops = ['ร้านสมชาย', 'ร้านป้าติ๋ม', 'ร้านข้าวแกง', 'ร้านน้ำปั่น', 'ร้านบิวตี้']
-//   const statuses = ['ยังไม่ได้ตรวจสอบ', 'ตรวจสอบแล้ว']
-//   const orders = []
-
-//   for (let i = 1; i <= 15; i++) {
-//     orders.push({
-//       id: i,
-//       sale_no: `H1-SO${1000 + i}`,
-//       customer_code: `CUST${2000 + i}`,
-//       shop_name: shops[Math.floor(Math.random() * shops.length)],
-//       mobile: `08${Math.floor(10000000 + Math.random() * 89999999)}`,
-//       total_amount: (Math.random() * 5000 + 100).toFixed(2),
-//       total_paid: (Math.random() * 5000 + 100).toFixed(2),
-//       created_at: new Date(Date.now() - Math.floor(Math.random() * 1_000_000_000)).toLocaleString(),
-//       status: statuses[Math.floor(Math.random() * statuses.length)],
-//     })
-//   }
-
-//   console.log('check Value orders: ',orders);
-//   return orders
-// }
-
-// onMounted(() => {
-//   // แทนที่ API ด้วย mock data
-//   saleOrders.value = generateMockOrders()
-//   console.log('Check saleOrders.value: ',saleOrders.value);
-//   totalRows.value = saleOrders.value.length
-// })
 
 </script>

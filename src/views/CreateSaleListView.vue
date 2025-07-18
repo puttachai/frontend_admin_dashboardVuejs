@@ -458,7 +458,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -898,6 +898,13 @@ export default {
                 pro_quantity: '' || 0,
 
                 discount: '' || 0,
+
+                // ... ของเดิมทั้งหมด
+                price_before_tax: 0,
+                tax_value: 0,
+                price_with_tax: 0,
+                // ... ต่อไป
+
                 final_total_price: 0,
 
                 // total_price: '' || 0,
@@ -1376,6 +1383,11 @@ export default {
             this.formData.gifts = gifts;
 
             // await this.AddressInsertData(this.selectedAddress);
+            this.formData.price_before_tax = parseFloat(this.totalAmountBeforeDiscount.toFixed(2));
+            this.formData.tax_value = this.isVatIncluded ? parseFloat((this.totalAmountBeforeDiscount * 0.07).toFixed(2)) : 0;
+            this.formData.price_with_tax = parseFloat(this.grandTotal);
+
+            this.formData.final_total_price = parseFloat(this.grandTotal);
 
             const payload = new FormData();
 
@@ -2125,6 +2137,13 @@ export default {
                 const { promotions, gifts } = this.extractPromotionsAndGifts();
                 this.formData.promotions = promotions;
                 this.formData.gifts = gifts;
+
+                // **เพิ่มคำนวณภาษีและราคาก่อนส่ง**
+                this.formData.price_before_tax = parseFloat(this.totalAmountBeforeDiscount.toFixed(2));
+                this.formData.tax_value = this.isVatIncluded ? parseFloat((this.totalAmountBeforeDiscount * 0.07).toFixed(2)) : 0;
+                this.formData.price_with_tax = parseFloat(this.grandTotal);
+
+                this.formData.final_total_price = parseFloat(this.grandTotal);
 
                 const payload = new FormData();
                 // for (const key in this.formData) {

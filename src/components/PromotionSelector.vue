@@ -143,7 +143,7 @@
         <!-- Pagination -->
         <ConfigProvider :globalConfig="enConfig">
           <div class="w-fit mt-4 px-4 ">
-          <!-- <div class="overflow-auto mt-4 "> -->
+            <!-- <div class="overflow-auto mt-4 "> -->
             <!-- v-model:page-size="pageSize" -->
             <pagination v-model:current="pageCurrent" v-model:page-size="pageSize" :total="total" show-page-size
               :prev-button-props="{ content: '⏪' }" :next-button-props="{ content: '⏩' }"
@@ -450,7 +450,7 @@ const searchPromotion_no = async () => {
         console.log("rawData:", rawData);
 
         // 🧠 ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
-        const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase();
+        const keywordToSearch = keyword_promotion_no.value.trim().toLowerCase().split(/\s+/);
 
         // const filtered = rawData.filter((item) =>
         //   item.title.toLowerCase().includes(keywordToSearch)
@@ -458,25 +458,50 @@ const searchPromotion_no = async () => {
         // const search = searchTerm.toLowerCase();
         // const filtered = rawData.filter(item => item.activity_code?.toLowerCase().includes(keywordToSearch));
 
-        const filtered = rawData.filter((item) =>
-          item.title?.toLowerCase().includes(keywordToSearch) ||
-          item.erp_title?.toLowerCase().includes(keywordToSearch) ||
-          item.activity_code?.toLowerCase().includes(keywordToSearch) ||
-          item.activity_id?.toLowerCase().includes(keywordToSearch) ||
-          item.note?.toLowerCase().includes(keywordToSearch) ||
-          item.ML_Note?.toLowerCase().includes(keywordToSearch)
-        );
+        let filteredResults = [];
 
+        if (keywordToSearch === "") {
+          // ✅ ถ้าไม่มี keyword ให้แสดงผลทั้งหมด และ pageSize เป็น 10
+          filteredResults = promotionProducts.value;
+          pageSize.value = 10;
+        } else {
+          const filtered = rawData.filter(item =>
+            keywordToSearch.some(kw =>
+              item.title?.toLowerCase().includes(kw) ||
+              item.erp_title?.toLowerCase().includes(kw) ||
+              item.activity_code?.toLowerCase().includes(kw) ||
+              item.activity_id?.toString().toLowerCase().includes(kw) || // แปลงเป็น string เผื่อ activity_id เป็นตัวเลข
+              item.note?.toLowerCase().includes(kw) ||
+              item.ML_Note?.toLowerCase().includes(kw)
+            )
+          );
+        }
 
-        console.log("Filtered promotions:", filtered);
+        // const filtered = rawData.filter((item) =>
+        //   item.title?.toLowerCase().includes(keywordToSearch) ||
+        //   item.erp_title?.toLowerCase().includes(keywordToSearch) ||
+        //   item.activity_code?.toLowerCase().includes(keywordToSearch) ||
+        //   item.activity_id?.toLowerCase().includes(keywordToSearch) ||
+        //   item.note?.toLowerCase().includes(keywordToSearch) ||
+        //   item.ML_Note?.toLowerCase().includes(keywordToSearch)
+        // );
 
-        dataselectpromotion_no.value = filtered;
-        tableData.value = [...filtered];
-        total.value = filtered.length;
-        pageSize.value = (total.value < pageSize.value)
-          ? total.value
-          : parseInt(pageSize.value);
+        console.log("🔍 ผลลัพธ์ที่ค้นหาได้:", filteredResults);
+
+        tableData.value = filteredResults;
+        dataselectpromotion_no.value = filteredResults;
+        total.value = filteredResults.length;
       }
+
+      //   console.log("Filtered promotions:", filtered);
+
+      //   dataselectpromotion_no.value = filtered;
+      //   tableData.value = [...filtered];
+      //   total.value = filtered.length;
+      //   pageSize.value = (total.value < pageSize.value)
+      //     ? total.value
+      //     : parseInt(pageSize.value);
+      // }
 
       // if (response.data.code === 1) {
       //   total.value = response.data.data.item_count;
@@ -639,25 +664,40 @@ async function SearchPromotionSubmit() {
         // const search = searchTerm.toLowerCase();
         // const filtered = rawData.filter(item => item.activity_code?.toLowerCase().includes(keywordToSearch));
 
-        const filtered = rawData.filter((item) =>
-          item.title?.toLowerCase().includes(keywordToSearch) ||
-          item.erp_title?.toLowerCase().includes(keywordToSearch) ||
-          item.activity_code?.toLowerCase().includes(keywordToSearch) ||
-          item.activity_id?.toLowerCase().includes(keywordToSearch) ||
-          item.note?.toLowerCase().includes(keywordToSearch) ||
-          item.ML_Note?.toLowerCase().includes(keywordToSearch)
-        );
+        let filteredResults = [];
+
+        if (keywordToSearch === "") {
+          // ✅ ถ้าไม่มี keyword ให้แสดงผลทั้งหมด และ pageSize เป็น 10
+          filteredResults = promotionProducts.value;
+          pageSize.value = 10;
+        } else {
+          // ✅ ถ้ามี keyword ให้กรองข้อมูล
+          filteredResults = rawData.filter((item) =>
+            item.title?.toLowerCase().includes(keywordToSearch) ||
+            item.erp_title?.toLowerCase().includes(keywordToSearch) ||
+            item.activity_code?.toLowerCase().includes(keywordToSearch) ||
+            item.activity_id?.toLowerCase().includes(keywordToSearch) ||
+            item.note?.toLowerCase().includes(keywordToSearch) ||
+            item.ML_Note?.toLowerCase().includes(keywordToSearch)
+          );
+        }
 
 
-        console.log("Filtered promotions:", filtered);
+        console.log("🔍 ผลลัพธ์ที่ค้นหาได้:", filteredResults);
 
-        dataselectpromotion_no.value = filtered;
-        tableData.value = [...filtered];
-        total.value = filtered.length;
-        pageSize.value = (total.value < pageSize.value)
-          ? total.value
-          : parseInt(pageSize.value);
+        tableData.value = filteredResults;
+        dataselectpromotion_no.value = filteredResults;
+        total.value = filteredResults.length;
+
       }
+
+      //   dataselectpromotion_no.value = filtered;
+      //   tableData.value = [...filtered];
+      //   total.value = filtered.length;
+      //   pageSize.value = (total.value < pageSize.value)
+      //     ? total.value
+      //     : parseInt(pageSize.value);
+      // }
 
       // if (response.data.code === 1) {
       //   total.value = response.data.data.item_count;

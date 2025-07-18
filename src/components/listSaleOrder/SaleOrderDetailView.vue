@@ -17,19 +17,28 @@
               <span class="mx-1 text-gray-400">›</span>
             </li>
             <li>
-              <router-link to="/createsalelist" @click.native="reloadPage"
-                class="text-purple-600 font-medium hover:text-purple-800 transition">
-                Create Sale List
-              </router-link>
+              <router-link to="/saleorder" class="hover:text-purple-600 transition">Sale Order List</router-link>
+              <span class="mx-1 text-gray-400">›</span>
+            </li>
+            <li class="text-purple-600 font-medium">
+              {{ currentDocumentNo || 'Loading...' }}
             </li>
           </ul>
         </nav>
 
+        <!-- Action Bar -->
+        <div class="flex flex-wrap justify-end gap-3 responsive-action-buttons md:gap-4 md:flex-nowrap">
 
+          <!-- ปุ่ม บันทึก -->
+          <!-- <button v-if="!isReadOnly && isCreatePage" @click="saveDocument" -->
+          <button @click="saveDocument"
+            class="flex items-center gap-2 bg-green-500 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg">
+            <span class="material-icons">add_task</span>
+            <span>อนุมัติเอกสาร</span>
+          </button>
+        </div>
       </div>
     </div>
-
-
 
 
     <!-- form รายการเอกสาร -->
@@ -402,7 +411,8 @@
         </div>
 
         <div class="text-gray-700 flex items-center justify-end">
-          <input type="checkbox" v-model="isVatIncluded" id="vatCheckbox" disabled :disabled="isReadOnly" class="mr-2" />
+          <input type="checkbox" v-model="isVatIncluded" id="vatCheckbox" disabled :disabled="isReadOnly"
+            class="mr-2" />
           <label for="vatCheckbox">ภาษีมูลค่าเพิ่ม (7%)</label>
           <span class="ml-2 text-gray-700">
             {{ isVatIncluded ? (totalAmountBeforeDiscount * 0.07).toFixed(2) : '0.00' }}
@@ -605,7 +615,7 @@ const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 
 
 export default {
-  name: 'SignupForm',
+  // name: 'SignupForm',
   components: {
     // ProductSelector,
     // PromotionSelector,
@@ -616,6 +626,8 @@ export default {
   },
   data() {
     return {
+
+      currentDocumentNo: '', // แสดง document_no ใน breadcrumb
 
       // documentNo_route_params: route.params.id,
       documentNo_route_params: '', // ตั้งไว้ก่อน
@@ -751,7 +763,13 @@ export default {
   },
 
   mounted() {
-    this.documentNo_route_params = this.$route.params.id;
+
+    const docNo = this.$route.params.id;
+
+    this.documentNo_route_params = docNo;
+    // ดึงค่าจาก URL param
+    this.currentDocumentNo = `Sale Order: ${docNo}`;
+    // loadDataDocument
     this.loadDocumentData(this.documentNo_route_params);
   },
 
@@ -881,6 +899,7 @@ export default {
           console.log("📄 ข้อมูลเอกสารที่โหลด:", this.formData);
           console.log("🛒 รายการสินค้า:", this.selectedProducts)
 
+          // ยังไม่ใช้
           this.originalFormData = JSON.parse(JSON.stringify(this.formData)); // deep copy
           this.originalSelectedProducts = JSON.parse(JSON.stringify(this.selectedProducts));
 
@@ -925,6 +944,42 @@ export default {
       console.log("😵‍💫😵‍💫 showMoreData:", this.showMoreData);
     },
 
+
+    saveDocument() {
+      try {
+        this.isLoading = true;
+
+        console.log('Approve new document')
+
+        // const isValid = await this.validateForm();
+        // const isValid = this.isValid;
+        // if (!isValid) {
+        //   console.warn("❌ ข้อมูลไม่ครบ", this.errors);
+        //   Swal.fire({
+        //     icon: 'error',
+        //     title: 'ไม่สามารถบันทึกได้',
+        //     text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+        //   });
+        //   return;
+        // }
+
+        Swal.fire({
+          icon: 'success',
+          title: 'อนุมัติเอกสารสำเร็จ',
+          text: 'อนุมัติเอกสารเรียบร้อย',
+        });
+
+
+        // ✅ ดำเนินการบันทึกต่อ...
+        console.log("✅ อนุมัติเอกสารเรียบร้อย");
+
+        this.isLoading = false;
+      } catch (err) {
+        const message = err.response?.data?.message || err.message || 'Unknown error';
+        Swal.fire({ text: message, icon: 'error' });
+        console.log('a454545654564 catch');
+      }
+    }
 
   },
 

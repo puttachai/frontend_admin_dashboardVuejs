@@ -120,7 +120,7 @@
                   <span class="material-icons text-gray-400 text-4xl">broken_image</span>
                 </template>
               </td>
-              <td class="px-4 text-gray-700 py-2 border">{{ item.title }}
+              <td class="px-4 text-gray-700 py-2 border">{{ item.pro_erp_title || item.title }}
 
                 <div type="text" class="w-60 text-center">
 
@@ -302,7 +302,7 @@ function toggleSelectAll(event) {
       }
     });
 
-    
+
     selectedIds.value = [...new Set([...selectedIds.value, ...pageIds])];
 
     console.log('✅ toggleSelectAll selectedIds (stock > 0 only):', pageIds);
@@ -332,11 +332,32 @@ function toggleSelectAll(event) {
 // }
 
 function validateAmount(item) {
-  if (item.amount < 0) {
-    item.amount = 0;
-  } else if (item.amount > item.stock) {
-    item.amount = item.stock;
+
+  const oldItem = props.selectProducts_old.find(p =>
+    p.pro_activity_id === item.activity_id &&
+    p.pro_sku_price_id === item.id
+  );
+
+  const oldAmount = oldItem ? Number(oldItem.pro_quantity || oldItem.pro_goods_num || 0) : 0;
+  const newAmount = Number(item.amount || 0);
+  const stock = Number(item.stock || 0);
+
+  const total = oldAmount + newAmount;
+
+  if (total > stock) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'จำนวนสินค้าเกินสต๊อก',
+      text: `คุณเลือกสินค้าเกินกว่าสต๊อกที่มีอยู่ (${total}/${stock})`
+    });
+    item.amount = stock - oldAmount > 0 ? stock - oldAmount : 0;
   }
+
+  // if (item.amount < 0) {
+  //   item.amount = 0;
+  // } else if (item.amount > item.stock) {
+  //   item.amount = item.stock;
+  // }
 
   // ✅ เพิ่ม logic ติ๊ก checkbox อัตโนมัติ
   if (item.amount > 0) {
@@ -703,10 +724,150 @@ function confirmSelection() {
     }, {});
   }
 
+  // const productErrors = [];
 
   const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
   const groupedArray = Object.values(grouped);
 
+
+
+///////////////////////////////
+// const productErrors = [];
+
+// // 👇 ใช้ grouped เดิมเพื่อส่งข้อมูลต่อ
+// const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+// const groupedArray = Object.values(grouped);
+
+// // ✅ สร้าง validateGrouped ใหม่ โดยใช้ key เป็น pro_activity_id + pro_sku_price_id
+// const validateGrouped = Object.values(
+//   sum_products.reduce((acc, item) => {
+//     const key = `${item.pro_activity_id}_${item.pro_sku_price_id}`;
+//     if (!acc[key]) {
+//       acc[key] = {
+//         ...item,
+//         pro_quantity: Number(item.pro_quantity) || 0
+//       };
+//     } else {
+//       acc[key].pro_quantity += Number(item.pro_quantity) || 0;
+//     }
+//     return acc;
+//   }, {})
+// );
+
+// // ✅ ตรวจสอบ stock แยกตาม pro_activity_id + pro_sku_price_id
+// validateGrouped.forEach(product => {
+//   const totalQuantity = product.pro_quantity || 0;
+//   const stockAvailable = Number(product.pro_stock ?? product.stock ?? 0); // ใช้ pro_stock หรือ stock
+
+//   if (totalQuantity > stockAvailable) {
+//     productErrors.push({
+//       title: product.pro_erp_title || product.pro_title || '(ไม่มีชื่อ)',
+//       quantity: totalQuantity,
+//       stock: stockAvailable
+//     });
+//   }
+// });
+
+// if (productErrors.length > 0) {
+//   const messages = productErrors.map(p =>
+//     `• ${p.title} (ขอ: ${p.quantity}, คลังมี: ${p.stock})`
+//   ).join('\n');
+
+//   Swal.fire({
+//     icon: 'error',
+//     title: 'สินค้าเกินจากสต๊อก',
+//     text: 'กรุณาตรวจสอบรายการสินค้า:\n' + messages,
+//     confirmButtonText: 'ตกลง'
+//   });
+
+//   return; // ❌ หยุดการส่งข้อมูล
+// }
+
+// const productErrors = [];
+
+// // 👇 ใช้ grouped เดิมเพื่อส่งข้อมูลต่อ (แต่เราจะกรองทีหลัง)
+// const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+
+// // ✅ สร้าง validateGrouped แยกตาม activity+sku_price_id
+// const validateGrouped = Object.values(
+//   sum_products.reduce((acc, item) => {
+//     const key = `${item.pro_activity_id}_${item.pro_sku_price_id}`;
+//     if (!acc[key]) {
+//       acc[key] = {
+//         ...item,
+//         pro_quantity: Number(item.pro_quantity) || 0
+//       };
+//     } else {
+//       acc[key].pro_quantity += Number(item.pro_quantity) || 0;
+//     }
+//     return acc;
+//   }, {})
+// );
+
+// // ✅ ตรวจสอบ stock
+// const errorKeys = new Set(); // 👉 สำหรับเก็บ key ของสินค้าที่เกิน stock
+
+// validateGrouped.forEach(product => {
+//   const key = `${product.pro_activity_id}_${product.pro_sku_price_id}`;
+//   const totalQuantity = product.pro_quantity || 0;
+//   const stockAvailable = Number(product.pro_stock ?? product.stock ?? 0);
+
+//   if (totalQuantity > stockAvailable) {
+//     errorKeys.add(key); // ❗ เก็บ key ไว้ใช้กรอง newproduct ทีหลัง
+
+//     productErrors.push({
+//       title: product.pro_erp_title || product.pro_title || '(ไม่มีชื่อ)',
+//       quantity: totalQuantity,
+//       stock: stockAvailable
+//     });
+//   }
+// });
+
+// // ❗ ถ้ามี error → alert แล้ว return
+// if (productErrors.length > 0) {
+//   const messages = productErrors.map(p =>
+//     `• ${p.title} (ขอ: ${p.quantity}, คลังมี: ${p.stock})`
+//   ).join('\n');
+
+//   Swal.fire({
+//     icon: 'error',
+//     title: 'สินค้าเกินจากสต๊อก',
+//     text: 'กรุณาตรวจสอบรายการสินค้า:\n' + messages,
+//     confirmButtonText: 'ตกลง'
+//   });
+
+//   return; // ❌ หยุดการส่งข้อมูล
+// }
+
+  // // เช็กยอดรวมกับ stock
+  // groupedArray.forEach(product => {
+  //   const totalQuantity = Number(product.pro_quantity) || 0;
+  //   const stockAvailable = Number(product.stock) || 0;
+
+  //   if (totalQuantity > stockAvailable) {
+  //     productErrors.push({
+  //       title: product.pro_erp_title || product.pro_title || '(ไม่มีชื่อ)',
+
+  //       quantity: totalQuantity,
+  //       stock: stockAvailable
+  //     });
+  //   }
+  // });
+
+  // if (productErrors.length > 0) {
+  //   const messages = productErrors.map(p =>
+  //     `• ${p.title} (ขอ: ${p.quantity}, คลังมี: ${p.stock})`
+  //   ).join('\n');
+
+  //   Swal.fire({
+  //     icon: 'error',
+  //     title: 'สินค้าเกินจากสต๊อก',
+  //     text: 'กรุณาตรวจสอบรายการสินค้า:\n' + messages,
+  //     confirmButtonText: 'ตกลง'
+  //   });
+
+  //   return; // ❌ หยุดการส่งข้อมูล
+  // }
 
   const newproduct = [];
 
@@ -717,6 +878,7 @@ function confirmSelection() {
 
   console.log('✅ Grouped  resultnewproduct:', newproduct);
   console.log('✅ Grouped  result groupedArray:', groupedArray);
+  // console.log('✅ Grouped  result groupedArray:', groupedArray);
 
 
 
@@ -820,9 +982,10 @@ async function submittedProduct(newproduct) {
         // const emitTitles = selectedProducts.map(p => ({
         pro_goods_id: p.pro_goods_id || 0,
         pro_activity_id: p.pro_activity_id || 0,
-        pro_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',
-        pro_erp_title: p.pro_erp_title || '(ไม่มีชื่อ)',
+        pro_title: p.pro_erp_title || p.pro_title || '(ไม่มีชื่อ)',
+        pro_erp_title: p.pro_erp_title || p.pro_title || '(ไม่มีชื่อ)',
         pro_goods_price: p.pro_goods_price || 0,
+        pro_sku_price_id: p.pro_sku_price_id || 0,
         pro_sn: p.pro_sn || '',
         pro_units: p.pro_units || '',
         amount: p.pro_goods_num || 0,

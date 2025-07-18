@@ -498,58 +498,27 @@ async function SearchProducstSubmit() {
       // const getData
 
       if (response.data.code !== 1) {
-        console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
-      }
+      console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+    }
 
-      if (response.data.code === 1) {
-        const data = response.data.data;
-        const searchProducts = data.data2 || [];
+    if (response.data.code === 1) {
+      const data = response.data.data;
+      const searchProducts = data.data2 || [];
 
-        const keywordToSearch = keyword.value.trim().toLowerCase();
+      tableData.value = searchProducts;
 
-        if (!searchProducts || searchProducts.length === 0) {
-          console.warn("⚠️ ไม่มีข้อมูล searchProducts โปรดเรียก getPromotionProducts() ก่อน");
-          return;
-        }
+      // tableData.value = searchProducts.map(item => ({
+      //   ...item,
+      //   imageLoaded: false
+      // }));
 
-        let filteredResults = [];
+      dataselect.value = searchProducts;
+      total.value = data.item_count || 0;
 
-        if (keywordToSearch === "") {
-          // ✅ ถ้าไม่มี keyword ให้แสดงผลทั้งหมด และ pageSize เป็น 10
-          filteredResults = searchProducts;
-          pageSize.value = 10;
-        } else {
-          // ✅ ถ้ามี keyword ให้กรองข้อมูล
-          filteredResults = searchProducts.filter((sku) =>
-            sku.title?.toLowerCase().includes(keywordToSearch) ||
-            sku.erp_title?.toLowerCase().includes(keywordToSearch) ||
-            sku.goods_sku_text?.toLowerCase().includes(keywordToSearch) ||
-            sku.sn?.toLowerCase().includes(keywordToSearch) ||
-            sku.activity_code?.toLowerCase().includes(keywordToSearch)
-          );
+      console.log("✅ ข้อมูล searchProducts:", searchProducts);
 
-          // ✅ ปรับ pageSize ไม่ให้เกินจำนวนผลลัพธ์
-          // pageSize.value = (filteredResults.length < pageSize.value)
-          //   ? filteredResults.length
-          //   : parseInt(pageSize.value);
-
-          // ✅ แทนด้วยการกำหนด pageCurrent กลับไปหน้าแรกแทน
-          // pageCurrent.value = 1;
-        }
-
-        console.log("🔍 ผลลัพธ์ที่ค้นหาได้:", filteredResults);
-
-        tableData.value = filteredResults;
-        dataselect.value = filteredResults;
-        total.value = filteredResults.length;
-
-        // dataselect.value = searchProducts;
-        // total.value = data.item_count || 0;
-
-        console.log("✅ ข้อมูล searchProducts:", filteredResults);
-
-        // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
-        isLoading.value = false; // โหลดเสร็จ
+      // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
+      isLoading.value = false; // โหลดเสร็จ
       } else {
         error.value = response.data.message || 'เกิดข้อผิดพลาด';
         Swal.fire({
@@ -602,51 +571,27 @@ async function SearchProducstSubmit() {
       // const getData
 
       if (response.data.code !== 1) {
-        console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
-      }
+      console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+    }
 
-      if (response.data.code === 1) {
-        const data = response.data.data;
-        const searchProducts = data.data2 || [];
+    if (response.data.code === 1) {
+      const data = response.data.data;
+      const searchProducts = data.data2 || [];
 
-        // tableData.value = searchProducts;
+      tableData.value = searchProducts;
 
-        // tableData.value = searchProducts.map(item => ({
-        //   ...item,
-        //   imageLoaded: false
-        // }));
+      // tableData.value = searchProducts.map(item => ({
+      //   ...item,
+      //   imageLoaded: false
+      // }));
 
-        const keywordToSearch = keyword.value.trim().toLowerCase();
+      dataselect.value = searchProducts;
+      total.value = data.item_count || 0;
 
-        if (!searchProducts || searchProducts.length === 0) {
-          console.warn("⚠️ ไม่มีข้อมูล promotionProducts โปรดเรียก getPromotionProducts() ก่อน");
-          return;
-        }
+      console.log("✅ ข้อมูล searchProducts:", searchProducts);
 
-        const filteredResults = searchProducts.filter((product) =>
-          product.title?.toLowerCase().includes(keywordToSearch) ||
-          product.erp_title?.toLowerCase().includes(keywordToSearch) ||
-          product.goods_sku_text?.toLowerCase().includes(keywordToSearch) ||
-          product.sn?.toLowerCase().includes(keywordToSearch) ||
-          product.activity_code?.toLowerCase().includes(keywordToSearch)
-        );
-
-        console.log("🔍 ผลลัพธ์ที่ค้นหาได้:", filteredResults);
-
-        tableData.value = filteredResults;
-        dataselect.value = filteredResults;
-        total.value = filteredResults.length;
-        pageSize.value = (total.value < pageSize.value)
-          ? total.value
-          : parseInt(pageSize.value);
-
-        // dataselect.value = searchProducts;
-        // total.value = data.item_count || 0;
-
-        console.log("✅ ข้อมูล searchProducts:", searchProducts);
-
-        // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
-        isLoading.value = false; // โหลดเสร็จ
+      // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
+      isLoading.value = false; // โหลดเสร็จ
       } else {
         error.value = response.data.message || 'เกิดข้อผิดพลาด';
         Swal.fire({

@@ -7,24 +7,10 @@
     </p>
 
     <form @submit.prevent="handleLogin" class="max-w-md mx-auto space-y-6">
-      <input
-        v-model="mobile"
-        type="text"
-        placeholder="Mobile"
-        class="w-full px-4 py-2 border rounded-md"
-        autocomplete="mobile" 
-        id="mobile" 
-        name="mobile"
-      />
-      <input
-        v-model="password"
-        type="password"
-        placeholder="Password"
-        class="w-full px-4 py-2 border rounded-md"
-        autocomplete="current-password" 
-        id="password" 
-        name="password"
-      />
+      <input v-model="mobile" type="text" placeholder="Mobile" class="w-full px-4 py-2 border rounded-md"
+        autocomplete="mobile" id="mobile" name="mobile" />
+      <input v-model="password" type="password" placeholder="Password" class="w-full px-4 py-2 border rounded-md"
+        autocomplete="current-password" id="password" name="password" />
       <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md">
         Log in
       </button>
@@ -42,7 +28,7 @@ import Swal from 'sweetalert2'
 // import { version } from 'node:os';
 
 const BASE_URL = import.meta.env.VITE_API_URL;
-console.log("Show BASE_URL: ",BASE_URL);
+console.log("Show BASE_URL: ", BASE_URL);
 
 const mobile = ref('')
 const password = ref('')
@@ -52,78 +38,97 @@ const router = useRouter()
 
 const handleLogin = async () => {
   try {
-    console.log("Show BASE_URL try: ",BASE_URL);
+    console.log("Show BASE_URL try: ", BASE_URL);
     const response = await axios.post(`${BASE_URL}/user/accountLogin4`, {
-        account: mobile.value,
-        password: password.value,
-        customer:'',
-        version:'2.0.2',
+      account: mobile.value,
+      password: password.value,
+      customer: '',
+      version: '2.0.2',
       // mobile: mobile.value,
-        // password: password.value
-      },{
+      // password: password.value
+    }, {
       // withCredentials: true,
       headers: {
         'Content-Type': 'application/json'
       }
     });
 
-    console.log("Show Data: ",response);
+    console.log("Show Data: ", response);
     // console.log(response.data.data.data.data2[0].nickname_admin);
 
     if (response.data.code == 1) {
 
       Swal.fire({
-        title:'ล็อกอินสำเร็จ',
-        icon:'success',
+        title: 'ล็อกอินสำเร็จ',
+        icon: 'success',
         timer: 2000,              // หน่วงเวลา 2 วินาที
         showConfirmButton: false, // ไม่แสดงปุ่ม OK
       });
 
-      if(response.data.data.data.customer_count >1 ){
-          
-      // บันทึก token หรือตั้งค่า authenticated 
-      localStorage.setItem('isAuthenticated', 'true');
-      console.log("Log Respone Data:",response.data.data.data);
-      localStorage.setItem('account', mobile.value);
-      localStorage.setItem('password', password.value);
+      if (response.data.data.data.customer_count > 1) {
 
-      localStorage.setItem('msg', response.data.msg);
 
-      const msg = localStorage.getItem('msg');
-      // console.log('Log msg: ',msg);
-      
-      router.push('/customer');
+        // const possiblePermissions = ['crm', 'account_user'];
+        // const permission = [];
 
-      }else{
-        
-      // บันทึก token หรือตั้งค่า authenticated 
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('token', response.data.data.token || '');
-      localStorage.setItem('level', response.data.data.level || '');
+        // // สุ่มแบบสุ่มว่าจะเอา permission ไหนบ้าง
+        // possiblePermissions.forEach(p => {
+        //   if (Math.random() < 0.5) { // มีโอกาส 50% ที่จะเลือกแต่ละ permission
+        //     permission.push(p);
+        //   }
+        // });
 
-      localStorage.setItem('account', mobile.value);
-      localStorage.setItem('password', password.value);
-      
-      const getToken = localStorage.getItem('token');
-      console.log('Log getToken: ',getToken);
+        // เซ็ตลง localStorage แบบ string ที่ parse กลับได้
+        // localStorage.setItem('permission', JSON.stringify(permission));
 
-      router.push('/dashboard');
+        // console.log('Check permission: ', permission);
+
+        // บันทึก token หรือตั้งค่า authenticated 
+        localStorage.setItem('isAuthenticated', 'true');
+        console.log("Log Respone Data:", response.data.data.data);
+        localStorage.setItem('account', mobile.value);
+        localStorage.setItem('password', password.value);
+
+        localStorage.setItem('msg', response.data.msg);
+
+        const msg = localStorage.getItem('msg');
+        // console.log('Log msg: ',msg);
+
+        router.push('/customer');
+
+      } else {
+
+        // บันทึก token หรือตั้งค่า authenticated 
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('token', response.data.data.token || '');
+        localStorage.setItem('level', response.data.data.level || '');
+
+        // const permissions_crm ='crm';
+        // localStorage.setItem('permissions_crm', permissions_crm);
+
+        localStorage.setItem('account', mobile.value);
+        localStorage.setItem('password', password.value);
+
+        const getToken = localStorage.getItem('token');
+        console.log('Log getToken: ', getToken);
+
+        router.push('/dashboard');
       }
 
     } else {
       error.value = response.data.message || 'Login failed'
       Swal.fire({
-        title:'ล็อกอินไม่สำเร็จ',
+        title: 'ล็อกอินไม่สำเร็จ',
         text: error.value || 'โปรดลองใหม่ภายหลัง',
-        icon:'error',
+        icon: 'error',
       });
     }
   } catch (err) {
     error.value = err.response?.data?.message || 'Server error'
     Swal.fire({
-        title:'ไม่สามารถเชื่อมต่อกับ API Server ได้',
-        text: error.value || 'โปรดลองใหม่ภายหลัง',
-        icon:'error',
+      title: 'ไม่สามารถเชื่อมต่อกับ API Server ได้',
+      text: error.value || 'โปรดลองใหม่ภายหลัง',
+      icon: 'error',
     });
   }
 }

@@ -2920,7 +2920,7 @@ export default {
             for (const item of items) {
 
                 const activityId = item.st === false ? false : item.pro_activity_id;
-                const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id) || {};
+                const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id && emit.pro_sku_price_id == item.pro_sku_price_id) || {};
 
                 const filteredGifts = giftsDay.filter(gift => gift.pro_activity_id !== item.pro_activity_id ? item.pro_activity_id : gift.pro_activity_id);
                 const filteredPromotions = promotions.filter(promo => promo.pro_activity_id !== item.pro_activity_id ? item.pro_activity_id : promo.pro_activity_id)
@@ -3106,8 +3106,8 @@ export default {
 
                         Swal.fire({
                             icon: 'info',
-                            title: 'แทนที่ข้อมูลเดิม',
-                            text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+                            title: 'เพิ่มจำนวนข้อมูลสินค้าสำเร็จ',
+                            text: `เพิ่มข้อมูลสินค้าเรียบร้อย ${matchedTitle.pro_erp_title || item.pro_title || ''}`,
                         });
                         break;
                     case 'ACTIVITY_ID_ITEM_ISOK':

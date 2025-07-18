@@ -216,12 +216,18 @@ const routes = [
 router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   const customerRaw = localStorage.getItem('selectDataCustomerRow');
+  
+  const permission = localStorage.getItem('permission');
+  
   let customer_id = null;
+  let permissionData = null;
 
   try {
     const customerData = JSON.parse(customerRaw);
+    const permissionData = JSON.parse(permission);
     customer_id = customerData?.customer_id;
     console.log('check customer_id : ',customer_id);
+    console.log('check permissionData : ', permissionData);
   } catch (err) {
     console.warn('❌ JSON parse failed:', err);
   }
@@ -231,7 +237,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // ❗ ป้องกันเข้า /createsalelist ถ้าไม่มี customer_id
-  if (to.name === 'createsalelist' && !customer_id) {
+  if (to.name === 'createsalelist' && !customer_id && permissionData === 'account_user' ) {
     // alert('กรุณาเลือกข้อมูลลูกค้าก่อนเข้าสร้างรายการขาย');
     Swal.fire({
           title: 'กรุณาเลือกร้านค้าของลูกค้า',

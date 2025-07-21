@@ -675,9 +675,6 @@ function confirmSelection() {
 
   console.log('Check: sum_products', sum_products);
 
-
-
-
   function groupBy(arr, keyFn) {
     return arr.reduce((acc, item) => {
       const groupKey = typeof keyFn === 'function' ? keyFn(item) : item[keyFn];
@@ -692,7 +689,10 @@ function confirmSelection() {
           ...item,
           pro_goods_num: quantity,
           pro_quantity: quantity,
-          pro_image: item.image || item.pro_image || '', // ✅ ตั้งชื่อใหม่
+          last_quantity: quantity,
+          // last_quantity: 0, // เริ่มจาก 0 ก่อน
+          pro_erp_title: item.pro_erp_title || item.erp_title || item.title,
+          pro_image: item.pro_images || item.pro_image || '', // ✅ ตั้งชื่อใหม่
           pro_goods_price: item.pro_goods_price || item.pro_unit_price, // ✅ ตั้งชื่อใหม่
           activity_id: item.activity_id || 0
         };
@@ -712,9 +712,88 @@ function confirmSelection() {
     }, {});
   }
 
+  const productErrors = [];
 
-  const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
-  const groupedArray = Object.values(grouped);
+   const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+
+  // แยก grouped สำหรับ last_quantity เก็บจาก selectedProducts (รายการเพิ่มใหม่)
+  const groupedLastQuantity = groupBy(selectedProducts, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+  console.log('🔹 grouped:', grouped);
+  console.log('🔹 groupedArray:', groupedLastQuantity);
+
+  // ✅ สร้าง validateGrouped ใหม่ โดยใช้ key เป็น pro_activity_id + pro_sku_price_id
+  const validateGrouped = Object.values(
+    sum_products.reduce((acc, item) => {
+      const key = `${item.pro_activity_id}_${item.pro_sku_price_id}`;
+      console.log('🔸 Reduce item:', item);
+      if (!acc[key]) {
+        acc[key] = {
+          ...item,
+          pro_goods_num: Number(item.pro_goods_num || item.pro_quantity) || 0
+          // pro_quantity: Number(item.pro_goods_num || item.pro_quantity) || 0
+        };
+        console.log(`🟢 New key added: ${key}`, acc[key]);
+      } else {
+        acc[key].pro_goods_num += Number(item.pro_goods_num || item.pro_quantity) || 0;
+        console.log(`🔁 Updated key: ${key}`, acc[key]);
+      }
+      return acc;
+    }, {})
+  );
+
+  console.log('✅ validateGrouped:', validateGrouped);
+
+  //ตรวจสอบ stock แยกตาม pro_activity_id + pro_sku_price_id
+  validateGrouped.forEach(product => {
+    const totalQuantity = product.pro_goods_num || 0;
+    const stockAvailable = Number(product.pro_stock ?? product.stock ?? 0); // ใช้ pro_stock หรือ stock
+
+    // const key = `${product.pro_activity_id}_${product.pro_sku_price_id}`;
+    // const lastQuantity = grouped[key]?.last_quantity || 0;
+
+    const key = `${product.pro_activity_id}_${product.pro_sku_price_id}`;
+    // ใช้ last_quantity จาก groupedLastQuantity แทน grouped
+    const lastQuantity = groupedLastQuantity[key]?.last_quantity || 0;
+
+    console.log(`🧮 Checking product: ${product.pro_erp_title || product.pro_title}`, {
+      totalQuantity,
+      stockAvailable,
+      lastQuantity
+    });
+
+    if (totalQuantity > stockAvailable) {
+      productErrors.push({
+        title: product.pro_erp_title || product.pro_title || '(ไม่มีชื่อ)',
+        quantity: totalQuantity,
+        quantity_plus: lastQuantity,
+        stock: stockAvailable
+      });
+      console.warn('❌ Stock not enough:', product);
+    }
+  });
+
+  if (productErrors.length > 0) {
+    const messages = productErrors.map(p =>
+      `• ${p.title} (ขอเพิ่มล่าสุด: ${p.quantity_plus}, รวม: ${p.quantity}, คลังมี: ${p.stock})`
+    ).join('<br>');
+
+    Swal.fire({
+      icon: 'error',
+      title: 'สินค้าเกินจากสต๊อก',
+      // text: 'กรุณาตรวจสอบรายการสินค้า:\n' + messages ,
+      html: 'กรุณาตรวจสอบรายการสินค้า:<br>' + messages,
+      confirmButtonText: 'ตกลง'
+    });
+
+    console.error('🛑 ส่งข้อมูลถูกยกเลิกเพราะสินค้าเกินสต๊อก');
+    return; // ❌ หยุดการส่งข้อมูล
+  }
+
+  console.log('✅ สินค้าทั้งหมดผ่านการตรวจสอบ stock');
+
+
+  // const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+  // const groupedArray = Object.values(grouped);
 
 
   const newproduct = [];
@@ -725,7 +804,11 @@ function confirmSelection() {
 
 
   console.log('✅ Grouped  resultnewproduct:', newproduct);
-  console.log('✅ Grouped  result groupedArray:', groupedArray);
+  console.log('✅ Grouped  result groupedArray:', groupedLastQuantity);
+  // console.log('✅ Grouped  result groupedArray:', groupedArray);
+  // console.log('✅ Grouped  result groupedArray:', groupedArray);
+
+  
   // const selectedProducts = tableData.value
   //   .filter(p => selectedIds.value.includes(p.id))
   //   .map(p => ({
@@ -811,7 +894,7 @@ async function SelectProductProMonth(newproduct) {
         // pro_units: p.pro_units || '',
         pro_units: p.pro_unit || '',
         amount: p.pro_goods_num || 0,
-        stock: p.pro_stock || 0,
+        stock: p.stock || 0,
         // stock: p.stock || 0,
       }));
 

@@ -703,6 +703,8 @@ function confirmSelection() {
           ...item,
           pro_goods_num: quantity,
           pro_quantity: quantity,
+          last_quantity: quantity,
+          // last_quantity: 0, // เริ่มจาก 0 ก่อน
           pro_erp_title: item.pro_erp_title || item.erp_title || item.title,
           pro_image: item.pro_images || item.pro_image || '', // ✅ ตั้งชื่อใหม่
           pro_goods_price: item.pro_goods_price || item.pro_unit_price, // ✅ ตั้งชื่อใหม่
@@ -726,118 +728,152 @@ function confirmSelection() {
 
   // const productErrors = [];
 
+  // const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+  // const groupedArray = Object.values(grouped);
+
+
+  ///////////////////////////////
+  const productErrors = [];
+
+  // 👇 ใช้ grouped เดิมเพื่อส่งข้อมูลต่อ
+  // const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+  // const groupedArray = Object.values(grouped);
+  // console.log('🔹 grouped:', grouped);
+  // console.log('🔹 groupedArray:', groupedArray);
+
+  // สร้าง grouped ทั้งหมดจาก sum_products
   const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
-  const groupedArray = Object.values(grouped);
 
+  // แยก grouped สำหรับ last_quantity เก็บจาก selectedPromotionProducts (รายการเพิ่มใหม่)
+  const groupedLastQuantity = groupBy(selectedPromotionProducts, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+  console.log('🔹 grouped:', grouped);
+  console.log('🔹 groupedArray:', groupedLastQuantity);
 
+  // ✅ สร้าง validateGrouped ใหม่ โดยใช้ key เป็น pro_activity_id + pro_sku_price_id
+  const validateGrouped = Object.values(
+    sum_products.reduce((acc, item) => {
+      const key = `${item.pro_activity_id}_${item.pro_sku_price_id}`;
+      console.log('🔸 Reduce item:', item);
+      if (!acc[key]) {
+        acc[key] = {
+          ...item,
+          pro_goods_num: Number(item.pro_goods_num || item.pro_quantity) || 0
+          // pro_quantity: Number(item.pro_goods_num || item.pro_quantity) || 0
+        };
+        console.log(`🟢 New key added: ${key}`, acc[key]);
+      } else {
+        acc[key].pro_goods_num += Number(item.pro_goods_num || item.pro_quantity) || 0;
+        console.log(`🔁 Updated key: ${key}`, acc[key]);
+      }
+      return acc;
+    }, {})
+  );
 
-///////////////////////////////
-// const productErrors = [];
+  console.log('✅ validateGrouped:', validateGrouped);
 
-// // 👇 ใช้ grouped เดิมเพื่อส่งข้อมูลต่อ
-// const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
-// const groupedArray = Object.values(grouped);
+  //ตรวจสอบ stock แยกตาม pro_activity_id + pro_sku_price_id
+  validateGrouped.forEach(product => {
+    const totalQuantity = product.pro_goods_num || 0;
+    const stockAvailable = Number(product.pro_stock ?? product.stock ?? 0); // ใช้ pro_stock หรือ stock
 
-// // ✅ สร้าง validateGrouped ใหม่ โดยใช้ key เป็น pro_activity_id + pro_sku_price_id
-// const validateGrouped = Object.values(
-//   sum_products.reduce((acc, item) => {
-//     const key = `${item.pro_activity_id}_${item.pro_sku_price_id}`;
-//     if (!acc[key]) {
-//       acc[key] = {
-//         ...item,
-//         pro_quantity: Number(item.pro_quantity) || 0
-//       };
-//     } else {
-//       acc[key].pro_quantity += Number(item.pro_quantity) || 0;
-//     }
-//     return acc;
-//   }, {})
-// );
+    // const key = `${product.pro_activity_id}_${product.pro_sku_price_id}`;
+    // const lastQuantity = grouped[key]?.last_quantity || 0;
 
-// // ✅ ตรวจสอบ stock แยกตาม pro_activity_id + pro_sku_price_id
-// validateGrouped.forEach(product => {
-//   const totalQuantity = product.pro_quantity || 0;
-//   const stockAvailable = Number(product.pro_stock ?? product.stock ?? 0); // ใช้ pro_stock หรือ stock
+    const key = `${product.pro_activity_id}_${product.pro_sku_price_id}`;
+    // ใช้ last_quantity จาก groupedLastQuantity แทน grouped
+    const lastQuantity = groupedLastQuantity[key]?.last_quantity || 0;
 
-//   if (totalQuantity > stockAvailable) {
-//     productErrors.push({
-//       title: product.pro_erp_title || product.pro_title || '(ไม่มีชื่อ)',
-//       quantity: totalQuantity,
-//       stock: stockAvailable
-//     });
-//   }
-// });
+    console.log(`🧮 Checking product: ${product.pro_erp_title || product.pro_title}`, {
+      totalQuantity,
+      stockAvailable,
+      lastQuantity
+    });
 
-// if (productErrors.length > 0) {
-//   const messages = productErrors.map(p =>
-//     `• ${p.title} (ขอ: ${p.quantity}, คลังมี: ${p.stock})`
-//   ).join('\n');
+    if (totalQuantity > stockAvailable) {
+      productErrors.push({
+        title: product.pro_erp_title || product.pro_title || '(ไม่มีชื่อ)',
+        quantity: totalQuantity,
+        quantity_plus: lastQuantity,
+        stock: stockAvailable
+      });
+      console.warn('❌ Stock not enough:', product);
+    }
+  });
 
-//   Swal.fire({
-//     icon: 'error',
-//     title: 'สินค้าเกินจากสต๊อก',
-//     text: 'กรุณาตรวจสอบรายการสินค้า:\n' + messages,
-//     confirmButtonText: 'ตกลง'
-//   });
+  if (productErrors.length > 0) {
+    const messages = productErrors.map(p =>
+      `• ${p.title} (ขอเพิ่มล่าสุด: ${p.quantity_plus}, รวม: ${p.quantity}, คลังมี: ${p.stock})`
+    ).join('<br>');
 
-//   return; // ❌ หยุดการส่งข้อมูล
-// }
+    Swal.fire({
+      icon: 'error',
+      title: 'สินค้าเกินจากสต๊อก',
+      // text: 'กรุณาตรวจสอบรายการสินค้า:\n' + messages ,
+      html: 'กรุณาตรวจสอบรายการสินค้า:<br>' + messages,
+      confirmButtonText: 'ตกลง'
+    });
 
-// const productErrors = [];
+    console.error('🛑 ส่งข้อมูลถูกยกเลิกเพราะสินค้าเกินสต๊อก');
+    return; // ❌ หยุดการส่งข้อมูล
+  }
 
-// // 👇 ใช้ grouped เดิมเพื่อส่งข้อมูลต่อ (แต่เราจะกรองทีหลัง)
-// const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+  console.log('✅ สินค้าทั้งหมดผ่านการตรวจสอบ stock');
 
-// // ✅ สร้าง validateGrouped แยกตาม activity+sku_price_id
-// const validateGrouped = Object.values(
-//   sum_products.reduce((acc, item) => {
-//     const key = `${item.pro_activity_id}_${item.pro_sku_price_id}`;
-//     if (!acc[key]) {
-//       acc[key] = {
-//         ...item,
-//         pro_quantity: Number(item.pro_quantity) || 0
-//       };
-//     } else {
-//       acc[key].pro_quantity += Number(item.pro_quantity) || 0;
-//     }
-//     return acc;
-//   }, {})
-// );
+  // const productErrors = [];
 
-// // ✅ ตรวจสอบ stock
-// const errorKeys = new Set(); // 👉 สำหรับเก็บ key ของสินค้าที่เกิน stock
+  // // 👇 ใช้ grouped เดิมเพื่อส่งข้อมูลต่อ (แต่เราจะกรองทีหลัง)
+  // const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
 
-// validateGrouped.forEach(product => {
-//   const key = `${product.pro_activity_id}_${product.pro_sku_price_id}`;
-//   const totalQuantity = product.pro_quantity || 0;
-//   const stockAvailable = Number(product.pro_stock ?? product.stock ?? 0);
+  // // ✅ สร้าง validateGrouped แยกตาม activity+sku_price_id
+  // const validateGrouped = Object.values(
+  //   sum_products.reduce((acc, item) => {
+  //     const key = `${item.pro_activity_id}_${item.pro_sku_price_id}`;
+  //     if (!acc[key]) {
+  //       acc[key] = {
+  //         ...item,
+  //         pro_quantity: Number(item.pro_quantity) || 0
+  //       };
+  //     } else {
+  //       acc[key].pro_quantity += Number(item.pro_quantity) || 0;
+  //     }
+  //     return acc;
+  //   }, {})
+  // );
 
-//   if (totalQuantity > stockAvailable) {
-//     errorKeys.add(key); // ❗ เก็บ key ไว้ใช้กรอง newproduct ทีหลัง
+  // // ✅ ตรวจสอบ stock
+  // const errorKeys = new Set(); // 👉 สำหรับเก็บ key ของสินค้าที่เกิน stock
 
-//     productErrors.push({
-//       title: product.pro_erp_title || product.pro_title || '(ไม่มีชื่อ)',
-//       quantity: totalQuantity,
-//       stock: stockAvailable
-//     });
-//   }
-// });
+  // validateGrouped.forEach(product => {
+  //   const key = `${product.pro_activity_id}_${product.pro_sku_price_id}`;
+  //   const totalQuantity = product.pro_quantity || 0;
+  //   const stockAvailable = Number(product.pro_stock ?? product.stock ?? 0);
 
-// // ❗ ถ้ามี error → alert แล้ว return
-// if (productErrors.length > 0) {
-//   const messages = productErrors.map(p =>
-//     `• ${p.title} (ขอ: ${p.quantity}, คลังมี: ${p.stock})`
-//   ).join('\n');
+  //   if (totalQuantity > stockAvailable) {
+  //     errorKeys.add(key); // ❗ เก็บ key ไว้ใช้กรอง newproduct ทีหลัง
 
-//   Swal.fire({
-//     icon: 'error',
-//     title: 'สินค้าเกินจากสต๊อก',
-//     text: 'กรุณาตรวจสอบรายการสินค้า:\n' + messages,
-//     confirmButtonText: 'ตกลง'
-//   });
+  //     productErrors.push({
+  //       title: product.pro_erp_title || product.pro_title || '(ไม่มีชื่อ)',
+  //       quantity: totalQuantity,
+  //       stock: stockAvailable
+  //     });
+  //   }
+  // });
 
-//   return; // ❌ หยุดการส่งข้อมูล
-// }
+  // // ❗ ถ้ามี error → alert แล้ว return
+  // if (productErrors.length > 0) {
+  //   const messages = productErrors.map(p =>
+  //     `• ${p.title} (ขอ: ${p.quantity}, คลังมี: ${p.stock})`
+  //   ).join('\n');
+
+  //   Swal.fire({
+  //     icon: 'error',
+  //     title: 'สินค้าเกินจากสต๊อก',
+  //     text: 'กรุณาตรวจสอบรายการสินค้า:\n' + messages,
+  //     confirmButtonText: 'ตกลง'
+  //   });
+
+  //   return; // ❌ หยุดการส่งข้อมูล
+  // }
 
   // // เช็กยอดรวมกับ stock
   // groupedArray.forEach(product => {
@@ -877,7 +913,7 @@ function confirmSelection() {
 
 
   console.log('✅ Grouped  resultnewproduct:', newproduct);
-  console.log('✅ Grouped  result groupedArray:', groupedArray);
+  console.log('✅ Grouped  result groupedArray:', groupedLastQuantity);
   // console.log('✅ Grouped  result groupedArray:', groupedArray);
 
 
@@ -982,7 +1018,7 @@ async function submittedProduct(newproduct) {
         // const emitTitles = selectedProducts.map(p => ({
         pro_goods_id: p.pro_goods_id || 0,
         pro_activity_id: p.pro_activity_id || 0,
-        pro_title: p.pro_erp_title || p.pro_title || '(ไม่มีชื่อ)',
+        pro_title: p.pro_title || '(ไม่มีชื่อ)', //p.pro_erp_title ||
         pro_erp_title: p.pro_erp_title || p.pro_title || '(ไม่มีชื่อ)',
         pro_goods_price: p.pro_goods_price || 0,
         pro_sku_price_id: p.pro_sku_price_id || 0,

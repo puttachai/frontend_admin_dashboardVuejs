@@ -306,6 +306,7 @@
             <!-- <ProductSelector v-if="showProductSelector" :productList="Apiproducts" @close="showProductSelector = false"
                 @select-products="addSelectedProducts" /> -->
 
+            <!--  ไม่ได้ใช้ สำรองไว้ตอนแก้ไขสินค้า  -->
             <ProductSelector v-if="showProductSelectoronly" :productList="Apiproducts"
                 @close="showProductSelectoronly = false" @select-products="replaceProductInRow" />
 
@@ -367,7 +368,7 @@
                                             <span class="material-icons text-gray-400 text-4xl">broken_image</span>
                                         </template>
                                     </td>
-                                    <td class="px-4 py-2 border">{{ product.pro_erp_title == 0 ? product.pro_title :
+                                    <td class="px-4 py-2 border">{{ product.pro_erp_title === '0' ? product.pro_title :
                                         product.pro_erp_title }}</td>
                                     <td class="px-4 py-2 border">{{ product.pro_goods_sku_text || '-' }}</td>
                                     <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
@@ -375,16 +376,19 @@
                                         <input type="number" v-model.pro_quantity="product.pro_quantity" min="1" placeholder="จำนวน"
                                             class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
                                     </td> -->
-                                    <!-- <td class="px-4 py-2 border">
-                                        <input type="number" :min="0" :max="product.pro_stock" step="1"
-                                            v-model.number="product.pro_quantity" @input="validateQuantity(product)"
+                                    <td class="px-4 py-2 border">
+                                        <!-- @input="validateQuantity(product)" -->
+                                        <input type="number" :min="1" :max="product.pro_stock" step="1"
+                                            v-model.number="product.pro_quantity"
+                                            @blur="onQuantityChange(product, index)"
                                             class="w-full px-2 py-1 border rounded" />
-                                    </td> -->
-                                    <td class="px-4 py-2 border">{{ product.pro_quantity }}</td>
+                                    </td>
+                                    <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
                                     <!-- <td class="px-4 py-2 border">{{ product.pro_stock }}</td> -->
                                     <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
                                     <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
-                                    <td class="px-4 py-2 border">{{ totalprice(product) }}</td>
+                                    <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString() }}</td>
+                                    <!-- <td class="px-4 py-2 border">{{ totalprice(product) }}</td> -->
                                     <!-- <td class="px-4 py-2 border text-red-500 cursor-pointer hover:text-red-700"
                                         :disabled="isReadOnly"
                                         @click="removeProduct(index, activityId)">
@@ -500,7 +504,7 @@
 
             <!-- รวม -->
             <!-- รวม -->
-            <div class="mt-6 text-right space-y-1">
+            <!-- <div class="mt-6 text-right space-y-1">
                 <div class="text-gray-700">มูลค่ารวมก่อนภาษี:
                     <span class="ml-2 text-gray-700">{{ totalAmountBeforeDiscount.toFixed(2) }}</span>
                 </div>
@@ -517,7 +521,39 @@
                     มูลค่ารวมสุทธิ:
                     <span class="ml-2 text-blue-600">{{ grandTotal }}</span>
                 </div>
+            </div> -->
+
+            <div class="mt-6 text-right space-y-1">
+                <!-- ซ่อนมูลค่ารวมก่อนภาษี เมื่อ isVatIncluded === true -->
+                <div v-if="!isVathidden" class="text-gray-700">
+                    มูลค่ารวมก่อนภาษี:
+                    <span class="ml-2 text-gray-700">{{ Number(totalAmountBeforeDiscount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2, maximumFractionDigits: 2
+                    }) }}</span>
+                </div>
+
+                <div class="text-gray-700 flex items-center justify-end">
+                    <input type="checkbox" v-model="isVathidden" id="vatCheckbox" :disabled="isReadOnly" class="mr-2" />
+                    <label for="vatCheckbox">ซ่อนภาษีมูลค่าเพิ่ม (7%) และมูลค่าก่อนภาษี</label>
+                    <!-- ซ่อนภาษีเมื่อ isVatIncluded === true -->
+                    <span v-if="!isVathidden" class="ml-2 text-gray-700">
+                        {{ Number(totalAmountBeforeDiscount * 0.07).toLocaleString(undefined, {
+                            minimumFractionDigits:
+                                2,
+                            maximumFractionDigits: 2
+                        }) }}
+                    </span>
+                </div>
+
+                <div class="text-xl font-bold text-purple-700 mt-2">
+                    มูลค่ารวมสุทธิ:
+                    <span class="ml-2 text-blue-600">{{ grandTotal.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }) }}</span>
+                </div>
             </div>
+
 
             <!-- <div class="mt-6 text-right space-y-1">
                 <div class="text-gray-700">มูลค่ารวมก่อนภาษี: <span class="ml-2 text-gray-700">{{
@@ -835,6 +871,7 @@ export default {
             isLoading: false, // สำหรับ loading spinner
 
             isVatIncluded: true, //  เริ่มต้นให้คิดภาษี
+            isVathidden: true, //  เริ่มต้นให้คิดภาษี
 
             // ตัวแปรควบคุม popup
             showAddressPopup: false, // ควบคุมการแสดง popup ที่อยู่]
@@ -1032,7 +1069,9 @@ export default {
         grandTotal() {
             const netBeforeVat = this.totalAmountBeforeDiscount;
             const vat = this.isVatIncluded ? netBeforeVat * 0.07 : 0;
-            return (netBeforeVat + vat).toFixed(2);
+            // return (netBeforeVat + vat).toFixed(2);
+            // return (netBeforeVat + vat).toFixed(2);
+            return netBeforeVat + vat; // ✅ return เป็น Number
         },
         // ตรวจสอบว่าเป็นหน้าแก้ไขหรือสร้างใหม่
         isCreatePage() {
@@ -1051,7 +1090,117 @@ export default {
 
     methods: {
 
+        // onQuantityChange(product, index) {
+        //     // ตรวจสอบค่าให้ถูกต้องก่อนส่ง
+        //     if (product.pro_quantity < 1) {
+        //         product.pro_quantity = 1;
+        //     }
+        //     if (product.pro_quantity > product.pro_stock) {
+        //         product.pro_quantity = product.pro_stock;
+        //     }
 
+        //     // เรียกส่งข้อมูลสินค้าไป API
+        //     this.submittedProduct(product, index);
+        // },
+
+        async submittedProduct(product, index) {
+
+            try {
+                const token = localStorage.getItem('token');
+
+                // ✅ แปลงรูปแบบข้อมูลก่อนส่ง
+                const payloadProduct = {
+                    pro_activity_id: product.pro_activity_id || 0,
+                    pro_goods_id: product.pro_goods_id,
+                    // pro_code: product.pro_sku_price_id || '', // ตรวจสอบหรือใส่ fallback
+                    pro_goods_price: parseFloat(product.pro_unit_price) || 0,
+                    pro_sku_price_id: product.pro_sku_price_id,
+                    pro_erp_title: product.pro_erp_title || '',
+                    pro_goods_num: product.pro_quantity, // หรือ pro_goods_num ก็ได้ ถ้า sync แล้ว
+                    pro_image: product.pro_images, // เปลี่ยนชื่อให้ตรง API
+                    pro_sn: product.pro_sn,
+                    pro_title: product.pro_title,
+                    pro_units: product.pro_units
+                };
+
+                const payload = {
+                    products: [payloadProduct]
+                };
+
+                const response = await axios.post(
+                    `${BASE_URL}/cart_out/index`,
+                    payload,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            token: token,
+                        },
+                    }
+                );
+
+                console.log(' 🛑 response :', response);
+
+                if (response.data.code === 1) {
+                    const data = response.data.data.products || [];
+                    console.log('API response products:', data);
+
+                    if (data.length > 0) {
+                        // แยก item กับ promotions
+                        // const items = data.filter(p => p.ML_Note === 'item' || p.ML_Note === 'itemmonth');
+                        // const promotions = data.filter(p => p.ML_Note === 'promotion_day' || p.ML_Note === 'promotion');
+                        const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
+                        const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
+                        const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
+
+                        // สมมติว่า items จะมีแค่ 1 รายการ (ตาม index ที่ส่งมา)
+                        const itemData = items[0] || {};
+
+                        this.selectedProducts[index] = {
+                            ...this.selectedProducts[index],
+                            ...itemData,
+                            gifts: gifts.length > 0 ? gifts : [],
+                            promotions: promotions.length > 0 ? promotions : [],
+                            // gifts: [] หรือถ้ามีข้อมูล gifts จาก API ก็จัดการเหมือนกัน
+                        };
+                    }
+
+                    // if (data.length > 0) {
+                    //     // อัปเดต selectedProducts ที่ตำแหน่ง index ด้วยข้อมูลที่ได้กลับมา
+                    //     this.selectedProducts[index] = {
+                    //         ...this.selectedProducts[index],
+                    //         promotions: data[0].promotions || [],  // ถ้า API ส่ง promotions มาให้ใช้เลย ถ้าไม่มีก็ []
+                    //         gifts: data[0].gifts || [],            // เช่นเดียวกัน
+                    //         // promotions: [],
+                    //         // gifts: [],
+                    //         ...data[0],
+                    //     };
+                    //     // this.$set(this.selectedProducts, index, {
+                    //     //     ...this.selectedProducts[index],
+                    //     //     ...data[0],
+                    //     // });
+                    // }
+                } else {
+                    alert(response.data.message || 'เกิดข้อผิดพลาด');
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ API');
+                console.error(error);
+            }
+        },
+
+        onQuantityChange(product, index) {
+            if (product.pro_quantity < 1) {
+                product.pro_quantity = 1;
+            }
+            if (product.pro_quantity > product.pro_stock) {
+                product.pro_quantity = product.pro_stock;
+            }
+
+            // อัปเดต pro_goods_num ให้ตรงกับ pro_quantity
+            product.pro_goods_num = product.pro_quantity;
+
+            this.submittedProduct(product, index);
+        },
 
         // groupByActivityId(products) {
         //     return products.reduce((acc, item) => {
@@ -3070,6 +3219,7 @@ export default {
                             pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
                             pro_images: item.pro_image || '',
                             pro_quantity: item.pro_goods_num || 0,
+                            pro_goods_num: item.pro_goods_num || 0,
                             pro_units: matchedTitle.pro_units || item.pro_units || '',
                             pro_stock: matchedTitle.stock || 0,
 
@@ -3548,100 +3698,100 @@ export default {
         },
 
 
-        async submittedProduct(selectedProducts) {
-            const gettoken = localStorage.getItem('token');
+        // async submittedProduct(selectedProducts) {
+        //     const gettoken = localStorage.getItem('token');
 
-            console.log('Check selectedProducts : ', selectedProducts)
+        //     console.log('Check selectedProducts : ', selectedProducts)
 
-            const mappedProducts = (selectedProducts || [])
-                .filter(p => p && typeof p === 'object')
-                .map(p => ({
-                    pro_activity_id: p.activity_id || 0,
-                    pro_code: p.pro_code || '',
-                    pro_erp_title: p.pro_erp_title || '',
-                    pro_goods_id: p.pro_goods_id || 0,
-                    pro_goods_num: p.pro_quantity || p.pro_goods_num || 0,
-                    pro_goods_price: p.pro_unit_price || p.pro_goods_price || '0',
-                    pro_image: p.pro_images || p.pro_image || '',
-                    pro_m_code: p.pro_m_code || '',
-                    pro_sku_price_id: p.pro_id || p.pro_sku_price_id || 0,
-                    pro_sn: p.pro_sn || '',
-                    pro_title: p.pro_title || p.pro_erp_title || '',
-                    pro_units: p.pro_units || '',
-                    stock: p.pro_stock || p.stock || 0
-                }));
+        //     const mappedProducts = (selectedProducts || [])
+        //         .filter(p => p && typeof p === 'object')
+        //         .map(p => ({
+        //             pro_activity_id: p.activity_id || 0,
+        //             pro_code: p.pro_code || '',
+        //             pro_erp_title: p.pro_erp_title || '',
+        //             pro_goods_id: p.pro_goods_id || 0,
+        //             pro_goods_num: p.pro_quantity || p.pro_goods_num || 0,
+        //             pro_goods_price: p.pro_unit_price || p.pro_goods_price || '0',
+        //             pro_image: p.pro_images || p.pro_image || '',
+        //             pro_m_code: p.pro_m_code || '',
+        //             pro_sku_price_id: p.pro_id || p.pro_sku_price_id || 0,
+        //             pro_sn: p.pro_sn || '',
+        //             pro_title: p.pro_title || p.pro_erp_title || '',
+        //             pro_units: p.pro_units || '',
+        //             stock: p.pro_stock || p.stock || 0
+        //         }));
 
 
 
-            try {
-                const response = await axios.post(
-                    `${BASE_URL}/cart_out/index`,
-                    {
-                        products: mappedProducts,
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'token': gettoken
-                        }
-                    }
-                );
+        //     try {
+        //         const response = await axios.post(
+        //             `${BASE_URL}/cart_out/index`,
+        //             {
+        //                 products: mappedProducts,
+        //             },
+        //             {
+        //                 headers: {
+        //                     'Content-Type': 'application/json',
+        //                     'token': gettoken
+        //                 }
+        //             }
+        //         );
 
-                console.log("✅ Response from API:", response);
+        //         console.log("✅ Response from API:", response);
 
-                if (response.data.code === 1) {
-                    Swal.fire({
-                        title: 'ส่งข้อมูลสำเร็จ',
-                        text: 'ข้อมูลถูกส่งไปยัง API แล้ว',
-                        icon: 'success'
-                    });
+        //         if (response.data.code === 1) {
+        //             Swal.fire({
+        //                 title: 'ส่งข้อมูลสำเร็จ',
+        //                 text: 'ข้อมูลถูกส่งไปยัง API แล้ว',
+        //                 icon: 'success'
+        //             });
 
-                    const data = response.data.data.products || [];
+        //             const data = response.data.data.products || [];
 
-                    const items = data.filter(item => item.pro_goods_id !== 0 && (item.ML_Note === 'item' || item.ML_Note === 'itemmonth'));
-                    const gifts = data.filter(item => item.pro_goods_id !== 0 && (item.ML_Note === 'zengsopng_day' || item.ML_Note === 'zengsopng_month'));
-                    const promotions = data.filter(item => item.pro_activity_id !== 0 && (item.ML_Note === 'promotion_day' || item.ML_Note === 'promotion_month'));
+        //             const items = data.filter(item => item.pro_goods_id !== 0 && (item.ML_Note === 'item' || item.ML_Note === 'itemmonth'));
+        //             const gifts = data.filter(item => item.pro_goods_id !== 0 && (item.ML_Note === 'zengsopng_day' || item.ML_Note === 'zengsopng_month'));
+        //             const promotions = data.filter(item => item.pro_activity_id !== 0 && (item.ML_Note === 'promotion_day' || item.ML_Note === 'promotion_month'));
 
-                    console.log('items', items);
-                    console.log('gifts', gifts);
-                    console.log('promotions', promotions);
+        //             console.log('items', items);
+        //             console.log('gifts', gifts);
+        //             console.log('promotions', promotions);
 
-                    return;
+        //             return;
 
-                    const emitTitles = selectedProducts.map(p => ({
-                        pro_goods_id: p.pro_goods_id || 0,
-                        pro_activity_id: p.pro_activity_id || 0,
-                        pro_erp_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',
-                        pro_goods_price: p.pro_goods_price || 0,
-                        pro_sn: p.pro_sn || '',
-                        pro_units: p.pro_units || '',
-                        amount: p.pro_goods_num || 0,
-                        stock: p.stock || 0,
-                    }));
+        //             const emitTitles = selectedProducts.map(p => ({
+        //                 pro_goods_id: p.pro_goods_id || 0,
+        //                 pro_activity_id: p.pro_activity_id || 0,
+        //                 pro_erp_title: p.pro_title || p.pro_erp_title || '(ไม่มีชื่อ)',
+        //                 pro_goods_price: p.pro_goods_price || 0,
+        //                 pro_sn: p.pro_sn || '',
+        //                 pro_units: p.pro_units || '',
+        //                 amount: p.pro_goods_num || 0,
+        //                 stock: p.stock || 0,
+        //             }));
 
-                    this.handleSelectedPromotionProductsFinal({ items, gifts, promotions, emitTitles }); // หรืออัปเดตตารางตรง ๆ ตามที่คุณต้องการ
+        //             this.handleSelectedPromotionProductsFinal({ items, gifts, promotions, emitTitles }); // หรืออัปเดตตารางตรง ๆ ตามที่คุณต้องการ
 
-                    Swal.fire({
-                        title: 'ส่งข้อมูลสำเร็จ',
-                        text: 'ข้อมูลถูกส่งไปยัง API แล้ว',
-                        icon: 'success'
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'ผิดพลาด',
-                        text: response.data.message || 'เกิดข้อผิดพลาด',
-                        icon: 'error'
-                    });
-                }
+        //             Swal.fire({
+        //                 title: 'ส่งข้อมูลสำเร็จ',
+        //                 text: 'ข้อมูลถูกส่งไปยัง API แล้ว',
+        //                 icon: 'success'
+        //             });
+        //         } else {
+        //             Swal.fire({
+        //                 title: 'ผิดพลาด',
+        //                 text: response.data.message || 'เกิดข้อผิดพลาด',
+        //                 icon: 'error'
+        //             });
+        //         }
 
-            } catch (err) {
-                Swal.fire({
-                    title: 'เชื่อมต่อ API ไม่ได้',
-                    text: err.message || 'กรุณาลองใหม่ภายหลัง',
-                    icon: 'error'
-                });
-            }
-        },
+        //     } catch (err) {
+        //         Swal.fire({
+        //             title: 'เชื่อมต่อ API ไม่ได้',
+        //             text: err.message || 'กรุณาลองใหม่ภายหลัง',
+        //             icon: 'error'
+        //         });
+        //     }
+        // },
 
 
 

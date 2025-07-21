@@ -21,10 +21,22 @@
         </button>
 
         <!-- Logo (ด้านซ้าย) src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" file:///D:/Users/first/Downloads/White and Black Minimal Bold Real Estate Brand Logo (2).png -->
-        <div class="Logomedia flex items-center">
+        <!-- <div class="Logomedia flex items-center">
           <router-link to="/dashboard">
             <img class="h-8 w-auto" src="../assets/logo.svg" alt="My Project" />
           </router-link>
+        </div>
+         -->
+        <div class="Logomedia flex items-center relative">
+          <router-link to="/dashboard">
+            <img class="h-8 w-auto" src="../assets/logo.svg" alt="My Project" />
+          </router-link>
+
+          <!-- ข้อความที่ขยับ -->
+          <div class="ml-2 overflow-hidden text-white whitespace-nowrap max-w-[220px] hidden md:block message-slide"
+            v-show="showSlidingMessage">
+            Welcome to Admin Dashboard!
+          </div>
         </div>
 
         <!-- Title (ตรงกลาง) -->
@@ -57,7 +69,7 @@
                 <span class="sr-only">Open user menu</span>
 
                 <span
-                  class="text-white text-smls truncate smls:max-w-[350px] sm:max-w-[250px] overflow-hidden whitespace-nowrap">
+                  class="text-white text-smls truncate smls:max-w-[350px] sm:max-w-[230px] overflow-hidden whitespace-nowrap">
                   ยินดีต้อนรับคุณ {{ contact }} {{ account }}
 
                 </span>
@@ -188,6 +200,8 @@ export default {
     const { t, locale } = useI18n()
 
     const showTranslate = ref(false)
+
+    const showSlidingMessage = ref(true)
 
     //โหลดค่าจาก localStorage ตอน component mount
     // onMounted(() => {
@@ -367,6 +381,9 @@ export default {
           localStorage.removeItem('selectDataCustomer')
           localStorage.removeItem('selectDataCustomerRow')
 
+          localStorage.removeItem('crm_account')
+          localStorage.removeItem('fa_account')
+
           router.push('/')
         } catch (error) {
           console.error('Error Delete employees:', error)
@@ -386,6 +403,7 @@ export default {
       locale,
       showTranslate,     // ✅ เพิ่มตรงนี้
       toggleTranslate,   // ✅ และเพิ่มฟังก์ชัน toggle
+      showSlidingMessage,
       // refreshData,
     }
   }
@@ -475,6 +493,68 @@ body>.skiptranslate {
     display: none;
   }
 }
+
+
+/*  */
+@keyframes slideInOut {
+  0% {
+    transform: translateX(-10%);
+    opacity: 0;
+  }
+  33.33% {
+    transform: translateX(-10%);
+    opacity: 0;
+  }
+  40% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  90% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-10%);
+    opacity: 0;
+  }
+}
+
+.message-slide {
+  animation: slideInOut 30s ease-in-out infinite;
+}
+
+/* ใช้ได้ */
+/* @keyframes slideInOut {
+  0% {
+    transform: translateX(-10%);
+    opacity: 0;
+  }
+  10% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  90% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-10%);
+    opacity: 0;
+  }
+}
+
+.message-slide {
+  animation: slideInOut 10s ease-in-out infinite;
+} */
+
+/* ซ่อนข้อความถ้าหน้าจอ <= 480px */
+@media (max-width: 480px) {
+  .message-slide {
+    display: none !important;
+  }
+}
+
+
 </style>
 
 <!-- 

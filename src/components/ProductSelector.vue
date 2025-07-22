@@ -92,7 +92,9 @@
           <tbody v-if="!isLoading">
             <tr v-for="item in paginatedProducts" :key="item.id">
               <td class="px-4 py-2 border text-center">
-                <input type="checkbox" v-model="selectedIds" :value="item.id" />
+                <!-- v-model="selectedIds" :value="item.id" -->
+                <input type="checkbox"  :checked="selectedIds.includes(item.id)"
+                  @change="handleCheckboxChange(item, $event)" />
               </td>
               <!-- @change="toggleSelectProduct(item.id, $event.target.checked)" , :checked="allSelectedIds.includes(item.id)"-->
 
@@ -367,6 +369,31 @@ function toggleSelectAll(event) {
 // }
 
 
+function handleCheckboxChange(item, event) {
+  if (item.stock === 0) {
+    event.target.checked = false; // ยกเลิกติ๊ก
+    Swal.fire({
+      icon: 'warning',
+      title: 'รายการสินค้าหมด',
+      text: `ไม่สามารถเลือก "${item.erp_title}" ได้ เนื่องจากสินค้าหมด`,
+    });
+    return;
+  }
+
+  if (event.target.checked) {
+    if (!selectedIds.value.includes(item.id)) {
+      selectedIds.value.push(item.id);
+      if (!item.amount || item.amount === 0) {
+        item.amount = 1; // เพิ่มจำนวนถ้ายังไม่กำหนด
+      }
+    }
+  } else {
+    selectedIds.value = selectedIds.value.filter(id => id !== item.id);
+    item.amount = 0;
+  }
+}
+
+
 function validateAmount(item) {
   if (item.amount < 0) {
     item.amount = 0;
@@ -498,27 +525,27 @@ async function SearchProducstSubmit() {
       // const getData
 
       if (response.data.code !== 1) {
-      console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
-    }
+        console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+      }
 
-    if (response.data.code === 1) {
-      const data = response.data.data;
-      const searchProducts = data.data2 || [];
+      if (response.data.code === 1) {
+        const data = response.data.data;
+        const searchProducts = data.data2 || [];
 
-      tableData.value = searchProducts;
+        tableData.value = searchProducts;
 
-      // tableData.value = searchProducts.map(item => ({
-      //   ...item,
-      //   imageLoaded: false
-      // }));
+        // tableData.value = searchProducts.map(item => ({
+        //   ...item,
+        //   imageLoaded: false
+        // }));
 
-      dataselect.value = searchProducts;
-      total.value = data.item_count || 0;
+        dataselect.value = searchProducts;
+        total.value = data.item_count || 0;
 
-      console.log("✅ ข้อมูล searchProducts:", searchProducts);
+        console.log("✅ ข้อมูล searchProducts:", searchProducts);
 
-      // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
-      isLoading.value = false; // โหลดเสร็จ
+        // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
+        isLoading.value = false; // โหลดเสร็จ
       } else {
         error.value = response.data.message || 'เกิดข้อผิดพลาด';
         Swal.fire({
@@ -571,27 +598,27 @@ async function SearchProducstSubmit() {
       // const getData
 
       if (response.data.code !== 1) {
-      console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
-    }
+        console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+      }
 
-    if (response.data.code === 1) {
-      const data = response.data.data;
-      const searchProducts = data.data2 || [];
+      if (response.data.code === 1) {
+        const data = response.data.data;
+        const searchProducts = data.data2 || [];
 
-      tableData.value = searchProducts;
+        tableData.value = searchProducts;
 
-      // tableData.value = searchProducts.map(item => ({
-      //   ...item,
-      //   imageLoaded: false
-      // }));
+        // tableData.value = searchProducts.map(item => ({
+        //   ...item,
+        //   imageLoaded: false
+        // }));
 
-      dataselect.value = searchProducts;
-      total.value = data.item_count || 0;
+        dataselect.value = searchProducts;
+        total.value = data.item_count || 0;
 
-      console.log("✅ ข้อมูล searchProducts:", searchProducts);
+        console.log("✅ ข้อมูล searchProducts:", searchProducts);
 
-      // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
-      isLoading.value = false; // โหลดเสร็จ
+        // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
+        isLoading.value = false; // โหลดเสร็จ
       } else {
         error.value = response.data.message || 'เกิดข้อผิดพลาด';
         Swal.fire({
@@ -714,7 +741,7 @@ function confirmSelection() {
 
   const productErrors = [];
 
-   const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
+  const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
 
   // แยก grouped สำหรับ last_quantity เก็บจาก selectedProducts (รายการเพิ่มใหม่)
   const groupedLastQuantity = groupBy(selectedProducts, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`);
@@ -808,7 +835,7 @@ function confirmSelection() {
   // console.log('✅ Grouped  result groupedArray:', groupedArray);
   // console.log('✅ Grouped  result groupedArray:', groupedArray);
 
-  
+
   // const selectedProducts = tableData.value
   //   .filter(p => selectedIds.value.includes(p.id))
   //   .map(p => ({

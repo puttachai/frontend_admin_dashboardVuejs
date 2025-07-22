@@ -520,7 +520,7 @@ body>.skiptranslate {
 }
 
 .message-slide {
-  animation: slideInOut 30s ease-in-out infinite;
+  animation: slideInOut 15s ease-in-out infinite;
 }
 
 /* ใช้ได้ */

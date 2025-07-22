@@ -3188,8 +3188,8 @@ export default {
                             activity_id: activityId,
                             pro_quantity: item.pro_goods_num,
                             pro_goods_num: item.pro_goods_num,
-                            gifts: fullActivityGifts, //fullActivityGifts || 
-                            promotions: fullActivityPromotions, //
+                            gifts: FinalGifts, //fullActivityGifts || 
+                            promotions: FinalPromotions, //
                             // เพิ่มค่าอื่น ๆ ที่จำเป็น
                         });
 
@@ -3546,8 +3546,8 @@ export default {
                             activity_id: activityId,
                             pro_quantity: item.pro_goods_num,
                             pro_goods_num: item.pro_goods_num,
-                            gifts: fullActivityGifts, //fullActivityGifts || 
-                            promotions: fullActivityPromotions, //
+                            gifts: FinalGifts, //fullActivityGifts || 
+                            promotions: FinalPromotions, //
                             // เพิ่มค่าอื่น ๆ ที่จำเป็น
                         });
 

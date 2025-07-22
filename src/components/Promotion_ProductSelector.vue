@@ -109,7 +109,9 @@
             <tr v-for="item in paginatedPromotion" :key="item.id + '-' + item.activity_id">
               <!-- <tr v-for="item in paginatedPromotion" :key="item.id"> -->
               <td class="px-4 py-2 border text-center">
-                <input type="checkbox" v-model="selectedIds" :value="item.id" />
+                <input type="checkbox" v-model="selectedIds" :value="item.id" 
+                 @change="handleCheckboxChange(item, $event)"
+                />
               </td>
               <td class="px-4 py-4 border text-center">
                 <template v-if="item.image">
@@ -330,6 +332,32 @@ function toggleSelectAll(event) {
 //     console.log('Error selectedIds:', pageIds);
 //   }
 // }
+
+
+function handleCheckboxChange(item, event) {
+  if (item.stock === 0) {
+    event.target.checked = false; // ยกเลิกติ๊ก
+    Swal.fire({
+      icon: 'warning',
+      title: 'รายการสินค้าหมด',
+      text: `ไม่สามารถเลือก "${item.erp_title}" ได้ เนื่องจากสินค้าหมด`,
+    });
+    return;
+  }
+
+  if (event.target.checked) {
+    if (!selectedIds.value.includes(item.id)) {
+      selectedIds.value.push(item.id);
+      if (!item.amount || item.amount === 0) {
+        item.amount = 1; // เพิ่มจำนวนถ้ายังไม่กำหนด
+      }
+    }
+  } else {
+    selectedIds.value = selectedIds.value.filter(id => id !== item.id);
+    item.amount = 0;
+  }
+}
+
 
 function validateAmount(item) {
 

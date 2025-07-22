@@ -7,7 +7,7 @@
                 <img src="../assets/logo.svg" alt="Logo" class="mx-auto h-16">
                 <!-- <h2 class="text-3xl font-extrabold text-gray-900">GEKKO</h2>
                 <p class="text-blue-500 text-sm tracking-wide uppercase">Shop</p> -->
-                <p class="mt-1 text-xl text-gray-700">Register</p>
+                <p class="mt-1 text-xl text-gray-700">Register Debt collection</p>
             </div>
 
             <div class="md:col-span-2 mb-2 pb-2">

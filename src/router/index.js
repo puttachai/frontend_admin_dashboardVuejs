@@ -216,18 +216,24 @@ const routes = [
 router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   const customerRaw = localStorage.getItem('selectDataCustomerRow');
+
+  // localStorage.removeItem('crm_account');
   
-  const permission = localStorage.getItem('permission');
+  // const permission = localStorage.getItem('permission');
+  const crm_account = localStorage.getItem('crm_account');
+  const fa_account = localStorage.getItem('fa_account');
+
+  console.log('Check crm_account: '+ crm_account ||'ไม่เจอ crm_account' + 'Check fa_account: ' + fa_account ||'ไม่เจอ fa_account');
   
   let customer_id = null;
-  let permissionData = null;
+  // let permissionData = null;
 
   try {
     const customerData = JSON.parse(customerRaw);
-    const permissionData = JSON.parse(permission);
+    // const permissionData = JSON.parse(permission);
     customer_id = customerData?.customer_id;
     console.log('check customer_id : ',customer_id);
-    console.log('check permissionData : ', permissionData);
+    // console.log('check permissionData : ', permissionData);
   } catch (err) {
     console.warn('❌ JSON parse failed:', err);
   }
@@ -237,7 +243,7 @@ router.beforeEach((to, from, next) => {
   }
 
   // ❗ ป้องกันเข้า /createsalelist ถ้าไม่มี customer_id
-  if (to.name === 'createsalelist' && !customer_id && permissionData === 'account_user' ) {
+  if (to.name === 'createsalelist' && !customer_id) {
     // alert('กรุณาเลือกข้อมูลลูกค้าก่อนเข้าสร้างรายการขาย');
     Swal.fire({
           title: 'กรุณาเลือกร้านค้าของลูกค้า',
@@ -245,6 +251,16 @@ router.beforeEach((to, from, next) => {
           icon: 'error',
       });
     return next('/customer');
+  }
+
+  if(crm_account === 'crm' && to.name === 'saleorder'){
+    
+    Swal.fire({
+      title:'ไม่มีสิทธิเข้าถึง',
+      text:'บัญชีของคุณไม่ได้รับอนุญาติให้เข้าถึงหน้านี้',
+      icon: 'warning'
+    });
+    return next('/dashboard');
   }
 
 //   if(to.name === 'saleList' && !customer_id && !order_id){

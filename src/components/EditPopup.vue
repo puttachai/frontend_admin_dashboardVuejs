@@ -70,7 +70,7 @@ import { ref } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL = import.meta.env.VITE_API_URL_LOCAL;
 
 const props = defineProps({
   employee: Object,

@@ -384,7 +384,8 @@
                                     </td>
                                     <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
                                     <!-- <td class="px-4 py-2 border">{{ product.pro_stock }}</td> -->
-                                    <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
+                                    <td class="px-4 py-2 border">{{ product.pro_goods_price || product.pro_unit_price }}
+                                    </td>
                                     <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
                                     <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString() }}</td>
                                     <!-- <td class="px-4 py-2 border">{{ totalprice(product) }}</td> -->
@@ -475,7 +476,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -1457,14 +1458,28 @@ export default {
 
         //     this.submittedProduct(product, index);
         // },
-        onQuantityChange(product) {
+
+        async onQuantityChange(product) {
             if (product.pro_quantity < 1) product.pro_quantity = 1;
             if (product.pro_quantity > product.pro_stock) product.pro_quantity = product.pro_stock;
 
             product.pro_goods_num = product.pro_quantity;
 
-            this.submittedProduct(); // แทนการส่งแค่ product เดียว
+            // ✅ รอให้ submittedProduct ทำงานเสร็จ
+            if (this.selectedProducts && this.selectedProducts.length > 0) {
+                await this.submittedProduct();
+            }
         },
+
+        // ใช้ได้ดีเลย
+        // onQuantityChange(product) {
+        //     if (product.pro_quantity < 1) product.pro_quantity = 1;
+        //     if (product.pro_quantity > product.pro_stock) product.pro_quantity = product.pro_stock;
+
+        //     product.pro_goods_num = product.pro_quantity;
+
+        //     this.submittedProduct(); // แทนการส่งแค่ product เดียว
+        // },
 
         // groupByActivityId(products) {
         //     return products.reduce((acc, item) => {
@@ -3615,8 +3630,41 @@ export default {
             );
         },
 
+        // removeProduct(index, activityId) {
+        //     // this.selectedProducts.splice(index, 1);
+        //     Swal.fire({
+        //         title: 'ยืนยันการลบ?',
+        //         text: 'คุณต้องการลบสินค้านี้ออกจากรายการใช่หรือไม่?',
+        //         icon: 'warning',
+        //         showCancelButton: true,
+        //         confirmButtonText: 'ใช่, ลบเลย!',
+        //         cancelButtonText: 'ยกเลิก'
+        //     }).then((result) => {
+        //         // if (result.isConfirmed) {
+        //         //     this.selectedProducts.splice(index, 1);
+        //         //     Swal.fire('ลบแล้ว!', 'สินค้าถูกลบออกจากรายการ.', 'success');
+        //         // }
+        //         if (result.isConfirmed) {
+        //             // หา index ที่แท้จริงจาก group
+        //             const group = this.groupByActivityId(this.selectedProducts)[activityId];
+        //             const productToRemove = group[index];
+
+        //             // ค้นหา index ใน selectedProducts
+        //             const realIndex = this.selectedProducts.findIndex(p =>
+        //                 p.pro_id === productToRemove.pro_id &&
+        //                 p.pro_activity_id === productToRemove.pro_activity_id &&
+        //                 p.st === productToRemove.st
+        //             );
+
+        //             if (realIndex !== -1) {
+        //                 this.selectedProducts.splice(realIndex, 1);
+        //                 Swal.fire('ลบแล้ว!', 'สินค้าถูกลบออกจากรายการ.', 'success');
+        //             }
+        //         }
+        //     });
+        // },
+
         removeProduct(index, activityId) {
-            // this.selectedProducts.splice(index, 1);
             Swal.fire({
                 title: 'ยืนยันการลบ?',
                 text: 'คุณต้องการลบสินค้านี้ออกจากรายการใช่หรือไม่?',
@@ -3625,28 +3673,43 @@ export default {
                 confirmButtonText: 'ใช่, ลบเลย!',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
-                // if (result.isConfirmed) {
-                //     this.selectedProducts.splice(index, 1);
-                //     Swal.fire('ลบแล้ว!', 'สินค้าถูกลบออกจากรายการ.', 'success');
-                // }
                 if (result.isConfirmed) {
-                    // หา index ที่แท้จริงจาก group
+                    // 1. ดึงกลุ่ม product ที่ activityId เดียวกัน
                     const group = this.groupByActivityId(this.selectedProducts)[activityId];
                     const productToRemove = group[index];
 
-                    // ค้นหา index ใน selectedProducts
-                    const realIndex = this.selectedProducts.findIndex(p =>
-                        p.pro_id === productToRemove.pro_id &&
-                        p.pro_activity_id === productToRemove.pro_activity_id
+                    if (!productToRemove) return;
+
+                    const {
+                        pro_goods_id,
+                        pro_activity_id,
+                        pro_sku_price_id,
+                        st
+                    } = productToRemove;
+
+                    // 2. ลบสินค้า, promotion, gift ที่มีค่าตรงกันทั้งหมด
+                    this.selectedProducts = this.selectedProducts.filter(p =>
+                        !(
+                            p.pro_goods_id === pro_goods_id &&
+                            p.pro_activity_id === pro_activity_id &&
+                            p.pro_sku_price_id === pro_sku_price_id &&
+                            p.st === st
+                        )
                     );
 
-                    if (realIndex !== -1) {
-                        this.selectedProducts.splice(realIndex, 1);
-                        Swal.fire('ลบแล้ว!', 'สินค้าถูกลบออกจากรายการ.', 'success');
+                    // 3. อัปเดตข้อมูลของโปรโมชั่นและของแถมใหม่ทันที
+                    // this.submittedProduct(); // เรียกเพื่อ refresh ของแถม / โปร ทันที
+                    // 3. อัปเดตข้อมูลของโปรโมชั่นและของแถมใหม่ทันที
+                    if (this.selectedProducts && this.selectedProducts.length > 0) {
+                        this.submittedProduct();
                     }
+
+
+                    Swal.fire('ลบแล้ว!', 'สินค้าถูกลบออกจากรายการ.', 'success');
                 }
             });
         },
+
 
         removeAllProducts() {
             if (this.selectedProducts.length === 0) {

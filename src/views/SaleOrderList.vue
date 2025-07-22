@@ -40,7 +40,9 @@
         </tbody>
 
         <tbody v-if="!isLoading">
-          <tr v-for="order in filteredOrders" :key="order.id" class="border-b hover:bg-gray-50">
+          <template v-for="order in filteredOrders" :key="order.id">
+          <tr class="border-b hover:bg-gray-50">
+          <!-- <tr v-for="order in filteredOrders" :key="order.id" class="border-b hover:bg-gray-50"> -->
             <!-- <tr v-for="order in saleOrders" :key="order.id" class="border-b hover:bg-gray-50"> -->
             <td class="p-3">{{ order.id }}</td>
             <td class="p-3">{{ order.sale_no }}</td>
@@ -87,17 +89,43 @@
               </router-link>
             </td>
           </tr>
+
+          <!-- ✅ แถวรายละเอียดเพิ่มเติม (ถ้ามีข้อมูลพ่วง) -->
+          <tr v-if="order.extra_details" class="bg-blue-50">
+            <td colspan="11" class="p-4 text-sm text-gray-700 border">
+              <!-- คุณสามารถปรับให้แสดงเป็นตาราง หรือข้อความ หรือ card ได้ -->
+              <div>
+                <strong>ข้อมูลเพิ่มเติม:</strong>
+                <ul class="list-disc ml-6 mt-2">
+                  <li v-for="(item, index) in order.extra_details" :key="index">{{ item }}</li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+          </template>
         </tbody>
       </table>
     </div>
 
     <!-- pagination -->
     <div class="flex justify-between items-center mt-4">
-      <!-- <span>Showing {{ saleOrders.length }} of {{ totalRows }} rows</span> -->
       <span>Showing {{ filteredOrders.length }} of {{ totalRows }} rows</span>
-      <!-- Pagination UI -->
-      <!-- คุณสามารถเพิ่ม Tailwind pagination component ที่นี่ -->
+      <div class="space-x-2">
+        <button :disabled="currentPage === 1" @click="goToPage(currentPage - 1)"
+          class="px-4 py-1 bg-gray-200 rounded">Prev</button>
+        <span>หน้า {{ currentPage }} / {{ totalPages }}</span>
+        <button :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)"
+          class="px-4 py-1 bg-gray-200 rounded">Next</button>
+      </div>
     </div>
+
+    <!-- pagination -->
+    <!-- <div class="flex justify-between items-center mt-4"> -->
+    <!-- <span>Showing {{ saleOrders.length }} of {{ totalRows }} rows</span> -->
+    <!-- <span>Showing {{ filteredOrders.length }} of {{ totalRows }} rows</span> -->
+    <!-- Pagination UI -->
+    <!-- คุณสามารถเพิ่ม Tailwind pagination component ที่นี่ -->
+    <!-- </div> -->
   </div>
 </template>
 
@@ -109,9 +137,12 @@ import axios from 'axios'
 const BASE_URL = import.meta.env.VITE_API_URL_LOCAL
 
 const saleOrders = ref([])
-const totalRows = ref(0)
-const searchQuery = ref('') // <- ช่องค้นหา
 
+const totalRows = ref(0)
+const currentPage = ref(1)
+const limit = 10
+
+const searchQuery = ref('') // <- ช่องค้นหา
 const isLoading = ref(false); // หรือ true ถ้าต้องการให้เริ่มต้นแสดง
 
 
@@ -121,18 +152,7 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 2,
   })
 
-// filter ตามคำค้นหา
-// const filteredOrders = computed(() => {
-//   if (!searchQuery.value.trim()) return saleOrders.value
 
-//   const keyword = searchQuery.value.toLowerCase()
-//   return saleOrders.value.filter(order =>
-//     order.sale_no?.toLowerCase().includes(keyword) ||
-//     order.customer_code?.toLowerCase().includes(keyword) ||
-//     order.shop_name?.toLowerCase().includes(keyword) || 
-//     order.mobile?.toLowerCase().includes(keyword)
-//   )
-// })
 
 const getDisplayStatus = (status) => {
   switch (status) {
@@ -195,34 +215,121 @@ function convertThaiDateToISO(dateStr) {
   return dateObj.toISOString().split('T')[0] // yyyy-mm-dd
 }
 
-onMounted(async () => {
+
+// ดึงข้อมูลหน้าปัจจุบัน
+async function fetchPage(page = 1) {
+  isLoading.value = true
   try {
+    const res = await axios.get(
+      `${BASE_URL}/api_admin_dashboard/backend/api/list_sale_orders/get_list_sale_order.php`,
+      { params: { page, limit } }
+    )
 
-    isLoading.value = true;
+    console.log('Check Log res :', res);
 
-    const response = await axios.get(`${BASE_URL}/api_admin_dashboard/backend/api/list_sale_orders/get_list_sale_order.php`)
-    console.log('Check log responseData:', response.data.data.list_order);
+    if (res.data.success) {
 
-    saleOrders.value = (response.data.data.list_order || []).map(item => ({
-      id: item.id,
-      sale_no: item.document_no,
-      customer_code: item.customer_code,
-      shop_name: item.full_name,
-      mobile: item.phone,
-      total_amount: item.final_total_price,
-      total_paid: item.final_total_price,
-      status: item.status,
-      created_at: item.created_at
-    }));
+      // console.log('Check Log res.data :',res.data);
+      saleOrders.value = res.data.data.list_order.map(item => ({
+        id: item.id,
+        sale_no: item.document_no,
+        customer_code: item.customer_code,
+        shop_name: item.full_name,
+        mobile: item.phone,
+        total_amount: item.final_total_price,
+        total_paid: item.final_total_price,
+        status: item.status,
+        created_at: item.created_at,
+        // ตัวอย่าง mock data
+        extra_details: item.extra_list || [
+          `รหัสสินค้า: ${item.id}-A`,
+          `ยอดคงเหลือ: 100.00`,
+          `หมายเหตุ: ตรวจสอบแล้ว`
+        ]
+      }))
 
-    // saleOrders.value = response.data.data.list_order || []
-    totalRows.value = response.data.total || response.data.data.list_order.length
+      console.log('Check Log saleOrders.value :', saleOrders.value);
 
-    isLoading.value = false;
-  } catch (error) {
-    console.error('❌ Failed to load sale orders:', error)
+      totalRows.value = res.data.data.total
+      currentPage.value = page
+    }
+  } catch (e) {
+    console.error(e)
+  } finally {
+    isLoading.value = false
   }
-});
+}
+
+onMounted(() => fetchPage(1))
+
+
+
+const totalPages = computed(() =>
+  Math.ceil(totalRows.value / limit)
+)
+
+function goToPage(page) {
+  if (page < 1 || page > totalPages.value) return
+  fetchPage(page)
+}
 
 
 </script>
+
+<!-- 
+// filter ตามคำค้นหา
+// const filteredOrders = computed(() => {
+//   if (!searchQuery.value.trim()) return saleOrders.value
+
+//   const keyword = searchQuery.value.toLowerCase()
+//   return saleOrders.value.filter(order =>
+//     order.sale_no?.toLowerCase().includes(keyword) ||
+//     order.customer_code?.toLowerCase().includes(keyword) ||
+//     order.shop_name?.toLowerCase().includes(keyword) || 
+//     order.mobile?.toLowerCase().includes(keyword)
+//   )
+// }) -->
+
+
+
+<!-- // const filteredOrders = computed(() => {
+//   if (!searchQuery.value.trim()) return saleOrders.value
+//   const kw = searchQuery.value.toLowerCase()
+//   return saleOrders.value.filter(o =>
+//     [o.sale_no, o.customer_code, o.shop_name, o.mobile, o.created_at]
+//       .some(str => str.toLowerCase().includes(kw))
+//   )
+// }) -->
+
+
+
+
+<!-- 
+// onMounted(async () => {
+//   try {
+
+//     isLoading.value = true;
+
+//     const response = await axios.get(`${BASE_URL}/api_admin_dashboard/backend/api/list_sale_orders/get_list_sale_order.php`)
+//     console.log('Check log responseData:', response.data.data.list_order);
+
+//     saleOrders.value = (response.data.data.list_order || []).map(item => ({
+//       id: item.id,
+//       sale_no: item.document_no,
+//       customer_code: item.customer_code,
+//       shop_name: item.full_name,
+//       mobile: item.phone,
+//       total_amount: item.final_total_price,
+//       total_paid: item.final_total_price,
+//       status: item.status,
+//       created_at: item.created_at
+//     }));
+
+//     // saleOrders.value = response.data.data.list_order || []
+//     totalRows.value = response.data.total || response.data.data.list_order.length
+
+//     isLoading.value = false;
+//   } catch (error) {
+//     console.error('❌ Failed to load sale orders:', error)
+//   }
+// }); -->

@@ -20,7 +20,8 @@
             <th class="p-3 border text-right">จำนวนเงิน</th>
             <th class="p-3 border text-right">ยอดชำระ</th>
             <th class="p-3 border">เวลาสร้าง</th>
-            <th class="p-3 border">สถานะ</th>
+            <th class="p-3 border">สถานะประเภทหนี้</th>
+            <th class="p-3 border">สถานะตรวจสอบ</th>
             <th class="p-3 border">การทำงาน</th>
           </tr>
         </thead>
@@ -49,6 +50,24 @@
             <td class="p-3 text-right">{{ formatCurrency(order.total_amount) }}</td>
             <td class="p-3 text-right">{{ formatCurrency(order.total_paid) }}</td>
             <td class="p-3">{{ order.created_at }}</td>
+            <td class="p-3 text-white" :class="{
+              'bg-green-500': order.status === 'ตรวจสอบเรียบร้อย',
+              'bg-yellow-500': order.status === 'รอตรวจสอบ',
+              'bg-red-500': order.status === 'การตรวจสอบล้มเหลว',
+              'bg-gray-800': order.status === 'ยังไม่ได้ตรวจสอบ',
+              'bg-black': order.status === 'ยกเลิกคำสั่งซื้อ',
+              // 'bg-green-500': order.status === 'เกินกำหนดชำระไม่เกิน 30 วัน', // ไม่เกิน 7 วัน 
+              // 'bg-yellow-500': order.status === 'เกินกำหนดชำระกิน 30 วัน',
+              // 'bg-red-500': order.status === 'เกินกำหนดชำระ 120 วัน', 
+              // 'bg-gray-800': order.status === 'เกินกำหนดชำระ 180 วัน',
+              // 'bg-black': order.status === 'ยกเลิกคำสั่งซื้อ'
+            }">
+              <span class="flex items-center space-x-1">
+                <span class="w-2 h-2 rounded-full bg-white"></span>
+                <span>{{ getDisplayStatus(order.status) }}</span>
+              </span>
+            </td>
+
             <td class="p-3">
               <!-- :class="order.status === 'ยังไม่ได้ตรวจสอบ' ? 'bg-gray-500' : 'bg-green-500'" -->
               <span class="flex items-center space-x-1">
@@ -103,7 +122,7 @@ const formatCurrency = (value) =>
   })
 
 // filter ตามคำค้นหา
-// const filtereหdOrders = computed(() => {
+// const filteredOrders = computed(() => {
 //   if (!searchQuery.value.trim()) return saleOrders.value
 
 //   const keyword = searchQuery.value.toLowerCase()
@@ -115,7 +134,20 @@ const formatCurrency = (value) =>
 //   )
 // })
 
+const getDisplayStatus = (status) => {
+  switch (status) {
+    case 'ตรวจสอบเรียบร้อย': return 'เกินกำหนดชำระไม่เกิน 30 วัน'; // เขียว
+    case 'รอตรวจสอบ': return 'เกินกำหนดชำระกิน 30 วัน'; // เหลือง
+    case 'การตรวจสอบล้มเหลว': return 'เกินกำหนดชำระ 120 วัน'; // แดง
+    case 'ยังไม่ได้ตรวจสอบ': return 'เกินกำหนดชำระ 180 วัน'; // ดำ
+    case 'ยกเลิกคำสั่งซื้อ': return 'ถูกยกเลิก';
+    default: return status;
+  }
+}
+
+
 const filteredOrders = computed(() => {
+
   const raw = searchQuery.value.trim()
   if (!raw) return saleOrders.value
 

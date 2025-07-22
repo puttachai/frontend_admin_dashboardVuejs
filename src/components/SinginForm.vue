@@ -56,6 +56,14 @@ const handleLogin = async () => {
     console.log("Show Data: ", response);
     // console.log(response.data.data.data.data2[0].nickname_admin);
 
+    const crm_accountSet =  undefined; //'crm' ||
+    const fa_accountSet = 'fa' || undefined;
+
+    // localStorage.setItem('crm_account', crm_accountSet);
+    // localStorage.setItem('fa_account', fa_accountSet);
+
+    // const accountType = localStorage.getItem('crm_account' || 'null' || localStorage.getItem('fa_account') || 'null');
+
     if (response.data.code == 1) {
 
       Swal.fire({
@@ -65,54 +73,87 @@ const handleLogin = async () => {
         showConfirmButton: false, // ไม่แสดงปุ่ม OK
       });
 
-      if (response.data.data.data.customer_count > 1) {
+      if (crm_accountSet === 'crm') {
+      // if (accountType === 'crm') {
 
+        if (response.data.data.data.customer_count > 1) { // ถ้าใช่ CRM เข้าหน้า customer
 
-        // const possiblePermissions = ['crm', 'account_user'];
-        // const permission = [];
+          // บันทึก token หรือตั้งค่า authenticated 
+          localStorage.setItem('isAuthenticated', 'true');
+          console.log("Log Respone Data:", response.data.data.data);
+          localStorage.setItem('account', mobile.value);
+          localStorage.setItem('password', password.value);
 
-        // // สุ่มแบบสุ่มว่าจะเอา permission ไหนบ้าง
-        // possiblePermissions.forEach(p => {
-        //   if (Math.random() < 0.5) { // มีโอกาส 50% ที่จะเลือกแต่ละ permission
-        //     permission.push(p);
-        //   }
-        // });
+          localStorage.setItem('msg', response.data.msg);
 
-        // เซ็ตลง localStorage แบบ string ที่ parse กลับได้
-        // localStorage.setItem('permission', JSON.stringify(permission));
+          const msg = localStorage.getItem('msg');
+          // console.log('Log msg: ',msg);
 
-        // console.log('Check permission: ', permission);
+          localStorage.setItem('crm_account', crm_accountSet);
+          console.log('Check crm_accountSet customer_count > 1: ',crm_accountSet);
 
-        // บันทึก token หรือตั้งค่า authenticated 
-        localStorage.setItem('isAuthenticated', 'true');
-        console.log("Log Respone Data:", response.data.data.data);
-        localStorage.setItem('account', mobile.value);
-        localStorage.setItem('password', password.value);
+          router.push('/customer');
 
-        localStorage.setItem('msg', response.data.msg);
+        } else { // ถ้าไม่ใช่ CRM เข้าหน้า DashBoard
 
-        const msg = localStorage.getItem('msg');
-        // console.log('Log msg: ',msg);
+          // บันทึก token หรือตั้งค่า authenticated 
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('token', response.data.data.token || '');
+          localStorage.setItem('level', response.data.data.level || '');
 
-        router.push('/customer');
+          // const permissions_crm ='crm';
+          // localStorage.setItem('permissions_crm', permissions_crm);
 
-      } else {
+          localStorage.setItem('account', mobile.value);
+          localStorage.setItem('password', password.value);
 
-        // บันทึก token หรือตั้งค่า authenticated 
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('token', response.data.data.token || '');
-        localStorage.setItem('level', response.data.data.level || '');
+          const getToken = localStorage.getItem('token');
+          console.log('Log getToken: ', getToken);
 
-        // const permissions_crm ='crm';
-        // localStorage.setItem('permissions_crm', permissions_crm);
+          localStorage.setItem('crm_account', crm_accountSet);
+          console.log('Check crm_accountSet customer_count < 1: ',crm_accountSet);
 
-        localStorage.setItem('account', mobile.value);
-        localStorage.setItem('password', password.value);
+          router.push('/dashboard');
+        }
+      } else if (fa_accountSet) {
+        if (response.data.data.data.customer_count > 1) { // ถ้าใช่ CRM เข้าหน้า customer
 
-        const getToken = localStorage.getItem('token');
-        console.log('Log getToken: ', getToken);
+          // บันทึก token หรือตั้งค่า authenticated 
+          localStorage.setItem('isAuthenticated', 'true');
+          console.log("Log Respone Data:", response.data.data.data);
+          localStorage.setItem('account', mobile.value);
+          localStorage.setItem('password', password.value);
 
-        router.push('/dashboard');
+          localStorage.setItem('msg', response.data.msg);
+
+          const msg = localStorage.getItem('msg');
+          // console.log('Log msg: ',msg);
+          localStorage.setItem('fa_account', fa_accountSet);
+          console.log('Check fa_accountSet customer_count > 1 : ',fa_accountSet);
+
+          router.push('/customer');
+
+        } else { // ถ้าไม่ใช่ CRM เข้าหน้า DashBoard
+
+          // บันทึก token หรือตั้งค่า authenticated 
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('token', response.data.data.token || '');
+          localStorage.setItem('level', response.data.data.level || '');
+
+          // const permissions_crm ='crm';
+          // localStorage.setItem('permissions_crm', permissions_crm);
+
+          localStorage.setItem('account', mobile.value);
+          localStorage.setItem('password', password.value);
+
+          const getToken = localStorage.getItem('token');
+          console.log('Log getToken: ', getToken);
+
+          localStorage.setItem('fa_account', fa_accountSet);
+          console.log('Check fa_accountSet customer_count < 1: ',fa_accountSet);
+
+          router.push('/dashboard');
+        }
       }
 
     } else {

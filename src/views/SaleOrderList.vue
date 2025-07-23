@@ -9,9 +9,9 @@
     </div>
 
     <div class="overflow-auto rounded-lg shadow-md">
-      <table class="min-w-full text-sm text-left text-gray-700  ">
+      <table class="min-w-full text-sm text-left text-gray-700 divide-x divide-gray-200 ">
         <thead class="bg-gray-100 text-xs uppercase border">
-          <tr>
+          <tr class="border-r border-gray-300">
             <th class="p-3 border">Id</th>
             <th class="p-3 border">หมายเลขสั่งซื้อ</th>
             <th class="p-3 border">รหัสลูกค้า</th>
@@ -20,6 +20,9 @@
             <th class="p-3 border text-right">จำนวนเงิน</th>
             <th class="p-3 border text-right">ยอดชำระ</th>
             <th class="p-3 border">เวลาสร้าง</th>
+            <th class="p-3 border">ระยะเครดิต (days)</th> <!-- เพิ่ม -->
+            <th class="p-3 border">วงเงิน (limit)</th> <!-- เพิ่ม -->
+            <th class="p-3 border">พนักงานขาย (Sales)</th> <!-- เพิ่ม -->
             <th class="p-3 border">สถานะประเภทหนี้</th>
             <th class="p-3 border">สถานะตรวจสอบ</th>
             <th class="p-3 border">การทำงาน</th>
@@ -39,9 +42,10 @@
           </tr>
         </tbody>
 
-        <tbody v-if="!isLoading">
+        <tbody v-if="!isLoading" class="text-xs">
           <template v-for="order in filteredOrders" :key="order.id">
-            <tr class="border-b hover:bg-gray-50">
+            <!-- divide-x divide-gray-200 -->
+            <tr class="border-b hover:bg-gray-50 ">
               <!-- <tr v-for="order in filteredOrders" :key="order.id" class="border-b hover:bg-gray-50"> -->
               <!-- <tr v-for="order in saleOrders" :key="order.id" class="border-b hover:bg-gray-50"> -->
               <td class="p-3">{{ order.id }}</td>
@@ -52,7 +56,20 @@
               <td class="p-3 text-right">{{ formatCurrency(order.total_amount) }}</td>
               <td class="p-3 text-right">{{ formatCurrency(order.total_paid) }}</td>
               <td class="p-3">{{ order.created_at }}</td>
-              <td class="p-3 text-white" :class="{
+
+              <td class="p-3">{{ order.deBcreditTerm ? order.deBcreditTerm : 'ไม่มีข้อมูลกำหนด' }}</td>
+              <td class="p-3">{{ !order.deBlimit || isNaN(order.deBlimit) ? 'ไม่มีวงเงิน' :
+                formatCurrency(order.deBlimit) }}</td>
+              <td class="p-3">{{ order.deBsalesP ? order.deBsalesP : 'ไม่มีข้อมูล' }}</td>
+              <!-- <td class="p-3">{{ order.status2 ? order.status2: 'ไม่มีสถานะ' }}</td> -->
+              <td :class="['p-3', getStatusColor(order.status2)]">
+
+                {{ getDisplayStatus(order.status2) }}
+              </td>
+
+              <!-- <td class="p-3">{{ order.status2 }}</td> -->
+
+              <!-- <td class="p-3 text-white" :class="{
                 'bg-green-500': order.status === 'ตรวจสอบเรียบร้อย',
                 'bg-yellow-500': order.status === 'รอตรวจสอบ',
                 'bg-red-500': order.status === 'การตรวจสอบล้มเหลว',
@@ -68,7 +85,7 @@
                   <span class="w-2 h-2 rounded-full bg-white"></span>
                   <span>{{ getDisplayStatus(order.status) }}</span>
                 </span>
-              </td>
+              </td> -->
 
               <td class="p-3">
                 <!-- :class="order.status === 'ยังไม่ได้ตรวจสอบ' ? 'bg-gray-500' : 'bg-green-500'" -->
@@ -91,17 +108,82 @@
             </tr>
 
             <!-- ✅ แถวรายละเอียดเพิ่มเติม (ถ้ามีข้อมูลพ่วง) -->
-            <tr v-if="order.extra_details" class="bg-blue-50">
-              <td colspan="11" class="p-4 text-sm text-gray-700 border">
-                <!-- คุณสามารถปรับให้แสดงเป็นตาราง หรือข้อความ หรือ card ได้ -->
-                <div>
+            <!-- <tr v-if="order.extra_details" class="bg-blue-50"> -->
+            <!-- <td colspan="11" class="p-4 text-sm text-gray-700 border"> -->
+            <!-- คุณสามารถปรับให้แสดงเป็นตาราง หรือข้อความ หรือ card ได้ -->
+            <!-- <div>
                   <strong>ข้อมูลเพิ่มเติม:</strong>
                   <ul class="list-disc ml-6 mt-2">
                     <li v-for="(item, index) in order.extra_details" :key="index">{{ item }}</li>
                   </ul>
                 </div>
               </td>
+            </tr> -->
+            <!-- แถวรายละเอียดเพิ่มเติม -->
+            <!-- <tr v-if="order.extra_details.length" class="bg-blue-50"> -->
+
+            <tr v-if="filteredExtraDetails(order).length > 0"
+              class="bg-blue-50 hover:bg-blue-100 transition-colors duration-300">
+              <td colspan="14" class="px-6 py-4 border rounded-md">
+                <div class="flex items-center space-x-2 text-blue-800 font-medium mb-3">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>ข้อมูลใบแจ้งหนี้ที่เกี่ยวข้อง</span>
+                </div>
+
+                <!-- Cards style -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+
+                  <div v-for="(d, i) in filteredExtraDetails(order)" :key="i"
+                    class="flex justify-between items-center bg-white shadow-sm rounded-lg p-4 border border-gray-200 transition-transform transform hover:scale-[1.015] hover:shadow-md duration-300">
+                    <!-- ข้อมูลฝั่งซ้าย -->
+                    <div class="text-sm text-gray-800">
+                      <div class="text-[13px]">
+                        <strong class="text-[13px]">Invoice No.:</strong> {{ d.miHvnos }}
+                      </div>
+                      <div class="text-[13px]">
+                        <strong class="text-[13px]">Due Date:</strong> {{ d.dueDate }}
+                      </div>
+                      <div class="text-[13px]">
+                        <strong class="text-[13px]">Overdue Days:</strong> {{ d.overdueDays }}
+                      </div>
+                      <div class="text-[13px]">
+                        <strong class="text-[13px]">Status:</strong> {{ getDisplayStatus(d.status2) }}
+                      </div>
+                      <div class="text-[13px]"><strong class="text-[13px]">Status:</strong> {{ d.status2 }}</div>
+                      <div class="text-[13px]">
+                        <strong class="text-[13px]">Amount Due:</strong> {{ formatCurrency(d.inInvAmount) }}
+                      </div>
+                    </div>
+
+                    <!-- ไอคอนฝั่งขวา -->
+                    <!-- <div class="w-14 h-14 flex items-center justify-center rounded-full shadow-inner"
+                      :class="getStatusColor(d.status2)" title="สถานะ: {{ getDisplayStatus(d.status2) }}">
+                      <component :is="getStatusIcon(d.status2)" class="w-6 h-6" />
+                    </div> -->
+                    <div class="relative group z-50">
+                      <div
+                        class="w-14 h-14 flex cursor-pointer items-center justify-center rounded-full shadow-inner transition-transform transform group-hover:scale-105"
+                        :class="getStatusColor(d.status2)">
+                        <component :is="getStatusIcon(d.status2)" class="w-6 h-6" />
+                      </div>
+                      <div class="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full
+                 bg-black text-white text-xs px-3 py-1 rounded-md opacity-0
+                 group-hover:opacity-100 group-hover:-translate-y-[130%] 
+                 transition-all duration-300 whitespace-nowrap z-60">
+                        สถานะ: {{ d.status2  }}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </td>
             </tr>
+
+
           </template>
         </tbody>
       </table>
@@ -132,6 +214,9 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import Swal from 'sweetalert2'
+import { CheckCircleIcon, AlertTriangleIcon, AlertOctagonIcon, XOctagonIcon, BanIcon, HelpCircleIcon } from 'lucide-vue-next'
+// import { Message } from 'tdesign-vue-next'
 
 // const BASE_URL = import.meta.env.VITE_API_URL
 const VITE_API_URL_C_SHARP = import.meta.env.VITE_API_URL_C_SHARP
@@ -147,6 +232,7 @@ const searchQuery = ref('') // <- ช่องค้นหา
 const isLoading = ref(false); // หรือ true ถ้าต้องการให้เริ่มต้นแสดง
 
 
+
 const formatCurrency = (value) =>
   Number(value).toLocaleString(undefined, {
     minimumFractionDigits: 2,
@@ -155,14 +241,53 @@ const formatCurrency = (value) =>
 
 
 
+// const getDisplayStatus = (status) => {
+//   switch (status) {
+//     case 'ตรวจสอบเรียบร้อย': return 'เกินกำหนดชำระไม่เกิน 30 วัน'; // เขียว
+//     case 'รอตรวจสอบ': return 'เกินกำหนดชำระกิน 30 วัน'; // เหลือง
+//     case 'การตรวจสอบล้มเหลว': return 'เกินกำหนดชำระ 120 วัน'; // แดง
+//     case 'ยังไม่ได้ตรวจสอบ': return 'เกินกำหนดชำระ 180 วัน'; // ดำ
+//     case 'ยกเลิกคำสั่งซื้อ': return 'ถูกยกเลิก';
+//     default: return status;
+//   }
+// }
+
 const getDisplayStatus = (status) => {
   switch (status) {
-    case 'ตรวจสอบเรียบร้อย': return 'เกินกำหนดชำระไม่เกิน 30 วัน'; // เขียว
-    case 'รอตรวจสอบ': return 'เกินกำหนดชำระกิน 30 วัน'; // เหลือง
-    case 'การตรวจสอบล้มเหลว': return 'เกินกำหนดชำระ 120 วัน'; // แดง
-    case 'ยังไม่ได้ตรวจสอบ': return 'เกินกำหนดชำระ 180 วัน'; // ดำ
+    case 'เขียว': return 'เกินกำหนดชำระไม่เกิน 30 วัน';
+    case 'เหลือง': return 'เกินกำหนดชำระเกิน 30 วัน';
+    case 'ส้ม': return 'เกินกำหนดชำระเกิน 30 วัน';
+    case 'แดง': return 'เกินกำหนดชำระ 120 วัน';
+    case 'ดำ': return 'เกินกำหนดชำระ 180 วัน';
+    case 'ไม่มีสถานะ': return 'ไม่มีสถานะ';
     case 'ยกเลิกคำสั่งซื้อ': return 'ถูกยกเลิก';
-    default: return status;
+    default: return status || 'ไม่มีสถานะ';
+  }
+}
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'เขียว': return 'bg-green-100 text-green-800';
+    case 'เหลือง': return 'bg-yellow-100 text-yellow-800';
+    case 'ส้ม': return 'bg-orange-100 text-orange-800';
+    case 'แดง': return 'bg-red-100 text-red-800';
+    case 'ดำ': return 'bg-gray-800 text-white';
+    case 'ไม่มีสถานะ': return 'bg-gray-200 text-gray-600';
+    case 'ยกเลิกคำสั่งซื้อ': return 'bg-gray-300 text-gray-700 italic';
+    default: return 'bg-gray-100 text-gray-500';
+  }
+}
+
+// ✅ เพิ่ม icon ตามสถานะ
+const getStatusIcon = (status) => {
+  switch (status) {
+    case 'เขียว': return CheckCircleIcon
+    case 'เหลือง': return AlertTriangleIcon
+    case 'ส้ม': return AlertTriangleIcon
+    case 'แดง': return AlertOctagonIcon
+    case 'ดำ': return XOctagonIcon
+    case 'ยกเลิกคำสั่งซื้อ': return BanIcon
+    default: return HelpCircleIcon
   }
 }
 
@@ -281,35 +406,34 @@ async function getTokenDebtStatusType() {
   // console.log('Log payload: ', payload);
 
   try {
-     var loginData = {
-     username: "DPower1",
-     password: "1234"
- };
 
-    const res = await fetch('https://203.154.60.148:58915/api/Users/Login', {
-        method: 'POST',
+    const loginData = {
+      username: "DPower1",
+      password: "1234"
+    };
+
+    //fetch ใช้ await res.json() ในการรอค่าก่อนถ้าไม่ทำจะได้ Promise
+    // const res = await fetch('https://203.154.60.148:58915/api/Users/Login', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify(loginData),
+    //   mode: 'cors'
+    // });
+
+    // const data = await res.json();.
+
+    const res = await axios.post('https://203.154.60.148:58915/api/Users/Login',
+      loginData,
+      {
         headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(loginData),
-        mode: 'cors'
-    });
+          'Content-Type': 'application/json'
+        }
+      });
 
-    const data = await res.json();
-    // const res = await axios.post(
-    //   `${VITE_API_URL_C_SHARP}/api/Users/Login`, {
 
-    //     headers:{
-    //       'Content'
-    //     }
-    //   }
-      
-    //  );
-
-    // const res = await axios.post(
-    //   `${VITE_API_URL_C_SHARP}/api/Users/Login`,
-    //   payload
-    // );
+    const data = res.data;
 
     console.log('Check Log data :', data);
     console.log('Check Log data.token :', data.token);
@@ -340,12 +464,12 @@ async function TypeCustomers() {
 
   // 🔁 สร้าง payload จาก saleOrders
   const payload = saleOrders.value.map(item => ({
-  
+
     CustomerDocument: item.sale_no,
     CustomerCode: item.customer_code
   }));
 
-   console.log(" payload: ", payload);
+  console.log(" payload: ", payload);
 
   const tokendebtStatusType = await getTokenDebtStatusType();
 
@@ -359,30 +483,103 @@ async function TypeCustomers() {
   }
 
   try {
-    // const res = await axios.post(
-    //   `${VITE_API_URL_C_SHARP}/api/TypeCustomers`, payload, {
-    //   headers: {
-    //     // 'Content-Type': 'application/x-www-form-urlencoded',
-    //     'Content-Type': 'application/json', // ควรใช้ JSON ถ้า backend รองรับ
-    //     'Authorization': `Bearer ${tokendebtStatusType}`
-    //   }
-    // });
 
-    const res = await fetch('https://203.154.60.148:58915/api/TypeCustomers', {
-        method: 'POST',
+    const res = await axios.post('https://203.154.60.148:58915/api/TypeCustomers',
+      payload,
+      {
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${tokendebtStatusType}`
-        },
-        body: JSON.stringify(payload),
-        mode: 'cors'
-    });
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${tokendebtStatusType}`
+        }
+      });
 
-    console.log('✅ Response from TypeCustomers:', res.json());
 
-    // ถ้ามี response รูปแบบเฉพาะ เช่น success = true
-    if (res.data?.success) {
-      console.log("🎉 API success:", res.data);
+    const data = res.data;
+
+    console.log('✅ Response from TypeCustomers:', data);
+
+    if (data && Array.isArray(data)) {
+      // 1) group by sale_no/customerDocument
+      const grouped = {};
+      data.forEach(item => {
+        const key = item.customerDocument;
+        if (!grouped[key]) {
+          grouped[key] = {
+            deBcreditTerm: item.deBcreditTerm,
+            deBlimit: item.deBlimit,
+            deBsalesP: item.deBsalesP,
+            status2: item.status2,
+            total_paid: 0,
+            extra_details: []
+          };
+        }
+        grouped[key].total_paid += item.inInvAmount ?? 0;
+        grouped[key].extra_details.push({
+          dueDate: item.dueDate || [],
+          overdueDays: item.overdueDays || [],
+          status2: item.status2 || [],
+          inInvAmount: item.inInvAmount || [],
+          miHvnos: item.miHvnos || []
+        });
+      });
+
+      // 2) merge back into saleOrders.value
+
+      saleOrders.value = saleOrders.value.map(order => {
+        // หาว่าใน data มี deBcode ที่ตรงกับ customer_code ไหม
+        const matched = data.find(item => item.deBcode === order.customer_code);
+
+        const hasMatch = !!matched;
+        const deBcode = matched?.deBcode;
+        const saleNo = order.sale_no;
+        const updates = grouped[saleNo];
+
+        console.log(`🔍 ตรวจสอบ: ${order.customer_code} -> deBcode: ${deBcode} | พบ: ${hasMatch}`);
+
+        if (!hasMatch) {
+          console.log(`❌ ไม่พบ deBcode ที่ตรงกับ order.customer_code = ${order.customer_code}`);
+        }
+
+        if (updates) {
+          return {
+            ...order,
+            deBcreditTerm: updates.deBcreditTerm,
+            deBlimit: updates.deBlimit,
+            deBsalesP: updates.deBsalesP,
+            status2: updates.status2,
+            total_paid: updates.total_paid,
+            extra_details: hasMatch && Array.isArray(updates.extra_details)
+              ? updates.extra_details.filter(d => typeof d === 'object' && d !== null)
+              : []
+            // extra_details: hasMatch ? updates.extra_details : []
+          };
+        }
+
+        return order;
+      });
+
+      console.table(data.map(item => ({
+        deBcode: item.deBcode,
+        customerDocument: item.customerDocument,
+        inInvAmount: item.inInvAmount
+      })));
+
+      console.table(saleOrders.value.map(order => ({
+        sale_no: order.sale_no,
+        customer_code: order.customer_code,
+        extra_details: order.extra_details
+      })));
+
+
+      console.log("🎉 Grouped saleOrders:", saleOrders.value);
+
+    } else {
+      Swal.fire({
+        title: 'Not Data TypeCustomers',
+        text: 'Response from TypeCustomers is undefined',
+        icon: 'error'
+      });
+      console.error("❌ No valid data from API");
     }
 
     isLoading.value = false;
@@ -394,8 +591,24 @@ async function TypeCustomers() {
   }
 }
 
-onMounted(() => fetchPage(1))
 
+function filteredExtraDetails(order) {
+  if (!order.extra_details || !Array.isArray(order.extra_details)) return [];
+  return order.extra_details.filter(e =>
+    typeof e === 'object' &&
+    e !== null &&
+    Object.values(e).some(v => v !== '' && v !== undefined && !Number.isNaN(v))
+  );
+}
+
+saleOrders.value.forEach(o => {
+  if (Array.isArray(o.extra_details)) {
+    console.log(o.sale_no, o.extra_details.map(e => typeof e));
+  }
+});
+
+
+onMounted(() => fetchPage(1))
 
 const totalPages = computed(() =>
   Math.ceil(totalRows.value / limit)
@@ -408,6 +621,112 @@ function goToPage(page) {
 
 
 </script>
+
+
+<!-- <div v-for="(d, i) in filteredExtraDetails(order)" :key="i"
+    class="flex flex-col bg-white shadow-sm rounded-lg p-4 border border-gray-200">
+
+    <div class="text-sm text-gray-800">
+      <div class="text-[13px]"><strong class="text-[13px]">Invoice No.:</strong> {{ d.miHvnos }}</div>
+      <div class="text-[13px]"><strong class="text-[13px]">Due Date:</strong> {{ d.dueDate }}</div>
+      <div class="text-[13px]"><strong class="text-[13px]">Overdue Days:</strong> {{ d.overdueDays }}
+      </div>
+      <div class="text-[13px]"><strong class="text-[13px]">Status:</strong> {{ d.status2 }}</div>
+      <div class="text-[13px]"><strong class="text-[13px]">Amount Due:</strong> {{
+        formatCurrency(d.inInvAmount) }}</div>
+    </div>
+
+  </div> -->
+
+
+<!-- // saleOrders.value = saleOrders.value.map(order => {
+      //   const deBcode = data.find(item => item.deBcode === order.customer_code)?.deBcode;
+      //   console.log('Log Value deBcode:', deBcode, 'for order.CustomerCode:', order.CustomerCode);
+
+      //   if (deBcode) {
+      //     console.log(`พบ deBcode: ${deBcode} ตรงกับ CustomerCode: ${order.customer_code}`);
+      //   } else {
+      //     console.log(`ไม่พบ deBcode ตรงกับ CustomerCode: ${order.customer_code}`);
+      //   }
+      //   // จากนั้นทำงานตามปกติ
+      //   const updates = grouped[order.sale_no];
+      //   if (updates) {
+
+      //     // ถ้า deBcode ตรงกับ customer_code ให้แสดง extra_details ปกติ
+      //     // ถ้าไม่ตรง ให้ซ่อน (ตั้งเป็น array ว่าง)
+      //     // const extraDetailsToShow = deBcode ? updates.extra_details : [];
+      //     const extraDetailsToShow = deBcode === order.customer_code ? updates.extra_details : [];
+
+
+      //     return {
+      //       ...order,
+      //       deBcreditTerm: updates.deBcreditTerm,
+      //       deBlimit: updates.deBlimit,
+      //       deBsalesP: updates.deBsalesP,
+      //       status2: updates.status2,
+      //       total_paid: updates.total_paid,
+      //       extra_details: extraDetailsToShow  // ถ้าเจอ deBcode ให้ซ่อน extra_details
+      //       // extra_details: deBcode ? updates.extra_details : []  // ถ้าเจอ deBcode ให้ซ่อน extra_details
+      //       // extra_details: order.customer_code  === deBcode ? [] : updates.extra_details
+      //     };
+      //   }
+      //   return order;
+
+      // }) -->
+
+<!-- 
+ // const res = await axios.post(
+    //   `${VITE_API_URL_C_SHARP}/api/TypeCustomers`, payload, {
+    //   headers: {
+    //     // 'Content-Type': 'application/x-www-form-urlencoded',
+    //     'Content-Type': 'application/json', // ควรใช้ JSON ถ้า backend รองรับ
+    //     'Authorization': `Bearer ${tokendebtStatusType}`
+    //   }
+    // });
+
+    // const res = await fetch('https://203.154.60.148:58915/api/TypeCustomers', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Authorization': `Bearer ${tokendebtStatusType}`
+    //   },
+    //   body: JSON.stringify(payload),
+    //   mode: 'cors'
+    // });
+
+    // const data = await res.json();
+    // console.log('✅ Response from TypeCustomers:', data);
+ -->
+
+<!-- // ถ้ามี response รูปแบบเฉพาะ เช่น success = true
+    // if (data) {
+
+    //   console.log("🎉 API success:", res.data);
+
+    //   // return;
+    //   saleOrders.value = res.data.map(item => ({
+
+    //     // Header
+    //     sale_no: item.customerDocument, //customerDocument 
+    //     customer_code: item.deBcode, // C04366
+    //     shop_name: item.deBcontactT, // "คุณนรินทร์ โชยชัยสุนทร"
+    //     deBcreditTerm: item.deBcreditTerm, // เครดิตจำนวนวันลูกค้า 
+    //     deBlimit: item.deBlimit, //วงเกินต้องไม่เกินที่กำหนด
+    //     deBsalesP: item.deBsalesP // เพิ่มอีก colum รหัส sale
+    //     total_paid: item.final_total_price,
+    //     status: item.status2, // สถานะการตรวจสอบ
+    //     created_at: item.created_at,
+    //     // total_amount: item.final_total_price,
+
+    //     // Detail
+    //     extra_details: res.data.map(item => ({
+    //       dueDate: item.dueDate, // กำหนดชำระ
+    //       overdueDays: item.overdueDays,  //จำนวนวันที่ค้าง
+    //       status2: item.status2, // สถานะลูกหนี้ 
+    //       inInvAmount: item.inInvAmount, //ค้างชำระที่ยังไม่จ่าย
+    //     }))
+
+    //   })) -->
 
 <!-- 
 // filter ตามคำค้นหา

@@ -24,6 +24,8 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+
+import { logActivity } from '@/services/activityLogger.js'
 import Swal from 'sweetalert2'
 // import { version } from 'node:os';
 
@@ -92,6 +94,8 @@ const handleLogin = async () => {
           localStorage.setItem('crm_account', crm_accountSet);
           console.log('Check crm_accountSet customer_count > 1: ',crm_accountSet);
 
+          await logActivity('crm_accountSet Login สำเร็จ', 'SinginForm.vue');
+
           router.push('/customer');
 
         } else { // ถ้าไม่ใช่ CRM เข้าหน้า DashBoard
@@ -113,6 +117,8 @@ const handleLogin = async () => {
           localStorage.setItem('crm_account', crm_accountSet);
           console.log('Check crm_accountSet customer_count < 1: ',crm_accountSet);
 
+          await logActivity('customer Login สำเร็จ', 'SinginForm.vue');
+
           router.push('/dashboard');
         }
       } else if (fa_accountSet) {
@@ -130,6 +136,8 @@ const handleLogin = async () => {
           // console.log('Log msg: ',msg);
           localStorage.setItem('fa_account', fa_accountSet);
           console.log('Check fa_accountSet customer_count > 1 : ',fa_accountSet);
+
+          await logActivity('fa_account Login สำเร็จ', 'SinginForm.vue');
 
           router.push('/customer');
 
@@ -152,6 +160,8 @@ const handleLogin = async () => {
           localStorage.setItem('fa_account', fa_accountSet);
           console.log('Check fa_accountSet customer_count < 1: ',fa_accountSet);
 
+          await logActivity('customer Login สำเร็จ', 'SinginForm.vue');
+          
           router.push('/dashboard');
         }
       }

@@ -62,10 +62,13 @@
                 formatCurrency(order.deBlimit) }}</td>
               <td class="p-3">{{ order.deBsalesP ? order.deBsalesP : 'ไม่มีข้อมูล' }}</td>
               <!-- <td class="p-3">{{ order.status2 ? order.status2: 'ไม่มีสถานะ' }}</td> -->
-              <td :class="['p-3', getStatusColor(order.status2)]">
+              <td :class="['p-3', getStatusColor(getHighestStatus(filteredExtraDetails(order)))]">
+                {{ getDisplayStatus(getHighestStatus(filteredExtraDetails(order))) }}
+              </td>
+              <!-- <td :class="['p-3', getStatusColor(order.status2)]">
 
                 {{ getDisplayStatus(order.status2) }}
-              </td>
+              </td> -->
 
               <!-- <td class="p-3">{{ order.status2 }}</td> -->
 
@@ -95,7 +98,7 @@
                     'bg-green-500': order.status === 'ตรวจสอบเรียบร้อย',
                     'bg-red-500': order.status === 'การตรวจสอบล้มเหลว'
                   }"></span>
-                  <span>{{ order.status }}</span>
+                  <span class="w-[90px]">{{ order.status }}</span>
                 </span>
               </td>
               <td class="p-3">
@@ -174,7 +177,7 @@
                  bg-black text-white text-xs px-3 py-1 rounded-md opacity-0
                  group-hover:opacity-100 group-hover:-translate-y-[130%] 
                  transition-all duration-300 whitespace-nowrap z-60">
-                        สถานะ: {{ d.status2  }}
+                        สถานะ: {{ d.status2 }}
                       </div>
                     </div>
                   </div>
@@ -214,6 +217,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import { logActivity } from '@/services/activityLogger.js'
 import Swal from 'sweetalert2'
 import { CheckCircleIcon, AlertTriangleIcon, AlertOctagonIcon, XOctagonIcon, BanIcon, HelpCircleIcon } from 'lucide-vue-next'
 // import { Message } from 'tdesign-vue-next'
@@ -231,7 +235,15 @@ const limit = 10
 const searchQuery = ref('') // <- ช่องค้นหา
 const isLoading = ref(false); // หรือ true ถ้าต้องการให้เริ่มต้นแสดง
 
-
+const statusPriority = {
+  'เขียว': 1,
+  'เหลือง': 2,
+  'ส้ม': 3,
+  'แดง': 4,
+  'ดำ': 5,
+  'ไม่มีสถานะ': 0,
+  'ยกเลิกคำสั่งซื้อ': 6
+};
 
 const formatCurrency = (value) =>
   Number(value).toLocaleString(undefined, {
@@ -292,6 +304,17 @@ const getStatusIcon = (status) => {
 }
 
 
+const getHighestStatus = (details) => {
+  if (!details || details.length === 0) return 'ไม่มีสถานะ';
+
+  return details.reduce((highest, current) => {
+    const currentPriority = statusPriority[current.status2] ?? 0;
+    const highestPriority = statusPriority[highest] ?? 0;
+    return currentPriority > highestPriority ? current.status2 : highest;
+  }, 'ไม่มีสถานะ');
+};
+
+
 const filteredOrders = computed(() => {
 
   const raw = searchQuery.value.trim()
@@ -347,14 +370,13 @@ async function fetchPage(page = 1) {
   isLoading.value = true
   try {
     const res = await axios.get(
-      `${BASE_URL}/api_admin_dashboard/backend/api/list_sale_orders/get_list_sale_order.php`,
+      `${BASE_URL}/api_admin_dashboard/backend/api/list_sale_orders/get_list_sale_order.php?v=${Date.now()}`,
       { params: { page, limit } }
     )
 
     console.log('Check Log res :', res);
 
     if (res.data.success) {
-
 
       // console.log('Check Log res.data :',res.data);
       saleOrders.value = res.data.data.list_order.map(item => ({
@@ -381,8 +403,10 @@ async function fetchPage(page = 1) {
       totalRows.value = res.data.data.total
       currentPage.value = page
 
+      await logActivity(' user ได้เข้าหน้า SaleOrderList', 'SaleOrderList.vue');
       // ✅ เรียกใช้ TypeCustomers หลังโหลดรายการเสร็จ
       await TypeCustomers()
+      
     }
   } catch (e) {
     console.error(e)
@@ -424,7 +448,7 @@ async function getTokenDebtStatusType() {
 
     // const data = await res.json();.
 
-    const res = await axios.post('https://203.154.60.148:58915/api/Users/Login',
+    const res = await axios.post(`${VITE_API_URL_C_SHARP}/api/Users/Login?v=${Date.now()}`,
       loginData,
       {
         headers: {
@@ -483,8 +507,8 @@ async function TypeCustomers() {
   }
 
   try {
-
-    const res = await axios.post('https://203.154.60.148:58915/api/TypeCustomers',
+    // VITE_API_URL_C_SHARP
+    const res = await axios.post(`${VITE_API_URL_C_SHARP}/api/TypeCustomers?v=${Date.now()}`,
       payload,
       {
         headers: {

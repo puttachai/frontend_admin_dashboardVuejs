@@ -824,6 +824,9 @@ import ProductSelector from '../components/ProductSelector.vue';
 import PromotionSelector from '../components/PromotionSelector.vue';
 import Promotion_ProductSelector from '../components/Promotion_ProductSelector.vue';
 import DeliveryAddressPopup from '@/components/DeliveryAddressPopup.vue'
+
+import { logActivity } from '@/services/activityLogger.js'
+
 import { useRoute } from 'vue-router'
 // import ConfirmEditPopup from '@/components/saleOrder/ConfirmEditPopup.vue'
 import qs from 'qs';
@@ -999,7 +1002,9 @@ export default {
         };
     },
 
-    mounted() {
+    async mounted() {
+        await logActivity('user ได้เข้าหน้า CreateSaleListView', 'CreateSaleListView.vue');
+
         const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
         this.lockedDocumentNos = locked;
 

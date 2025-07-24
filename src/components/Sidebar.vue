@@ -48,10 +48,14 @@
                 <span class="material-icons">assignment_add</span>
                 <span class="text">Create a sales list</span>
             </router-link>
-            <router-link class="button" to="/about">
+            <router-link class="button" to="/activity-log">
+                <span class="material-symbols-outlined">browse_activity</span>
+                <span class="text">activitylog</span>
+            </router-link>
+            <!-- <router-link class="button" to="/about">
                 <span class="material-icons">visibility</span>
                 <span class="text">About</span>
-            </router-link>
+            </router-link> -->
 
         </div>
 

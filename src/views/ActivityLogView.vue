@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
   <div class="p-6">
     <h2 class="text-xl font-bold mb-4">กิจกรรมของผู้ใช้</h2>
     <table class="w-full border border-gray-300 text-sm">
@@ -41,4 +41,4 @@ onMounted(async () => {
     console.error('❌ โหลด log ไม่สำเร็จ:', err);
   }
 });
-</script>
+</script> -->

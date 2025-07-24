@@ -10,7 +10,7 @@ import CustomerView from "../views/CustomerView.vue";
 import SaleOrderList from "@/views/SaleOrderList.vue";
 import SaleOrderDetail from "../components/listSaleOrder/SaleOrderDetailView.vue";
 
-import ActivityLogView from "../views/ActivityLogView.vue";
+// import ActivityLogView from "../views/ActivityLogView.vue";
 
 import AuthLayout from "../components/AuthLayout.vue";
 import SinginForm from "../components/SinginForm.vue";
@@ -182,12 +182,12 @@ const routes = [
     component: () => import("../views/AboutView.vue"),
   },
 
-  {
-    path: "/activity-log",
-    name: "activitylog",
-    component: ActivityLogView,
-    meta: { requiresAuth: true },
-  },
+  // {
+  //   path: "/activity-log",
+  //   name: "activitylog",
+  //   component: ActivityLogView,
+  //   meta: { requiresAuth: true },
+  // },
 
   // กัน user ที่เข้า url ที่ไม่มีอยู่จริงหรือหน้าที่ยังไม่ได้ทำการ login และกลับไปหน้า login
   {

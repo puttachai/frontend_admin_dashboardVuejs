@@ -132,7 +132,7 @@ import { Pagination, ConfigProvider } from 'tdesign-vue-next'
 import enConfig from 'tdesign-vue-next/es/locale/en_US'
 import { eventBus } from '@/utils/eventBus'
 
-import { logActivity } from '@/services/activityLogger.js'
+// import { logActivity } from '@/services/activityLogger.js'
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 console.log("Show BASE_URL: ", BASE_URL);
@@ -211,7 +211,7 @@ export default {
     },
 
     async mounted() {
-        await logActivity('user ได้เข้าหน้า CustomerView', 'CustomerView.vue');
+        // await logActivity('user ได้เข้าหน้า CustomerView', 'CustomerView.vue');
         window.addEventListener('wheel', () => { }, { passive: true });
     },
     created() {

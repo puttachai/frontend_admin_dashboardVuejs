@@ -592,7 +592,7 @@ import Swal from 'sweetalert2';
 // import Promotion_ProductSelector from '../components/Promotion_ProductSelector.vue';
 // import DeliveryAddressPopup from '@/components/DeliveryAddressPopup.vue'
 // import ConfirmEditPopup from '@/components/saleOrder/ConfirmEditPopup.vue'
-// import qs from 'qs';
+import qs from 'qs';
 import Flatpickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
 
@@ -608,7 +608,7 @@ const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 
 console.log('BASE_URL_LOCAL:', BASE_URL_LOCAL);
 
-const BASE_URL_MAC_FIVEL = import.meta.env.VITE_API_URL_MAC_FIVELE;
+const BASE_URL_MAC_FIVEL = import.meta.env.VITE_API_URL_MAC_FIVE;
 const BASE_URL_AUTH = import.meta.env.VITE_API_URL_AUTH;
 const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 
@@ -684,6 +684,8 @@ export default {
       showMoreAdress: false, // ค่าเริ่มต้น
 
       isDropdownOpen: false, // ควบคุมการเปิด/ปิด Dropdown
+
+      deliveryAddress: [], // 🏡 เก็บข้อมูลที่อยู่จาก so_delivery_address
 
       formData: {
         listCode: '',
@@ -824,12 +826,29 @@ export default {
 
         const response = await axios.get(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/sale_order/get_sale_order.php?documentNo=${documentNo_route_params}`);
 
-        console.log("😂 Log Value response: ", response);
+        // const jsonStr = response.data.replace(/^\uFEFF/, '').trim();
+        // // แปลงสตริงเป็นอ็อบเจกต์
+        // const resData = JSON.parse(jsonStr);
 
+        // เคลียร์ BOM ถ้ามี
+        //   if (typeof raw === 'string' && raw.charCodeAt(0) === 0xFEFF) {
+        //     raw = raw.slice(1);
+        //   }
+        //  */
+        //console.log('log raw: ', raw)
+
+
+        // const resData = typeof raw === 'string' ? JSON.parse(raw) : raw;
+
+        //console.log('✅ Clean JSON:', resData);
+
+        // const resData = JSON.parse(response.data);
         const resData = response.data;
 
-        console.log("😂 Log Value resData: ", resData.data);
+        console.log('✅ Log :', resData);
 
+        //console.log("😂 Log Value resData: ", resData.data);
+        //console.log(JSON.parse(resData));
         if (resData.success) {
           // เติมข้อมูลลงใน formData โดยรักษาฟิลด์ที่ไม่ได้อยู่ใน API
           this.formData = {
@@ -896,8 +915,12 @@ export default {
 
           });
 
+          // ✅ เพิ่มข้อมูลที่อยู่จัดส่งลงใน data
+          this.deliveryAddress = resData.data.deliveryAddress || {};
+
           console.log("📄 ข้อมูลเอกสารที่โหลด:", this.formData);
           console.log("🛒 รายการสินค้า:", this.selectedProducts)
+          console.log("🛒 ข้อมูลที่อยู่จัดส่ง:", this.deliveryAddress)
 
           // ยังไม่ใช้
           this.originalFormData = JSON.parse(JSON.stringify(this.formData)); // deep copy
@@ -908,10 +931,12 @@ export default {
           ;
         } else {
           Swal.fire({ text: resData.message, icon: 'error' });
+          console.log('resData1')
         }
       } catch (err) {
         const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลเอกสาร';
         Swal.fire({ text: message, icon: 'error' });
+        console.log('resData2')
       }
     },
 
@@ -944,8 +969,69 @@ export default {
       console.log("😵‍💫😵‍💫 showMoreData:", this.showMoreData);
     },
 
+    async getAuthToken() {
+      // localStorage.removeItem("mac5_token");
+      const tokenData = JSON.parse(localStorage.getItem("mac5_token")) || null;
 
-    saveDocument() {
+      // console.log("🔑 Check tokenData :", tokenData);
+
+      const oneHour = 60 * 60 * 1000; // 1 ชั่วโมงในหน่วยมิลลิวินาที
+      const now = Date.now();
+
+      if (tokenData && tokenData.token && now - tokenData.timestamp < oneHour) {
+        // console.log("🔑 ใช้ token เดิม:", tokenData.token);
+        return tokenData.token; // ✅ ใช้ token เดิม
+      }
+
+      console.log("🔑 Token ไม่พบหรือหมดอายุ กำลังขอใหม่...");
+
+      // 🛎️ แสดง loading เฉพาะตอนขอ token ใหม่
+      Swal.fire({
+        title: 'กำลังดำเนินการ...',
+        text: 'กำลังเพิ่มข้อมูล (ครั้งแรกจะใช้เวลาสักครู่)',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // 🔄 ถ้าไม่มี token หรือหมดอายุ ให้ขอใหม่
+      const secretKeyData = qs.stringify({
+        secretKey1: import.meta.env.VITE_SECRET_KEY1,
+        secretKey2: import.meta.env.VITE_SECRET_KEY2
+      });
+
+      try {
+        const authResponse = await axios.post(`${BASE_URL_AUTH}`, secretKeyData, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        });
+
+        const token = authResponse.data.Token;
+        if (!token) throw new Error("ไม่สามารถดึง token ได้");
+
+        // 📝 บันทึก token และ timestamp ลง localStorage
+        localStorage.setItem("mac5_token", JSON.stringify({
+          token,
+          timestamp: now
+        }));
+
+        Swal.close(); // ✅ ปิด Swal เมื่อเรียบร้อย
+        return token;
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'ขอ Token ไม่สำเร็จ',
+          text: 'ไม่สามารถขอ token ได้ กรุณาลองใหม่อีกครั้ง',
+        });
+        console.error("❌ ดึง token ไม่สำเร็จ:", err);
+        throw err;
+      }
+    },
+
+    async saveDocument() {
+
       try {
         this.isLoading = true;
 
@@ -963,15 +1049,43 @@ export default {
         //   return;
         // }
 
-        Swal.fire({
-          icon: 'success',
-          title: 'อนุมัติเอกสารสำเร็จ',
-          text: 'อนุมัติเอกสารเรียบร้อย',
-        });
+        try {
+
+          const token = await this.getAuthToken();
+          console.log("🔑 token", token);
+          console.log("🎁 formData:", this.formData); // ,this.formData
+
+          // 3. 📦 สร้าง payload ข้อมูล Macfive
+          const payload = this.buildMacfivePayload();
+
+          console.log("📦 Payload ที่จะส่งไปยัง Macfive:", payload);
+
+          // return
+
+          // 4. 🚀 ส่งไปยัง BASE_URL_MAC_FIVEL
+          const macfiveResponse = await axios.post(`${BASE_URL_MAC_FIVEL}`, payload, {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          console.log("✅ Macfive ส่งสำเร็จ", macfiveResponse);
+
+        } catch (err) {
+          const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาด';
+          Swal.fire('ผิดพลาด', message, 'error');
+        }
+
+        // Swal.fire({
+        //   icon: 'success',
+        //   title: 'อนุมัติเอกสารสำเร็จ',
+        //   text: 'อนุมัติเอกสารเรียบร้อย',
+        // });
 
 
-        // ✅ ดำเนินการบันทึกต่อ...
-        console.log("✅ อนุมัติเอกสารเรียบร้อย");
+        // // ✅ ดำเนินการบันทึกต่อ...
+        // console.log("✅ อนุมัติเอกสารเรียบร้อย");
 
         this.isLoading = false;
       } catch (err) {
@@ -979,11 +1093,182 @@ export default {
         Swal.fire({ text: message, icon: 'error' });
         console.log('a454545654564 catch');
       }
-    }
 
-  },
 
+    },
+
+    buildMacfivePayload() {
+      const now = new Date();
+      const formatDate = (d) => d.toISOString().slice(0, 10);
+      const formatDateTime = (d) => d.toISOString().slice(0, 19).replace("T", " ");
+
+      const docNo = this.formData.documentNo;
+      const sale_no = localStorage.getItem('account') || ''
+      console.log('Check sale_no: ', sale_no);
+
+      // const countProducts = this.selectedProducts.length;
+      // const countGifts = this.formData.gifts.length;
+      // const countPromotions = this.formData.promotions.length;
+
+      // const totalItems = countProducts + countGifts + countPromotions;
+
+      // console.log('🧾 จำนวนสินค้าหลัก:', countProducts);
+      // console.log('🎁 จำนวนของแถม:', countGifts);
+      // console.log('📢 จำนวนโปรโมชัน:', countPromotions);
+      // console.log('📦 รวมทั้งหมด (MH_noItems):', totalItems);
+
+      // 🧩 ดึง promotions และ gifts จากสินค้าแต่ละตัว
+      const productPromotions = this.selectedProducts.flatMap(item => item.promotions || []);
+      const productGifts = this.selectedProducts.flatMap(item => item.gifts || []);
+
+      // 🧮 รวมทั้งหมด
+      const allPromotions = [...(this.formData.promotions || []), ...productPromotions];
+      const allGifts = [...(this.formData.gifts || []), ...productGifts];
+
+      const countProducts = this.selectedProducts.length;
+      const countGifts = allGifts.length;
+      const countPromotions = allPromotions.length;
+      const totalItems = countProducts + countGifts + countPromotions;
+
+      console.log('📦 รวมทั้งหมด (MH_noItems):', totalItems);
+
+
+
+      // const payload = {
+      return {
+        hrows: {
+          MH_date: formatDateTime(now),
+          MH_type: "PS",
+          MH_vnumber: docNo,
+          MH_process: 5,
+          MH_supcus: this.formData.customerCode,
+          MH_noItems: totalItems, //
+          // MH_noItems: this.formData.productList.length,
+          MH_vatRate: 7,
+          MH_vatTotal: parseFloat(this.formData.final_total_price) * 0.07,
+          MH_netTotal: parseFloat(this.formData.final_total_price),
+          MH_status: 15,
+          MH_per: "DP001", //"DP001", // รหัสเซลล์ แก้ๆ
+          // MH_per: sale_no, //"DP001", // รหัสเซลล์
+          MH_site: this.deliveryAddress?.id || 0, // ที่อยู่จัดส่ง
+          // MH_site: 1655, // ที่อยู่จัดส่ง
+          MH_deldate: formatDate(now), // วันที่สร้าง
+          MH_totalCOG: parseFloat(this.formData.final_total_price),  // ยอดรวม
+          MH_discT1: 0,
+          MH_discF1: 0,
+          MH_discT2: 6.54205,
+          MH_discF2: parseFloat(this.formData.final_total_price) * 0.07,
+          MH_flow: 0,
+          MH_cur: 0,
+          MH_Note: `// ${docNo}`,
+          MH_cnect: 3,
+          MH_cancel: 0
+        },
+        erows: {
+          ME_date: formatDateTime(now), // วันที่สร้าง
+          ME_type: "PS",
+          ME_vnumber: docNo,
+          ME_supcus: this.formData.customerCode, //เลขที่เอกสาร
+          ME_termCX: "7|",
+          ME_termPX: "100|",
+          ME_termAX: `${parseFloat(this.formData.final_total_price)}|`,
+          ME_termDX: `${formatDate(now)}|`, // วันที่สร้าง
+          ME_cashRec: 0,
+          ME_ccRec: parseFloat(this.formData.final_total_price) // ยอดรวม
+        },
+        krows: {
+          MK_date: formatDateTime(now), //2025\/06\/30 16:13:13
+          MK_name: this.formData.fullName, // 1
+          // MK_addr: this.formData.address, //ที่อยู่
+          MK_addr: 1, //ที่อยู่
+          // MK_tel: this.formData.phone // 1
+          MK_tel: 1 // 1
+        },
+        lrows: [
+          ...this.selectedProducts.map((item, index) => ({
+            ML_date: formatDateTime(now),
+            ML_type: "PS",
+            ML_vnumber: docNo, //เลขที่เอกสาร
+            ML_per: "DP001",//"DP001", // รหัสเซลล์
+            ML_supcus: this.formData.customerCode, // รหัสลูกค้า ที่เลือกร้าน
+            ML_stk: item.pro_sn || "N/A", //รหัสสินค้า SN
+            ML_sto: "MAIN",
+            ML_item: index + 1, // อันดับรายการ
+            ML_quan: parseFloat(item.pro_quantity), // จำนวนรายการ
+            ML_cog: parseFloat(item.pro_total_price || 0), // ราคารวม
+            ML_netL: parseFloat(item.pro_total_price || 0), // ราคารวม
+            ML_cut: 1,
+            ML_unit: "PCS",// || "PCS", //หน่วย
+            // ML_unit: item.pro_unit,// || "PCS", //หน่วย
+            ML_des: item.pro_erp_title, // ชื่อสินค้า erp-title
+            ML_addcost: 0,
+            ML_discL: 0,
+            ML_deldate: formatDate(now), // วันที่สร้าง
+            ML_uprice: parseFloat(item.pro_unit_price), // ราคารวม
+            ML_Note: "item",
+
+          })),
+
+          // 2. 🎁 ของแถม
+          ...allGifts.map((gift, index) => ({
+          // ...this.formData.gifts.map((gift, index) => ({
+            ML_date: formatDateTime(now),
+            ML_type: "PS",
+            ML_vnumber: docNo,
+            ML_per: "DP001", //"DP001",
+            ML_supcus: this.formData.customerCode,
+            ML_stk: gift.pro_sn || "N/A",
+            ML_sto: "MAIN",
+            ML_item: this.selectedProducts.length + index + 1,
+            ML_quan: parseFloat(gift.pro_goods_num),
+            ML_cog: 0,
+            ML_netL: 0,
+            ML_cut: 0,
+            ML_unit: "PCS", //"PCS",
+            // ML_unit: gift.pro_unit, //"PCS",
+            ML_des: gift.title,
+            ML_addcost: 0,
+            ML_discL: 0,
+            ML_deldate: formatDate(now),
+            ML_uprice: 0,
+            ML_Note: gift.ML_Note || "gift"
+          })),
+
+          // 3. 📢 โปรโมชั่น
+          ...allPromotions.map((promo, index) => ({
+            ML_date: formatDateTime(now),
+            ML_type: "PS",
+            ML_vnumber: docNo,
+            ML_per: "DP001", //"DP001",
+            ML_supcus: this.formData.customerCode,
+            ML_stk: promo.pro_sn || "N/A",
+            ML_sto: "MAIN",
+            ML_item: this.selectedProducts.length + this.formData.gifts.length + index + 1,
+            ML_quan: parseFloat(promo.pro_goods_num),
+            ML_cog: 0,
+            ML_netL: 0,
+            ML_cut: 0,
+            ML_unit: "PCS", //"PCS", promo.pro_unit
+            ML_des: promo.title,
+            ML_addcost: 0,
+            ML_discL: 0,
+            ML_deldate: formatDate(now),
+            ML_uprice: 0,
+            ML_Note: promo.ML_Note || "promotion"
+
+          }))
+          // }))
+        ]
+      };
+
+      console.log("📦 Macfive Payload:\n", JSON.stringify(payload, null, 2));
+      return payload;
+
+    },
+
+  }
 }
+
 
 
 </script>

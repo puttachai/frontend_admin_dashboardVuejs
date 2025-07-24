@@ -217,7 +217,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
-import { logActivity } from '@/services/activityLogger.js'
+// import { logActivity } from '@/services/activityLogger.js'
 import Swal from 'sweetalert2'
 import { CheckCircleIcon, AlertTriangleIcon, AlertOctagonIcon, XOctagonIcon, BanIcon, HelpCircleIcon } from 'lucide-vue-next'
 // import { Message } from 'tdesign-vue-next'
@@ -403,7 +403,7 @@ async function fetchPage(page = 1) {
       totalRows.value = res.data.data.total
       currentPage.value = page
 
-      await logActivity(' user ได้เข้าหน้า SaleOrderList', 'SaleOrderList.vue');
+      // await logActivity(' user ได้เข้าหน้า SaleOrderList', 'SaleOrderList.vue');
       // ✅ เรียกใช้ TypeCustomers หลังโหลดรายการเสร็จ
       await TypeCustomers()
       
@@ -455,7 +455,6 @@ async function getTokenDebtStatusType() {
           'Content-Type': 'application/json'
         }
       });
-
 
     const data = res.data;
 

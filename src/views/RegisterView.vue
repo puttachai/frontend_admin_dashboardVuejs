@@ -25,7 +25,7 @@
             </div>
 
             <!-- Form Fields -->
-            <form class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form class="grid grid-cols-1 md:grid-cols-2 gap-4" @submit.prevent="register">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Employee ID</label>
                     <input type="text" readonly v-model="formData.emp_ids"
@@ -98,9 +98,14 @@
                 </div> -->
 
                 <div class="md:col-span-2 mt-4">
-                    <button type="submit" @click="register"
-                        class="w-full bg-purple-700 text-white py-2 px-4 rounded-md hover:bg-purple-800 transition">Register
+                    <button type="submit"
+                        class="w-full bg-purple-700 text-white py-2 px-4 rounded-md hover:bg-purple-800 transition">
+                        Register
                     </button>
+
+                    <!-- <button type="submit" @click="register"
+                        class="w-full bg-purple-700 text-white py-2 px-4 rounded-md hover:bg-purple-800 transition">Register
+                    </button> -->
                 </div>
             </form>
         </div>
@@ -113,6 +118,7 @@ export default {
 };
 </script>
 
+
 <script setup>
 
 // const setValueForm =
@@ -120,6 +126,7 @@ export default {
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import router from '@/router';
 
 const BASE_URL = import.meta.env.VITE_API_URL_LOCAL;
 // const BASE_URL = import.meta.env.VITE_API_URL;
@@ -139,26 +146,81 @@ const formData = ref({
     image: null, // เพิ่ม image ไว้เก็บไฟล์
 });
 
+const previewImage = ref(null);
+
+// โหลดค่าจาก localStorage ตอน mounted
+onMounted(() => {
+    const saved = localStorage.getItem('signupForm')
+    if (saved) {
+        formData.value = JSON.parse(saved)
+    }
+    // else {
+    //     formData.value.emp_ids = generateEmpId(); // สร้างรหัสใหม่เมื่อยังไม่มี
+    // }
+})
+
+// ทุกครั้งที่ formData เปลี่ยน จะเซฟลง localStorage
+watch(formData, (newValue) => {
+    localStorage.setItem('signupForm', JSON.stringify(newValue))
+}, { deep: true })
+
+const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImage.value = e.target.result; // base64 image preview
+        };
+        reader.readAsDataURL(file);
+
+        // ถ้าต้องการส่งภาพพร้อม formData:
+        formData.value.image = file; // เก็บไฟล์ไว้สำหรับ POST
+    } else {
+        previewImage.value = null;
+        alert("Please select a valid image file.");
+    }
+};
+
 const register = async () => {
     // if (formData.value.password !== formData.value.confirmPassword) {
     //     alert('Passwords do not match!')
     //     return
     // }
 
+    // ✔️ ตรวจสอบรหัสผ่านตรงกัน
+    if (formData.value.password !== formData.value.confirmPassword) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'รหัสผ่านไม่ตรงกัน',
+            text: 'กรุณาตรวจสอบรหัสผ่านอีกครั้ง',
+        });
+        return;
+    }
+
     // สร้างรหัสใหม่ก่อนส่ง
+    console.log("ส่งไฟล์:", formData.value.image);
+    console.log("ส่ง type:", typeof formData.value.image);
+
     formData.value.emp_ids = generateEmpId();
 
     const payload = new FormData();
     for (const key in formData.value) {
-        console.log(`Appending ${key}:`, formData.value[key]); // ✅ เพิ่มบรรทัดนี้
         payload.append(key, formData.value[key]);
+        console.log(`Appending ${key}:`, formData.value[key]); // ✅ เพิ่มบรรทัดนี้
     }
-    
+
+    // 2. แนบรูปแยกต่างหาก หากมีรูปจริง
+    // if (formData.value.image instanceof File) {
+    //     payload.append('image', formData.value.image);
+    // } else {
+    //     console.warn("No image selected or invalid file");
+    // }
+
     payload.append('status', formData.value.status || 'Active'); // เพิ่มบรรทัดนี้หลัง loop
 
     console.log("Form Data", formData.value);
 
-    console.log("Log value payload:",payload);
+    console.log("Log value payload:", payload);
 
     try {
 
@@ -170,14 +232,31 @@ const register = async () => {
         });
 
         const resData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
-            Swal.fire({
-              title:'สมัครสมาชิกสำเร็จ',
-              text: resData.message ||'อนุมัติการเป็นสมาชิก',
-              icon:'success',
-            });
-        // alert(resData.message);
 
-        console.log("Log value response:",response);
+        if (response.data?.success) {
+            Swal.fire({
+                title: 'สมัครสมาชิกสำเร็จ',
+                text: resData.message || 'อนุมัติการเป็นสมาชิก',
+                icon: 'success',
+            });
+            // alert(resData.message);
+
+            console.log("Log value response:", response);
+
+            router.push('/showdataemp');
+            
+        } else {
+            Swal.fire({
+                title: 'สมัครสมาชิกไม่สำเร็จ',
+                text: resData.message || 'ไม่อนุมัติการเป็นสมาชิก',
+                icon: 'error',
+            });
+            // alert(resData.message);
+
+            console.error("สมัครสมาชิกไม่สำเร็จ: ", resData.message);
+        }
+
+        
         // alert(response.data.message)
 
     } catch (err) {
@@ -185,54 +264,18 @@ const register = async () => {
         const message = err.response?.data?.message || err.message || 'Unknown error';
         alert('Error: ' + message);
         Swal.fire({
-              title:'สมัครสมาชิกไม่สำเร็จ',
-              text: message ||'โปรดลองใหม่ภายหลัง',
-              icon:'error',
+            title: 'สมัครสมาชิกไม่สำเร็จ',
+            text: message || 'โปรดลองใหม่ภายหลัง',
+            icon: 'error',
         });
     }
 }
 
-    const generateEmpId = () => {
-        // สุ่มเลข 6 หลัก เช่น 000123
-        return Math.floor(100000 + Math.random() * 900000).toString();
-    };
+const generateEmpId = () => {
+    // สุ่มเลข 6 หลัก เช่น 000123
+    return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
-    // โหลดค่าจาก localStorage ตอน mounted
-    onMounted(() => {
-        const saved = localStorage.getItem('signupForm')
-        if (saved) {
-            formData.value = JSON.parse(saved)
-        } 
-        // else {
-        //     formData.value.emp_ids = generateEmpId(); // สร้างรหัสใหม่เมื่อยังไม่มี
-        // }
-    })
-
-    // ทุกครั้งที่ formData เปลี่ยน จะเซฟลง localStorage
-    watch(formData, (newValue) => {
-        localStorage.setItem('signupForm', JSON.stringify(newValue))
-    }, { deep: true })
-
-
-    // previewImage ทันทีที่ upload 
-    const previewImage = ref(null);
-
-    const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-        previewImage.value = e.target.result; // base64 image preview
-        };
-        reader.readAsDataURL(file);
-
-        // ถ้าต้องการส่งภาพพร้อม formData:
-        formData.value.image = file; // เก็บไฟล์ไว้สำหรับ POST
-    } else {
-        previewImage.value = null;
-        alert("Please select a valid image file.");
-    }
-    };
 
 
 </script>

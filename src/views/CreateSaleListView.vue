@@ -824,6 +824,9 @@ import ProductSelector from '../components/ProductSelector.vue';
 import PromotionSelector from '../components/PromotionSelector.vue';
 import Promotion_ProductSelector from '../components/Promotion_ProductSelector.vue';
 import DeliveryAddressPopup from '@/components/DeliveryAddressPopup.vue'
+
+// import { logActivity } from '@/services/activityLogger.js'
+
 import { useRoute } from 'vue-router'
 // import ConfirmEditPopup from '@/components/saleOrder/ConfirmEditPopup.vue'
 import qs from 'qs';
@@ -964,6 +967,8 @@ export default {
 
                 documentNo: '',
 
+                // prosn:'',
+
                 pro_quantity: '' || 0,
 
                 discount: '' || 0,
@@ -999,7 +1004,9 @@ export default {
         };
     },
 
-    mounted() {
+    async mounted() {
+        // await logActivity('user ได้เข้าหน้า CreateSaleListView', 'CreateSaleListView.vue');
+
         const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
         this.lockedDocumentNos = locked;
 
@@ -1675,6 +1682,7 @@ export default {
                     this.errors[field] = `กรุณากรอก${label}`;
                     isValid = false;
                 }
+                this.isLoading = false;
             }
 
             // ตรวจสอบรายการสินค้า
@@ -1716,6 +1724,7 @@ export default {
                     title: 'ไม่สามารถบันทึกได้',
                     text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
                 });
+                this.isLoading = false;
                 return;
             }
 
@@ -1832,6 +1841,7 @@ export default {
                     pro_total_price: total, // รวมราคาต่อสินค้า
                     pro_images: product.pro_images,
                     pro_sn: product.pro_sn,
+                    prosn: product.prosn,
                     pro_units: product.pro_units,
                     pro_activity_id: product.activity_id || 0, // เพิ่ม activity_id ถ้ามี
                 };
@@ -1906,6 +1916,7 @@ export default {
                 console.log(" Log Value Data: ", response.data);
 
                 const resData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+
                 if (resData.success) {
                     // เก็บ documentNo ลง localStorage
 
@@ -2384,20 +2395,20 @@ export default {
                     Swal.fire('ผิดพลาด', resData.message, 'error');
                 }
 
-                const token = await this.getAuthToken();
-                console.log("🔑 token", token);
+                // const token = await this.getAuthToken();
+                // console.log("🔑 token", token);
 
-                console.log("🧪 Selected Products:", this.selectedProducts.length);
-                console.log("🎁 Gifts:", this.formData.gifts?.length); // ,this.formData.gifts
-                console.log("📢 Promotions:", this.formData.promotions?.length); //, this.formData.promotions
-                console.log("🧪 Address:", this.selectedAddress); //, this.formData.selectedAddress
-                console.log("🧪 Address:", this.selectedAddress?.length); //, this.formData.selectedAddress
+                // console.log("🧪 Selected Products:", this.selectedProducts.length);
+                // console.log("🎁 Gifts:", this.formData.gifts?.length); // ,this.formData.gifts
+                // console.log("📢 Promotions:", this.formData.promotions?.length); //, this.formData.promotions
+                // console.log("🧪 Address:", this.selectedAddress); //, this.formData.selectedAddress
+                // console.log("🧪 Address:", this.selectedAddress?.length); //, this.formData.selectedAddress
 
 
-                // 3. 📦 สร้าง payload ข้อมูล Macfive
-                const payload = this.buildMacfivePayload();
+                // // 3. 📦 สร้าง payload ข้อมูล Macfive
+                // const payload = this.buildMacfivePayload();
 
-                console.log("📦 Payload ที่จะส่งไปยัง Macfive:", payload);
+                // console.log("📦 Payload ที่จะส่งไปยัง Macfive:", payload);
 
                 return
 
@@ -2602,6 +2613,7 @@ export default {
                         pro_total_price: total, // รวมราคาต่อสินค้า
                         pro_images: product.pro_images,
                         pro_sn: product.pro_sn,
+                        prosn: product.prosn,
                         pro_units: product.pro_units,
                         pro_activity_id: product.pro_activity_id || 0 // ✅ เพิ่มบรรทัดนี้!
                     };
@@ -2805,6 +2817,7 @@ export default {
                             pro_total_price: parseFloat(product.total_price),
                             pro_images: product.pro_images,
                             pro_sn: product.sn,
+                            prosn: product.prosn,
                             pro_unit: product.unit || '',
                             activity_id: product.pro_activity_id || null,
                             pro_activity_id: product.pro_activity_id || 0, // ✅ ใช้ชื่อนี้ให้ตรง backend
@@ -2892,6 +2905,8 @@ export default {
                             ML_Note: promo.ML_Note || '',
                             note: promo.note || '',
                             pro_activity_id: promo.pro_activity_id || null,
+                            pro_sn: promo.pro_sn,
+                            prosn: promo.prosn,
                             pro_goods_id: promo.pro_goods_id || 0,
                             pro_goods_num: promo.pro_goods_num || 0,
                             pro_image: promo.pro_image || '',
@@ -2911,6 +2926,8 @@ export default {
                             ML_Note: gift.ML_Note || '',
                             note: gift.note || '',
                             pro_activity_id: gift.pro_activity_id || null,
+                            pro_sn: gift.pro_sn,
+                            prosn: gift.prosn,
                             pro_goods_id: gift.pro_goods_id || 0,
                             pro_sku_price_id: gift.pro_sku_price_id || null,
                             user_id: gift.user_id || null,
@@ -3496,6 +3513,7 @@ export default {
                             pro_unit_price: item.pro_goods_price || '',
                             pro_goods_sku_text: item.pro_goods_sku_text || '',
                             pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
+                            prosn: item.prosn || '',
                             pro_images: item.pro_image || '',
                             pro_quantity: item.pro_goods_num || 0,
                             pro_goods_num: item.pro_goods_num || 0,

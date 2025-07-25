@@ -17,8 +17,8 @@
             <th class="p-3 border">รหัสลูกค้า</th>
             <th class="p-3 border">ชื่อร้าน</th>
             <th class="p-3 border">เบอร์โทรศัพท์</th>
-            <th class="p-3 border text-right">จำนวนเงิน</th>
-            <th class="p-3 border text-right">ยอดชำระ</th>
+            <th class="p-3 border text-right">ยอดคำสั่งซื้อล่าสุด</th>
+            <th class="p-3 border text-right">ยอดหนี้คงค้าง</th>
             <th class="p-3 border">เวลาสร้าง</th>
             <th class="p-3 border">ระยะเครดิต (days)</th> <!-- เพิ่ม -->
             <th class="p-3 border">วงเงิน (limit)</th> <!-- เพิ่ม -->
@@ -369,6 +369,7 @@ function convertThaiDateToISO(dateStr) {
 async function fetchPage(page = 1) {
   isLoading.value = true
   try {
+    // ${BASE_URL}
     const res = await axios.get(
       `${BASE_URL}/api_admin_dashboard/backend/api/list_sale_orders/get_list_sale_order.php?v=${Date.now()}`,
       { params: { page, limit } }

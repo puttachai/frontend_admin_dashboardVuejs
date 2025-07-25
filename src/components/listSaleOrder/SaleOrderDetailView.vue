@@ -405,7 +405,7 @@
 
       <!-- รวม -->
       <!-- รวม -->
-      <div class="mt-6 text-right space-y-1">
+      <!-- <div class="mt-6 text-right space-y-1">
         <div class="text-gray-700">มูลค่ารวมก่อนภาษี:
           <span class="ml-2 text-gray-700">{{ totalAmountBeforeDiscount.toFixed(2) }}</span>
         </div>
@@ -422,6 +422,50 @@
         <div class="text-xl font-bold text-purple-700 mt-2">
           มูลค่ารวมสุทธิ:
           <span class="ml-2 text-blue-600">{{ grandTotal }}</span>
+        </div>
+      </div> -->
+      <div class="mt-6 text-right space-y-1">
+        <!-- ซ่อนมูลค่ารวมก่อนภาษี เมื่อ isVatIncluded === true -->
+        <div v-if="isVathidden" class="text-gray-700">
+          มูลค่ารวมก่อนภาษี:
+          <span class="ml-2 text-gray-700">
+            {{ netAmountBeforeVat.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            }) }}
+          </span>
+          <!-- <span class="ml-2 text-gray-700">{{ Number(totalAmountBeforeDiscount).toLocaleString(undefined, {
+                        minimumFractionDigits: 2, maximumFractionDigits: 2
+                    }) }}</span> -->
+        </div>
+
+        <div class="text-gray-700 flex items-center justify-end">
+          <input type="checkbox" v-model="isVathidden" id="vatCheckbox" :disabled="isReadOnly" class="mr-2" />
+          <label for="vatCheckbox">แสดงภาษีมูลค่าเพิ่ม (7%) และมูลค่าก่อนภาษี</label>
+          <!-- แสดงภาษีเมื่อ isVatIncluded === true -->
+          <span v-if="isVathidden" class="ml-2 text-gray-700">
+            {{ vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            }} บาท
+          </span>
+          <!-- <span v-if="!isVathidden" class="ml-2 text-gray-700">
+                        {{ Number(totalAmountBeforeDiscount * 0.07).toLocaleString(undefined, {
+                            minimumFractionDigits:
+                                2,
+                            maximumFractionDigits: 2
+                        }) }}
+                    </span> -->
+        </div>
+
+        <div class="text-xl font-bold text-purple-700 mt-2">
+          มูลค่ารวมสุทธิ:
+          <span class="ml-2 text-blue-600">
+            {{ grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            }}
+          </span>
+          <!-- <span class="ml-2 text-blue-600">{{ grandTotal.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }) }}</span> -->
         </div>
       </div>
 
@@ -635,6 +679,7 @@ export default {
       isLoading: false, // สำหรับ loading spinner
 
       isVatIncluded: true, //  เริ่มต้นให้คิดภาษี
+      isVathidden: false, //  เริ่มต้นให้คิดภาษี
 
       // ตัวแปรควบคุม popup
       showAddressPopup: false, // ควบคุมการแสดง popup ที่อยู่]
@@ -722,9 +767,8 @@ export default {
 
         trackingNo: '',
         deliveryType: '',
-        totalDiscount: '',
+        totalDiscount: '' || 0,
 
-        totalDiscount: '',
         deliveryFee: '',
 
         documentNo: '',
@@ -784,7 +828,6 @@ export default {
   },
 
   computed: {
-
     totalAmountBeforeDiscount() {
       const subtotal = this.selectedProducts.reduce((sum, product) => {
         const qty = product.pro_quantity || 0;
@@ -797,11 +840,59 @@ export default {
       const total = subtotal + deliveryFee - totalDiscount;
       return total < 0 ? 0 : total;
     },
+
+    // ✅ แก้ไขให้เป็นราคารวมภาษีแล้ว
     grandTotal() {
-      const netBeforeVat = this.totalAmountBeforeDiscount;
-      const vat = this.isVatIncluded ? netBeforeVat * 0.07 : 0;
-      return (netBeforeVat + vat).toFixed(2);
+      const grossAmount = this.totalAmountBeforeDiscount; // ราคารวมภาษีแล้ว
+
+      if (this.isVatIncluded) {
+        // ถ้าเป็นราคารวมภาษี ให้ return ยอดเต็ม
+        return grossAmount;
+      } else {
+        // ถ้าไม่รวมภาษี ให้บวกแวท 7%
+        return grossAmount * 1.07;
+      }
     },
+
+    // ✅ เพิ่ม computed สำหรับราคาก่อนภาษี (สำหรับแสดงผล)
+    netAmountBeforeVat() {
+      const grossAmount = this.totalAmountBeforeDiscount;
+
+      if (this.isVatIncluded) {
+        // ถ้าเป็นราคารวมภาษี ให้คำนวณราคาก่อนภาษี
+        return grossAmount / 1.07;
+      } else {
+        // ถ้าไม่รวมภาษี ราคาก่อนภาษีคือยอดเต็ม
+        return grossAmount;
+      }
+    },
+
+    // ✅ เพิ่ม computed สำหรับยอดภาษี
+    vatAmount() {
+      if (this.isVatIncluded) {
+        const grossAmount = this.totalAmountBeforeDiscount;
+        return grossAmount - (grossAmount / 1.07);
+      } else {
+        return this.totalAmountBeforeDiscount * 0.07;
+      }
+    },
+    // totalAmountBeforeDiscount() {
+    //   const subtotal = this.selectedProducts.reduce((sum, product) => {
+    //     const qty = product.pro_quantity || 0;
+    //     const price = product.pro_unit_price || 0;
+    //     const discount = product.discount || 0;
+    //     return sum + (qty * price - discount);
+    //   }, 0);
+    //   const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
+    //   const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
+    //   const total = subtotal + deliveryFee - totalDiscount;
+    //   return total < 0 ? 0 : total;
+    // },
+    // grandTotal() {
+    //   const netBeforeVat = this.totalAmountBeforeDiscount;
+    //   const vat = this.isVatIncluded ? netBeforeVat * 0.07 : 0;
+    //   return (netBeforeVat + vat).toFixed(2);
+    // },
     // ตรวจสอบว่าเป็นหน้าแก้ไขหรือสร้างใหม่
     isCreatePage() {
       return this.$route.path === '/createsalelist'
@@ -1072,6 +1163,22 @@ export default {
 
           console.log("✅ Macfive ส่งสำเร็จ", macfiveResponse);
 
+          if(macfiveResponse.data?.Success){
+            Swal.fire({
+              title:'อนุมัติรายการสั่งซื้อสำเร็จ',
+              text: 'อนุมัติรายการเรียบร้อย',
+              icon: 'success'
+            });
+          }else{
+            Swal.fire({
+              title:'ไม่สามารถอนุมัติรายการสั่งซื้อได้',
+              text: 'กรุณาลองใหม่อีกครั้ง',
+              icon: 'error'
+            });
+            const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาด';
+            console.error('เกิดข้อผิดพลาด',message)
+          }
+
         } catch (err) {
           const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาด';
           Swal.fire('ผิดพลาด', message, 'error');
@@ -1125,14 +1232,27 @@ export default {
       const allPromotions = [...(this.formData.promotions || []), ...productPromotions];
       const allGifts = [...(this.formData.gifts || []), ...productGifts];
 
+      allPromotions.forEach(promo => {
+        if (promo.pro_sn === "P02-ZZ-9999") {
+          console.warn(`🚫 บล็อกโปรโมชั่น: ${promo.title} (${promo.pro_sn})`);
+        }
+      });
+
+      // 🎯 กรองโปรโมชันที่ไม่ใช่ P02-ZZ-9999
+      const filteredPromotions = allPromotions.filter(promo => promo.pro_sn !== "P02-ZZ-9999");
+
       const countProducts = this.selectedProducts.length;
       const countGifts = allGifts.length;
       const countPromotions = allPromotions.length;
       const totalItems = countProducts + countGifts + countPromotions;
+      
+      const discountMacfive = this.formData.totalDiscount;
+      const discT1CF = discountMacfive * 100 / this.formData.final_total_price;
+      const discFT2CC = this.formData.final_total_price * 7 / 107;
+      const discFT2CF = (discFT2CC * 100 / this.formData.final_total_price).toFixed(5);
+      // const discFT2CF = discFT2CC * 100 / this.formData.final_total_price;
 
       console.log('📦 รวมทั้งหมด (MH_noItems):', totalItems);
-
-
 
       // const payload = {
       return {
@@ -1154,10 +1274,13 @@ export default {
           // MH_site: 1655, // ที่อยู่จัดส่ง
           MH_deldate: formatDate(now), // วันที่สร้าง
           MH_totalCOG: parseFloat(this.formData.final_total_price),  // ยอดรวม
-          MH_discT1: 0,
-          MH_discF1: 0,
-          MH_discT2: 6.54205,
-          MH_discF2: parseFloat(this.formData.final_total_price) * 0.07,
+          MH_discT1: discT1CF, //ส่วนลด
+          // MH_discT1: 20, //ส่วนลด
+          MH_discF1: discountMacfive,
+          // MH_discF1: 0,
+          MH_discT2: discFT2CF, // 
+          // MH_discT2: 6.54205, // 
+          MH_discF2: parseFloat(this.formData.final_total_price - discountMacfive) * 7 / 107, // round(ส่วนลด * 7 / 107 ,2);
           MH_flow: 0,
           MH_cur: 0,
           MH_Note: `// ${docNo}`,
@@ -1211,7 +1334,7 @@ export default {
 
           // 2. 🎁 ของแถม
           ...allGifts.map((gift, index) => ({
-          // ...this.formData.gifts.map((gift, index) => ({
+            // ...this.formData.gifts.map((gift, index) => ({
             ML_date: formatDateTime(now),
             ML_type: "PS",
             ML_vnumber: docNo,
@@ -1235,7 +1358,8 @@ export default {
           })),
 
           // 3. 📢 โปรโมชั่น
-          ...allPromotions.map((promo, index) => ({
+          ...filteredPromotions.map((promo, index) => ({
+            // ...allPromotions.map((promo, index) => ({
             ML_date: formatDateTime(now),
             ML_type: "PS",
             ML_vnumber: docNo,

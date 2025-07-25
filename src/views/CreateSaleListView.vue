@@ -387,7 +387,7 @@
                                     <td class="px-4 py-2 border">{{ product.pro_goods_price || product.pro_unit_price }}
                                     </td>
                                     <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
-                                    <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString() }}</td>
+                                    <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString() || 0 }}</td>
                                     <!-- <td class="px-4 py-2 border">{{ totalprice(product) }}</td> -->
                                     <!-- <td class="px-4 py-2 border text-red-500 cursor-pointer hover:text-red-700"
                                         :disabled="isReadOnly"
@@ -525,32 +525,46 @@
 
             <div class="mt-6 text-right space-y-1">
                 <!-- ซ่อนมูลค่ารวมก่อนภาษี เมื่อ isVatIncluded === true -->
-                <div v-if="!isVathidden" class="text-gray-700">
+                <div v-if="isVathidden" class="text-gray-700">
                     มูลค่ารวมก่อนภาษี:
-                    <span class="ml-2 text-gray-700">{{ Number(totalAmountBeforeDiscount).toLocaleString(undefined, {
+                    <span class="ml-2 text-gray-700">
+                        {{ netAmountBeforeVat.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }) }}
+                    </span>
+                    <!-- <span class="ml-2 text-gray-700">{{ Number(totalAmountBeforeDiscount).toLocaleString(undefined, {
                         minimumFractionDigits: 2, maximumFractionDigits: 2
-                    }) }}</span>
+                    }) }}</span> -->
                 </div>
 
                 <div class="text-gray-700 flex items-center justify-end">
                     <input type="checkbox" v-model="isVathidden" id="vatCheckbox" :disabled="isReadOnly" class="mr-2" />
-                    <label for="vatCheckbox">ซ่อนภาษีมูลค่าเพิ่ม (7%) และมูลค่าก่อนภาษี</label>
-                    <!-- ซ่อนภาษีเมื่อ isVatIncluded === true -->
-                    <span v-if="!isVathidden" class="ml-2 text-gray-700">
+                    <label for="vatCheckbox">แสดงภาษีมูลค่าเพิ่ม (7%) และมูลค่าก่อนภาษี</label>
+                    <!-- แสดงภาษีเมื่อ isVatIncluded === true -->
+                    <span v-if="isVathidden" class="ml-2 text-gray-700">
+                        {{ vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        }} บาท 
+                    </span>
+                    <!-- <span v-if="!isVathidden" class="ml-2 text-gray-700">
                         {{ Number(totalAmountBeforeDiscount * 0.07).toLocaleString(undefined, {
                             minimumFractionDigits:
                                 2,
                             maximumFractionDigits: 2
                         }) }}
-                    </span>
+                    </span> -->
                 </div>
 
                 <div class="text-xl font-bold text-purple-700 mt-2">
                     มูลค่ารวมสุทธิ:
-                    <span class="ml-2 text-blue-600">{{ grandTotal.toLocaleString(undefined, {
+                    <span class="ml-2 text-blue-600">
+                        {{ grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        }}
+                    </span>
+                    <!-- <span class="ml-2 text-blue-600">{{ grandTotal.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
-                    }) }}</span>
+                    }) }}</span> -->
                 </div>
             </div>
 
@@ -874,7 +888,7 @@ export default {
             isLoading: false, // สำหรับ loading spinner
 
             isVatIncluded: true, //  เริ่มต้นให้คิดภาษี
-            isVathidden: true, //  เริ่มต้นให้คิดภาษี
+            isVathidden: false, //  เริ่มต้นให้คิดภาษี
 
             // ตัวแปรควบคุม popup
             showAddressPopup: false, // ควบคุมการแสดง popup ที่อยู่]
@@ -958,11 +972,10 @@ export default {
                 // ใช้
                 // deliveryDate: '',
 
-                trackingNo: '',
+                trackingNo: '' || '-',
                 deliveryType: '',
-                totalDiscount: '',
+                totalDiscount: '' || 0,
 
-                totalDiscount: '',
                 deliveryFee: '',
 
                 documentNo: '',
@@ -1061,6 +1074,30 @@ export default {
         //     return (netBeforeVat + vat).toFixed(2);
         // },
 
+        // totalAmountBeforeDiscount() {
+
+        //     const subtotal = this.selectedProducts.reduce((sum, product) => {
+        //         const qty = product.pro_quantity || 0;
+        //         const price = product.pro_unit_price || 0;
+        //         const discount = product.discount || 0;
+        //         return sum + (qty * price - discount);
+        //     }, 0);
+
+        //     const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
+        //     const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
+        //     const total = subtotal + deliveryFee - totalDiscount;
+        //     const total_vat = this.isVatIncluded ? total * 0.07 : 0;
+        //     return total_vat < 0 ? 0 : total_vat;
+        //     // return total < 0 ? 0 : total;
+
+        // },
+        // grandTotal() {
+        //     const netBeforeVat = this.totalAmountBeforeDiscount;
+        //     // const vat = this.isVatIncluded ? netBeforeVat * 0.07 : 0;
+        //     // return (netBeforeVat + vat).toFixed(2);
+        //     // return (netBeforeVat + vat).toFixed(2);
+        //     return netBeforeVat ; // ✅ return เป็น Number //+ vat
+        // },
         totalAmountBeforeDiscount() {
             const subtotal = this.selectedProducts.reduce((sum, product) => {
                 const qty = product.pro_quantity || 0;
@@ -1068,18 +1105,95 @@ export default {
                 const discount = product.discount || 0;
                 return sum + (qty * price - discount);
             }, 0);
-            const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
-            const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
+            const deliveryFee = parseFloat(this.formData.deliveryFee || 0) || 0;
+            const totalDiscount = parseFloat(this.formData.totalDiscount || 0) || 0;
             const total = subtotal + deliveryFee - totalDiscount;
             return total < 0 ? 0 : total;
         },
+
+        // ✅ แก้ไขให้เป็นราคารวมภาษีแล้ว
         grandTotal() {
-            const netBeforeVat = this.totalAmountBeforeDiscount;
-            const vat = this.isVatIncluded ? netBeforeVat * 0.07 : 0;
-            // return (netBeforeVat + vat).toFixed(2);
-            // return (netBeforeVat + vat).toFixed(2);
-            return netBeforeVat + vat; // ✅ return เป็น Number
+            const grossAmount = this.totalAmountBeforeDiscount; // ราคารวมภาษีแล้ว
+
+            if (this.isVatIncluded) {
+                // ถ้าเป็นราคารวมภาษี ให้ return ยอดเต็ม
+                return grossAmount;
+            } else {
+                // ถ้าไม่รวมภาษี ให้บวกแวท 7%
+                return grossAmount * 1.07;
+            }
         },
+
+        // ✅ เพิ่ม computed สำหรับราคาก่อนภาษี (สำหรับแสดงผล)
+        netAmountBeforeVat() {
+            const grossAmount = this.totalAmountBeforeDiscount;
+
+            if (this.isVatIncluded) {
+                // ถ้าเป็นราคารวมภาษี ให้คำนวณราคาก่อนภาษี
+                return grossAmount / 1.07;
+            } else {
+                // ถ้าไม่รวมภาษี ราคาก่อนภาษีคือยอดเต็ม
+                return grossAmount;
+            }
+        },
+
+        // ✅ เพิ่ม computed สำหรับยอดภาษี
+        vatAmount() {
+            if (this.isVatIncluded) {
+                const grossAmount = this.totalAmountBeforeDiscount;
+                return grossAmount - (grossAmount / 1.07);
+            } else {
+                return this.totalAmountBeforeDiscount * 0.07;
+            }
+        },
+
+
+        //พอใช้ได้ปรับ .
+        // totalAmountBeforeDiscount() {
+        //     const subtotal = this.selectedProducts.reduce((sum, product) => {
+        //         const qty = product.pro_quantity || 0;
+        //         const price = product.pro_unit_price || 0;
+        //         const discount = product.discount || 0;
+        //         return sum + (qty * price - discount);
+        //     }, 0);
+
+        //     const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
+        //     const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
+
+        //     // ✅ ราคาสุทธิรวม VAT
+        //     const totalWithVat = subtotal + deliveryFee - totalDiscount;
+
+        //     if (this.isVatIncluded) {
+        //         // ✅ ราคาก่อน VAT
+        //         const netBeforeVat = totalWithVat / 1.07;
+        //         return netBeforeVat < 0 ? 0 : netBeforeVat;
+        //     } else {
+        //         return totalWithVat < 0 ? 0 : totalWithVat;
+        //     }
+        // },
+
+        // vatAmount() {
+        //     // VAT = grandTotal - totalAmountBeforeDiscount
+        //     const vat = this.grandTotal - this.totalAmountBeforeDiscount;
+        //     return vat < 0 ? 0 : vat;
+        // },
+
+        // grandTotal() {
+        //     // ✅ ราคาสุทธิรวม VAT อยู่แล้ว
+        //     const subtotal = this.selectedProducts.reduce((sum, product) => {
+        //         const qty = product.pro_quantity || 0;
+        //         const price = product.pro_unit_price || 0;
+        //         const discount = product.discount || 0;
+        //         return sum + (qty * price - discount);
+        //     }, 0);
+
+        //     const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
+        //     const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
+        //     const total = subtotal + deliveryFee - totalDiscount;
+        //     return total < 0 ? 0 : total;
+        // },
+
+
         // ตรวจสอบว่าเป็นหน้าแก้ไขหรือสร้างใหม่
         isCreatePage() {
             return this.$route.path === '/createsalelist'
@@ -1120,25 +1234,6 @@ export default {
                     }))
                 };
 
-                // ✅ แปลงรูปแบบข้อมูลก่อนส่ง
-                // const payloadProduct = {
-                //     pro_activity_id: product.pro_activity_id || 0,
-                //     pro_goods_id: product.pro_goods_id,
-                //     // pro_code: product.pro_sku_price_id || '', // ตรวจสอบหรือใส่ fallback
-                //     pro_goods_price: parseFloat(product.pro_unit_price) || 0,
-                //     pro_sku_price_id: product.pro_sku_price_id,
-                //     pro_erp_title: product.pro_erp_title || '',
-                //     pro_goods_num: product.pro_quantity, // หรือ pro_goods_num ก็ได้ ถ้า sync แล้ว
-                //     pro_image: product.pro_images, // เปลี่ยนชื่อให้ตรง API
-                //     pro_sn: product.pro_sn,
-                //     pro_title: product.pro_title,
-                //     pro_units: product.pro_units
-                // };
-
-                // const payload = {
-                //     products: [payloadProduct]
-                // };
-
                 const response = await axios.post(
                     `${BASE_URL}/cart_out/index`,
                     payload,
@@ -1155,36 +1250,6 @@ export default {
                 if (response.data.code === 1) {
                     const data = response.data.data.products || [];
                     console.log('API response products:', data);
-
-                    // แยกข้อมูลออกเป็น 3 ก้อน //  ,  
-                    // const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
-                    // const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
-                    // const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
-
-                    // // 1. แยกข้อมูลตามประเภทจาก data
-                    // const items = data.filter(
-                    //     item =>
-                    //         item.pro_goods_id !== 0 &&
-                    //         (item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth')
-                    // );
-
-                    // const gifts = data.filter(
-                    //     item =>
-                    //         item.pro_goods_id !== 0 &&
-                    //         (item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month')
-                    // );
-
-                    // const promotions = data.filter(
-                    //     item =>
-                    //         item.pro_activity_id !== 0 &&
-                    //         (item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month')
-                    // );
-
-
-
-                    // for (const item of items) {
-
-
 
 
                     // ✅ วงเล็บให้ถูกต้องเพื่อไม่ให้ logic ผิด
@@ -1662,8 +1727,8 @@ export default {
                 // receiverEmail: 'อีเมลผู้รับ',
                 receiverAddress: 'ที่อยู่ผู้รับ',
                 deliveryDate: 'วันที่จัดส่ง',
-                trackingNo: 'เลขติดตาม',
-                deliveryType: 'ประเภทการจัดส่ง'
+                // trackingNo: 'เลขติดตาม',
+                // deliveryType: 'ประเภทการจัดส่ง'
             };
 
 
@@ -1837,8 +1902,10 @@ export default {
                     pro_erp_title: product.pro_erp_title,
                     pro_quantity: product.pro_quantity,
                     pro_unit_price: product.pro_unit_price,
-                    pro_discount: this.formData.discount,
+                    // pro_discount: this.formData.discount === 0 ? 0 : this.formData.discount,
                     pro_total_price: total, // รวมราคาต่อสินค้า
+                    totalDiscount: this.formData.totalDiscount || 0, // รวมราคาต่อสินค้า
+                    pro_discount: this.formData.discount || 0, // รวมราคาต่อสินค้า
                     pro_images: product.pro_images,
                     pro_sn: product.pro_sn,
                     prosn: product.prosn,
@@ -1857,11 +1924,15 @@ export default {
             this.formData.gifts = gifts;
 
             // await this.AddressInsertData(this.selectedAddress);
-            this.formData.price_before_tax = parseFloat(this.totalAmountBeforeDiscount.toFixed(2));
-            this.formData.tax_value = this.isVatIncluded ? parseFloat((this.totalAmountBeforeDiscount * 0.07).toFixed(2)) : 0;
-            this.formData.price_with_tax = parseFloat(this.grandTotal);
+            // this.formData.price_before_tax = parseFloat(this.totalAmountBeforeDiscount.toFixed(2));
+            this.formData.price_before_tax = parseFloat(this.netAmountBeforeVat.toFixed(2));
+            this.formData.tax_value = this.isVatIncluded ? parseFloat(this.vatAmount.toFixed(2)) : 0;
+            // this.formData.tax_value = this.isVatIncluded ? parseFloat((this.totalAmountBeforeDiscount * 0.07).toFixed(2)) : 0;
+            this.formData.price_with_tax = parseFloat(this.grandTotal.toFixed(2));
+            // this.formData.price_with_tax = parseFloat(this.grandTotal);
 
-            this.formData.final_total_price = parseFloat(this.grandTotal);
+            this.formData.final_total_price = parseFloat(this.grandTotal.toFixed(2));
+            // this.formData.final_total_price = parseFloat(this.grandTotal);
 
             const payload = new FormData();
 
@@ -1907,6 +1978,7 @@ export default {
 
             // เพื่อมข้อมูล FormData
             try {
+                 this.isLoading = true;
 
                 const response = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/sale_order/post_sale_order.php`, payload, {
                     // const response = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_sale_order.php`, payload, {
@@ -1940,6 +2012,7 @@ export default {
                     this.isReadOnly = true;
 
                     Swal.fire({ text: resData.message, icon: 'success' });
+
                     this.isLoading = false;
                 } else {
                     Swal.fire({ text: 'asdadas', icon: 'error' });
@@ -2609,7 +2682,8 @@ export default {
                         pro_name: product.pro_erp_title,
                         pro_quantity: product.pro_quantity,
                         pro_unit_price: product.pro_unit_price,
-                        pro_discount: this.formData.discount,
+                        totalDiscount: this.formData.totalDiscount || 0, // รวมราคาต่อสินค้า
+                        pro_discount: this.formData.discount || 0, // รวมราคาต่อสินค้า
                         pro_total_price: total, // รวมราคาต่อสินค้า
                         pro_images: product.pro_images,
                         pro_sn: product.pro_sn,
@@ -2629,11 +2703,15 @@ export default {
                 this.formData.gifts = gifts;
 
                 // **เพิ่มคำนวณภาษีและราคาก่อนส่ง**
-                this.formData.price_before_tax = parseFloat(this.totalAmountBeforeDiscount.toFixed(2));
-                this.formData.tax_value = this.isVatIncluded ? parseFloat((this.totalAmountBeforeDiscount * 0.07).toFixed(2)) : 0;
-                this.formData.price_with_tax = parseFloat(this.grandTotal);
+                this.formData.price_before_tax = parseFloat(this.netAmountBeforeVat.toFixed(2));
+                // this.formData.price_before_tax = parseFloat(this.totalAmountBeforeDiscount.toFixed(2));
+                this.formData.tax_value = this.isVatIncluded ? parseFloat(this.vatAmount.toFixed(2)) : 0;
+                // this.formData.tax_value = this.isVatIncluded ? parseFloat((this.totalAmountBeforeDiscount * 0.07).toFixed(2)) : 0;
+                this.formData.price_with_tax = parseFloat(this.grandTotal.toFixed(2));
+                // this.formData.price_with_tax = parseFloat(this.grandTotal);
 
-                this.formData.final_total_price = parseFloat(this.grandTotal);
+                this.formData.final_total_price = parseFloat(this.grandTotal.toFixed(2));
+                // this.formData.final_total_price = parseFloat(this.grandTotal);
 
                 const payload = new FormData();
                 // for (const key in this.formData) {
@@ -2681,6 +2759,8 @@ export default {
 
                 console.log("🛒 productList:", this.formData.productList);
                 console.log(JSON.stringify(payload))
+
+                // return;
 
                 const response = await axios.post(
                     `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/sale_order/update_sale_order.php`,

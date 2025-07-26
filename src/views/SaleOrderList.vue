@@ -58,9 +58,9 @@
                 'bg-red-500': order.status === 'การตรวจสอบล้มเหลว',
                 'bg-gray-800': order.status === 'ยังไม่ได้ตรวจสอบ',
                 'bg-black': order.status === 'ยกเลิกคำสั่งซื้อ',
-                // 'bg-green-500': order.status === 'เกินกำหนดชำระไม่เกิน 30 วัน', // ไม่เกิน 7 วัน 
+                // 'bg-green-500': order.status === 'เกินกำหนดชำระไม่เกิน 30 วัน', // ไม่เกิน 7 วัน
                 // 'bg-yellow-500': order.status === 'เกินกำหนดชำระกิน 30 วัน',
-                // 'bg-red-500': order.status === 'เกินกำหนดชำระ 120 วัน', 
+                // 'bg-red-500': order.status === 'เกินกำหนดชำระ 120 วัน',
                 // 'bg-gray-800': order.status === 'เกินกำหนดชำระ 180 วัน',
                 // 'bg-black': order.status === 'ยกเลิกคำสั่งซื้อ'
               }">
@@ -136,6 +136,9 @@ import axios from 'axios'
 // const BASE_URL = import.meta.env.VITE_API_URL
 const VITE_API_URL_C_SHARP = import.meta.env.VITE_API_URL_C_SHARP
 const BASE_URL = import.meta.env.VITE_API_URL_LOCAL
+
+console.log('VITE_API_URL_LOCAL: ', BASE_URL);
+console.log('VITE_API_URL_C_SHARP: ', VITE_API_URL_C_SHARP);
 
 const saleOrders = ref([])
 
@@ -269,7 +272,7 @@ async function fetchPage(page = 1) {
 
 
 
-// 
+//
 async function getTokenDebtStatusType() {
   isLoading.value = true
 
@@ -286,7 +289,9 @@ async function getTokenDebtStatusType() {
      password: "1234"
  };
 
-    const res = await fetch('https://203.154.60.148:58915/api/Users/Login', {
+    var BASE_URL = VITE_API_URL_C_SHARP;
+
+    const res = await fetch(`${BASE_URL}/api/Users/Login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -303,7 +308,7 @@ async function getTokenDebtStatusType() {
     //       'Content'
     //     }
     //   }
-      
+
     //  );
 
     // const res = await axios.post(
@@ -340,7 +345,7 @@ async function TypeCustomers() {
 
   // 🔁 สร้าง payload จาก saleOrders
   const payload = saleOrders.value.map(item => ({
-  
+
     CustomerDocument: item.sale_no,
     CustomerCode: item.customer_code
   }));
@@ -368,7 +373,9 @@ async function TypeCustomers() {
     //   }
     // });
 
-    const res = await fetch('https://203.154.60.148:58915/api/TypeCustomers', {
+    console.log('VITE_API_URL_C_SHARP: ', VITE_API_URL_C_SHARP);
+
+    const res = await fetch(`${VITE_API_URL_C_SHARP}/api/TypeCustomers`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -409,7 +416,7 @@ function goToPage(page) {
 
 </script>
 
-<!-- 
+<!--
 // filter ตามคำค้นหา
 // const filteredOrders = computed(() => {
 //   if (!searchQuery.value.trim()) return saleOrders.value
@@ -418,7 +425,7 @@ function goToPage(page) {
 //   return saleOrders.value.filter(order =>
 //     order.sale_no?.toLowerCase().includes(keyword) ||
 //     order.customer_code?.toLowerCase().includes(keyword) ||
-//     order.shop_name?.toLowerCase().includes(keyword) || 
+//     order.shop_name?.toLowerCase().includes(keyword) ||
 //     order.mobile?.toLowerCase().includes(keyword)
 //   )
 // }) -->
@@ -437,7 +444,7 @@ function goToPage(page) {
 
 
 
-<!-- 
+<!--
 // onMounted(async () => {
 //   try {
 

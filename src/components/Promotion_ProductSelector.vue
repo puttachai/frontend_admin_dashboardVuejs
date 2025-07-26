@@ -109,9 +109,8 @@
             <tr v-for="item in paginatedPromotion" :key="item.id + '-' + item.activity_id">
               <!-- <tr v-for="item in paginatedPromotion" :key="item.id"> -->
               <td class="px-4 py-2 border text-center">
-                <input type="checkbox" v-model="selectedIds" :value="item.id" 
-                 @change="handleCheckboxChange(item, $event)"
-                />
+                <input type="checkbox" v-model="selectedIds" :value="item.id"
+                  @change="handleCheckboxChange(item, $event)" />
               </td>
               <td class="px-4 py-4 border text-center">
                 <template v-if="item.image">
@@ -652,8 +651,7 @@ async function getPromotionProducts() {
 }
 
 
-
-function confirmSelection() {
+ async function confirmSelection() {
 
   // activity_code :"P02-ZZ-9999"
   // activity_id :1178
@@ -667,9 +665,29 @@ function confirmSelection() {
 
   // const get_productOld = (props.selectProducts_old || []).map(p => p);
 
-  const get_productOld_raw = (props.selectProducts_old || []).map(p => ({ ...p }));
+  // const get_productOld_raw = (props.selectProducts_old || []).map(p => ({ ...p }));
+  const get_productOld_raw = (props.selectProducts_old || []).map(p => ({
+    ...p,
+    pro_sku_price_id: p.pro_id
+
+  }));
 
   console.log('🎯 get_productOld:', get_productOld_raw);
+
+  // ✅ ตรวจสอบว่ามีสินค้าใดใน get_productOld_raw ที่ไม่มี stock
+  const isMissingStock = get_productOld_raw.some(item => item.stock === undefined || item.stock === null);
+
+  // ✅ ถ้ามีสินค้าใดไม่มี stock → เรียก API ดึงข้อมูลใหม่
+  if (isMissingStock) {
+    console.warn('📦 บางรายการไม่มีข้อมูล stock → เรียก API ดึงข้อมูลสต๊อก');
+
+    // 🔁 เรียก API เพื่อดึง stock (สมมุติว่าคุณมีฟังก์ชัน loadStockData อยู่แล้ว)
+    await submittedProduct_Stock(get_productOld_raw);
+
+
+
+    return; // ❌ หยุดการทำงานต่อจนกว่าจะได้ข้อมูล stock
+  }
 
   // return;
 
@@ -720,6 +738,7 @@ function confirmSelection() {
   function groupBy(arr, keyFn) {
     return arr.reduce((acc, item) => {
       const groupKey = typeof keyFn === 'function' ? keyFn(item) : item[keyFn];
+      // const quantity = Number(item.pro_goods_num ?? item.pro_quantity ?? 0);
 
       // ดึงจำนวนสินค้า โดย fallback เป็น 0 และแปลงเป็น int
       const quantity =
@@ -807,7 +826,9 @@ function confirmSelection() {
     // const key = `${product.pro_activity_id}_${product.pro_sku_price_id}`;
     // const lastQuantity = grouped[key]?.last_quantity || 0;
 
-    const key = `${product.pro_activity_id}_${product.pro_sku_price_id}`;
+    const key = `${product.pro_activity_id}_${product.pro_sku_price_id}`; // Key ซ้ำกันแต่ไม่เหมือนกันจริง
+    // const key = `${product.pro_activity_id?.toString()}_${product.pro_sku_price_id?.toString()}`; //แก้เป็น string
+
     // ใช้ last_quantity จาก groupedLastQuantity แทน grouped
     const lastQuantity = groupedLastQuantity[key]?.last_quantity || 0;
 
@@ -818,6 +839,7 @@ function confirmSelection() {
     });
 
     if (totalQuantity > stockAvailable) {
+      // if (totalQuantity > stockAvailable) {
       productErrors.push({
         title: product.pro_erp_title || product.pro_title || '(ไม่มีชื่อ)',
         quantity: totalQuantity,
@@ -1043,6 +1065,124 @@ async function submittedProduct(newproduct) {
       const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
 
       const emitTitles = newproduct.map(p => ({
+        // const emitTitles = selectedProducts.map(p => ({
+        pro_goods_id: p.pro_goods_id || 0,
+        pro_activity_id: p.pro_activity_id || 0,
+        pro_title: p.pro_title || '(ไม่มีชื่อ)', //p.pro_erp_title ||
+        pro_erp_title: p.pro_erp_title || p.pro_title || '(ไม่มีชื่อ)',
+        pro_goods_price: p.pro_goods_price || 0,
+        pro_sku_price_id: p.pro_sku_price_id || 0,
+        pro_sn: p.pro_sn || '',
+        pro_units: p.pro_units || '',
+        amount: p.pro_goods_num || 0,
+        stock: p.stock || 0,
+      }));
+
+      console.log("🤯🤯 Log emitTitles:", emitTitles);
+
+      // const emitTitles = data.map(item => item.pro_title || item.pro_erp_title).join(', ');
+      // ใช้ได้
+      console.log("✅ Items:", items);
+      console.log("✅ Gifts:", gifts);
+      console.log("✅ Promotions:", promotions);
+
+      // ใช้ได้
+      console.log("🔁 Emit กลับไปหน้า parent:", { items, gifts, promotions, emitTitles });
+      // console.log("🔁 Emit กลับไปหน้า parent:", { items, itemsMonth, giftsDay, giftsMonth, promotionsDay, promotionsMonth});
+      // ส่งข้อมูลกลับไปยังหน้าหลัก
+
+      // ทำการตรวจสอบข้อมูลที่ได้รับกลับมา
+      if (data.length > 0) {
+        Swal.fire({
+          title: 'สำเร็จ',
+          text: 'ข้อมูลถูกส่งกลับไปยังหน้าหลักเรียบร้อยแล้ว',
+          icon: 'success',
+        });
+
+      } else {
+        Swal.fire({
+          title: 'ไม่มีสินค้า',
+          text: 'ไม่พบสินค้าที่เลือกในระบบ!',
+          icon: 'warning',
+        });
+      }
+
+      console.log("📤 กำลัง emit selectPromotionProducts");
+
+      emit('selectPromotionProducts', {
+        // emit('select-promotion_products', {
+        // ใช้ได้
+        items,
+        gifts,
+        promotions,
+        emitTitles
+      });
+
+      emit('close'); // 
+
+      // dataselect.value = data.data.products || [];
+      // tableData.value = [...dataselect.value];
+      // total.value = data.item_count || dataselect.value.length;
+    } else {
+      error.value = response.data.message || 'เกิดข้อผิดพลาด';
+    }
+  } catch (err) {
+    error.value = err.message || 'โปรดลองใหม่ภายหลัง';
+  } finally {
+    // isLoading.value = false; // โหลดเสร็จ
+  }
+}
+
+async function submittedProduct_Stock(payload) {
+  // async function submittedProduct(selectedProducts) {
+  // isLoading.value = true; // เริ่มโหลด
+
+  const gettoken = localStorage.getItem('token');
+  // ดึงชื่อสินค้าทั้งหมดออกมา (เป็น array ของชื่อ)
+  // const selectedTitles = selectedProducts.map(p => p.pro_title || p.pro_erp_title );
+
+  console.log("grouped 823:", payload);
+  // console.log("selectedProducts:", selectedProducts);
+
+  // return;
+
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/cart_out/index`,
+      {
+        products: payload, // ส่งข้อมูลที่เลือกไปยัง API
+        // products: selectedProducts, // ส่งข้อมูลที่เลือกไปยัง API
+      },
+      {
+
+        headers: {
+          'Content-Type': 'application/json',
+          'token': gettoken
+        }
+      }
+    );
+
+    console.log("✅ Response from API:", response);
+
+    // return;
+
+    if (response.data.code === 1) {
+      const data = response.data.data.products || [];
+
+      console.log("Check Value data:", data);
+
+      // แยกข้อมูลออกเป็น 3 ก้อน
+      // const items = data.filter(item => item?.pro_goods_id !== 0 && !item?.pro_title && item?.note === 'รายการ');
+      // const gifts = data.filter(item => item?.pro_goods_id !== 0 && item?.pro_title && item?.note === 'ของแถม');
+      // const promotions = data.filter(item => item?.pro_goods_id === 0 && item?.pro_title && item?.note === 'โปรโมชั่น');
+
+      // ใช้ได้
+      // แยกข้อมูลออกเป็น 3 ก้อน //  ,  
+      const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
+      const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
+      const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
+
+      const emitTitles = payload.map(p => ({
         // const emitTitles = selectedProducts.map(p => ({
         pro_goods_id: p.pro_goods_id || 0,
         pro_activity_id: p.pro_activity_id || 0,

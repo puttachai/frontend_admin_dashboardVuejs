@@ -298,8 +298,6 @@
                 </div>
             </div>
 
-
-
             <!-- Popup Component -->
             <ProductSelector v-if="showProductSelector" :productList="Apiproducts" @close="showProductSelector = false"
                 :selectProducts_old_month="selectedProducts" @selectProductsWithMonth="addSelectedProductsWithmonth" />
@@ -477,7 +475,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -3148,8 +3146,11 @@ export default {
 
                         Swal.fire({
                             icon: 'info',
-                            title: 'แทนที่ข้อมูลเดิม',
-                            text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+                            title: 'เพิ่มจำนวนข้อมูลสินค้าสำเร็จ',
+                            text: `เพิ่มข้อมูลสินค้าเรียบร้อย ${matchedTitle.pro_erp_title || item.pro_title || ''}`,
+                            showConfirmButton: false,
+                            timer: 2000, // ปิดอัตโนมัติใน 2 วินาที (2000 มิลลิวินาที)
+                            timerProgressBar: true
                         });
                         break;
                     case 'ACTIVITY_ID_ITEM_ISOK':
@@ -3168,8 +3169,11 @@ export default {
 
                         Swal.fire({
                             icon: 'info',
-                            title: 'แทนที่ข้อมูลเดิม',
-                            text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+                            title: 'เพิ่มจำนวนข้อมูลสินค้าสำเร็จ',
+                            text: `เพิ่มข้อมูลสินค้าเรียบร้อย ${matchedTitle.pro_erp_title || item.pro_title || ''}`,
+                            showConfirmButton: false,
+                            timer: 2000, // ปิดอัตโนมัติใน 2 วินาที (2000 มิลลิวินาที)
+                            timerProgressBar: true
                         });
                         break;
                     case 'ACTIVITY_ID_ITEM_IS_Not_OK':
@@ -3186,10 +3190,13 @@ export default {
 
                         console.log('ACTIVITY_ID_ITEM_IS_Not_OK');
 
-                        Swal.fire({
+                         Swal.fire({
                             icon: 'info',
-                            title: 'แทนที่ข้อมูลเดิม',
-                            text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+                            title: 'เพิ่มจำนวนข้อมูลสินค้าสำเร็จ',
+                            text: `เพิ่มข้อมูลสินค้าเรียบร้อย ${matchedTitle.pro_erp_title || item.pro_title || ''}`,
+                            showConfirmButton: false,
+                            timer: 2000, // ปิดอัตโนมัติใน 2 วินาที (2000 มิลลิวินาที)
+                            timerProgressBar: true
                         });
                         break;
 
@@ -3509,6 +3516,9 @@ export default {
                             icon: 'info',
                             title: 'เพิ่มจำนวนข้อมูลสินค้าสำเร็จ',
                             text: `เพิ่มข้อมูลสินค้าเรียบร้อย ${matchedTitle.pro_erp_title || item.pro_title || ''}`,
+                            showConfirmButton: false,
+                            timer: 2000, // ปิดอัตโนมัติใน 2 วินาที (2000 มิลลิวินาที)
+                            timerProgressBar: true
                         });
                         break;
                     case 'ACTIVITY_ID_ITEM_ISOK':
@@ -3527,8 +3537,11 @@ export default {
 
                         Swal.fire({
                             icon: 'info',
-                            title: 'แทนที่ข้อมูลเดิม',
-                            text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+                            title: 'เพิ่มจำนวนข้อมูลสินค้าสำเร็จ',
+                            text: `เพิ่มข้อมูลสินค้าเรียบร้อย ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+                            showConfirmButton: false,
+                            timer: 2000, // ปิดอัตโนมัติใน 2 วินาที (2000 มิลลิวินาที)
+                            timerProgressBar: true
                         });
                         break;
                     case 'ACTIVITY_ID_ITEM_IS_Not_OK':
@@ -3547,8 +3560,11 @@ export default {
 
                         Swal.fire({
                             icon: 'info',
-                            title: 'แทนที่ข้อมูลเดิม',
-                            text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+                            title: 'เพิ่มจำนวนข้อมูลสินค้าสำเร็จ',
+                            text: `เพิ่มข้อมูลสินค้าเรียบร้อย ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+                            showConfirmButton: false,
+                            timer: 2000, // ปิดอัตโนมัติใน 2 วินาที (2000 มิลลิวินาที)
+                            timerProgressBar: true
                         });
                         break;
 

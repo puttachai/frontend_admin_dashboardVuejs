@@ -287,8 +287,8 @@
                 @select-products="addSelectedProducts" /> -->
 
       <!--  ไม่ได้ใช้ สำรองไว้ตอนแก้ไขสินค้า  -->
-      <ProductSelector v-if="showProductSelectoronly" :productList="Apiproducts"
-        @close="showProductSelectoronly = false" @select-products="replaceProductInRow" />
+      <!-- <ProductSelector v-if="showProductSelectoronly" :productList="Apiproducts"
+        @close="showProductSelectoronly = false" @select-products="replaceProductInRow" /> -->
 
       <!-- :productList="Apipromotion" -->
       <PromotionSelector v-if="showPromotionSelector" @close="showPromotionSelector = false"
@@ -297,7 +297,7 @@
       <!-- Popup ตัวที่สอง -->
       <Promotion_ProductSelector v-if="showPromotionProductSelector" :selectedPromotion="selectedPromotion"
         :selectProducts_old="selectedProducts" @close="showPromotionProductSelector = false"
-        @selectPromotionProducts="handleSelectedPromotionProducts" @go-back="handleBackToPromotion" /> //
+        @selectPromotionProducts="handleSelectedPromotionProducts" @go-back="handleBackToPromotion" />
 
       <!-- Popup Component -->
 
@@ -456,7 +456,7 @@
           </select>
           <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
             errors.deliveryType
-          }}</p>
+            }}</p>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
@@ -1166,18 +1166,18 @@ export default {
 
 
     SelectedPromotion(promotionData) {
-            console.log('รับโปรโมชั่นจาก child:', promotionData)
+      console.log('รับโปรโมชั่นจาก child:', promotionData)
 
-            this.selectedPromotion = promotionData
-            this.showPromotionSelector = false
-            console.log('ปิด popup 1')
+      this.selectedPromotion = promotionData
+      this.showPromotionSelector = false
+      console.log('ปิด popup 1')
 
-            setTimeout(() => {
-                this.showPromotionProductSelector = true
-                console.log('เปิด popup 2')
-            }, 100)
-        },
-        
+      setTimeout(() => {
+        this.showPromotionProductSelector = true
+        console.log('เปิด popup 2')
+      }, 100)
+    },
+
 
     //
     async addSelectedProductsWithmonth(payload) {
@@ -1389,6 +1389,15 @@ export default {
       console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
     },
 
+    handleBackToPromotion() {
+      this.showPromotionProductSelector = false
+
+      // 🔁 ใช้ delay เล็กน้อยเพื่อให้ UI สลับได้ลื่นขึ้น
+      setTimeout(() => {
+        this.showPromotionSelector = true
+      }, 100)
+    },
+
     // //handleSelectedProducts
     async handleSelectedPromotionProducts(payload) {
       console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
@@ -1592,6 +1601,411 @@ export default {
 
       console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
 
+    },
+
+
+    async confirmFinalSave() {
+      const result = await Swal.fire({
+        title: 'คุณแน่ใจหรือไม่?',
+        text: "หลังจากยืนยัน จะไม่สามารถแก้ไขข้อมูลนี้ได้อีก",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ยืนยัน',
+        cancelButtonText: 'ยกเลิก'
+      });
+
+      if (!result.isConfirmed) return;
+      // if (result.isConfirmed) {
+      const docNo = this.formData.documentNo;
+
+      try {
+        const lockResponse = await axios.post(
+          `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/document_running/lock_document.php`,
+          // `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/lock_document.php`,
+          { documentNo: docNo }
+        );
+
+        const resData = lockResponse.data;
+
+        console.log("🔒 Response จาก API lock_document:", resData);
+
+        if (!lockResponse.data.success) {
+          Swal.fire('ผิดพลาด', lockResponse.data.message, 'error');
+          return;
+        }
+
+        if (resData.success) {
+          this.isReadOnly = true;
+          this.isConfirmed = true;
+
+          // กันย้อนแก้ในเครื่องนี้ (optional)
+          const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
+          if (!locked.includes(docNo)) {
+            locked.push(docNo);
+            localStorage.setItem('lockedDocumentNos', JSON.stringify(locked));
+          }
+
+          Swal.fire('สำเร็จ!', 'รายการถูกล็อกแล้ว', 'success');
+        } else {
+          Swal.fire('ผิดพลาด', resData.message, 'error');
+        }
+
+      } catch (err) {
+        const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาด';
+        Swal.fire('ผิดพลาด', message, 'error');
+      }
+
+    },
+
+    async validateForm() {
+      this.formTouched = true; // ✅ เมื่อผู้ใช้กด "บันทึก" แล้วถือว่า touched
+      this.errors = {}; // ล้างข้อผิดพลาดก่อนตรวจสอบใหม่
+      let isValid = true;
+
+      // ตรวจสอบฟิลด์ที่จำเป็น 'reference', 'channel', 'taxType',
+      // const requiredFields = [
+      //     'sellDate', 'fullName', 'customerCode', 'phone', 'address',
+      //     'receiverName', 'receiverPhone', 'receiverEmail', 'receiverAddress',
+      //     'deliveryDate', 'trackingNo', 'deliveryType'
+      // ];
+      const requiredFields = {
+        sellDate: 'วันที่ขาย',
+        fullName: 'ชื่อลูกค้า',
+        customerCode: 'รหัสลูกค้า',
+        phone: 'เบอร์โทร',
+        // address: 'ที่อยู่',
+        receiverName: 'ชื่อผู้รับ',
+        receiverPhone: 'เบอร์ผู้รับ',
+        // receiverEmail: 'อีเมลผู้รับ',
+        receiverAddress: 'ที่อยู่ผู้รับ',
+        deliveryDate: 'วันที่จัดส่ง',
+        // trackingNo: 'เลขติดตาม',
+        // deliveryType: 'ประเภทการจัดส่ง'
+      };
+
+      console.log("Log Value requiredFields: ", requiredFields);
+
+      for (const [field, label] of Object.entries(requiredFields)) {
+        const value = this.formData[field];
+        if (!value || (typeof value === 'string' && value.trim() === '')) {
+          this.errors[field] = `กรุณากรอก${label}`;
+          isValid = false;
+        }
+        this.isLoading = false;
+      }
+
+      // ตรวจสอบรายการสินค้า
+      if (this.selectedProducts.length === 0) {
+        Swal.fire({
+          text: 'กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ',
+          icon: 'warning'
+        });
+        isValid = false;
+      } else {
+        for (const product of this.selectedProducts) {
+          if (!product.pro_erp_title || !product.pro_quantity || product.pro_quantity <= 0 || !product.pro_unit_price || product.pro_unit_price <= 0) {
+            Swal.fire({
+              text: 'กรุณากรอกชื่อสินค้า, จำนวน, และมูลค่าต่อหน่วยให้ครบถ้วนและถูกต้องสำหรับทุกรายการสินค้า',
+              icon: 'warning'
+            });
+            isValid = false;
+            break;
+          }
+        }
+      }
+
+      return isValid;
+    },
+
+    async updateDocument() {
+
+      console.log('Update existing document')
+
+      const isValid = await this.validateForm();
+      if (!isValid) {
+        Swal.fire({
+          icon: 'error',
+          title: 'ไม่สามารถบันทึกได้',
+          text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+        });
+        return;
+      }
+
+      // 🔍 ตรวจสอบว่ามีการเปลี่ยนแปลงหรือไม่
+      if (!this.isDataChanged()) {
+        Swal.fire({
+          icon: 'info',
+          title: 'ไม่มีข้อมูลเปลี่ยนแปลง',
+          text: 'คุณยังไม่ได้แก้ไขข้อมูลใด ๆ',
+        });
+        return;
+      }
+
+      try {
+
+        this.isLoading = true;
+
+        this.formData.productList = this.selectedProducts.map(product => {
+
+          const total = this.totalprice(product);
+
+          console.log('✅ check: product', product);
+
+          return {
+            item_id: product.item_id ?? 0, // ✅ ใส่ id เดิมถ้ามี
+            pro_sku_price_id: product.pro_id, //46764
+            // pro_id: product.pro_id,
+            pro_erp_title: product.pro_erp_title, //
+            pro_title: product.pro_title, //
+            pro_quantity: product.pro_quantity, //3
+            pro_goods_num: product.pro_quantity, // 3
+            pro_unit_price: product.pro_unit_price, // "315.00"
+            pro_goods_id: product.pro_goods_id,
+            // pro_discount: this.formData.discount === 0 ? 0 : this.formData.discount,
+            pro_total_price: total, // รวมราคาต่อสินค้า
+            totalDiscount: this.formData.totalDiscount || 0, // รวมราคาต่อสินค้า
+            pro_discount: this.formData.discount || 0, // รวมราคาต่อสินค้า
+            pro_image: product.pro_images, //
+            pro_sn: product.pro_sn,//
+            prosn: product.prosn,//
+            pro_units: product.pro_units,//
+            activity_id: product.activity_id || 0, // เพิ่ม activity_id 0 ถ้าไม่มี
+            pro_activity_id: product.pro_activity_id || 0, // เพิ่ม pro_activity_id ถ้ามี
+            // item_id: product.item_id ?? 0, // ✅ ใส่ id เดิมถ้ามี
+            // pro_id: product.pro_id,
+            // pro_erp_title: product.pro_erp_title,
+            // pro_name: product.pro_erp_title,
+            // pro_quantity: product.pro_quantity,
+            // pro_unit_price: product.pro_unit_price,
+            // totalDiscount: this.formData.totalDiscount || 0, // รวมราคาต่อสินค้า
+            // pro_discount: this.formData.discount || 0, // รวมราคาต่อสินค้า
+            // pro_total_price: total, // รวมราคาต่อสินค้า
+            // pro_images: product.pro_images,
+            // pro_sn: product.pro_sn,
+            // prosn: product.prosn,
+            // pro_units: product.pro_units,
+            // pro_activity_id: product.pro_activity_id || 0 // ✅ เพิ่มบรรทัดนี้!
+          };
+        });
+
+
+        console.log("🔍sadsadsa log value this.productList:", this.formData.productList)
+
+        this.formData.final_total_price = this.grandTotal;
+
+        const { promotions, gifts } = this.extractPromotionsAndGifts();
+        this.formData.promotions = promotions;
+        this.formData.gifts = gifts;
+
+        // **เพิ่มคำนวณภาษีและราคาก่อนส่ง**
+        this.formData.price_before_tax = parseFloat(this.netAmountBeforeVat.toFixed(2));
+        // this.formData.price_before_tax = parseFloat(this.totalAmountBeforeDiscount.toFixed(2));
+        this.formData.tax_value = this.isVatIncluded ? parseFloat(this.vatAmount.toFixed(2)) : 0;
+        // this.formData.tax_value = this.isVatIncluded ? parseFloat((this.totalAmountBeforeDiscount * 0.07).toFixed(2)) : 0;
+        this.formData.price_with_tax = parseFloat(this.grandTotal.toFixed(2));
+        // this.formData.price_with_tax = parseFloat(this.grandTotal);
+
+        this.formData.final_total_price = parseFloat(this.grandTotal.toFixed(2));
+        // this.formData.final_total_price = parseFloat(this.grandTotal);
+
+        const payload = new FormData();
+        // for (const key in this.formData) {
+        //     if (key === 'productList') {
+        //         // payload.append('productList', JSON.stringify(this.formData.productList));
+        //         // ✅ แปลง proxy เป็น array ปกติก่อน stringify
+        //         payload.append('productList', JSON.stringify([...this.formData.productList]));
+        //     } else {
+        //         payload.append(key, this.formData[key]);
+        //     }
+        // }
+        for (const key in this.formData) {
+          if (key === 'productList' || key === 'promotions' || key === 'gifts') {
+            payload.append(key, JSON.stringify([...this.formData[key]]));
+          } else {
+            payload.append(key, this.formData[key]);
+          }
+        }
+
+        if (!this.formData.receiverName) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'กรุณาเลือกที่อยู่จัดส่ง',
+          });
+          return;
+        }
+
+        // else if (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) {
+        //     Swal.fire({
+        //         icon: 'warning',
+        //         title: 'กรุณาเลือกที่อยู่จัดส่ง',
+        //     });
+        // }
+
+        // ✅ เพิ่ม selectedAddress เข้าไป
+        payload.append('deliveryAddress', JSON.stringify(this.selectedAddress));
+
+        // console.log("🤯 Log Value payload: ", payload);
+
+        // ✅ log payload ทั้งหมดแบบอ่านได้
+        // console.log("📦🤯 Log payload entries:");
+        // for (const [key, value] of payload.entries()) {
+        //     console.log(`${key}:`, value);
+        // }
+
+        console.log("🛒 productList:", this.formData.productList);
+        console.log(JSON.stringify(payload))
+
+        // return;
+
+        const response = await axios.post(
+          `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/sale_order/update_sale_order.php`,
+          // `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/update_sale_order.php`,
+          payload
+        );
+
+        const resData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+
+        console.log("🔍 Response จาก API:", resData);
+
+        if (resData.success) {
+          const newDocumentNo = resData.newDocumentNo; // ดึง `documentNo` ใหม่จาก API
+          this.formData.documentNo = newDocumentNo; // อัปเดต `documentNo` ใน `formData`
+
+          // อัปเดต URL ไปยัง `saleList` พร้อม `documentNo` ใหม่
+          this.$router.push(`/saleList?documentNo=${newDocumentNo}`);
+
+          Swal.fire({ text: resData.message, icon: 'success' });
+          this.isReadOnly = true; // ปิดการแก้ไขหลังบันทึกสำเร็จ
+        } else {
+          Swal.fire({ text: resData.message, icon: 'error' });
+        }
+
+        this.isLoading = false;
+
+        // await this.AddressUpdaateData(this.selectedAddress);
+      } catch (err) {
+        const message = err.response?.data?.message || err.message || 'Unknown error';
+        Swal.fire({ text: message, icon: 'error' });
+      }
+    },
+
+    // ฟังก์ชันเปรียบเทียบข้อมูล
+    isDataChanged() {
+      const isFormChanged = JSON.stringify(this.formData) !== JSON.stringify(this.originalFormData);
+      const isProductChanged = JSON.stringify(this.selectedProducts) !== JSON.stringify(this.originalSelectedProducts);
+      return isFormChanged || isProductChanged;
+    },
+
+    // new function 
+    extractPromotionsAndGifts() {
+      const grouped = this.groupByActivityId(this.selectedProducts);
+      const allPromotions = [];
+      const allGifts = [];
+
+      for (const group of Object.values(grouped)) {
+        if (group[0].promotions && Array.isArray(group[0].promotions)) {
+          for (const promo of group[0].promotions) {
+            allPromotions.push({
+
+              title: promo.title,
+              ML_Note: promo.ML_Note || '',
+              note: promo.note || '',
+              pro_activity_id: promo.pro_activity_id || 0,
+              pro_sn: promo.pro_sn,
+              prosn: promo.prosn,
+              pro_goods_id: promo.pro_goods_id || 0,
+              pro_goods_num: promo.pro_goods_num || 0,
+              pro_image: promo.pro_image || '',
+              pro_sku_price_id: promo.pro_sku_price_id || 0,
+              user_id: promo.user_id || 0,
+
+            });
+          }
+        }
+
+        if (group[0].gifts && Array.isArray(group[0].gifts)) {
+          for (const gift of group[0].gifts) {
+            allGifts.push({
+              title: gift.title,
+              pro_goods_num: gift.pro_goods_num || 0,
+              pro_image: gift.pro_image || '',
+              ML_Note: gift.ML_Note || '',
+              note: gift.note || '',
+              pro_activity_id: gift.pro_activity_id || 0,
+              pro_sn: gift.pro_sn,
+              prosn: gift.prosn,
+              pro_goods_id: gift.pro_goods_id || 0,
+              pro_sku_price_id: gift.pro_sku_price_id || 0,
+              user_id: gift.user_id || 0,
+            });
+          }
+        }
+      }
+
+      return {
+        promotions: allPromotions,
+        gifts: allGifts
+      };
+    },
+
+
+    handleAddressSelected(data) {
+      // async handleAddressSelected(data) {
+      console.log('📍 ที่อยู่ที่เลือก:', data);
+      const { DC_add1, DC_add2, DC_add3, DC_tel } = data
+      const fullAddress = `${DC_add1}, ${DC_add2}, ${DC_add3}, เบอร์โทร: ${DC_tel}`
+      this.selectedAddress = fullAddress
+
+      // ✅ เก็บ object เต็ม ๆ
+      this.selectedAddress = {
+        DC_id: data.DC_id, // สมมติว่า DC_id คือ id ที่อยู่
+        DC_add1: data.DC_add1,
+        // province_id: this.findProvinceId(data.DC_add3),
+        // amphure_id: this.findAmphureId(data.DC_add2),
+        // tambon_id: this.findTambonId(data.DC_add2),
+        DC_add3: data.DC_add3,
+        DC_add2: data.DC_add2,
+        DC_tel: data.DC_tel,
+        DC_zone: data.DC_zone || '',
+      };
+
+      // ✅ แสดงผลใน UI
+      this.formData.receiverAddress = fullAddress;
+      this.formData.address = fullAddress;
+      this.formData.receiverPhone = DC_tel;
+      console.log('📍 ที่อยู่ที่เลือก:', this.formData.receiverAddress);
+      console.log('📍object ที่อยู่ที่เลือก:', this.selectedAddress);
+
+      // 📌 ใส่ไว้ใน saveDocument()
+      // await this.saveDocument(addressData);
+    },
+
+
+
+    removeAllProducts() {
+      if (this.selectedProducts.length === 0) {
+        Swal.fire({
+          title: 'ไม่มีสินค้า',
+          text: 'ยังไม่มีสินค้าที่เลือกไว้ในรายการ',
+          icon: 'info'
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: 'ยืนยันการลบทั้งหมด?',
+        text: 'คุณต้องการลบสินค้าที่เลือกทั้งหมดออกจากรายการใช่หรือไม่?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ใช่, ลบทั้งหมด!',
+        cancelButtonText: 'ยกเลิก'
+
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.selectedProducts.length = 0; // ล้างอาร์เรย์ทั้งหมด
+          Swal.fire('ลบแล้ว!', 'สินค้าทั้งหมดถูกลบออกจากรายการ.', 'success');
+        }
+      });
     },
 
     removeProductById(pro_id, activity_id) {

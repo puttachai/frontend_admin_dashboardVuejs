@@ -56,10 +56,11 @@ const handleLogin = async () => {
     });
 
     console.log("Show Data: ", response);
+    console.log("Show response.data.data.data2: ", response.data.data.data2);
     // console.log(response.data.data.data.data2[0].nickname_admin);
 
-    const crm_accountSet =  undefined; //'crm' ||
-    const fa_accountSet = 'fa' || undefined;
+    // const crm_accountSet = undefined; //'crm' ||
+    // const fa_accountSet = 'fa' || undefined;
 
     // localStorage.setItem('crm_account', crm_accountSet);
     // localStorage.setItem('fa_account', fa_accountSet);
@@ -67,113 +68,61 @@ const handleLogin = async () => {
     // const accountType = localStorage.getItem('crm_account' || 'null' || localStorage.getItem('fa_account') || 'null');
 
     if (response.data.code == 1) {
+      // const groupStr = response.data.data.data2.groups || "";
+      // const groupArr = groupStr.split(",").map(g => parseInt(g));
+      const userInfo = response.data.data.data.data2[0];
+      const groupVal = userInfo.groups; // ตัวเลขเดี่ยว เช่น 10
+      const groupArr = [parseInt(groupVal)]; // แปลงเป็น array [10]
 
+      console.log("Show groupStr: ", groupVal);
+      console.log("Show groupArr: ", groupArr);
+
+      // เคลียร์ role เก่า
+      localStorage.removeItem("role_admin");
+      localStorage.removeItem("role_fa");
+      localStorage.removeItem("role_product");
+      localStorage.removeItem("role_crm");
+
+      // เซ็ต role ใหม่
+      const isAdmin = groupArr.includes(1);
+      const isFa = groupArr.includes(3);
+      const isProduct = groupArr.includes(7);
+      const isCrm = groupArr.includes(10);
+
+      console.log("Show isCrm: ", isCrm);
+
+      if (isAdmin) localStorage.setItem("role_admin", "true");
+      if (isFa) localStorage.setItem("role_fa", "true");
+      if (isProduct) localStorage.setItem("role_product", "true");
+      if (isCrm) localStorage.setItem("role_crm", "true");
+
+      const getrole_crm = localStorage.getItem('role_crm');
+      console.log("Show getrole_crm: ", getrole_crm);
+
+      // บันทึกสถานะ login
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('account', mobile.value);
+      localStorage.setItem('password', password.value);
+      localStorage.setItem('token', response.data.data.token || '');
+      localStorage.setItem('level', response.data.data.level || '');
+
+      // แจ้งเตือน login สำเร็จ
       Swal.fire({
         title: 'ล็อกอินสำเร็จ',
         icon: 'success',
-        timer: 2000,              // หน่วงเวลา 2 วินาที
-        showConfirmButton: false, // ไม่แสดงปุ่ม OK
+        timer: 1500,
+        showConfirmButton: false,
       });
 
-      if (crm_accountSet === 'crm') {
-      // if (accountType === 'crm') {
-
-        if (response.data.data.data.customer_count > 1) { // ถ้าใช่ CRM เข้าหน้า customer
-
-          // บันทึก token หรือตั้งค่า authenticated 
-          localStorage.setItem('isAuthenticated', 'true');
-          console.log("Log Respone Data:", response.data.data.data);
-          localStorage.setItem('account', mobile.value);
-          localStorage.setItem('password', password.value);
-
-          localStorage.setItem('msg', response.data.msg);
-
-          const msg = localStorage.getItem('msg');
-          // console.log('Log msg: ',msg);
-
-          localStorage.setItem('crm_account', crm_accountSet);
-          console.log('Check crm_accountSet customer_count > 1: ',crm_accountSet);
-
-          // await logActivity('crm_accountSet Login สำเร็จ', 'SinginForm.vue');
-
-          router.push('/customer');
-
-        } else { // ถ้าไม่ใช่ CRM เข้าหน้า DashBoard
-
-          // บันทึก token หรือตั้งค่า authenticated 
-          localStorage.setItem('isAuthenticated', 'true');
-          localStorage.setItem('token', response.data.data.token || '');
-          localStorage.setItem('level', response.data.data.level || '');
-
-          // const permissions_crm ='crm';
-          // localStorage.setItem('permissions_crm', permissions_crm);
-
-          localStorage.setItem('account', mobile.value);
-          localStorage.setItem('password', password.value);
-
-          const getToken = localStorage.getItem('token');
-          console.log('Log getToken: ', getToken);
-
-          localStorage.setItem('crm_account', crm_accountSet);
-          console.log('Check crm_accountSet customer_count < 1: ',crm_accountSet);
-
-          // await logActivity('customer Login สำเร็จ', 'SinginForm.vue');
-
-          router.push('/dashboard');
-        }
-      } else if (fa_accountSet) {
-        if (response.data.data.data.customer_count > 1) { // ถ้าใช่ CRM เข้าหน้า customer
-
-          // บันทึก token หรือตั้งค่า authenticated 
-          localStorage.setItem('isAuthenticated', 'true');
-          console.log("Log Respone Data:", response.data.data.data);
-          localStorage.setItem('account', mobile.value);
-          localStorage.setItem('password', password.value);
-
-          localStorage.setItem('msg', response.data.msg);
-
-          const msg = localStorage.getItem('msg');
-          // console.log('Log msg: ',msg);
-          localStorage.setItem('fa_account', fa_accountSet);
-          console.log('Check fa_accountSet customer_count > 1 : ',fa_accountSet);
-
-          // await logActivity('fa_account Login สำเร็จ', 'SinginForm.vue');
-
-          router.push('/customer');
-
-        } else { // ถ้าไม่ใช่ CRM เข้าหน้า DashBoard
-
-          // บันทึก token หรือตั้งค่า authenticated 
-          localStorage.setItem('isAuthenticated', 'true');
-          localStorage.setItem('token', response.data.data.token || '');
-          localStorage.setItem('level', response.data.data.level || '');
-
-          // const permissions_crm ='crm';
-          // localStorage.setItem('permissions_crm', permissions_crm);
-
-          localStorage.setItem('account', mobile.value);
-          localStorage.setItem('password', password.value);
-
-          const getToken = localStorage.getItem('token');
-          console.log('Log getToken: ', getToken);
-
-          localStorage.setItem('fa_account', fa_accountSet);
-          console.log('Check fa_accountSet customer_count < 1: ',fa_accountSet);
-
-          // await logActivity('customer Login สำเร็จ', 'SinginForm.vue');
-          
-          router.push('/dashboard');
-        }
+      // 👉 ตรวจเงื่อนไข redirect
+      if (isCrm || isProduct) {
+        router.push("/customer");
+      } else {
+        router.push("/dashboard");
       }
-
-    } else {
-      error.value = response.data.message || 'Login failed'
-      Swal.fire({
-        title: 'ล็อกอินไม่สำเร็จ',
-        text: error.value || 'โปรดลองใหม่ภายหลัง',
-        icon: 'error',
-      });
     }
+
+
   } catch (err) {
     error.value = err.response?.data?.message || 'Server error'
     Swal.fire({
@@ -185,6 +134,116 @@ const handleLogin = async () => {
 }
 </script>
 
+
+<!-- ใช้ได้เลย แต่ไม่สมบูรณ์กำหนดสิทธิ -->
+<!-- // if (response.data.code == 1) {
+
+    //   Swal.fire({
+    //     title: 'ล็อกอินสำเร็จ',
+    //     icon: 'success',
+    //     timer: 2000,              // หน่วงเวลา 2 วินาที
+    //     showConfirmButton: false, // ไม่แสดงปุ่ม OK
+    //   });
+
+    //   if (crm_accountSet === 'crm') {
+    //     // if (accountType === 'crm') {
+
+    //     if (response.data.data.data.customer_count > 1) { // ถ้าใช่ CRM เข้าหน้า customer
+
+    //       // บันทึก token หรือตั้งค่า authenticated 
+    //       localStorage.setItem('isAuthenticated', 'true');
+    //       console.log("Log Respone Data:", response.data.data.data);
+    //       localStorage.setItem('account', mobile.value);
+    //       localStorage.setItem('password', password.value);
+
+    //       localStorage.setItem('msg', response.data.msg);
+
+    //       const msg = localStorage.getItem('msg');
+    //       // console.log('Log msg: ',msg);
+
+    //       localStorage.setItem('crm_account', crm_accountSet);
+    //       console.log('Check crm_accountSet customer_count > 1: ', crm_accountSet);
+
+    //       // await logActivity('crm_accountSet Login สำเร็จ', 'SinginForm.vue');
+
+    //       router.push('/customer');
+
+    //     } else { // ถ้าไม่ใช่ CRM เข้าหน้า DashBoard
+
+    //       // บันทึก token หรือตั้งค่า authenticated 
+    //       localStorage.setItem('isAuthenticated', 'true');
+    //       localStorage.setItem('token', response.data.data.token || '');
+    //       localStorage.setItem('level', response.data.data.level || '');
+
+    //       // const permissions_crm ='crm';
+    //       // localStorage.setItem('permissions_crm', permissions_crm);
+
+    //       localStorage.setItem('account', mobile.value);
+    //       localStorage.setItem('password', password.value);
+
+    //       const getToken = localStorage.getItem('token');
+    //       console.log('Log getToken: ', getToken);
+
+    //       localStorage.setItem('crm_account', crm_accountSet);
+    //       console.log('Check crm_accountSet customer_count < 1: ', crm_accountSet);
+
+    //       // await logActivity('customer Login สำเร็จ', 'SinginForm.vue');
+
+    //       router.push('/dashboard');
+    //     }
+    //   } else if (fa_accountSet) {
+    //     if (response.data.data.data.customer_count > 1) { // ถ้าใช่ CRM เข้าหน้า customer
+
+    //       // บันทึก token หรือตั้งค่า authenticated 
+    //       localStorage.setItem('isAuthenticated', 'true');
+    //       console.log("Log Respone Data:", response.data.data.data);
+    //       localStorage.setItem('account', mobile.value);
+    //       localStorage.setItem('password', password.value);
+
+    //       localStorage.setItem('msg', response.data.msg);
+
+    //       const msg = localStorage.getItem('msg');
+    //       // console.log('Log msg: ',msg);
+    //       localStorage.setItem('fa_account', fa_accountSet);
+    //       console.log('Check fa_accountSet customer_count > 1 : ', fa_accountSet);
+
+    //       // await logActivity('fa_account Login สำเร็จ', 'SinginForm.vue');
+
+    //       router.push('/customer');
+
+    //     } else { // ถ้าไม่ใช่ CRM เข้าหน้า DashBoard
+
+    //       // บันทึก token หรือตั้งค่า authenticated 
+    //       localStorage.setItem('isAuthenticated', 'true');
+    //       localStorage.setItem('token', response.data.data.token || '');
+    //       localStorage.setItem('level', response.data.data.level || '');
+
+    //       // const permissions_crm ='crm';
+    //       // localStorage.setItem('permissions_crm', permissions_crm);
+
+    //       localStorage.setItem('account', mobile.value);
+    //       localStorage.setItem('password', password.value);
+
+    //       const getToken = localStorage.getItem('token');
+    //       console.log('Log getToken: ', getToken);
+
+    //       localStorage.setItem('fa_account', fa_accountSet);
+    //       console.log('Check fa_accountSet customer_count < 1: ', fa_accountSet);
+
+    //       // await logActivity('customer Login สำเร็จ', 'SinginForm.vue');
+
+    //       router.push('/dashboard');
+    //     }
+    //   }
+
+    // } else {
+    //   error.value = response.data.message || 'Login failed'
+    //   Swal.fire({
+    //     title: 'ล็อกอินไม่สำเร็จ',
+    //     text: error.value || 'โปรดลองใหม่ภายหลัง',
+    //     icon: 'error',
+    //   });
+    // } -->
 
 <!-- <template>
     <div class="w-full md:w-1/2 p-10">

@@ -222,6 +222,12 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
   const customerRaw = localStorage.getItem("selectDataCustomerRow");
 
+  // ตรวจสอบสิทธิ์
+  const isAdmin = localStorage.getItem("role_admin") === "true";
+  const isFa = localStorage.getItem("role_fa") === "true";
+  const isProduct = localStorage.getItem("role_product") === "true";
+  const isCrm = localStorage.getItem("role_crm") === "true";
+
   // localStorage.removeItem('crm_account');
 
   // const permission = localStorage.getItem('permission');
@@ -262,14 +268,29 @@ router.beforeEach((to, from, next) => {
     return next("/customer");
   }
 
-  if (crm_account === "crm" && to.name === "saleorder") {
-    Swal.fire({
-      title: "ไม่มีสิทธิเข้าถึง",
-      text: "บัญชีของคุณไม่ได้รับอนุญาติให้เข้าถึงหน้านี้",
-      icon: "warning",
-    });
-    return next("/dashboard");
-  }
+  // ใช้ได้แต่ตัวเก่า ซับซ้อนเกินไป
+  // if (crm_account === "crm" && to.name === "saleorder") {
+  //   Swal.fire({
+  //     title: "ไม่มีสิทธิเข้าถึง",
+  //     text: "บัญชีของคุณไม่ได้รับอนุญาติให้เข้าถึงหน้านี้",
+  //     icon: "warning",
+  //   });
+  //   return next("/dashboard");
+  // }
+
+
+  // ต้องใช้
+  // กลุ่ม sale กับ product ห้ามเข้า /saleorder
+  // if ((isCrm || isProduct) && to.name === "saleorder") {
+  //   Swal.fire({
+  //     title: "ไม่มีสิทธิเข้าถึง",
+  //     text: "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้",
+  //     icon: "warning",
+  //   });
+  //   return next("/dashboard");
+  // }
+
+
 
   //   if(to.name === 'saleList' && !customer_id && !order_id){
   //     Swal.fire({

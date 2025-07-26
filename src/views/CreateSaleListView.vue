@@ -387,7 +387,8 @@
                                     <td class="px-4 py-2 border">{{ product.pro_goods_price || product.pro_unit_price }}
                                     </td>
                                     <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
-                                    <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString() || 0 }}</td>
+                                    <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString() || 0 }}
+                                    </td>
                                     <!-- <td class="px-4 py-2 border">{{ totalprice(product) }}</td> -->
                                     <!-- <td class="px-4 py-2 border text-red-500 cursor-pointer hover:text-red-700"
                                         :disabled="isReadOnly"
@@ -476,7 +477,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                    }}</p>
+                        }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -544,7 +545,7 @@
                     <!-- แสดงภาษีเมื่อ isVatIncluded === true -->
                     <span v-if="isVathidden" class="ml-2 text-gray-700">
                         {{ vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                        }} บาท 
+                        }} บาท
                     </span>
                     <!-- <span v-if="!isVathidden" class="ml-2 text-gray-700">
                         {{ Number(totalAmountBeforeDiscount * 0.07).toLocaleString(undefined, {
@@ -1198,6 +1199,7 @@ export default {
         isCreatePage() {
             return this.$route.path === '/createsalelist'
         },
+
         visibleButtons() {
             const buttons = []
             if (this.isReadOnly) buttons.push('edit')
@@ -1218,13 +1220,15 @@ export default {
             try {
                 const token = localStorage.getItem('token');
 
+                console.log('Check: this.selectedProducts', this.selectedProducts);
+
                 // สร้าง payload จาก selectedProducts ทั้งหมด
                 const payload = {
                     products: this.selectedProducts.map(product => ({
                         pro_activity_id: product.pro_activity_id || 0,
                         pro_goods_id: product.pro_goods_id,
                         pro_goods_price: parseFloat(product.pro_unit_price) || 0,
-                        pro_sku_price_id: product.pro_sku_price_id,
+                        pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
                         pro_erp_title: product.pro_erp_title || '',
                         pro_goods_num: product.pro_quantity, // ส่งจำนวนล่าสุด
                         pro_image: product.pro_images,
@@ -1898,19 +1902,24 @@ export default {
                 const total = this.totalprice(product);
 
                 return {
-                    pro_id: product.pro_id,
-                    pro_erp_title: product.pro_erp_title,
-                    pro_quantity: product.pro_quantity,
-                    pro_unit_price: product.pro_unit_price,
+                    pro_sku_price_id: product.pro_id, //46764
+                    // pro_id: product.pro_id,
+                    pro_erp_title: product.pro_erp_title, //
+                    pro_title: product.pro_title, //
+                    pro_quantity: product.pro_quantity, //3
+                    pro_goods_num: product.pro_quantity, // 3
+                    pro_goods_id: product.pro_goods_id, // 3
+                    pro_unit_price: product.pro_unit_price, // "315.00"
                     // pro_discount: this.formData.discount === 0 ? 0 : this.formData.discount,
                     pro_total_price: total, // รวมราคาต่อสินค้า
                     totalDiscount: this.formData.totalDiscount || 0, // รวมราคาต่อสินค้า
                     pro_discount: this.formData.discount || 0, // รวมราคาต่อสินค้า
-                    pro_images: product.pro_images,
-                    pro_sn: product.pro_sn,
-                    prosn: product.prosn,
-                    pro_units: product.pro_units,
-                    pro_activity_id: product.activity_id || 0, // เพิ่ม activity_id ถ้ามี
+                    pro_image: product.pro_images, //
+                    pro_sn: product.pro_sn,//
+                    prosn: product.prosn,//
+                    pro_units: product.pro_units,//
+                    activity_id: product.activity_id || 0, // เพิ่ม activity_id 0 ถ้าไม่มี
+                    pro_activity_id: product.pro_activity_id || 0, // เพิ่ม pro_activity_id ถ้ามี
                 };
             });
 
@@ -1978,7 +1987,7 @@ export default {
 
             // เพื่อมข้อมูล FormData
             try {
-                 this.isLoading = true;
+                this.isLoading = true;
 
                 const response = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/sale_order/post_sale_order.php`, payload, {
                     // const response = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/post_sale_order.php`, payload, {
@@ -2468,173 +2477,12 @@ export default {
                     Swal.fire('ผิดพลาด', resData.message, 'error');
                 }
 
-                // const token = await this.getAuthToken();
-                // console.log("🔑 token", token);
-
-                // console.log("🧪 Selected Products:", this.selectedProducts.length);
-                // console.log("🎁 Gifts:", this.formData.gifts?.length); // ,this.formData.gifts
-                // console.log("📢 Promotions:", this.formData.promotions?.length); //, this.formData.promotions
-                // console.log("🧪 Address:", this.selectedAddress); //, this.formData.selectedAddress
-                // console.log("🧪 Address:", this.selectedAddress?.length); //, this.formData.selectedAddress
-
-
-                // // 3. 📦 สร้าง payload ข้อมูล Macfive
-                // const payload = this.buildMacfivePayload();
-
-                // console.log("📦 Payload ที่จะส่งไปยัง Macfive:", payload);
-
-                return
-
-                // 4. 🚀 ส่งไปยัง BASE_URL_MAC_FIVEL
-                const macfiveResponse = await axios.post(`${BASE_URL_MAC_FIVEL}`, payload, {
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                console.log("✅ Macfive ส่งสำเร็จ", macfiveResponse.data);
-
             } catch (err) {
                 const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาด';
                 Swal.fire('ผิดพลาด', message, 'error');
             }
 
         },
-        // },
-
-        buildMacfivePayload() {
-            const now = new Date();
-            const formatDate = (d) => d.toISOString().slice(0, 10);
-            const formatDateTime = (d) => d.toISOString().slice(0, 19).replace("T", " ");
-
-            const docNo = this.formData.documentNo;
-            const sale_no = localStorage.getItem('account') || ''
-            console.log('Check sale_no: ', sale_no);
-
-            return {
-                hrows: {
-                    MH_date: formatDateTime(now),
-                    MH_type: "PS",
-                    MH_vnumber: docNo,
-                    MH_process: 5,
-                    MH_supcus: this.formData.customerCode,
-                    MH_noItems: 5,
-                    // MH_noItems: this.formData.productList.length,
-                    MH_vatRate: 7,
-                    MH_vatTotal: parseFloat(this.formData.final_total_price) * 0.07,
-                    MH_netTotal: parseFloat(this.formData.final_total_price),
-                    MH_status: 15,
-                    MH_per: sale_no, //"DP001", // รหัสเซลล์
-                    MH_site: 1655, // ที่อยู่จัดส่ง
-                    MH_deldate: formatDate(now), // วันที่สร้าง
-                    MH_totalCOG: parseFloat(this.formData.final_total_price),  // ยอดรวม
-                    MH_discT1: 0,
-                    MH_discF1: 0,
-                    MH_discT2: 6.54205,
-                    MH_discF2: parseFloat(this.formData.final_total_price) * 0.07,
-                    MH_flow: 0,
-                    MH_cur: 0,
-                    MH_Note: `// ${docNo}`,
-                    MH_cnect: 3,
-                    MH_cancel: 0
-                },
-                erows: {
-                    ME_date: formatDateTime(now), // วันที่สร้าง
-                    ME_type: "PS",
-                    ME_vnumber: docNo,
-                    ME_supcus: this.formData.customerCode, //เลขที่เอกสาร
-                    ME_termCX: "7|",
-                    ME_termPX: "100|",
-                    ME_termAX: `${parseFloat(this.formData.final_total_price)}|`,
-                    ME_termDX: `${formatDate(now)}|`, // วันที่สร้าง
-                    ME_cashRec: 0,
-                    ME_ccRec: parseFloat(this.formData.final_total_price) // ยอดรวม
-                },
-                krows: {
-                    MK_date: formatDateTime(now), //2025\/06\/30 16:13:13
-                    MK_name: this.formData.fullName, // 1
-                    // MK_addr: this.formData.address, //ที่อยู่
-                    MK_addr: 1, //ที่อยู่
-                    // MK_tel: this.formData.phone // 1
-                    MK_tel: 1 // 1
-                },
-                lrows: [
-                    ...this.selectedProducts.map((item, index) => ({
-                        ML_date: formatDateTime(now),
-                        ML_type: "PS",
-                        ML_vnumber: docNo, //เลขที่เอกสาร
-                        ML_per: sale_no,//"DP001", // รหัสเซลล์
-                        ML_supcus: this.formData.customerCode, // รหัสลูกค้า ที่เลือกร้าน
-                        ML_stk: item.pro_sn || "N/A", //รหัสสินค้า SN
-                        ML_sto: "MAIN",
-                        ML_item: index + 1, // อันดับรายการ
-                        ML_quan: parseFloat(item.pro_quantity), // จำนวนรายการ
-                        ML_cog: parseFloat(item.pro_total_price || 0), // ราคารวม
-                        ML_netL: parseFloat(item.pro_total_price || 0), // ราคารวม
-                        ML_cut: 1,
-                        ML_unit: item.pro_unit,// || "PCS", //หน่วย
-                        ML_des: item.pro_erp_title, // ชื่อสินค้า erp-title
-                        ML_addcost: 0,
-                        ML_discL: 0,
-                        ML_deldate: formatDate(now), // วันที่สร้าง
-                        ML_uprice: parseFloat(item.pro_unit_price), // ราคารวม
-                        ML_Note: "item",
-
-                    })),
-
-                    // 2. 🎁 ของแถม
-                    ...this.formData.gifts.map((gift, index) => ({
-                        ML_date: formatDateTime(now),
-                        ML_type: "PS",
-                        ML_vnumber: docNo,
-                        ML_per: sale_no, //"DP001",
-                        ML_supcus: this.formData.customerCode,
-                        ML_stk: gift.pro_sn || "N/A",
-                        ML_sto: "MAIN",
-                        ML_item: this.selectedProducts.length + index + 1,
-                        ML_quan: parseFloat(gift.pro_goods_num),
-                        ML_cog: 0,
-                        ML_netL: 0,
-                        ML_cut: 0,
-                        ML_unit: gift.pro_unit, //"PCS",
-                        ML_des: gift.title,
-                        ML_addcost: 0,
-                        ML_discL: 0,
-                        ML_deldate: formatDate(now),
-                        ML_uprice: 0,
-                        ML_Note: gift.ML_Note || "gift"
-                    })),
-
-                    // 3. 📢 โปรโมชั่น
-                    ...this.formData.promotions.map((promo, index) => ({
-                        ML_date: formatDateTime(now),
-                        ML_type: "PS",
-                        ML_vnumber: docNo,
-                        ML_per: sale_no, //"DP001",
-                        ML_supcus: this.formData.customerCode,
-                        ML_stk: promo.pro_sn || "N/A",
-                        ML_sto: "MAIN",
-                        ML_item: this.selectedProducts.length + this.formData.gifts.length + index + 1,
-                        ML_quan: parseFloat(promo.pro_goods_num),
-                        ML_cog: 0,
-                        ML_netL: 0,
-                        ML_cut: 0,
-                        ML_unit: promo.pro_unit, //"PCS",
-                        ML_des: promo.title,
-                        ML_addcost: 0,
-                        ML_discL: 0,
-                        ML_deldate: formatDate(now),
-                        ML_uprice: 0,
-                        ML_Note: promo.ML_Note || "promotion"
-
-                    }))
-                    // }))
-                ]
-            };
-
-        },
-
 
         enableEditMode() {
             this.isReadOnly = false; // เปิดให้แก้ไขฟอร์ม
@@ -2677,19 +2525,38 @@ export default {
 
                     return {
                         item_id: product.item_id ?? 0, // ✅ ใส่ id เดิมถ้ามี
-                        pro_id: product.pro_id,
-                        pro_erp_title: product.pro_erp_title,
-                        pro_name: product.pro_erp_title,
-                        pro_quantity: product.pro_quantity,
-                        pro_unit_price: product.pro_unit_price,
+                        pro_sku_price_id: product.pro_id, //46764
+                        // pro_id: product.pro_id,
+                        pro_erp_title: product.pro_erp_title, //
+                        pro_title: product.pro_title, //
+                        pro_quantity: product.pro_quantity, //3
+                        pro_goods_num: product.pro_quantity, // 3
+                        pro_unit_price: product.pro_unit_price, // "315.00"
+                        pro_goods_id: product.pro_goods_id,
+                        // pro_discount: this.formData.discount === 0 ? 0 : this.formData.discount,
+                        pro_total_price: total, // รวมราคาต่อสินค้า
                         totalDiscount: this.formData.totalDiscount || 0, // รวมราคาต่อสินค้า
                         pro_discount: this.formData.discount || 0, // รวมราคาต่อสินค้า
-                        pro_total_price: total, // รวมราคาต่อสินค้า
-                        pro_images: product.pro_images,
-                        pro_sn: product.pro_sn,
-                        prosn: product.prosn,
-                        pro_units: product.pro_units,
-                        pro_activity_id: product.pro_activity_id || 0 // ✅ เพิ่มบรรทัดนี้!
+                        pro_image: product.pro_images, //
+                        pro_sn: product.pro_sn,//
+                        prosn: product.prosn,//
+                        pro_units: product.pro_units,//
+                        activity_id: product.activity_id || 0, // เพิ่ม activity_id 0 ถ้าไม่มี
+                        pro_activity_id: product.pro_activity_id || 0, // เพิ่ม pro_activity_id ถ้ามี
+                        // item_id: product.item_id ?? 0, // ✅ ใส่ id เดิมถ้ามี
+                        // pro_id: product.pro_id,
+                        // pro_erp_title: product.pro_erp_title,
+                        // pro_name: product.pro_erp_title,
+                        // pro_quantity: product.pro_quantity,
+                        // pro_unit_price: product.pro_unit_price,
+                        // totalDiscount: this.formData.totalDiscount || 0, // รวมราคาต่อสินค้า
+                        // pro_discount: this.formData.discount || 0, // รวมราคาต่อสินค้า
+                        // pro_total_price: total, // รวมราคาต่อสินค้า
+                        // pro_images: product.pro_images,
+                        // pro_sn: product.pro_sn,
+                        // prosn: product.prosn,
+                        // pro_units: product.pro_units,
+                        // pro_activity_id: product.pro_activity_id || 0 // ✅ เพิ่มบรรทัดนี้!
                     };
                 });
 
@@ -2889,19 +2756,26 @@ export default {
 
                         const productObj = {
                             item_id: product.id,
-                            pro_id: product.pro_id,
-                            pro_erp_title: product.pro_name,
-                            pro_quantity: product.qty,
+                            pro_id: product.pro_sku_price_id,
+                            // pro_id: product.pro_id,
+                            pro_erp_title: product.pro_erp_title,
+                            pro_title: product.pro_title,
+                            pro_quantity: product.pro_goods_num,
+                            pro_goods_num: product.pro_goods_num,
+                            pro_goods_id: product.pro_goods_id,
                             pro_unit_price: parseFloat(product.unit_price),
+                            // pro_goods_price: parseFloat(product.unit_price),
                             pro_discount: parseFloat(product.discount),
                             pro_total_price: parseFloat(product.total_price),
-                            pro_images: product.pro_images,
-                            pro_sn: product.sn,
-                            prosn: product.prosn,
-                            pro_unit: product.unit || '',
-                            activity_id: product.pro_activity_id || null,
+                            pro_images: product.pro_image,
+                            prosn: product.sn,
+                            pro_sn: product.pro_sn,
+                            pro_unit: product.pro_units || '',
+                            // pro_unit: product.unit || '',
+                            activity_id: product.activity_id || 0,
                             pro_activity_id: product.pro_activity_id || 0, // ✅ ใช้ชื่อนี้ให้ตรง backend
                             pro_goods_sku_text: product.pro_goods_sku_text || '',
+                            // pro_sku_pricr_id: product.pro_sku_pricr_id || '',
                             // promotions: matchedPromotions,
                             // gifts: matchedGifts
                             // ✅ ดึงจาก product โดยตรง
@@ -2984,14 +2858,14 @@ export default {
                             title: promo.title,
                             ML_Note: promo.ML_Note || '',
                             note: promo.note || '',
-                            pro_activity_id: promo.pro_activity_id || null,
+                            pro_activity_id: promo.pro_activity_id || 0,
                             pro_sn: promo.pro_sn,
                             prosn: promo.prosn,
                             pro_goods_id: promo.pro_goods_id || 0,
                             pro_goods_num: promo.pro_goods_num || 0,
                             pro_image: promo.pro_image || '',
-                            pro_sku_price_id: promo.pro_sku_price_id || null,
-                            user_id: promo.user_id || null,
+                            pro_sku_price_id: promo.pro_sku_price_id || 0,
+                            user_id: promo.user_id || 0,
 
                         });
                     }
@@ -3005,12 +2879,12 @@ export default {
                             pro_image: gift.pro_image || '',
                             ML_Note: gift.ML_Note || '',
                             note: gift.note || '',
-                            pro_activity_id: gift.pro_activity_id || null,
+                            pro_activity_id: gift.pro_activity_id || 0,
                             pro_sn: gift.pro_sn,
                             prosn: gift.prosn,
                             pro_goods_id: gift.pro_goods_id || 0,
-                            pro_sku_price_id: gift.pro_sku_price_id || null,
-                            user_id: gift.user_id || null,
+                            pro_sku_price_id: gift.pro_sku_price_id || 0,
+                            user_id: gift.user_id || 0,
                         });
                     }
                 }
@@ -3173,7 +3047,7 @@ export default {
 
                 const FinalGifts_Not_activuty = fullActivityGifts.filter(
                     // gift => gift.pro_activity_id === item.pro_activity_id 
-                    gift => gift.pro_activity_id === item.pro_activity_id && Boolean(promo.st) === Boolean(item.st)
+                    gift => gift.pro_activity_id === item.pro_activity_id && Boolean(gift.st) === Boolean(item.st)
                     // gift => gift.pro_activity_id === promotionActivityId && gift.pro_sku_price_id == item.pro_sku_price_id
                 );
 

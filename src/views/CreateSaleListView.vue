@@ -2651,7 +2651,7 @@ export default {
                     this.formData.documentNo = newDocumentNo; // อัปเดต `documentNo` ใน `formData`
 
                     // อัปเดต URL ไปยัง `saleList` พร้อม `documentNo` ใหม่ sale-order/H1-SO25680726-00031
-                    this.$router.push(`/sale-order/=${newDocumentNo}`);
+                    this.$router.push(`/sale-order/${newDocumentNo}`);
                     
                     // this.$router.push(`/saleList?documentNo=${newDocumentNo}`);
 

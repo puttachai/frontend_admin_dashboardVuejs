@@ -1,44 +1,54 @@
 <template>
-
   <div
-    class="mainbox flex flex-col in-h-screen items-center gap-4 justify-center bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-
+    class="mainbox flex flex-col in-h-screen items-center gap-4 justify-center bg-gray-100 py-8 px-4 sm:px-6 lg:px-8"
+  >
     <!-- กล่องรวม breadcrumb + action bar -->
-    <div class="fixed top-16 left-16 right-0 bg-white rounded-lg p-4 shadow-lg z-50 responsive-action-bar">
-
+    <div
+      class="fixed top-16 left-16 right-0 bg-white rounded-lg p-4 shadow-lg z-50 responsive-action-bar"
+    >
       <!-- Breadcrumb + ActionBar inline -->
-      <div class="flex flex-wrap md:flex-nowrap justify-between  items-center gap-4">
-
+      <div class="flex flex-wrap md:flex-nowrap justify-between items-center gap-4">
         <!-- Breadcrumb -->
         <nav class="text-sm text-gray-600">
           <ul class="flex items-center space-x-1">
             <li>
-              <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
+              <router-link to="/dashboard" class="hover:text-purple-600 transition"
+                >Home</router-link
+              >
               <span class="mx-1 text-gray-400">›</span>
             </li>
             <li>
-              <router-link to="/saleorder" class="hover:text-purple-600 transition">Sale Order List</router-link>
+              <router-link to="/saleorder" class="hover:text-purple-600 transition"
+                >Sale Order List</router-link
+              >
               <span class="mx-1 text-gray-400">›</span>
             </li>
             <li class="text-purple-600 font-medium">
-              {{ currentDocumentNo || 'Loading...' }}
+              {{ currentDocumentNo || "Loading..." }}
             </li>
           </ul>
         </nav>
 
         <!-- Action Bar -->
-        <div class="flex flex-wrap justify-end gap-3 responsive-action-buttons md:gap-4 md:flex-nowrap">
-
+        <div
+          class="flex flex-wrap justify-end gap-3 responsive-action-buttons md:gap-4 md:flex-nowrap"
+        >
           <!-- ปุ่ม อนุมัติ (approve) -->
-          <button v-if="canApprove && isReadOnly" @click="saveDocument"
-            class="flex items-center gap-2 bg-green-500 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg">
+          <button
+            v-if="canApprove && isReadOnly"
+            @click="saveDocument"
+            class="flex items-center gap-2 bg-green-500 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg"
+          >
             <span class="material-icons">add_task</span>
             <span>อนุมัติเอกสาร</span>
           </button>
 
           <!-- ปุ่ม แก้ไข (edit) -->
-          <button v-if="canEdit && isReadOnly" @click="enableEditMode"
-            class="bg-yellow-500 items-center text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-yellow-600 transition">
+          <button
+            v-if="canEdit && isReadOnly"
+            @click="enableEditMode"
+            class="bg-yellow-500 items-center text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-yellow-600 transition"
+          >
             <div class="flex items-center justify-center gap-2">
               <span class="material-icons">edit</span>
               <span>แก้ไข</span>
@@ -46,8 +56,11 @@
           </button>
 
           <!-- ปุ่ม บันทึกการแก้ไข (save edits) -->
-          <button v-if="canEdit && !isReadOnly && formData.documentNo" @click="updateDocument"
-            class="bg-green-600 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition shadow hover:shadow-lg">
+          <button
+            v-if="canEdit && !isReadOnly && formData.documentNo"
+            @click="updateDocument"
+            class="bg-green-600 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition shadow hover:shadow-lg"
+          >
             <!-- บันทึกการแก้ไข -->
             <div class="flex items-center justify-center gap-2">
               <!-- <span class="material-icons">save</span> -->
@@ -58,13 +71,15 @@
           </button>
 
           <!-- ปุ่ม ยืนยันการบันทึก (lock) -->
-          <button v-if="canEdit && !isReadOnly && formData.documentNo && !isConfirmed" @click="confirmFinalSave"
-            class="bg-red-600 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-red-700 transition">
+          <button
+            v-if="canEdit && !isReadOnly && formData.documentNo && !isConfirmed"
+            @click="confirmFinalSave"
+            class="bg-red-600 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-red-700 transition"
+          >
             ยืนยันการบันทึก (ไม่สามารถแก้ไขได้อีก)
             <!-- <span class="material-icons">lock</span>
             <span>ยืนยันการบันทึก (ไม่สามารถแก้ไขได้อีก)</span> -->
           </button>
-
         </div>
 
         <!-- <div class="flex flex-wrap justify-end gap-3 responsive-action-buttons md:gap-4 md:flex-nowrap"> -->
@@ -77,18 +92,15 @@
             <span>อนุมัติเอกสาร</span>
           </button>
         </div> -->
-
       </div>
     </div>
 
-
     <!-- form รายการเอกสาร -->
     <div class="boxback w-full mt-20 gap-4 bg-white p-8 rounded-lg shadow-lg">
-
       <div>
         <!-- Logo and Title -->
-        <div class="text-center mb-4 ">
-          <img src="../../assets/logo.svg" alt="Logo" class="mx-auto h-16">
+        <div class="text-center mb-4">
+          <img src="../../assets/logo.svg" alt="Logo" class="mx-auto h-16" />
           <p class="mt-1 text-xl text-gray-700">รายละเอียดคำสั่งซื้อ</p>
         </div>
 
@@ -104,17 +116,19 @@
                       class="object-cover rounded-md border w-[100px] h-[100px]" />
               </div> -->
 
-
         <!-- แบบฟอร์มส่วนที่1  -->
         <form class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">รายการ *</label>
             <div>
-              <input type="text" placeholder="รหัสรายการ" disabled v-model="formData.documentNo"
-                class="border mt-1.5 block w-full text-gray-700 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+              <input
+                type="text"
+                placeholder="รหัสรายการ"
+                disabled
+                v-model="formData.documentNo"
+                class="border mt-1.5 block w-full text-gray-700 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              />
             </div>
-
           </div>
 
           <!-- <div>
@@ -127,8 +141,13 @@
             <label class="block text-sm font-medium text-gray-700 mb-1">วันที่</label>
             <div class="relative">
               <!-- Flatpickr Input -->
-              <flat-pickr v-model="formData.sellDate" :config="dateConfig" disabled placeholder="เลือกวันที่"
-                class="pl-4 pr-10 py-2 mt-1 w-full rounded-md border border-gray-300 text-gray-700 placeholder-gray-400 shadow-sm focus:ring-purple-500 focus:border-purple-500"></flat-pickr>
+              <flat-pickr
+                v-model="formData.sellDate"
+                :config="dateConfig"
+                disabled
+                placeholder="เลือกวันที่"
+                class="pl-4 pr-10 py-2 mt-1 w-full rounded-md border border-gray-300 text-gray-700 placeholder-gray-400 shadow-sm focus:ring-purple-500 focus:border-purple-500"
+              ></flat-pickr>
 
               <!-- Calendar Icon -->
               <span class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
@@ -137,44 +156,55 @@
             </div>
           </div>
 
-
-
-
           <!-- เงื่อนไขแสดงเพิ่มเติม -->
-          <div v-if="showMoreData" :key="showMoreData" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-
+          <div
+            v-if="showMoreData"
+            :key="showMoreData"
+            class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4"
+          >
             <div>
               <label class="block text-sm font-medium text-gray-700">อ้างอิง</label>
-              <input type="text" v-model="formData.reference" :readonly="isReadOnly"
-                class="border text-gray-700 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+              <input
+                type="text"
+                v-model="formData.reference"
+                :readonly="isReadOnly"
+                class="border text-gray-700 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              />
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700">ช่องทางการขาย</label>
-              <input type="text" v-model="formData.channel" :readonly="isReadOnly"
-                class="border text-gray-700 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+              <input
+                type="text"
+                v-model="formData.channel"
+                :readonly="isReadOnly"
+                class="border text-gray-700 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              />
             </div>
 
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-gray-700">ประเภทภาษี</label>
-              <input type="text" v-model="formData.taxType" :readonly="isReadOnly"
-                class="border text-gray-700 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+              <input
+                type="text"
+                v-model="formData.taxType"
+                :readonly="isReadOnly"
+                class="border text-gray-700 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              />
             </div>
-
           </div>
-
         </form>
         <!-- ปุ่ม Show More / Show Less , <button @click="showMoreData = !showMoreData" type="button" -->
-        <button @click="toggleShowMoreData" type="button"
-          class="mt-4 text-purple-600 hover:underline focus:outline-none ">
-          {{ showMoreData ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼' }}
+        <button
+          @click="toggleShowMoreData"
+          type="button"
+          class="mt-4 text-purple-600 hover:underline focus:outline-none"
+        >
+          {{ showMoreData ? "แสดงน้อยลง ▲" : "แสดงเพิ่มเติม ▼" }}
         </button>
       </div>
 
-
       <!-- หัวข้อ "แบบฟอร์มลูกค้า" ด้านซ้าย และ "แบบฟอร์มสินค้า" ด้านขวา -->
       <div class="gap-6 items-start mt-4">
-
         <!-- แบบฟอร์มลูกค้า: อยู่ฝั่งซ้าย -->
         <div>
           <!-- หัวข้อ -->
@@ -188,18 +218,28 @@
             <!-- แสดงเสมอ -->
             <div>
               <label class="block text-sm font-medium text-gray-700">ชื่อลูกค้า</label>
-              <input type="text" placeholder="ชื่อ, รหัส" disabled v-model="formData.fullName"
-                class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
-              <p v-if="formTouched && errors.fullName" class="text-red-500 text-sm mt-1">{{
-                errors.fullName }}</p>
+              <input
+                type="text"
+                placeholder="ชื่อ, รหัส"
+                disabled
+                v-model="formData.fullName"
+                class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              />
+              <p v-if="formTouched && errors.fullName" class="text-red-500 text-sm mt-1">
+                {{ errors.fullName }}
+              </p>
             </div>
 
             <div>
               <label class="block text-sm font-medium text-gray-700">รหัสลูกค้า</label>
-              <input type="text" v-model="formData.customerCode" disabled
-                class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
-              <p v-if="formTouched && errors.customerCode" class="text-red-500 text-sm mt-1">{{
-                errors.customerCode }}
+              <input
+                type="text"
+                v-model="formData.customerCode"
+                disabled
+                class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+              />
+              <p v-if="formTouched && errors.customerCode" class="text-red-500 text-sm mt-1">
+                {{ errors.customerCode }}
               </p>
             </div>
 
@@ -207,24 +247,38 @@
             <div v-if="showMore">
               <div class="">
                 <label class="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์ลูกค้า</label>
-                <input type="text" v-model="formData.phone" :readonly="isReadOnly"
-                  class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                <input
+                  type="text"
+                  v-model="formData.phone"
+                  :readonly="isReadOnly"
+                  class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                />
               </div>
 
               <div class="mt-4">
                 <label class="block text-sm font-medium text-gray-700">อีเมลลูกค้า</label>
-                <input type="text" v-model="formData.email" :readonly="isReadOnly"
-                  class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                <input
+                  type="text"
+                  v-model="formData.email"
+                  :readonly="isReadOnly"
+                  class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                />
               </div>
 
               <div class="mt-4">
-                <label class="block text-sm font-medium text-gray-700">ที่อยู่ลูกค้า
+                <label class="block text-sm font-medium text-gray-700"
+                  >ที่อยู่ลูกค้า
                   <span class="text-red-500 text-xs">*</span>
-                  <span class="text-red-500 text-xs">กรุณากรอกข้อมูลนี้ที่แบบฟอร์มที่ 3
-                    ข้อมูลที่อยู่ผู้รับ</span>
+                  <span class="text-red-500 text-xs"
+                    >กรุณากรอกข้อมูลนี้ที่แบบฟอร์มที่ 3 ข้อมูลที่อยู่ผู้รับ</span
+                  >
                 </label>
-                <input type="text" v-model="formData.address" :readonly="isReadOnly"
-                  class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                <input
+                  type="text"
+                  v-model="formData.address"
+                  :readonly="isReadOnly"
+                  class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                />
                 <!-- <p v-if="formTouched && errors.address" class="text-red-500 text-sm mt-1">{{
                                   errors.address }}</p> -->
               </div>
@@ -232,21 +286,22 @@
           </form>
 
           <!-- ปุ่ม Show More / Show Less -->
-          <button @click="showMore = !showMore" type="button"
-            class="mt-4 text-purple-600 hover:underline focus:outline-none">
-            {{ showMore ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼' }}
+          <button
+            @click="showMore = !showMore"
+            type="button"
+            class="mt-4 text-purple-600 hover:underline focus:outline-none"
+          >
+            {{ showMore ? "แสดงน้อยลง ▲" : "แสดงเพิ่มเติม ▼" }}
           </button>
-          <p v-if="formTouched && errors.address" class="text-red-500 text-sm mt-1">{{
-            errors.address }}</p>
+          <p v-if="formTouched && errors.address" class="text-red-500 text-sm mt-1">
+            {{ errors.address }}
+          </p>
         </div>
-
       </div>
-
     </div>
 
     <!-- หน้าสินค้า -->
     <div class="w-full mx-auto p-6 bg-white rounded-lg shadow-md">
-
       <!-- Header -->
       <div class="flex justify-between items-center mb-4">
         <!-- ส่วนซ้าย ไอคอนและสินค้า -->
@@ -261,28 +316,40 @@
                         class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                         + เพิ่มแถวสินค้า
                     </button> -->
-          <button @click="showProductSelector = true" :disabled="isReadOnly"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          <button
+            @click="showProductSelector = true"
+            :disabled="isReadOnly"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
             เลือกสินค้า
           </button>
-          <button @click="showPromotionSelector = true" :disabled="isReadOnly"
-            class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700">
+          <button
+            @click="showPromotionSelector = true"
+            :disabled="isReadOnly"
+            class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700"
+          >
             เลือกโปรโมชั่น
           </button>
-          <button @click="removeAllProducts" :disabled="isReadOnly"
-            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+          <button
+            @click="removeAllProducts"
+            :disabled="isReadOnly"
+            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
             ลบสินค้าที่เลือกทั้งหมด
           </button>
         </div>
 
-
         <!-- Dropdown สำหรับหน้าจอเล็ก -->
-
       </div>
 
       <!-- Popup Component -->
-      <ProductSelector v-if="showProductSelector" :productList="Apiproducts" @close="showProductSelector = false"
-        :selectProducts_old_month="selectedProducts" @selectProductsWithMonth="addSelectedProductsWithmonth" />
+      <ProductSelector
+        v-if="showProductSelector"
+        :productList="Apiproducts"
+        @close="showProductSelector = false"
+        :selectProducts_old_month="selectedProducts"
+        @selectProductsWithMonth="addSelectedProductsWithmonth"
+      />
       <!-- <ProductSelector v-if="showProductSelector" :productList="Apiproducts" @close="showProductSelector = false" //
                 @select-products="addSelectedProducts" /> -->
 
@@ -291,13 +358,21 @@
         @close="showProductSelectoronly = false" @select-products="replaceProductInRow" /> -->
 
       <!-- :productList="Apipromotion" -->
-      <PromotionSelector v-if="showPromotionSelector" @close="showPromotionSelector = false"
-        @select-promotion="SelectedPromotion" />
+      <PromotionSelector
+        v-if="showPromotionSelector"
+        @close="showPromotionSelector = false"
+        @select-promotion="SelectedPromotion"
+      />
 
       <!-- Popup ตัวที่สอง -->
-      <Promotion_ProductSelector v-if="showPromotionProductSelector" :selectedPromotion="selectedPromotion"
-        :selectProducts_old="selectedProducts" @close="showPromotionProductSelector = false"
-        @selectPromotionProducts="handleSelectedPromotionProducts" @go-back="handleBackToPromotion" />
+      <Promotion_ProductSelector
+        v-if="showPromotionProductSelector"
+        :selectedPromotion="selectedPromotion"
+        :selectProducts_old="selectedProducts"
+        @close="showPromotionProductSelector = false"
+        @selectPromotionProducts="handleSelectedPromotionProducts"
+        @go-back="handleBackToPromotion"
+      />
 
       <!-- Popup Component -->
 
@@ -314,16 +389,27 @@
               <th class="px-4 py-2 border">มูลค่าต่อหน่วย *</th>
               <th class="px-4 py-2 border">ส่วนลดต่อหน่วย</th>
               <th class="px-4 py-2 border">รวม</th>
-              <!-- <th class="px-4 py-2 border text-center">ลบ</th> -->
+              <th class="px-4 py-2 border text-center">ลบ</th>
             </tr>
           </thead>
 
           <tbody v-if="isLoading">
             <tr>
               <td colspan="10" class="py-10 text-center">
-                <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-                  viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <svg
+                  class="animate-spin h-8 w-8 text-blue-600 mx-auto"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
                 <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
@@ -334,7 +420,10 @@
           <tbody v-if="!isLoading">
             <!-- แสดงรายการสินค้า -->
             <!-- 👉 Group by pro_activity_id -->
-            <template v-for="(group, activityId) in groupByActivityId(selectedProducts)" :key="activityId">
+            <template
+              v-for="(group, activityId) in groupByActivityId(selectedProducts)"
+              :key="activityId"
+            >
               <!-- 🔁 Loop สินค้าในกลุ่มนั้น -->
               <template v-for="(product, index) in group" :key="product.pro_id">
                 <!-- 🔳 สินค้า -->
@@ -343,27 +432,39 @@
                   <td class="px-4 py-2 border">
                     <template v-if="product.pro_images">
                       <img
-                        :src="product.pro_images.startsWith('http') ? product.pro_images : BASE_URL_IMAGE + product.pro_images"
-                        class="w-10 h-10 rounded-full mx-auto" />
+                        :src="
+                          product.pro_images.startsWith('http')
+                            ? product.pro_images
+                            : BASE_URL_IMAGE + product.pro_images
+                        "
+                        class="w-10 h-10 rounded-full mx-auto"
+                      />
                     </template>
                     <template v-else>
                       <span class="material-icons text-gray-400 text-4xl">broken_image</span>
                     </template>
                   </td>
-                  <td class="px-4 py-2 border">{{ product.pro_erp_title == 0 ? product.pro_title :
-                    product.pro_erp_title }}</td>
-                  <td class="px-4 py-2 border">{{ product.pro_goods_sku_text || '-' }}</td>
+                  <td class="px-4 py-2 border">
+                    {{ product.pro_erp_title == 0 ? product.pro_title : product.pro_erp_title }}
+                  </td>
+                  <td class="px-4 py-2 border">{{ product.pro_goods_sku_text || "-" }}</td>
                   <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
                   <!-- <td class="px-4 text-gray-700 py-2 border">
                                       <input type="number" v-model.pro_quantity="product.pro_quantity" min="1" placeholder="จำนวน"
                                           class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
                                   </td> -->
-                  <!-- <td class="px-4 py-2 border">
-                                      <input type="number" :min="0" :max="product.pro_stock" step="1"
-                                          v-model.number="product.pro_quantity" @input="validateQuantity(product)"
-                                          class="w-full px-2 py-1 border rounded" />
-                                  </td> -->
-                  <td class="px-4 py-2 border">{{ product.pro_quantity }}</td>
+                  <td class="px-4 py-2 border">
+                    <input
+                      type="number"
+                      :min="0"
+                      :max="product.pro_stock"
+                      step="1"
+                      v-model.number="product.pro_quantity"
+                      @input="validateQuantity(product)"
+                      class="w-full px-2 py-1 border rounded"
+                    />
+                  </td>
+                  <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
                   <!-- <td class="px-4 py-2 border">{{ product.pro_stock }}</td> -->
                   <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
                   <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
@@ -374,24 +475,38 @@
                                       ลบ
                   </td> -->
                   <!-- ใช้ได้ -->
-                  <!-- <td class="px-4 py-2 border" :class="{
-                    'text-red-500 cursor-pointer hover:text-red-700': !isReadOnly,
-                    'text-gray-400 cursor-not-allowed': isReadOnly
-                  }" @click="!isReadOnly && removeProduct(index, activityId)">
+                  <td
+                    class="px-4 py-2 border"
+                    :class="{
+                      'text-red-500 cursor-pointer hover:text-red-700': !isReadOnly,
+                      'text-gray-400 cursor-not-allowed': isReadOnly,
+                    }"
+                    @click="!isReadOnly && removeProduct(index, activityId)"
+                  >
                     ลบ
-                  </td> -->
+                  </td>
                 </tr>
               </template>
 
               <!-- 🟦 โปรโมชั่น (มินิมอล + ลูกเล่นไอคอน) -->
-              <tr v-if="group[0].promotions && group[0].promotions.length > 0"
-                class="bg-blue-50 hover:bg-blue-100 transition-colors duration-300">
+              <tr
+                v-if="group[0].promotions && group[0].promotions.length > 0"
+                class="bg-blue-50 hover:bg-blue-100 transition-colors duration-300"
+              >
                 <td colspan="9" class="px-6 py-4 border rounded-md">
                   <div class="flex items-center space-x-2 text-blue-800 font-medium">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2"
-                      viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg
+                      class="w-5 h-5 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
                     <span>โปรโมชั่น</span>
                   </div>
@@ -403,25 +518,44 @@
                 </td>
               </tr>
 
-
               <!-- 🟨 ของแถม (มินิมอล + รูปภาพ + ฟีล modern card) -->
-              <tr v-if="group[0].gifts && group[0].gifts.length > 0"
-                class="bg-yellow-50 hover:bg-yellow-100 transition-colors duration-300">
+              <tr
+                v-if="group[0].gifts && group[0].gifts.length > 0"
+                class="bg-yellow-50 hover:bg-yellow-100 transition-colors duration-300"
+              >
                 <td colspan="9" class="px-6 py-4 border rounded-md">
                   <div class="flex items-center space-x-2 text-yellow-800 font-medium">
-                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" stroke-width="2"
-                      viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 8c-1.1 0-2 .9-2 2m4 0a2 2 0 00-2-2m0 4a2 2 0 002-2m-4 0a2 2 0 012-2m0 4a2 2 0 01-2-2m8-6H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8l-6-6z" />
+                    <svg
+                      class="w-5 h-5 text-yellow-600"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 8c-1.1 0-2 .9-2 2m4 0a2 2 0 00-2-2m0 4a2 2 0 002-2m-4 0a2 2 0 012-2m0 4a2 2 0 01-2-2m8-6H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8l-6-6z"
+                      />
                     </svg>
                     <span>ของแถม</span>
                   </div>
                   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                    <div v-for="(gift, giftIndex) in group[0].gifts" :key="giftIndex"
-                      class="flex items-center bg-white shadow-sm rounded-lg p-2 border border-gray-200">
-                      <img v-if="gift.pro_image"
-                        :src="gift.pro_image.startsWith('http') ? gift.pro_image : BASE_URL_IMAGE + gift.pro_image"
-                        class="w-12 h-12 object-cover rounded mr-4" alt="gift image" />
+                    <div
+                      v-for="(gift, giftIndex) in group[0].gifts"
+                      :key="giftIndex"
+                      class="flex items-center bg-white shadow-sm rounded-lg p-2 border border-gray-200"
+                    >
+                      <img
+                        v-if="gift.pro_image"
+                        :src="
+                          gift.pro_image.startsWith('http')
+                            ? gift.pro_image
+                            : BASE_URL_IMAGE + gift.pro_image
+                        "
+                        class="w-12 h-12 object-cover rounded mr-4"
+                        alt="gift image"
+                      />
                       <div class="text-sm text-gray-800">
                         <div class="font-semibold">{{ gift.title }}</div>
                         <div class="text-gray-500">จำนวน: {{ gift.pro_goods_num }}</div>
@@ -430,45 +564,56 @@
                   </div>
                 </td>
               </tr>
-
             </template>
           </tbody>
         </table>
       </div>
 
-
-
       <!-- ช่องทางจัดส่ง -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
         <div>
-          <label class="block font-medium mb-1 text-gray-700">ช่องทางจัดส่ง
+          <label class="block font-medium mb-1 text-gray-700"
+            >ช่องทางจัดส่ง
             <span class="text-red-500 text-xs">*</span>
             <span class="text-red-500 text-xs">จำเป็นต้องกรอกข้อมูลนี้</span>
           </label>
-          <select v-model="formData.deliveryType" placeholder="ช่องทางจัดส่ง" :disabled="isReadOnly"
-            style="margin: 0.4rem;" class="w-full border px-3 py-2 rounded text-gray-700">
-
+          <select
+            v-model="formData.deliveryType"
+            placeholder="ช่องทางจัดส่ง"
+            :disabled="isReadOnly"
+            style="margin: 0.4rem"
+            class="w-full border px-3 py-2 rounded text-gray-700"
+          >
             <option value="">เลือกช่องทางจัดส่ง</option>
             <option>ไปรษณีย์</option>
             <!-- <option>ไปรษณีย์</option> -->
             <option>แมสเซนเจอร์</option>
             <option>ขนส่งเอกชน</option>
           </select>
-          <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
-            errors.deliveryType
-            }}</p>
+          <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">
+            {{ errors.deliveryType }}
+          </p>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block font-medium mb-1 text-gray-700">ส่วนลด</label>
-            <input type="text" v-model="formData.totalDiscount" :readonly="isReadOnly"
-              class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700" placeholder="จำนวนเงิน หรือ %" />
+            <input
+              type="text"
+              v-model="formData.totalDiscount"
+              :readonly="isReadOnly"
+              class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700"
+              placeholder="จำนวนเงิน หรือ %"
+            />
           </div>
           <div>
             <label class="block font-medium mb-1 text-gray-700">ค่าจัดส่ง</label>
-            <input type="number" v-model="formData.deliveryFee" :readonly="isReadOnly"
-              class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700" placeholder="ค่าจัดส่ง" />
-
+            <input
+              type="number"
+              v-model="formData.deliveryFee"
+              :readonly="isReadOnly"
+              class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700"
+              placeholder="ค่าจัดส่ง"
+            />
           </div>
         </div>
       </div>
@@ -476,8 +621,12 @@
       <!-- หมายเหตุ -->
       <div class="mt-4">
         <label class="block font-medium mb-1 text-gray-700">หมายเหตุ</label>
-        <textarea rows="3" v-model="formData.note" :readonly="isReadOnly"
-          class="w-full border px-3 py-2 rounded text-gray-700"></textarea>
+        <textarea
+          rows="3"
+          v-model="formData.note"
+          :readonly="isReadOnly"
+          class="w-full border px-3 py-2 rounded text-gray-700"
+        ></textarea>
       </div>
 
       <!-- รวม -->
@@ -506,10 +655,12 @@
         <div v-if="isVathidden" class="text-gray-700">
           มูลค่ารวมก่อนภาษี:
           <span class="ml-2 text-gray-700">
-            {{ netAmountBeforeVat.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            }) }}
+            {{
+              netAmountBeforeVat.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            }}
           </span>
           <!-- <span class="ml-2 text-gray-700">{{ Number(totalAmountBeforeDiscount).toLocaleString(undefined, {
                         minimumFractionDigits: 2, maximumFractionDigits: 2
@@ -517,12 +668,23 @@
         </div>
 
         <div class="text-gray-700 flex items-center justify-end">
-          <input type="checkbox" v-model="isVathidden" id="vatCheckbox" :disabled="isReadOnly" class="mr-2" />
+          <input
+            type="checkbox"
+            v-model="isVathidden"
+            id="vatCheckbox"
+            :disabled="isReadOnly"
+            class="mr-2"
+          />
           <label for="vatCheckbox">แสดงภาษีมูลค่าเพิ่ม (7%) และมูลค่าก่อนภาษี</label>
           <!-- แสดงภาษีเมื่อ isVatIncluded === true -->
           <span v-if="isVathidden" class="ml-2 text-gray-700">
-            {{ vatAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-            }} บาท
+            {{
+              vatAmount.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            }}
+            บาท
           </span>
           <!-- <span v-if="!isVathidden" class="ml-2 text-gray-700">
                         {{ Number(totalAmountBeforeDiscount * 0.07).toLocaleString(undefined, {
@@ -536,7 +698,11 @@
         <div class="text-xl font-bold text-purple-700 mt-2">
           มูลค่ารวมสุทธิ:
           <span class="ml-2 text-blue-600">
-            {{ grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            {{
+              grandTotal.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
             }}
           </span>
           <!-- <span class="ml-2 text-blue-600">{{ grandTotal.toLocaleString(undefined, {
@@ -545,14 +711,12 @@
                     }) }}</span> -->
         </div>
       </div>
-
     </div>
-
 
     <!-- -ข้อมูลที่อยู่ผู้รับ  -->
     <div class="w-full mx-auto p-6 bg-white rounded-lg shadow-md space-y-8">
       <!-- กล่องหลัก แบ่งเป็น 2 ฝั่ง -->
-      <div class="  gap-8">
+      <div class="gap-8">
         <!-- ซ้าย: ข้อมูลที่อยู่ผู้รับ -->
         <div>
           <div class="flex items-center gap-2 mb-4">
@@ -561,15 +725,18 @@
           </div>
 
           <div class="space-y-4">
-
             <div>
               <label class="text-sm text-gray-700 block mb-1">
                 ชื่อผู้รับ
                 <span class="text-red-500 text-xs ml-1">*</span>
                 <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
               </label>
-              <input type="text" v-model="formData.receiverName" :readonly="isReadOnly"
-                class="w-full text-gray-700 border rounded px-3 py-2" />
+              <input
+                type="text"
+                v-model="formData.receiverName"
+                :readonly="isReadOnly"
+                class="w-full text-gray-700 border rounded px-3 py-2"
+              />
               <p v-if="formTouched && errors.receiverName" class="text-red-500 text-sm mt-1">
                 {{ errors.receiverName }}
               </p>
@@ -581,37 +748,51 @@
                       </div> -->
 
             <div>
-              <label class="text-sm text-gray-700 block mb-1">เบอร์โทรศัพท์ผู้รับ
+              <label class="text-sm text-gray-700 block mb-1"
+                >เบอร์โทรศัพท์ผู้รับ
                 <span class="text-red-500 text-xs ml-1">*</span>
                 <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
               </label>
-              <input type="tel" v-model="formData.receiverPhone" :readonly="isReadOnly"
-                class="w-full text-gray-700 border rounded px-3 py-2" />
-              <p v-if="formTouched && errors.receiverPhone" class="text-red-500 text-sm mt-1">{{
-                errors.receiverPhone }}
+              <input
+                type="tel"
+                v-model="formData.receiverPhone"
+                :readonly="isReadOnly"
+                class="w-full text-gray-700 border rounded px-3 py-2"
+              />
+              <p v-if="formTouched && errors.receiverPhone" class="text-red-500 text-sm mt-1">
+                {{ errors.receiverPhone }}
               </p>
             </div>
 
             <div v-if="showMoreAdress">
-
               <div>
                 <label class="text-sm text-gray-700 block mb-1">อีเมลผู้รับ</label>
-                <input type="email" v-model="formData.receiverEmail" :readonly="isReadOnly"
-                  class="w-full text-gray-700 border rounded px-3 py-2" />
+                <input
+                  type="email"
+                  v-model="formData.receiverEmail"
+                  :readonly="isReadOnly"
+                  class="w-full text-gray-700 border rounded px-3 py-2"
+                />
               </div>
 
               <div class="mt-4">
-                <label class="text-sm text-gray-700 block mb-1">ที่อยู่/จัดส่ง
+                <label class="text-sm text-gray-700 block mb-1"
+                  >ที่อยู่/จัดส่ง
                   <span class="text-red-500 text-xs ml-1">*</span>
                   <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
                 </label>
-                <textarea rows="4" v-model="formData.receiverAddress" :readonly="isReadOnly"
-                  class="w-full text-gray-700 border rounded px-3 py-2 resize-none">
-            </textarea>
+                <textarea
+                  rows="4"
+                  v-model="formData.receiverAddress"
+                  :readonly="isReadOnly"
+                  class="w-full text-gray-700 border rounded px-3 py-2 resize-none"
+                >
+                </textarea>
               </div>
               <div>
-                <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">{{
-                  errors.receiverAddress }} </p>
+                <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">
+                  {{ errors.receiverAddress }}
+                </p>
               </div>
 
               <!-- <button class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">
@@ -627,16 +808,18 @@
                   {{ showMoreAdress ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼ ' }}
               </button> -->
         <div class="mt-4 flex items-center space-x-2">
-          <button @click="showMoreAdress = !showMoreAdress" type="button"
-            class="text-purple-600 hover:underline focus:outline-none">
-            {{ showMoreAdress ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼ ' }}
+          <button
+            @click="showMoreAdress = !showMoreAdress"
+            type="button"
+            class="text-purple-600 hover:underline focus:outline-none"
+          >
+            {{ showMoreAdress ? "แสดงน้อยลง ▲" : "แสดงเพิ่มเติม ▼ " }}
           </button>
 
           <!-- ✅ เพิ่มข้อความแจ้งเตือนด้านข้างปุ่ม -->
           <span class="text-red-500 text-xs">*</span>
           <span class="text-red-500 text-xs">จำเป็นต้องกรอกข้อมูลนี้</span>
         </div>
-
       </div>
 
       <!-- ขวา: ข้อมูลการจัดส่งสินค้า -->
@@ -647,52 +830,74 @@
         </div>
 
         <div class="space-y-4">
-
           <div>
             <label class="block text-sm font-medium text-gray-700">วันที่จัดส่ง</label>
 
             <div class="relative">
               <!-- Flatpickr Input -->
-              <flat-pickr v-model="formData.deliveryDate" :config="dateConfig" :disabled="isReadOnly"
-                class="cursor-pointer w-full text-gray-700 border rounded px-3 py-2"></flat-pickr>
+              <flat-pickr
+                v-model="formData.deliveryDate"
+                :config="dateConfig"
+                :disabled="isReadOnly"
+                class="cursor-pointer w-full text-gray-700 border rounded px-3 py-2"
+              ></flat-pickr>
               <!-- class="cursor-not-allowed pr-10 mt-1 pl-4 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring-purple-500 text-gray-700 placeholder-gray-400 bg-gray-100" /> -->
 
               <!-- Calendar Icon on the right -->
-              <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
-                style="padding-top: 0.2rem;">
+              <span
+                class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+                style="padding-top: 0.2rem"
+              >
                 <span class="material-icons text-gray-400 text-base">calendar_today</span>
               </span>
-
             </div>
-
           </div>
-          <p v-if="formTouched && errors.deliveryDate" class="text-red-500 text-sm mt-1">{{
-            errors.deliveryDate }} </p>
+          <p v-if="formTouched && errors.deliveryDate" class="text-red-500 text-sm mt-1">
+            {{ errors.deliveryDate }}
+          </p>
 
           <div>
-            <label class="text-sm text-gray-700 block mb-1">Tracking No.
+            <label class="text-sm text-gray-700 block mb-1"
+              >Tracking No.
               <span class="text-red-500 text-xs ml-1">*</span>
               <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
             </label>
-            <input type="text" v-model="formData.trackingNo" :readonly="isReadOnly"
-              class="w-full text-gray-700 border rounded px-3 py-2" />
-            <p v-if="formTouched && errors.trackingNo" class="text-red-500 text-sm mt-1">{{
-              errors.trackingNo }} </p>
+            <input
+              type="text"
+              v-model="formData.trackingNo"
+              :readonly="isReadOnly"
+              class="w-full text-gray-700 border rounded px-3 py-2"
+            />
+            <p v-if="formTouched && errors.trackingNo" class="text-red-500 text-sm mt-1">
+              {{ errors.trackingNo }}
+            </p>
           </div>
         </div>
       </div>
-
     </div>
-
   </div>
 
   <div>
     <!-- Loading Overlay -->
-    <div v-if="isLoading" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div
+      v-if="isLoading"
+      class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
+    >
       <div class="text-center">
-        <svg class="animate-spin h-10 w-10 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-          viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <svg
+          class="animate-spin h-10 w-10 text-blue-600 mx-auto"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
         </svg>
         <div class="mt-2 text-white text-lg">กำลังโหลดข้อมูล...</div>
@@ -700,40 +905,36 @@
     </div>
     <!--  END Loading Overlay -->
   </div>
-
 </template>
 
-
 <script>
-import { ref, onMounted, watch } from 'vue';
-import axios from 'axios';
-import Swal from 'sweetalert2';
-import ProductSelector from '@/components/ProductSelector.vue';
-import PromotionSelector from '@/components/PromotionSelector.vue';
-import Promotion_ProductSelector from '@/components/Promotion_ProductSelector.vue';
-import DeliveryAddressPopup from '@/components/DeliveryAddressPopup.vue'
+import { ref, onMounted, watch } from "vue";
+import axios from "axios";
+import Swal from "sweetalert2";
+import ProductSelector from "@/components/ProductSelector.vue";
+import PromotionSelector from "@/components/PromotionSelector.vue";
+import Promotion_ProductSelector from "@/components/Promotion_ProductSelector.vue";
+import DeliveryAddressPopup from "@/components/DeliveryAddressPopup.vue";
 // import ConfirmEditPopup from '@/components/saleOrder/ConfirmEditPopup.vue'
-import qs from 'qs';
-import Flatpickr from 'vue-flatpickr-component'
-import 'flatpickr/dist/flatpickr.css'
+import qs from "qs";
+import Flatpickr from "vue-flatpickr-component";
+import "flatpickr/dist/flatpickr.css";
 
 // ✅ import Thai locale
-import { Thai } from 'flatpickr/dist/l10n/th.js'
-import flatpickr from 'flatpickr'
+import { Thai } from "flatpickr/dist/l10n/th.js";
+import flatpickr from "flatpickr";
 
 // ✅ ตั้งค่าภาษาไทยให้กับ flatpickr
-flatpickr.localize(Thai)
+flatpickr.localize(Thai);
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 
-console.log('BASE_URL_LOCAL:', BASE_URL_LOCAL);
+console.log("BASE_URL_LOCAL:", BASE_URL_LOCAL);
 
 const BASE_URL_MAC_FIVEL = import.meta.env.VITE_API_URL_MAC_FIVE;
 const BASE_URL_AUTH = import.meta.env.VITE_API_URL_AUTH;
 const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
-
-
 
 export default {
   // name: 'SignupForm',
@@ -742,17 +943,15 @@ export default {
     PromotionSelector,
     Promotion_ProductSelector,
     DeliveryAddressPopup,
-    'flat-pickr': Flatpickr,
+    "flat-pickr": Flatpickr,
     // ConfirmEditPopup
   },
   data() {
     return {
-
-
-      currentDocumentNo: '', // แสดง document_no ใน breadcrumb
+      currentDocumentNo: "", // แสดง document_no ใน breadcrumb
 
       // documentNo_route_params: route.params.id,
-      documentNo_route_params: '', // ตั้งไว้ก่อน
+      documentNo_route_params: "", // ตั้งไว้ก่อน
 
       isLoading: false, // สำหรับ loading spinner
 
@@ -774,16 +973,14 @@ export default {
       errors: {}, // เก็บข้อผิดพลาดของฟอร์ม
       formTouched: false, // ค่าเริ่มต้น
 
-      customerData: JSON.parse(localStorage.getItem('selectDataCustomer') || 'null'),
+      customerData: JSON.parse(localStorage.getItem("selectDataCustomer") || "null"),
 
       BASE_URL_IMAGE: import.meta.env.VITE_API_URL_IMAGE,
 
-
-
-      selectedDate: '',
+      selectedDate: "",
       // ✅ ตั้งค่ารูปแบบวันและปฏิทิน
       dateConfig: {
-        dateFormat: 'd/m/Y', // เช่น 01/07/2568
+        dateFormat: "d/m/Y", // เช่น 01/07/2568
         // dateFormat: 'Y-m-d',
         locale: Thai, // ใช้ภาษาไทย
         // disabledMobile: true, // ปิดการเลื่อนเดือน
@@ -814,31 +1011,31 @@ export default {
       deliveryAddress: [], // 🏡 เก็บข้อมูลที่อยู่จาก so_delivery_address
 
       formData: {
-        listCode: '',
-        sellDate: '',
+        listCode: "",
+        sellDate: "",
         // sellDate: new Date().toISOString().split('T')[0], // ตั้งค่าเริ่มต้นเป็นวันที่ปัจจุบัน (YYYY-MM-DD)
         // sellDate: new Date().toLocaleDateString('th-TH', {
         //     day: '2-digit',
         //     month: '2-digit',
         //     year: 'numeric',
         // }), // ตั้งค่าเริ่มต้นเป็นวันที่ปัจจุบันในรูปแบบ วัน/เดือน/ปี
-        sellDate: new Date(),        // ✅ ใช้ Date object ตรง ๆ
-        deliveryDate: new Date(),    // ✅ ใช้ Date object ตรง ๆ
+        sellDate: new Date(), // ✅ ใช้ Date object ตรง ๆ
+        deliveryDate: new Date(), // ✅ ใช้ Date object ตรง ๆ
         // expireDate: '',
-        reference: '' || '-',
-        channel: '' || '-',
-        taxType: '' || '-',
+        reference: "" || "-",
+        channel: "" || "-",
+        taxType: "" || "-",
 
-        fullName: '',
-        customerCode: '',
-        phone: '',
-        email: '' || '-',
-        address: '',
-        receiverName: '',
-        receiverPhone: '' || '-',
-        receiverEmail: '' || '-',
-        receiverAddress: '',
-        note: '' || '-',
+        fullName: "",
+        customerCode: "",
+        phone: "",
+        email: "" || "-",
+        address: "",
+        receiverName: "",
+        receiverPhone: "" || "-",
+        receiverEmail: "" || "-",
+        receiverAddress: "",
+        note: "" || "-",
 
         promotions: [], // เก็บรายการสินค้าที่เลือก
         gifts: [], // เก็บรายการของแถม
@@ -846,17 +1043,17 @@ export default {
         // ใช้
         // deliveryDate: '',
 
-        trackingNo: '',
-        deliveryType: '',
-        totalDiscount: '' || 0,
+        trackingNo: "",
+        deliveryType: "",
+        totalDiscount: "" || 0,
 
-        deliveryFee: '',
+        deliveryFee: "",
 
-        documentNo: '',
+        documentNo: "",
 
-        pro_quantity: '' || 0,
+        pro_quantity: "" || 0,
 
-        discount: '' || 0,
+        discount: "" || 0,
 
         // ... ของเดิมทั้งหมด
         price_before_tax: 0,
@@ -870,16 +1067,16 @@ export default {
 
         // product_name : product.pro_name,
         // qty: '',
-        pro_erp_title: '',
+        pro_erp_title: "",
         // pro_name: '',
 
         productList: [],
 
-        warehouseCode: 'H1',
-        docType: 'SO',
+        warehouseCode: "H1",
+        docType: "SO",
       },
 
-      //form ที่โหลดมาตั้งต้นเพื่อเปรียบเทียบค่าว่ามีการเปลี่ยนแปลงก่อนอัปเดทไหม 
+      //form ที่โหลดมาตั้งต้นเพื่อเปรียบเทียบค่าว่ามีการเปลี่ยนแปลงก่อนอัปเดทไหม
       originalFormData: {},
       originalSelectedProducts: [],
 
@@ -890,7 +1087,6 @@ export default {
   },
 
   mounted() {
-
     const docNo = this.$route.params.id;
 
     this.documentNo_route_params = docNo;
@@ -902,11 +1098,9 @@ export default {
   },
 
   watch: {
-
     isVatIncluded(newVal) {
-      this.formData.taxType = newVal ? 'รวมภาษี' : 'ไม่รวมภาษี'
+      this.formData.taxType = newVal ? "รวมภาษี" : "ไม่รวมภาษี";
     },
-
   },
 
   computed: {
@@ -953,7 +1147,7 @@ export default {
     vatAmount() {
       if (this.isVatIncluded) {
         const grossAmount = this.totalAmountBeforeDiscount;
-        return grossAmount - (grossAmount / 1.07);
+        return grossAmount - grossAmount / 1.07;
       } else {
         return this.totalAmountBeforeDiscount * 0.07;
       }
@@ -977,14 +1171,15 @@ export default {
     // },
     // ตรวจสอบว่าเป็นหน้าแก้ไขหรือสร้างใหม่
     isCreatePage() {
-      return this.$route.path === '/createsalelist'
+      return this.$route.path === "/createsalelist";
     },
     visibleButtons() {
-      const buttons = []
-      if (this.isReadOnly) buttons.push('edit')
-      if (!this.isReadOnly && this.isCreatePage) buttons.push('save')
-      if (!this.isReadOnly && this.formData.documentNo && !this.isCreatePage) buttons.push('update')
-      return buttons
+      const buttons = [];
+      if (this.isReadOnly) buttons.push("edit");
+      if (!this.isReadOnly && this.isCreatePage) buttons.push("save");
+      if (!this.isReadOnly && this.formData.documentNo && !this.isCreatePage)
+        buttons.push("update");
+      return buttons;
     },
 
     isAdmin() {
@@ -1003,13 +1198,10 @@ export default {
     canEdit() {
       // ฝ่ายขาย (crm) หรือ Admin เท่านั้น
       return this.isCrm || this.isAdmin;
-    }
-
-
+    },
   },
 
   methods: {
-
     enableEditMode() {
       // if (this.canEdit) {
       this.isReadOnly = false;
@@ -1020,7 +1212,9 @@ export default {
       try {
         this.isLoading = true;
 
-        const response = await axios.get(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/sale_order/get_sale_order.php?documentNo=${documentNo_route_params}`);
+        const response = await axios.get(
+          `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/sale_order/get_sale_order.php?documentNo=${documentNo_route_params}`
+        );
 
         // const jsonStr = response.data.replace(/^\uFEFF/, '').trim();
         // // แปลงสตริงเป็นอ็อบเจกต์
@@ -1033,7 +1227,6 @@ export default {
         //  */
         //console.log('log raw: ', raw)
 
-
         // const resData = typeof raw === 'string' ? JSON.parse(raw) : raw;
 
         //console.log('✅ Clean JSON:', resData);
@@ -1041,7 +1234,7 @@ export default {
         // const resData = JSON.parse(response.data);
         const resData = response.data;
 
-        console.log('✅ Log :', resData);
+        console.log("✅ Log :", resData);
 
         //console.log("😂 Log Value resData: ", resData.data);
         //console.log(JSON.parse(resData));
@@ -1049,41 +1242,38 @@ export default {
           // เติมข้อมูลลงใน formData โดยรักษาฟิลด์ที่ไม่ได้อยู่ใน API
           this.formData = {
             ...this.formData, // เก็บค่าฟิลด์เดิมที่ไม่ได้อยู่ใน API
-            listCode: resData.data.order.list_code || '',
-            sellDate: resData.data.order.sell_date || '',
-            reference: resData.data.order.reference || '',
-            channel: resData.data.order.channel || '',
-            taxType: resData.data.order.tax_type || '',
-            fullName: resData.data.order.full_name || '',
-            customerCode: resData.data.order.customer_code || '',
-            phone: resData.data.order.phone || '',
-            email: resData.data.order.email || '',
-            address: resData.data.order.address || '',
-            receiverName: resData.data.order.receiver_name || '',
-            receiverPhone: resData.data.order.receiver_phone || '',
-            receiverEmail: resData.data.order.receiver_email || '',
-            receiverAddress: resData.data.order.receiver_address || '',
-            note: resData.data.order.note || '',
-            deliveryDate: resData.data.order.delivery_date || '',
-            trackingNo: resData.data.order.tracking_no || '',
-            deliveryType: resData.data.order.delivery_type || '',
+            listCode: resData.data.order.list_code || "",
+            sellDate: resData.data.order.sell_date || "",
+            reference: resData.data.order.reference || "",
+            channel: resData.data.order.channel || "",
+            taxType: resData.data.order.tax_type || "",
+            fullName: resData.data.order.full_name || "",
+            customerCode: resData.data.order.customer_code || "",
+            phone: resData.data.order.phone || "",
+            email: resData.data.order.email || "",
+            address: resData.data.order.address || "",
+            receiverName: resData.data.order.receiver_name || "",
+            receiverPhone: resData.data.order.receiver_phone || "",
+            receiverEmail: resData.data.order.receiver_email || "",
+            receiverAddress: resData.data.order.receiver_address || "",
+            note: resData.data.order.note || "",
+            deliveryDate: resData.data.order.delivery_date || "",
+            trackingNo: resData.data.order.tracking_no || "",
+            deliveryType: resData.data.order.delivery_type || "",
             totalDiscount: resData.data.order.total_discount || 0,
             deliveryFee: resData.data.order.delivery_fee || 0,
             final_total_price: resData.data.order.final_total_price || 0,
-            documentNo: resData.data.order.document_no || '',
+            documentNo: resData.data.order.document_no || "",
 
             //
             promotions: resData.data.promotions || [],
-            gifts: resData.data.gifts || []
-
+            gifts: resData.data.gifts || [],
           };
 
           console.log("📄 ข้อมูลเอกสารที่โหลด:", resData.data.productList);
           console.log("🔍 ก่อน map this.selectedProducts:", this.selectedProducts);
 
-
-          this.selectedProducts = resData.data.productList.map(product => {
-
+          this.selectedProducts = resData.data.productList.map((product) => {
             console.log("🛠️ กำลัง map product:", product); // 👈 log ตรงนี้เช็กแต่ละตัว
             const productObj = {
               item_id: product.id,
@@ -1101,11 +1291,11 @@ export default {
               pro_images: product.pro_image,
               prosn: product.sn,
               pro_sn: product.pro_sn,
-              pro_unit: product.pro_units || '',
+              pro_unit: product.pro_units || "",
               // pro_unit: product.unit || '',
               activity_id: product.activity_id || 0,
               pro_activity_id: product.pro_activity_id || 0, // ✅ ใช้ชื่อนี้ให้ตรง backend
-              pro_goods_sku_text: product.pro_goods_sku_text || '',
+              pro_goods_sku_text: product.pro_goods_sku_text || "",
               // pro_sku_pricr_id: product.pro_sku_pricr_id || '',
               // promotions: matchedPromotions,
               // gifts: matchedGifts
@@ -1130,58 +1320,53 @@ export default {
               // gifts: matchedGifts
               // ✅ ดึงจาก product โดยตรง
               promotions: product.promotions || [],
-              gifts: product.gifts || []
+              gifts: product.gifts || [],
             };
 
             console.log("🎁 productObj:", productObj); // <--- สำคัญ
             return productObj;
-
           });
 
           // ✅ เพิ่มข้อมูลที่อยู่จัดส่งลงใน data
           this.deliveryAddress = resData.data.deliveryAddress || {};
 
           console.log("📄 ข้อมูลเอกสารที่โหลด:", this.formData);
-          console.log("🛒 รายการสินค้า:", this.selectedProducts)
-          console.log("🛒 ข้อมูลที่อยู่จัดส่ง:", this.deliveryAddress)
+          console.log("🛒 รายการสินค้า:", this.selectedProducts);
+          console.log("🛒 ข้อมูลที่อยู่จัดส่ง:", this.deliveryAddress);
 
           // ยังไม่ใช้
           this.originalFormData = JSON.parse(JSON.stringify(this.formData)); // deep copy
           this.originalSelectedProducts = JSON.parse(JSON.stringify(this.selectedProducts));
 
-
           this.isLoading = false;
-          ;
         } else {
-          Swal.fire({ text: resData.message, icon: 'error' });
-          console.log('resData1')
+          Swal.fire({ text: resData.message, icon: "error" });
+          console.log("resData1");
         }
       } catch (err) {
-        const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลเอกสาร';
-        Swal.fire({ text: message, icon: 'error' });
-        console.log('resData2')
+        const message =
+          err.response?.data?.message || err.message || "เกิดข้อผิดพลาดในการโหลดข้อมูลเอกสาร";
+        Swal.fire({ text: message, icon: "error" });
+        console.log("resData2");
       }
     },
 
-
-
     SelectedPromotion(promotionData) {
-      console.log('รับโปรโมชั่นจาก child:', promotionData)
+      console.log("รับโปรโมชั่นจาก child:", promotionData);
 
-      this.selectedPromotion = promotionData
-      this.showPromotionSelector = false
-      console.log('ปิด popup 1')
+      this.selectedPromotion = promotionData;
+      this.showPromotionSelector = false;
+      console.log("ปิด popup 1");
 
       setTimeout(() => {
-        this.showPromotionProductSelector = true
-        console.log('เปิด popup 2')
-      }, 100)
+        this.showPromotionProductSelector = true;
+        console.log("เปิด popup 2");
+      }, 100);
     },
-
 
     //
     async addSelectedProductsWithmonth(payload) {
-      console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
+      console.log("📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:", payload);
 
       const items = payload.items || [];
       // const gifts = payload.gifts || [];
@@ -1197,23 +1382,35 @@ export default {
       console.log("✅ EmitTitles:", emitTitles);
 
       for (const item of items) {
-
         const activityId = item.st === false ? false : item.pro_activity_id;
-        const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id) || {};
+        const matchedTitle =
+          emitTitles.find((emit) => emit.pro_goods_id == item.pro_goods_id) || {};
 
-        const filteredGifts = giftsDay.filter(gift => gift.pro_activity_id !== item.pro_activity_id ? item.pro_activity_id : gift.pro_activity_id);
-        const filteredPromotions = promotions.filter(promo => promo.pro_activity_id !== item.pro_activity_id ? item.pro_activity_id : promo.pro_activity_id)
+        const filteredGifts = giftsDay.filter((gift) =>
+          gift.pro_activity_id !== item.pro_activity_id
+            ? item.pro_activity_id
+            : gift.pro_activity_id
+        );
+        const filteredPromotions = promotions.filter((promo) =>
+          promo.pro_activity_id !== item.pro_activity_id
+            ? item.pro_activity_id
+            : promo.pro_activity_id
+        );
 
-        const fullActivityGifts = giftsDay.filter(gift => gift.pro_activity_id === item.pro_activity_id && gift.st === item.st);
-        const fullActivityPromotions = promotions.filter(promo => promo.pro_activity_id === item.pro_activity_id && promo.st === item.st)
+        const fullActivityGifts = giftsDay.filter(
+          (gift) => gift.pro_activity_id === item.pro_activity_id && gift.st === item.st
+        );
+        const fullActivityPromotions = promotions.filter(
+          (promo) => promo.pro_activity_id === item.pro_activity_id && promo.st === item.st
+        );
 
         // const FinalGifts = filteredGifts.filter(
-        //     // gift => gift.pro_activity_id === item.pro_activity_id 
+        //     // gift => gift.pro_activity_id === item.pro_activity_id
         //     gift => gift.pro_activity_id === item.pro_activity_id && gift.st === item.st
         //     // gift => gift.pro_activity_id === promotionActivityId && gift.pro_sku_price_id == item.pro_sku_price_id
         // );
 
-        const FinalPromotions = promotions.filter(promo => {
+        const FinalPromotions = promotions.filter((promo) => {
           const stMatch = promo.st === item.st;
 
           if (item.st === true) {
@@ -1223,7 +1420,7 @@ export default {
           }
         });
 
-        const FinalGifts = giftsDay.filter(gift => {
+        const FinalGifts = giftsDay.filter((gift) => {
           const stMatch = gift.st === item.st;
 
           if (item.st === true) {
@@ -1233,58 +1430,70 @@ export default {
           }
         });
 
-
         const FinalGifts_Not_activuty = fullActivityGifts.filter(
-          // gift => gift.pro_activity_id === item.pro_activity_id 
-          gift => gift.pro_activity_id === item.pro_activity_id && Boolean(gift.st) === Boolean(item.st)
+          // gift => gift.pro_activity_id === item.pro_activity_id
+          (gift) =>
+            gift.pro_activity_id === item.pro_activity_id && Boolean(gift.st) === Boolean(item.st)
           // gift => gift.pro_activity_id === promotionActivityId && gift.pro_sku_price_id == item.pro_sku_price_id
         );
 
         const FinalPromotions_Not_activuty = fullActivityPromotions.filter(
-          // promo => promo.pro_activity_id === item.pro_activity_id 
-          promo => promo.pro_activity_id === item.pro_activity_id || promo.st !== item.st
+          // promo => promo.pro_activity_id === item.pro_activity_id
+          (promo) => promo.pro_activity_id === item.pro_activity_id || promo.st !== item.st
         );
 
-        const similarItem = this.selectedProducts.find(sp =>
-          sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
-          sp.activity_id !== activityId
+        // ✅ แปลงให้เรียบร้อยก่อน
+        item.pro_id = parseInt(item.pro_id) || 0;
+        item.pro_sku_price_id = parseInt(item.pro_sku_price_id) || 0;
+
+        const similarItem = this.selectedProducts.find(
+          (sp) =>
+            sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) && sp.activity_id !== activityId
         );
 
-        const activity_id_ItemIsok = this.selectedProducts.find(sp =>
-          sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
-          sp.activity_id !== activityId &&
-          sp.st === item.st
+        const activity_id_ItemIsok = this.selectedProducts.find(
+          (sp) =>
+            sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
+            sp.activity_id !== activityId &&
+            sp.st === item.st
         );
 
-        const activity_id_ItemIs_Not_ok = this.selectedProducts.find(sp =>
-          sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
-          sp.activity_id !== activityId &&
-          sp.st !== item.st
+        const activity_id_ItemIs_Not_ok = this.selectedProducts.find(
+          (sp) =>
+            sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
+            sp.activity_id !== activityId &&
+            sp.st !== item.st
         );
 
-        //หา item ที่ activity_id เดียวกันและ st เหมือนกัน 
-        const alreadyExists = this.selectedProducts.find(sp =>
-          sp.pro_id === item.pro_sku_price_id &&
-          sp.activity_id === activityId &&
-          // sp.st === item.st
-          sp.st === item.st
+        //หา item ที่ activity_id เดียวกันและ st เหมือนกัน
+        const alreadyExists = this.selectedProducts.find(
+          (sp) =>
+            sp.pro_id === item.pro_sku_price_id &&
+            sp.activity_id === activityId &&
+            // sp.st === item.st
+            sp.st === item.st
         );
+
+        console.log("✅ this.selectedProducts:", this.selectedProducts);
+        console.log("✅ this.selectedProducts.length === 0:", this.selectedProducts.length === 0);
+        console.log("✅ alreadyExists:", alreadyExists);
+        console.log("✅ activity_id_ItemIs_Not_ok:", activity_id_ItemIs_Not_ok);
+        console.log("✅ activity_id_ItemIsok:", activity_id_ItemIsok);
 
         const caseType = (() => {
-          if (this.selectedProducts.length === 0) return 'EMPTY';
-          if (activity_id_ItemIs_Not_ok) return 'ACTIVITY_ID_ITEM_IS_Not_OK';
-          if (activity_id_ItemIsok) return 'ACTIVITY_ID_ITEM_ISOK';
+          if (this.selectedProducts.length === 0) return "EMPTY";
+          if (activity_id_ItemIs_Not_ok) return "ACTIVITY_ID_ITEM_IS_Not_OK";
+          if (activity_id_ItemIsok) return "ACTIVITY_ID_ITEM_ISOK";
           // if (similarItem || alreadyExists) return 'ACTIVITY_NOT_LOOP';
-          if (alreadyExists) return 'EXISTS';
-          if (similarItem) return 'SIMILAR_SN_DIFFERENT_ACTIVITY';
+          if (alreadyExists) return "EXISTS";
+          // if (similarItem) return "SIMILAR_SN_DIFFERENT_ACTIVITY";
 
-
-          return 'NEW';
+          return "NEW";
         })();
 
         switch (caseType) {
-          case 'EMPTY':
-          case 'NEW':
+          case "EMPTY":
+          case "NEW":
             this.selectedProducts.push({
               item_id: 0,
               pro_id: item.pro_sku_price_id,
@@ -1293,15 +1502,18 @@ export default {
               pro_goods_id: item.pro_goods_id,
               // pro_activity_id: item.pro_activity_id,
               st: item.st,
-              pro_erp_title: matchedTitle.pro_erp_title === 0 ? matchedTitle.pro_title : matchedTitle.pro_erp_title || item.pro_erp_title || '',
+              pro_erp_title:
+                matchedTitle.pro_erp_title === 0
+                  ? matchedTitle.pro_title
+                  : matchedTitle.pro_erp_title || item.pro_erp_title || "",
               pro_title: matchedTitle.pro_title,
               // pro_erp_title: matchedTitle.pro_erp_title && matchedTitle.pro_erp_title === 0 || item.pro_erp_title || '',
-              pro_unit_price: item.pro_goods_price || '',
-              pro_goods_sku_text: item.pro_goods_sku_text || '',
-              pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
-              pro_images: item.pro_image || '',
+              pro_unit_price: item.pro_goods_price || "",
+              pro_goods_sku_text: item.pro_goods_sku_text || "",
+              pro_sn: matchedTitle.pro_sn || item.pro_sn || "",
+              pro_images: item.pro_image || "",
               pro_quantity: item.pro_goods_num || 0,
-              pro_units: matchedTitle.pro_units || item.pro_units || '',
+              pro_units: matchedTitle.pro_units || item.pro_units || "",
               pro_stock: matchedTitle.stock || 0,
 
               pro_sku_price_id: item.pro_sku_price_id,
@@ -1315,12 +1527,11 @@ export default {
 
               // gifts: giftsDay.filter(gift => gift.pro_activity_id === item.pro_activity_id),
               // promotions: promotions.filter(promo => promo.pro_activity_id === item.pro_activity_id)
-
             });
-            console.log('NEW || EMPTY');
+            console.log("NEW || EMPTY");
             break;
 
-          case 'EXISTS':
+          case "EXISTS":
             Object.assign(alreadyExists, {
               ...item,
               pro_id: item.pro_sku_price_id,
@@ -1328,40 +1539,45 @@ export default {
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
               gifts: FinalGifts,
-              promotions: FinalPromotions
+              promotions: FinalPromotions,
 
               // เพิ่มค่าอื่น ๆ ที่จำเป็น
             });
 
-            console.log('EXISTS');
+            console.log("EXISTS");
 
             Swal.fire({
-              icon: 'info',
-              title: 'แทนที่ข้อมูลเดิม',
-              text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+              icon: "info",
+              title: "เพิ่มจำนวนข้อมูลสินค้าสำเร็จ",
+              text: `เพิ่มข้อมูลสินค้าเรียบร้อย ${
+                matchedTitle.pro_erp_title || item.pro_title || ""
+              }`,
+              showConfirmButton: false,
+              timer: 2000, // ปิดอัตโนมัติใน 2 วินาที (2000 มิลลิวินาที)
+              timerProgressBar: true,
             });
             break;
-          case 'ACTIVITY_ID_ITEM_ISOK':
+          case "ACTIVITY_ID_ITEM_ISOK":
             Object.assign(activity_id_ItemIsok, {
               ...item,
               pro_id: item.pro_sku_price_id,
               activity_id: activityId,
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
-              gifts: FinalGifts, //fullActivityGifts || 
+              gifts: FinalGifts, //fullActivityGifts ||
               promotions: FinalPromotions, //
               // เพิ่มค่าอื่น ๆ ที่จำเป็น
             });
 
-            console.log('ACTIVITY_ID_ITEM_ISOK');
+            console.log("ACTIVITY_ID_ITEM_ISOK");
 
             Swal.fire({
-              icon: 'info',
-              title: 'แทนที่ข้อมูลเดิม',
-              text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+              icon: "info",
+              title: "แทนที่ข้อมูลเดิม",
+              text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ""}`,
             });
             break;
-          case 'ACTIVITY_ID_ITEM_IS_Not_OK':
+          case "ACTIVITY_ID_ITEM_IS_Not_OK":
             Object.assign(activity_id_ItemIs_Not_ok, {
               ...item,
               pro_id: item.pro_sku_price_id,
@@ -1373,15 +1589,14 @@ export default {
               // เพิ่มค่าอื่น ๆ ที่จำเป็น
             });
 
-            console.log('ACTIVITY_ID_ITEM_IS_Not_OK');
+            console.log("ACTIVITY_ID_ITEM_IS_Not_OK");
 
             Swal.fire({
-              icon: 'info',
-              title: 'แทนที่ข้อมูลเดิม',
-              text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+              icon: "info",
+              title: "แทนที่ข้อมูลเดิม",
+              text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ""}`,
             });
             break;
-
         }
         // });
       }
@@ -1389,18 +1604,26 @@ export default {
       console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
     },
 
+    validateQuantity(product) {
+      if (product.pro_quantity > product.pro_stock) {
+        product.pro_quantity = product.pro_stock;
+      } else if (product.pro_quantity < 1) {
+        product.pro_quantity = 1;
+      }
+    },
+
     handleBackToPromotion() {
-      this.showPromotionProductSelector = false
+      this.showPromotionProductSelector = false;
 
       // 🔁 ใช้ delay เล็กน้อยเพื่อให้ UI สลับได้ลื่นขึ้น
       setTimeout(() => {
-        this.showPromotionSelector = true
-      }, 100)
+        this.showPromotionSelector = true;
+      }, 100);
     },
 
     // //handleSelectedProducts
     async handleSelectedPromotionProducts(payload) {
-      console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
+      console.log("📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:", payload);
 
       const items = payload.items || [];
       // const gifts = payload.gifts || [];
@@ -1414,18 +1637,35 @@ export default {
       console.log("✅ Gifts:", giftsDay);
       console.log("✅ Promotions:", promotions);
       console.log("✅ EmitTitles:", emitTitles);
+
       for (const item of items) {
+        const activityId = item.st === false ? false : item.pro_activity_id; // true = 1508 And false = false
+        const matchedTitle =
+          emitTitles.find(
+            (emit) =>
+              emit.pro_goods_id == item.pro_goods_id &&
+              emit.pro_sku_price_id == item.pro_sku_price_id
+          ) || {};
 
-        const activityId = item.st === false ? false : item.pro_activity_id;
-        const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id && emit.pro_sku_price_id == item.pro_sku_price_id) || {};
+        const filteredGifts = giftsDay.filter((gift) =>
+          gift.pro_activity_id !== item.pro_activity_id
+            ? item.pro_activity_id
+            : gift.pro_activity_id
+        );
+        const filteredPromotions = promotions.filter((promo) =>
+          promo.pro_activity_id !== item.pro_activity_id
+            ? item.pro_activity_id
+            : promo.pro_activity_id
+        );
 
-        const filteredGifts = giftsDay.filter(gift => gift.pro_activity_id !== item.pro_activity_id ? item.pro_activity_id : gift.pro_activity_id);
-        const filteredPromotions = promotions.filter(promo => promo.pro_activity_id !== item.pro_activity_id ? item.pro_activity_id : promo.pro_activity_id)
+        const fullActivityGifts = giftsDay.filter(
+          (gift) => gift.pro_activity_id === item.pro_activity_id && gift.st === item.st
+        );
+        const fullActivityPromotions = promotions.filter(
+          (promo) => promo.pro_activity_id === item.pro_activity_id && promo.st === item.st
+        );
 
-        const fullActivityGifts = giftsDay.filter(gift => gift.pro_activity_id === item.pro_activity_id && gift.st === item.st);
-        const fullActivityPromotions = promotions.filter(promo => promo.pro_activity_id === item.pro_activity_id && promo.st === item.st)
-
-        const FinalPromotions = promotions.filter(promo => {
+        const FinalPromotions = promotions.filter((promo) => {
           const stMatch = promo.st === item.st;
 
           if (item.st === true) {
@@ -1435,7 +1675,7 @@ export default {
           }
         });
 
-        const FinalGifts = giftsDay.filter(gift => {
+        const FinalGifts = giftsDay.filter((gift) => {
           const stMatch = gift.st === item.st;
 
           if (item.st === true) {
@@ -1445,58 +1685,116 @@ export default {
           }
         });
 
-
         const FinalGifts_Not_activuty = fullActivityGifts.filter(
-          // gift => gift.pro_activity_id === item.pro_activity_id 
-          gift => gift.pro_activity_id === item.pro_activity_id && Boolean(gift.st) === Boolean(item.st)
+          // gift => gift.pro_activity_id === item.pro_activity_id
+          (gift) =>
+            gift.pro_activity_id === item.pro_activity_id && Boolean(gift.st) === Boolean(item.st)
           // gift => gift.pro_activity_id === promotionActivityId && gift.pro_sku_price_id == item.pro_sku_price_id
         );
 
         const FinalPromotions_Not_activuty = fullActivityPromotions.filter(
-          // promo => promo.pro_activity_id === item.pro_activity_id 
-          promo => promo.pro_activity_id === item.pro_activity_id || promo.st !== item.st
+          // promo => promo.pro_activity_id === item.pro_activity_id
+          (promo) => promo.pro_activity_id === item.pro_activity_id || promo.st !== item.st
         );
+
+        // ✅ แปลงให้เรียบร้อยก่อน
+        item.pro_id = parseInt(item.pro_id) || 0;
+        item.pro_sku_price_id = parseInt(item.pro_sku_price_id) || 0;
+
         // หา item ที่ pro_sn เดียวกันแต่ activity ต่างกัน
-        const similarItem = this.selectedProducts.find(sp =>
-          sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
-          sp.activity_id !== activityId
+        const similarItem = this.selectedProducts.find(
+          (sp) =>
+            sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) && sp.activity_id !== activityId
         );
 
-        const activity_id_ItemIsok = this.selectedProducts.find(sp =>
-          sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
-          sp.activity_id !== activityId &&
-          sp.st === item.st
+        const activity_id_ItemIsok = this.selectedProducts.find(
+          (sp) =>
+            sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
+            sp.activity_id !== activityId &&
+            sp.st === item.st
         );
 
-        const activity_id_ItemIs_Not_ok = this.selectedProducts.find(sp =>
-          sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
-          sp.activity_id !== activityId &&
-          sp.st !== item.st
+        const activity_id_ItemIs_Not_ok = this.selectedProducts.find(
+          (sp) =>
+            sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
+            sp.activity_id !== activityId &&
+            sp.st !== item.st
         );
 
-        //หา item ที่ activity_id เดียวกันและ st เหมือนกัน 
-        const alreadyExists = this.selectedProducts.find(sp =>
-          sp.pro_id === item.pro_sku_price_id &&
-          sp.activity_id === activityId &&
-          // sp.st === item.st
-          sp.st === item.st
+        // const matchedByActivityAndGoods = this.selectedProducts.find(
+        //   (sp) =>
+        //     parseInt(sp.pro_activity_id) === parseInt(item.pro_activity_id) &&
+        //     parseInt(sp.pro_goods_id) === parseInt(item.pro_goods_id) &&
+        //     Boolean(sp.st) === Boolean(item.st)
+        // );
+
+        const matchedByActivityAndGoods = this.selectedProducts.find((sp) => {
+          const isMatch =
+            parseInt(sp.pro_goods_id) === parseInt(item.pro_goods_id) &&
+            parseInt(sp.pro_activity_id) === parseInt(item.pro_activity_id);
+          // Boolean(sp.st) === Boolean(item.st);
+
+          console.log("Check Match:", {
+            old_goods_id: sp.pro_goods_id,
+            new_goods_id: item.pro_goods_id,
+            old_activity_id: sp.pro_activity_id,
+            new_activity_id: item.pro_activity_id,
+            // old_st: sp.st,
+            new_st: item.st,
+            result: isMatch,
+          });
+
+          return isMatch;
+        });
+
+        //หา item ที่ activity_id เดียวกันและ st เหมือนกัน
+        // const alreadyExists = this.selectedProducts.find(
+        //   (sp) =>
+        //     sp.pro_id === item.pro_sku_price_id && // pro_id = 3640 And pro_sku_price_id = "3640"
+        //     sp.activity_id === activityId && // activity_id = 1508 And activityId = 1508 || false
+        //     // sp.st === item.st
+        //     sp.st === item.st // false = false And true = true
+        // );
+
+        // const alreadyExists = this.selectedProducts.find(
+        //   (sp) =>
+        //     parseInt(sp.pro_goods_id) === parseInt(item.pro_goods_id) &&
+        //     parseInt(sp.pro_activity_id) === parseInt(item.pro_activity_id) &&
+        //     Boolean(sp.st) === Boolean(item.st)
+        // );
+
+        //หา item ที่ activity_id เดียวกันและ st เหมือนกัน
+        const alreadyExists_not_st = this.selectedProducts.find(
+          (sp) =>
+            sp.pro_id === item.pro_sku_price_id && // pro_id = 3640 And pro_sku_price_id = "3640"
+            sp.activity_id === activityId // activity_id = 1508 And activityId = 1508 || false
         );
+
+        console.log("✅ this.selectedProducts:", this.selectedProducts);
+        console.log("✅ this.selectedProducts.length === 0:", this.selectedProducts.length === 0);
+        // console.log("✅ alreadyExists:", alreadyExists);
+        console.log("✅ activity_id_ItemIs_Not_ok:", activity_id_ItemIs_Not_ok);
+        console.log("✅ activity_id_ItemIsok:", activity_id_ItemIsok);
 
         const caseType = (() => {
-          if (this.selectedProducts.length === 0) return 'EMPTY';
-          if (activity_id_ItemIs_Not_ok) return 'ACTIVITY_ID_ITEM_IS_Not_OK';
-          if (activity_id_ItemIsok) return 'ACTIVITY_ID_ITEM_ISOK';
+          if (this.selectedProducts.length === 0) return "EMPTY";
+          if (matchedByActivityAndGoods) return "UPDATE_SAME_ITEM";
+          // if (alreadyExists) return "EXISTS";
+          if (alreadyExists_not_st) return "EXISTSNOTST";
+          if (activity_id_ItemIs_Not_ok) return "ACTIVITY_ID_ITEM_IS_Not_OK";
+          if (activity_id_ItemIsok) return "ACTIVITY_ID_ITEM_ISOK";
           // if (similarItem || alreadyExists) return 'ACTIVITY_NOT_LOOP';
-          if (alreadyExists) return 'EXISTS';
-          if (similarItem) return 'SIMILAR_SN_DIFFERENT_ACTIVITY';
+          // if (similarItem) return "SIMILAR_SN_DIFFERENT_ACTIVITY";
 
-
-          return 'NEW';
+          return "NEW";
         })();
 
+        // console.log("🤐 Check caseType this.selectedProducts: ", this.selectedProducts);
+
         switch (caseType) {
-          case 'EMPTY':
-          case 'NEW':
+          case "EMPTY":
+          case "NEW":
+            // this.selectedProducts = [];
             this.selectedProducts.push({
               item_id: 0,
               pro_id: item.pro_sku_price_id,
@@ -1505,17 +1803,20 @@ export default {
               pro_goods_id: item.pro_goods_id,
               // pro_activity_id: item.pro_activity_id,
               st: item.st,
-              pro_erp_title: matchedTitle.pro_erp_title === 0 ? matchedTitle.pro_title : matchedTitle.pro_erp_title || item.pro_erp_title || '',
+              pro_erp_title:
+                matchedTitle.pro_erp_title === 0
+                  ? matchedTitle.pro_title
+                  : matchedTitle.pro_erp_title || item.pro_erp_title || "",
               pro_title: matchedTitle.pro_title,
               // pro_erp_title: matchedTitle.pro_erp_title && matchedTitle.pro_erp_title === 0 || item.pro_erp_title || '',
-              pro_unit_price: item.pro_goods_price || '',
-              pro_goods_sku_text: item.pro_goods_sku_text || '',
-              pro_sn: matchedTitle.pro_sn || item.pro_sn || '',
-              prosn: item.prosn || '',
-              pro_images: item.pro_image || '',
+              pro_unit_price: item.pro_goods_price || "",
+              pro_goods_sku_text: item.pro_goods_sku_text || "",
+              pro_sn: matchedTitle.pro_sn || item.pro_sn || "",
+              prosn: item.prosn || "",
+              pro_images: item.pro_image || "",
               pro_quantity: item.pro_goods_num || 0,
               pro_goods_num: item.pro_goods_num || 0,
-              pro_units: matchedTitle.pro_units || item.pro_units || '',
+              pro_units: matchedTitle.pro_units || item.pro_units || "",
               pro_stock: matchedTitle.stock || 0,
 
               pro_sku_price_id: item.pro_sku_price_id,
@@ -1529,12 +1830,31 @@ export default {
 
               // gifts: giftsDay.filter(gift => gift.pro_activity_id === item.pro_activity_id),
               // promotions: promotions.filter(promo => promo.pro_activity_id === item.pro_activity_id)
-
             });
-            console.log('NEW || EMPTY');
+            console.log("NEW || EMPTY");
             break;
 
-          case 'EXISTS':
+          case "UPDATE_SAME_ITEM":
+            Object.assign(matchedByActivityAndGoods, {
+              ...item,
+              pro_id: item.pro_sku_price_id,
+              activity_id: activityId,
+              pro_quantity: item.pro_goods_num,
+              pro_goods_num: item.pro_goods_num,
+              gifts: FinalGifts,
+              promotions: FinalPromotions,
+            });
+
+            console.log("UPDATE_SAME_ITEM");
+
+            Swal.fire({
+              icon: "info",
+              title: "อัปเดตรายการสำเร็จ",
+              text: `อัปเดตข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ""}`,
+            });
+            break;
+
+          case "EXISTS":
             Object.assign(alreadyExists, {
               ...item,
               pro_id: item.pro_sku_price_id,
@@ -1542,40 +1862,74 @@ export default {
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
               gifts: FinalGifts,
-              promotions: FinalPromotions
+              promotions: FinalPromotions,
 
               // เพิ่มค่าอื่น ๆ ที่จำเป็น
             });
 
-            console.log('EXISTS');
+            console.log("EXISTS");
 
             Swal.fire({
-              icon: 'info',
-              title: 'เพิ่มจำนวนข้อมูลสินค้าสำเร็จ',
-              text: `เพิ่มข้อมูลสินค้าเรียบร้อย ${matchedTitle.pro_erp_title || item.pro_title || ''}`,
+              icon: "info",
+              title: "เพิ่มจำนวนข้อมูลสินค้าสำเร็จ",
+              text: `เพิ่มข้อมูลสินค้าเรียบร้อย ${
+                matchedTitle.pro_erp_title || item.pro_title || ""
+              }`,
+              showConfirmButton: false,
+              timer: 2000, // ปิดอัตโนมัติใน 2 วินาที (2000 มิลลิวินาที)
+              timerProgressBar: true,
             });
             break;
-          case 'ACTIVITY_ID_ITEM_ISOK':
+
+          case "alreadyExists_not_st":
+            Object.assign(alreadyExists_not_st, {
+              ...item,
+              pro_id: item.pro_sku_price_id,
+              activity_id: activityId,
+              pro_quantity: item.pro_goods_num,
+              pro_goods_num: item.pro_goods_num,
+              gifts: FinalGifts,
+              promotions: FinalPromotions,
+
+              // เพิ่มค่าอื่น ๆ ที่จำเป็น
+            });
+
+            console.log("alreadyExists_not_st");
+
+            Swal.fire({
+              icon: "info",
+              title: "เพิ่มจำนวนข้อมูลสินค้าสำเร็จ",
+              text: `เพิ่มข้อมูลสินค้าเรียบร้อย ${
+                matchedTitle.pro_erp_title || item.pro_title || ""
+              }`,
+              showConfirmButton: false,
+              timer: 2000, // ปิดอัตโนมัติใน 2 วินาที (2000 มิลลิวินาที)
+              timerProgressBar: true,
+            });
+            break;
+
+          case "ACTIVITY_ID_ITEM_ISOK":
             Object.assign(activity_id_ItemIsok, {
               ...item,
               pro_id: item.pro_sku_price_id,
               activity_id: activityId,
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
-              gifts: FinalGifts, //fullActivityGifts || 
+              gifts: FinalGifts, //fullActivityGifts ||
               promotions: FinalPromotions, //
               // เพิ่มค่าอื่น ๆ ที่จำเป็น
             });
 
-            console.log('ACTIVITY_ID_ITEM_ISOK');
+            console.log("ACTIVITY_ID_ITEM_ISOK");
 
             Swal.fire({
-              icon: 'info',
-              title: 'แทนที่ข้อมูลเดิม',
-              text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+              icon: "info",
+              title: "แทนที่ข้อมูลเดิม",
+              text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ""}`,
             });
+
             break;
-          case 'ACTIVITY_ID_ITEM_IS_Not_OK':
+          case "ACTIVITY_ID_ITEM_IS_Not_OK":
             Object.assign(activity_id_ItemIs_Not_ok, {
               ...item,
               pro_id: item.pro_sku_price_id,
@@ -1587,31 +1941,28 @@ export default {
               // เพิ่มค่าอื่น ๆ ที่จำเป็น
             });
 
-            console.log('ACTIVITY_ID_ITEM_IS_Not_OK');
+            console.log("ACTIVITY_ID_ITEM_IS_Not_OK");
 
             Swal.fire({
-              icon: 'info',
-              title: 'แทนที่ข้อมูลเดิม',
-              text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ''}`,
+              icon: "info",
+              title: "แทนที่ข้อมูลเดิม",
+              text: `แทนที่ข้อมูลสินค้า ${matchedTitle.pro_title || item.pro_erp_title || ""}`,
             });
             break;
-
         }
       }
 
       console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
-
     },
-
 
     async confirmFinalSave() {
       const result = await Swal.fire({
-        title: 'คุณแน่ใจหรือไม่?',
+        title: "คุณแน่ใจหรือไม่?",
         text: "หลังจากยืนยัน จะไม่สามารถแก้ไขข้อมูลนี้ได้อีก",
-        icon: 'warning',
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonText: 'ยืนยัน',
-        cancelButtonText: 'ยกเลิก'
+        confirmButtonText: "ยืนยัน",
+        cancelButtonText: "ยกเลิก",
       });
 
       if (!result.isConfirmed) return;
@@ -1630,7 +1981,7 @@ export default {
         console.log("🔒 Response จาก API lock_document:", resData);
 
         if (!lockResponse.data.success) {
-          Swal.fire('ผิดพลาด', lockResponse.data.message, 'error');
+          Swal.fire("ผิดพลาด", lockResponse.data.message, "error");
           return;
         }
 
@@ -1639,22 +1990,20 @@ export default {
           this.isConfirmed = true;
 
           // กันย้อนแก้ในเครื่องนี้ (optional)
-          const locked = JSON.parse(localStorage.getItem('lockedDocumentNos') || '[]');
+          const locked = JSON.parse(localStorage.getItem("lockedDocumentNos") || "[]");
           if (!locked.includes(docNo)) {
             locked.push(docNo);
-            localStorage.setItem('lockedDocumentNos', JSON.stringify(locked));
+            localStorage.setItem("lockedDocumentNos", JSON.stringify(locked));
           }
 
-          Swal.fire('สำเร็จ!', 'รายการถูกล็อกแล้ว', 'success');
+          Swal.fire("สำเร็จ!", "รายการถูกล็อกแล้ว", "success");
         } else {
-          Swal.fire('ผิดพลาด', resData.message, 'error');
+          Swal.fire("ผิดพลาด", resData.message, "error");
         }
-
       } catch (err) {
-        const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาด';
-        Swal.fire('ผิดพลาด', message, 'error');
+        const message = err.response?.data?.message || err.message || "เกิดข้อผิดพลาด";
+        Swal.fire("ผิดพลาด", message, "error");
       }
-
     },
 
     async validateForm() {
@@ -1669,16 +2018,16 @@ export default {
       //     'deliveryDate', 'trackingNo', 'deliveryType'
       // ];
       const requiredFields = {
-        sellDate: 'วันที่ขาย',
-        fullName: 'ชื่อลูกค้า',
-        customerCode: 'รหัสลูกค้า',
-        phone: 'เบอร์โทร',
+        sellDate: "วันที่ขาย",
+        fullName: "ชื่อลูกค้า",
+        customerCode: "รหัสลูกค้า",
+        phone: "เบอร์โทร",
         // address: 'ที่อยู่',
-        receiverName: 'ชื่อผู้รับ',
-        receiverPhone: 'เบอร์ผู้รับ',
+        receiverName: "ชื่อผู้รับ",
+        receiverPhone: "เบอร์ผู้รับ",
         // receiverEmail: 'อีเมลผู้รับ',
-        receiverAddress: 'ที่อยู่ผู้รับ',
-        deliveryDate: 'วันที่จัดส่ง',
+        receiverAddress: "ที่อยู่ผู้รับ",
+        deliveryDate: "วันที่จัดส่ง",
         // trackingNo: 'เลขติดตาม',
         // deliveryType: 'ประเภทการจัดส่ง'
       };
@@ -1687,7 +2036,7 @@ export default {
 
       for (const [field, label] of Object.entries(requiredFields)) {
         const value = this.formData[field];
-        if (!value || (typeof value === 'string' && value.trim() === '')) {
+        if (!value || (typeof value === "string" && value.trim() === "")) {
           this.errors[field] = `กรุณากรอก${label}`;
           isValid = false;
         }
@@ -1697,16 +2046,22 @@ export default {
       // ตรวจสอบรายการสินค้า
       if (this.selectedProducts.length === 0) {
         Swal.fire({
-          text: 'กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ',
-          icon: 'warning'
+          text: "กรุณาเพิ่มสินค้าอย่างน้อย 1 รายการ",
+          icon: "warning",
         });
         isValid = false;
       } else {
         for (const product of this.selectedProducts) {
-          if (!product.pro_erp_title || !product.pro_quantity || product.pro_quantity <= 0 || !product.pro_unit_price || product.pro_unit_price <= 0) {
+          if (
+            !product.pro_erp_title ||
+            !product.pro_quantity ||
+            product.pro_quantity <= 0 ||
+            !product.pro_unit_price ||
+            product.pro_unit_price <= 0
+          ) {
             Swal.fire({
-              text: 'กรุณากรอกชื่อสินค้า, จำนวน, และมูลค่าต่อหน่วยให้ครบถ้วนและถูกต้องสำหรับทุกรายการสินค้า',
-              icon: 'warning'
+              text: "กรุณากรอกชื่อสินค้า, จำนวน, และมูลค่าต่อหน่วยให้ครบถ้วนและถูกต้องสำหรับทุกรายการสินค้า",
+              icon: "warning",
             });
             isValid = false;
             break;
@@ -1718,15 +2073,14 @@ export default {
     },
 
     async updateDocument() {
-
-      console.log('Update existing document')
+      console.log("Update existing document");
 
       const isValid = await this.validateForm();
       if (!isValid) {
         Swal.fire({
-          icon: 'error',
-          title: 'ไม่สามารถบันทึกได้',
-          text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
+          icon: "error",
+          title: "ไม่สามารถบันทึกได้",
+          text: "กรุณากรอกข้อมูลให้ครบถ้วน",
         });
         return;
       }
@@ -1734,22 +2088,20 @@ export default {
       // 🔍 ตรวจสอบว่ามีการเปลี่ยนแปลงหรือไม่
       if (!this.isDataChanged()) {
         Swal.fire({
-          icon: 'info',
-          title: 'ไม่มีข้อมูลเปลี่ยนแปลง',
-          text: 'คุณยังไม่ได้แก้ไขข้อมูลใด ๆ',
+          icon: "info",
+          title: "ไม่มีข้อมูลเปลี่ยนแปลง",
+          text: "คุณยังไม่ได้แก้ไขข้อมูลใด ๆ",
         });
         return;
       }
 
       try {
-
         this.isLoading = true;
 
-        this.formData.productList = this.selectedProducts.map(product => {
-
+        this.formData.productList = this.selectedProducts.map((product) => {
           const total = this.totalprice(product);
 
-          console.log('✅ check: product', product);
+          console.log("✅ check: product", product);
 
           return {
             item_id: product.item_id ?? 0, // ✅ ใส่ id เดิมถ้ามี
@@ -1766,9 +2118,10 @@ export default {
             totalDiscount: this.formData.totalDiscount || 0, // รวมราคาต่อสินค้า
             pro_discount: this.formData.discount || 0, // รวมราคาต่อสินค้า
             pro_image: product.pro_images, //
-            pro_sn: product.pro_sn,//
-            prosn: product.prosn,//
-            pro_units: product.pro_units,//
+            pro_sn: product.pro_sn, //
+            prosn: product.prosn, //
+            st: product.st,
+            pro_units: product.pro_units, //
             activity_id: product.activity_id || 0, // เพิ่ม activity_id 0 ถ้าไม่มี
             pro_activity_id: product.pro_activity_id || 0, // เพิ่ม pro_activity_id ถ้ามี
             // item_id: product.item_id ?? 0, // ✅ ใส่ id เดิมถ้ามี
@@ -1788,8 +2141,7 @@ export default {
           };
         });
 
-
-        console.log("🔍sadsadsa log value this.productList:", this.formData.productList)
+        console.log("🔍sadsadsa log value this.productList:", this.formData.productList);
 
         this.formData.final_total_price = this.grandTotal;
 
@@ -1819,7 +2171,7 @@ export default {
         //     }
         // }
         for (const key in this.formData) {
-          if (key === 'productList' || key === 'promotions' || key === 'gifts') {
+          if (key === "productList" || key === "promotions" || key === "gifts") {
             payload.append(key, JSON.stringify([...this.formData[key]]));
           } else {
             payload.append(key, this.formData[key]);
@@ -1828,8 +2180,8 @@ export default {
 
         if (!this.formData.receiverName) {
           Swal.fire({
-            icon: 'warning',
-            title: 'กรุณาเลือกที่อยู่จัดส่ง',
+            icon: "warning",
+            title: "กรุณาเลือกที่อยู่จัดส่ง",
           });
           return;
         }
@@ -1842,7 +2194,7 @@ export default {
         // }
 
         // ✅ เพิ่ม selectedAddress เข้าไป
-        payload.append('deliveryAddress', JSON.stringify(this.selectedAddress));
+        payload.append("deliveryAddress", JSON.stringify(this.selectedAddress));
 
         // console.log("🤯 Log Value payload: ", payload);
 
@@ -1853,7 +2205,8 @@ export default {
         // }
 
         console.log("🛒 productList:", this.formData.productList);
-        console.log(JSON.stringify(payload))
+        console.log("🛒 payload:", payload);
+        console.log(JSON.stringify(payload));
 
         // return;
 
@@ -1863,7 +2216,8 @@ export default {
           payload
         );
 
-        const resData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+        const resData =
+          typeof response.data === "string" ? JSON.parse(response.data) : response.data;
 
         console.log("🔍 Response จาก API:", resData);
 
@@ -1872,31 +2226,35 @@ export default {
           this.formData.documentNo = newDocumentNo; // อัปเดต `documentNo` ใน `formData`
 
           // อัปเดต URL ไปยัง `saleList` พร้อม `documentNo` ใหม่
-          this.$router.push(`/saleList?documentNo=${newDocumentNo}`);
+          // this.$router.push(`/saleList?documentNo=${newDocumentNo}`);
 
-          Swal.fire({ text: resData.message, icon: 'success' });
+          // อัปเดต URL ไปยัง `saleList` พร้อม `documentNo` ใหม่ sale-order/:id sale-order/H1-SO25680726-00031
+          this.$router.push(`/sale-order/${newDocumentNo}`);
+
+          Swal.fire({ text: resData.message, icon: "success" });
           this.isReadOnly = true; // ปิดการแก้ไขหลังบันทึกสำเร็จ
         } else {
-          Swal.fire({ text: resData.message, icon: 'error' });
+          Swal.fire({ text: resData.message, icon: "error" });
         }
 
         this.isLoading = false;
 
         // await this.AddressUpdaateData(this.selectedAddress);
       } catch (err) {
-        const message = err.response?.data?.message || err.message || 'Unknown error';
-        Swal.fire({ text: message, icon: 'error' });
+        const message = err.response?.data?.message || err.message || "Unknown error";
+        Swal.fire({ text: message, icon: "error" });
       }
     },
 
     // ฟังก์ชันเปรียบเทียบข้อมูล
     isDataChanged() {
       const isFormChanged = JSON.stringify(this.formData) !== JSON.stringify(this.originalFormData);
-      const isProductChanged = JSON.stringify(this.selectedProducts) !== JSON.stringify(this.originalSelectedProducts);
+      const isProductChanged =
+        JSON.stringify(this.selectedProducts) !== JSON.stringify(this.originalSelectedProducts);
       return isFormChanged || isProductChanged;
     },
 
-    // new function 
+    // new function
     extractPromotionsAndGifts() {
       const grouped = this.groupByActivityId(this.selectedProducts);
       const allPromotions = [];
@@ -1906,19 +2264,17 @@ export default {
         if (group[0].promotions && Array.isArray(group[0].promotions)) {
           for (const promo of group[0].promotions) {
             allPromotions.push({
-
               title: promo.title,
-              ML_Note: promo.ML_Note || '',
-              note: promo.note || '',
+              ML_Note: promo.ML_Note || "",
+              note: promo.note || "",
               pro_activity_id: promo.pro_activity_id || 0,
               pro_sn: promo.pro_sn,
               prosn: promo.prosn,
               pro_goods_id: promo.pro_goods_id || 0,
               pro_goods_num: promo.pro_goods_num || 0,
-              pro_image: promo.pro_image || '',
+              pro_image: promo.pro_image || "",
               pro_sku_price_id: promo.pro_sku_price_id || 0,
               user_id: promo.user_id || 0,
-
             });
           }
         }
@@ -1928,9 +2284,9 @@ export default {
             allGifts.push({
               title: gift.title,
               pro_goods_num: gift.pro_goods_num || 0,
-              pro_image: gift.pro_image || '',
-              ML_Note: gift.ML_Note || '',
-              note: gift.note || '',
+              pro_image: gift.pro_image || "",
+              ML_Note: gift.ML_Note || "",
+              note: gift.note || "",
               pro_activity_id: gift.pro_activity_id || 0,
               pro_sn: gift.pro_sn,
               prosn: gift.prosn,
@@ -1944,17 +2300,16 @@ export default {
 
       return {
         promotions: allPromotions,
-        gifts: allGifts
+        gifts: allGifts,
       };
     },
 
-
     handleAddressSelected(data) {
       // async handleAddressSelected(data) {
-      console.log('📍 ที่อยู่ที่เลือก:', data);
-      const { DC_add1, DC_add2, DC_add3, DC_tel } = data
-      const fullAddress = `${DC_add1}, ${DC_add2}, ${DC_add3}, เบอร์โทร: ${DC_tel}`
-      this.selectedAddress = fullAddress
+      console.log("📍 ที่อยู่ที่เลือก:", data);
+      const { DC_add1, DC_add2, DC_add3, DC_tel } = data;
+      const fullAddress = `${DC_add1}, ${DC_add2}, ${DC_add3}, เบอร์โทร: ${DC_tel}`;
+      this.selectedAddress = fullAddress;
 
       // ✅ เก็บ object เต็ม ๆ
       this.selectedAddress = {
@@ -1966,44 +2321,82 @@ export default {
         DC_add3: data.DC_add3,
         DC_add2: data.DC_add2,
         DC_tel: data.DC_tel,
-        DC_zone: data.DC_zone || '',
+        DC_zone: data.DC_zone || "",
       };
 
       // ✅ แสดงผลใน UI
       this.formData.receiverAddress = fullAddress;
       this.formData.address = fullAddress;
       this.formData.receiverPhone = DC_tel;
-      console.log('📍 ที่อยู่ที่เลือก:', this.formData.receiverAddress);
-      console.log('📍object ที่อยู่ที่เลือก:', this.selectedAddress);
+      console.log("📍 ที่อยู่ที่เลือก:", this.formData.receiverAddress);
+      console.log("📍object ที่อยู่ที่เลือก:", this.selectedAddress);
 
       // 📌 ใส่ไว้ใน saveDocument()
       // await this.saveDocument(addressData);
     },
 
+    removeProduct(index, activityId) {
+      Swal.fire({
+        title: "ยืนยันการลบ?",
+        text: "คุณต้องการลบสินค้านี้ออกจากรายการใช่หรือไม่?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "ใช่, ลบเลย!",
+        cancelButtonText: "ยกเลิก",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // 1. ดึงกลุ่ม product ที่ activityId เดียวกัน
+          const group = this.groupByActivityId(this.selectedProducts)[activityId];
+          const productToRemove = group[index];
 
+          if (!productToRemove) return;
+
+          const { pro_goods_id, pro_activity_id, pro_sku_price_id, st } = productToRemove;
+
+          // 2. ลบสินค้า, promotion, gift ที่มีค่าตรงกันทั้งหมด
+          this.selectedProducts = this.selectedProducts.filter(
+            (p) =>
+              !(
+                p.pro_goods_id === pro_goods_id &&
+                p.pro_activity_id === pro_activity_id &&
+                p.pro_sku_price_id === pro_sku_price_id &&
+                p.st === st
+              )
+          );
+
+          // 3. อัปเดตข้อมูลของโปรโมชั่นและของแถมใหม่ทันที
+          // this.submittedProduct(); // เรียกเพื่อ refresh ของแถม / โปร ทันที
+          // 3. อัปเดตข้อมูลของโปรโมชั่นและของแถมใหม่ทันที
+          if (this.selectedProducts && this.selectedProducts.length > 0) {
+            this.submittedProduct();
+          }
+
+          Swal.fire("ลบแล้ว!", "สินค้าถูกลบออกจากรายการ.", "success");
+        }
+      });
+    },
 
     removeAllProducts() {
       if (this.selectedProducts.length === 0) {
         Swal.fire({
-          title: 'ไม่มีสินค้า',
-          text: 'ยังไม่มีสินค้าที่เลือกไว้ในรายการ',
-          icon: 'info'
+          title: "ไม่มีสินค้า",
+          text: "ยังไม่มีสินค้าที่เลือกไว้ในรายการ",
+          icon: "info",
         });
         return;
       }
 
       Swal.fire({
-        title: 'ยืนยันการลบทั้งหมด?',
-        text: 'คุณต้องการลบสินค้าที่เลือกทั้งหมดออกจากรายการใช่หรือไม่?',
-        icon: 'warning',
+        title: "ยืนยันการลบทั้งหมด?",
+        text: "คุณต้องการลบสินค้าที่เลือกทั้งหมดออกจากรายการใช่หรือไม่?",
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonText: 'ใช่, ลบทั้งหมด!',
-        cancelButtonText: 'ยกเลิก'
-
+        confirmButtonText: "ใช่, ลบทั้งหมด!",
+        cancelButtonText: "ยกเลิก",
       }).then((result) => {
         if (result.isConfirmed) {
           this.selectedProducts.length = 0; // ล้างอาร์เรย์ทั้งหมด
-          Swal.fire('ลบแล้ว!', 'สินค้าทั้งหมดถูกลบออกจากรายการ.', 'success');
+          Swal.fire("ลบแล้ว!", "สินค้าทั้งหมดถูกลบออกจากรายการ.", "success");
         }
       });
     },
@@ -2011,13 +2404,13 @@ export default {
     removeProductById(pro_id, activity_id) {
       // this.selectedProducts = this.selectedProducts.filter(p => p.pro_id !== pro_id);
       this.selectedProducts = this.selectedProducts.filter(
-        p => !(p.pro_id === pro_id && p.activity_id === activity_id)
+        (p) => !(p.pro_id === pro_id && p.activity_id === activity_id)
       );
     },
 
     groupByActivityId(products) {
       return products.reduce((acc, item) => {
-        const key = `${item.activity_id || 'no-activity'}-st${item.st ?? 0}`;
+        const key = `${item.activity_id || "no-activity"}-st${item.st ?? 0}`;
         if (!acc[key]) acc[key] = [];
         acc[key].push(item);
         return acc;
@@ -2035,7 +2428,7 @@ export default {
       const price = product.pro_unit_price || 0;
       const discount = product.discount || 0;
       const totalprice = (qty * price - discount).toFixed(2);
-      console.log('Log value:', totalprice);
+      console.log("Log value:", totalprice);
       return totalprice;
     },
 
@@ -2062,43 +2455,46 @@ export default {
 
       // 🛎️ แสดง loading เฉพาะตอนขอ token ใหม่
       Swal.fire({
-        title: 'กำลังดำเนินการ...',
-        text: 'กำลังเพิ่มข้อมูล (ครั้งแรกจะใช้เวลาสักครู่)',
+        title: "กำลังดำเนินการ...",
+        text: "กำลังเพิ่มข้อมูล (ครั้งแรกจะใช้เวลาสักครู่)",
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
-        }
+        },
       });
 
       // 🔄 ถ้าไม่มี token หรือหมดอายุ ให้ขอใหม่
       const secretKeyData = qs.stringify({
         secretKey1: import.meta.env.VITE_SECRET_KEY1,
-        secretKey2: import.meta.env.VITE_SECRET_KEY2
+        secretKey2: import.meta.env.VITE_SECRET_KEY2,
       });
 
       try {
         const authResponse = await axios.post(`${BASE_URL_AUTH}`, secretKeyData, {
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
         });
 
         const token = authResponse.data.Token;
         if (!token) throw new Error("ไม่สามารถดึง token ได้");
 
         // 📝 บันทึก token และ timestamp ลง localStorage
-        localStorage.setItem("mac5_token", JSON.stringify({
-          token,
-          timestamp: now
-        }));
+        localStorage.setItem(
+          "mac5_token",
+          JSON.stringify({
+            token,
+            timestamp: now,
+          })
+        );
 
         Swal.close(); // ✅ ปิด Swal เมื่อเรียบร้อย
         return token;
       } catch (err) {
         Swal.fire({
-          icon: 'error',
-          title: 'ขอ Token ไม่สำเร็จ',
-          text: 'ไม่สามารถขอ token ได้ กรุณาลองใหม่อีกครั้ง',
+          icon: "error",
+          title: "ขอ Token ไม่สำเร็จ",
+          text: "ไม่สามารถขอ token ได้ กรุณาลองใหม่อีกครั้ง",
         });
         console.error("❌ ดึง token ไม่สำเร็จ:", err);
         throw err;
@@ -2106,11 +2502,10 @@ export default {
     },
 
     async saveDocument() {
-
       try {
         this.isLoading = true;
 
-        console.log('Approve new document')
+        console.log("Approve new document");
 
         // const isValid = await this.validateForm();
         // const isValid = this.isValid;
@@ -2125,7 +2520,6 @@ export default {
         // }
 
         try {
-
           const token = await this.getAuthToken();
           console.log("🔑 token", token);
           console.log("🎁 formData:", this.formData); // ,this.formData
@@ -2140,32 +2534,31 @@ export default {
           // 4. 🚀 ส่งไปยัง BASE_URL_MAC_FIVEL
           const macfiveResponse = await axios.post(`${BASE_URL_MAC_FIVEL}`, payload, {
             headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-              'Authorization': `Bearer ${token}`
-            }
+              "Content-Type": "application/x-www-form-urlencoded",
+              Authorization: `Bearer ${token}`,
+            },
           });
 
           console.log("✅ Macfive ส่งสำเร็จ", macfiveResponse);
 
           if (macfiveResponse.data?.Success) {
             Swal.fire({
-              title: 'อนุมัติรายการสั่งซื้อสำเร็จ',
-              text: 'อนุมัติรายการเรียบร้อย',
-              icon: 'success'
+              title: "อนุมัติรายการสั่งซื้อสำเร็จ",
+              text: "อนุมัติรายการเรียบร้อย",
+              icon: "success",
             });
           } else {
             Swal.fire({
-              title: 'ไม่สามารถอนุมัติรายการสั่งซื้อได้',
-              text: 'กรุณาลองใหม่อีกครั้ง',
-              icon: 'error'
+              title: "ไม่สามารถอนุมัติรายการสั่งซื้อได้",
+              text: "กรุณาลองใหม่อีกครั้ง",
+              icon: "error",
             });
-            const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาด';
-            console.error('เกิดข้อผิดพลาด', message)
+            const message = err.response?.data?.message || err.message || "เกิดข้อผิดพลาด";
+            console.error("เกิดข้อผิดพลาด", message);
           }
-
         } catch (err) {
-          const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาด';
-          Swal.fire('ผิดพลาด', message, 'error');
+          const message = err.response?.data?.message || err.message || "เกิดข้อผิดพลาด";
+          Swal.fire("ผิดพลาด", message, "error");
         }
 
         // Swal.fire({
@@ -2174,18 +2567,15 @@ export default {
         //   text: 'อนุมัติเอกสารเรียบร้อย',
         // });
 
-
         // // ✅ ดำเนินการบันทึกต่อ...
         // console.log("✅ อนุมัติเอกสารเรียบร้อย");
 
         this.isLoading = false;
       } catch (err) {
-        const message = err.response?.data?.message || err.message || 'Unknown error';
-        Swal.fire({ text: message, icon: 'error' });
-        console.log('a454545654564 catch');
+        const message = err.response?.data?.message || err.message || "Unknown error";
+        Swal.fire({ text: message, icon: "error" });
+        console.log("a454545654564 catch");
       }
-
-
     },
 
     buildMacfivePayload() {
@@ -2194,8 +2584,8 @@ export default {
       const formatDateTime = (d) => d.toISOString().slice(0, 19).replace("T", " ");
 
       const docNo = this.formData.documentNo;
-      const sale_no = localStorage.getItem('account') || ''
-      console.log('Check sale_no: ', sale_no);
+      const sale_no = localStorage.getItem("account") || "";
+      console.log("Check sale_no: ", sale_no);
 
       // const countProducts = this.selectedProducts.length;
       // const countGifts = this.formData.gifts.length;
@@ -2209,21 +2599,21 @@ export default {
       // console.log('📦 รวมทั้งหมด (MH_noItems):', totalItems);
 
       // 🧩 ดึง promotions และ gifts จากสินค้าแต่ละตัว
-      const productPromotions = this.selectedProducts.flatMap(item => item.promotions || []);
-      const productGifts = this.selectedProducts.flatMap(item => item.gifts || []);
+      const productPromotions = this.selectedProducts.flatMap((item) => item.promotions || []);
+      const productGifts = this.selectedProducts.flatMap((item) => item.gifts || []);
 
       // 🧮 รวมทั้งหมด
       const allPromotions = [...(this.formData.promotions || []), ...productPromotions];
       const allGifts = [...(this.formData.gifts || []), ...productGifts];
 
-      allPromotions.forEach(promo => {
+      allPromotions.forEach((promo) => {
         if (promo.pro_sn === "P02-ZZ-9999") {
           console.warn(`🚫 บล็อกโปรโมชั่น: ${promo.title} (${promo.pro_sn})`);
         }
       });
 
       // 🎯 กรองโปรโมชันที่ไม่ใช่ P02-ZZ-9999
-      const filteredPromotions = allPromotions.filter(promo => promo.pro_sn !== "P02-ZZ-9999");
+      const filteredPromotions = allPromotions.filter((promo) => promo.pro_sn !== "P02-ZZ-9999");
 
       const countProducts = this.selectedProducts.length;
       const countGifts = allGifts.length;
@@ -2231,12 +2621,12 @@ export default {
       const totalItems = countProducts + countGifts + countPromotions;
 
       const discountMacfive = this.formData.totalDiscount;
-      const discT1CF = discountMacfive * 100 / this.formData.final_total_price;
-      const discFT2CC = this.formData.final_total_price * 7 / 107;
-      const discFT2CF = (discFT2CC * 100 / this.formData.final_total_price).toFixed(5);
+      const discT1CF = (discountMacfive * 100) / this.formData.final_total_price;
+      const discFT2CC = (this.formData.final_total_price * 7) / 107;
+      const discFT2CF = ((discFT2CC * 100) / this.formData.final_total_price).toFixed(5);
       // const discFT2CF = discFT2CC * 100 / this.formData.final_total_price;
 
-      console.log('📦 รวมทั้งหมด (MH_noItems):', totalItems);
+      console.log("📦 รวมทั้งหมด (MH_noItems):", totalItems);
 
       // const payload = {
       return {
@@ -2257,19 +2647,19 @@ export default {
           MH_site: this.deliveryAddress?.id || 0, // ที่อยู่จัดส่ง
           // MH_site: 1655, // ที่อยู่จัดส่ง
           MH_deldate: formatDate(now), // วันที่สร้าง
-          MH_totalCOG: parseFloat(this.formData.final_total_price),  // ยอดรวม
+          MH_totalCOG: parseFloat(this.formData.final_total_price), // ยอดรวม
           MH_discT1: discT1CF, //ส่วนลด
           // MH_discT1: 20, //ส่วนลด
           MH_discF1: discountMacfive,
           // MH_discF1: 0,
-          MH_discT2: discFT2CF, // 
-          // MH_discT2: 6.54205, // 
-          MH_discF2: parseFloat(this.formData.final_total_price - discountMacfive) * 7 / 107, // round(ส่วนลด * 7 / 107 ,2);
+          MH_discT2: discFT2CF, //
+          // MH_discT2: 6.54205, //
+          MH_discF2: (parseFloat(this.formData.final_total_price - discountMacfive) * 7) / 107, // round(ส่วนลด * 7 / 107 ,2);
           MH_flow: 0,
           MH_cur: 0,
           MH_Note: `// ${docNo}`,
           MH_cnect: 3,
-          MH_cancel: 0
+          MH_cancel: 0,
         },
         erows: {
           ME_date: formatDateTime(now), // วันที่สร้าง
@@ -2281,7 +2671,7 @@ export default {
           ME_termAX: `${parseFloat(this.formData.final_total_price)}|`,
           ME_termDX: `${formatDate(now)}|`, // วันที่สร้าง
           ME_cashRec: 0,
-          ME_ccRec: parseFloat(this.formData.final_total_price) // ยอดรวม
+          ME_ccRec: parseFloat(this.formData.final_total_price), // ยอดรวม
         },
         krows: {
           MK_date: formatDateTime(now), //2025\/06\/30 16:13:13
@@ -2289,14 +2679,14 @@ export default {
           // MK_addr: this.formData.address, //ที่อยู่
           MK_addr: 1, //ที่อยู่
           // MK_tel: this.formData.phone // 1
-          MK_tel: 1 // 1
+          MK_tel: 1, // 1
         },
         lrows: [
           ...this.selectedProducts.map((item, index) => ({
             ML_date: formatDateTime(now),
             ML_type: "PS",
             ML_vnumber: docNo, //เลขที่เอกสาร
-            ML_per: "DP001",//"DP001", // รหัสเซลล์
+            ML_per: "DP001", //"DP001", // รหัสเซลล์
             ML_supcus: this.formData.customerCode, // รหัสลูกค้า ที่เลือกร้าน
             ML_stk: item.pro_sn || "N/A", //รหัสสินค้า SN
             ML_sto: "MAIN",
@@ -2305,7 +2695,7 @@ export default {
             ML_cog: parseFloat(item.pro_total_price || 0), // ราคารวม
             ML_netL: parseFloat(item.pro_total_price || 0), // ราคารวม
             ML_cut: 1,
-            ML_unit: "PCS",// || "PCS", //หน่วย
+            ML_unit: "PCS", // || "PCS", //หน่วย
             // ML_unit: item.pro_unit,// || "PCS", //หน่วย
             ML_des: item.pro_erp_title, // ชื่อสินค้า erp-title
             ML_addcost: 0,
@@ -2313,7 +2703,6 @@ export default {
             ML_deldate: formatDate(now), // วันที่สร้าง
             ML_uprice: parseFloat(item.pro_unit_price), // ราคารวม
             ML_Note: "item",
-
           })),
 
           // 2. 🎁 ของแถม
@@ -2338,7 +2727,7 @@ export default {
             ML_discL: 0,
             ML_deldate: formatDate(now),
             ML_uprice: 0,
-            ML_Note: gift.ML_Note || "gift"
+            ML_Note: gift.ML_Note || "gift",
           })),
 
           // 3. 📢 โปรโมชั่น
@@ -2362,23 +2751,17 @@ export default {
             ML_discL: 0,
             ML_deldate: formatDate(now),
             ML_uprice: 0,
-            ML_Note: promo.ML_Note || "promotion"
-
-          }))
+            ML_Note: promo.ML_Note || "promotion",
+          })),
           // }))
-        ]
+        ],
       };
 
       console.log("📦 Macfive Payload:\n", JSON.stringify(payload, null, 2));
       return payload;
-
     },
-
-  }
-}
-
-
-
+  },
+};
 </script>
 
 <!-- <template>

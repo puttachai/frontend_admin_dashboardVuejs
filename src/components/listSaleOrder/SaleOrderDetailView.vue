@@ -1288,6 +1288,8 @@ export default {
               // pro_goods_price: parseFloat(product.unit_price),
               pro_discount: parseFloat(product.discount),
               pro_total_price: parseFloat(product.total_price),
+              st: product.st,
+              pro_stock: product.stock || 0,
               pro_images: product.pro_image,
               prosn: product.sn,
               pro_sn: product.pro_sn,
@@ -1445,6 +1447,9 @@ export default {
         // ✅ แปลงให้เรียบร้อยก่อน
         item.pro_id = parseInt(item.pro_id) || 0;
         item.pro_sku_price_id = parseInt(item.pro_sku_price_id) || 0;
+        item.st = Boolean(item.st);
+
+        console.log("sss Chack item.st: ", item.st);
 
         const similarItem = this.selectedProducts.find(
           (sp) =>
@@ -1462,7 +1467,7 @@ export default {
           (sp) =>
             sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
             sp.activity_id !== activityId &&
-            sp.st !== item.st
+            Boolean(sp.st) !== Boolean(item.st)
         );
 
         //หา item ที่ activity_id เดียวกันและ st เหมือนกัน
@@ -1471,7 +1476,7 @@ export default {
             sp.pro_id === item.pro_sku_price_id &&
             sp.activity_id === activityId &&
             // sp.st === item.st
-            sp.st === item.st
+            Boolean(sp.st) === Boolean(item.st)
         );
 
         console.log("✅ this.selectedProducts:", this.selectedProducts);
@@ -1514,7 +1519,8 @@ export default {
               pro_images: item.pro_image || "",
               pro_quantity: item.pro_goods_num || 0,
               pro_units: matchedTitle.pro_units || item.pro_units || "",
-              pro_stock: matchedTitle.stock || 0,
+              pro_stock: matchedTitle.stock || item.stock || 0,
+              // pro_stock: matchedTitle.stock || 0,
 
               pro_sku_price_id: item.pro_sku_price_id,
 
@@ -1817,7 +1823,8 @@ export default {
               pro_quantity: item.pro_goods_num || 0,
               pro_goods_num: item.pro_goods_num || 0,
               pro_units: matchedTitle.pro_units || item.pro_units || "",
-              pro_stock: matchedTitle.stock || 0,
+              // pro_stock: matchedTitle.stock || 0,
+              pro_stock: matchedTitle.stock || item.stock || 0,
 
               pro_sku_price_id: item.pro_sku_price_id,
 
@@ -2121,6 +2128,7 @@ export default {
             pro_sn: product.pro_sn, //
             prosn: product.prosn, //
             st: product.st,
+            stock: product.pro_stock || product.stock,
             pro_units: product.pro_units, //
             activity_id: product.activity_id || 0, // เพิ่ม activity_id 0 ถ้าไม่มี
             pro_activity_id: product.pro_activity_id || 0, // เพิ่ม pro_activity_id ถ้ามี
@@ -2149,6 +2157,9 @@ export default {
         this.formData.promotions = promotions;
         this.formData.gifts = gifts;
 
+        console.log("🔍sadsadsa log value promotions:", promotions);
+        console.log("🔍sadsadsa log value gifts:", gifts);
+
         // **เพิ่มคำนวณภาษีและราคาก่อนส่ง**
         this.formData.price_before_tax = parseFloat(this.netAmountBeforeVat.toFixed(2));
         // this.formData.price_before_tax = parseFloat(this.totalAmountBeforeDiscount.toFixed(2));
@@ -2161,15 +2172,7 @@ export default {
         // this.formData.final_total_price = parseFloat(this.grandTotal);
 
         const payload = new FormData();
-        // for (const key in this.formData) {
-        //     if (key === 'productList') {
-        //         // payload.append('productList', JSON.stringify(this.formData.productList));
-        //         // ✅ แปลง proxy เป็น array ปกติก่อน stringify
-        //         payload.append('productList', JSON.stringify([...this.formData.productList]));
-        //     } else {
-        //         payload.append(key, this.formData[key]);
-        //     }
-        // }
+
         for (const key in this.formData) {
           if (key === "productList" || key === "promotions" || key === "gifts") {
             payload.append(key, JSON.stringify([...this.formData[key]]));
@@ -2205,6 +2208,7 @@ export default {
         // }
 
         console.log("🛒 productList:", this.formData.productList);
+        console.log("📦 gifts:", this.formData.gifts);
         console.log("🛒 payload:", payload);
         console.log(JSON.stringify(payload));
 
@@ -2257,6 +2261,9 @@ export default {
     // new function
     extractPromotionsAndGifts() {
       const grouped = this.groupByActivityId(this.selectedProducts);
+
+      console.log("🛒 grouped:", grouped);
+
       const allPromotions = [];
       const allGifts = [];
 
@@ -2268,8 +2275,10 @@ export default {
               ML_Note: promo.ML_Note || "",
               note: promo.note || "",
               pro_activity_id: promo.pro_activity_id || 0,
-              pro_sn: promo.pro_sn,
-              prosn: promo.prosn,
+              pro_sn: promo.pro_sn || promo.prosn,
+              prosn: promo.prosn || promo.pro_sn,
+              stock: promo.pro_stock || promo.stock,
+              st: promo.st,
               pro_goods_id: promo.pro_goods_id || 0,
               pro_goods_num: promo.pro_goods_num || 0,
               pro_image: promo.pro_image || "",
@@ -2288,8 +2297,10 @@ export default {
               ML_Note: gift.ML_Note || "",
               note: gift.note || "",
               pro_activity_id: gift.pro_activity_id || 0,
-              pro_sn: gift.pro_sn,
-              prosn: gift.prosn,
+              pro_sn: gift.pro_sn || gift.prosn,
+              prosn: gift.prosn || gift.pro_sn,
+              stock: gift.pro_stock || gift.stock,
+              st: gift.st,
               pro_goods_id: gift.pro_goods_id || 0,
               pro_sku_price_id: gift.pro_sku_price_id || 0,
               user_id: gift.user_id || 0,

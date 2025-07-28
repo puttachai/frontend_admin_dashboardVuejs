@@ -2130,7 +2130,7 @@ export default {
             st: product.st,
             stock: product.pro_stock || product.stock,
             pro_units: product.pro_units, //
-            activity_id: product.activity_id || 0, // เพิ่ม activity_id 0 ถ้าไม่มี
+            activity_id: product.activity_id || product.pro_activity_id || 0, // เพิ่ม activity_id 0 ถ้าไม่มี
             pro_activity_id: product.pro_activity_id || 0, // เพิ่ม pro_activity_id ถ้ามี
             // item_id: product.item_id ?? 0, // ✅ ใส่ id เดิมถ้ามี
             // pro_id: product.pro_id,
@@ -2275,6 +2275,7 @@ export default {
               ML_Note: promo.ML_Note || "",
               note: promo.note || "",
               pro_activity_id: promo.pro_activity_id || 0,
+              activity_id: promo.pro_activity_id || 0,
               pro_sn: promo.pro_sn || promo.prosn,
               prosn: promo.prosn || promo.pro_sn,
               stock: promo.pro_stock || promo.stock,
@@ -2297,6 +2298,7 @@ export default {
               ML_Note: gift.ML_Note || "",
               note: gift.note || "",
               pro_activity_id: gift.pro_activity_id || 0,
+              activity_id: gift.pro_activity_id || 0,
               pro_sn: gift.pro_sn || gift.prosn,
               prosn: gift.prosn || gift.pro_sn,
               stock: gift.pro_stock || gift.stock,

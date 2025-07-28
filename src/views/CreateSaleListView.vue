@@ -2876,6 +2876,7 @@ export default {
                             ML_Note: promo.ML_Note || '',
                             note: promo.note || '',
                             pro_activity_id: promo.pro_activity_id || 0,
+                            activity_id: promo.pro_activity_id || 0,
                             pro_sn: promo.pro_sn,
                             prosn: promo.prosn,
                             pro_goods_id: promo.pro_goods_id || 0,
@@ -2899,6 +2900,7 @@ export default {
                             ML_Note: gift.ML_Note || '',
                             note: gift.note || '',
                             pro_activity_id: gift.pro_activity_id || 0,
+                            activity_id: gift.pro_activity_id || 0,
                             pro_sn: gift.pro_sn,
                             prosn: gift.prosn,
                             pro_goods_id: gift.pro_goods_id || 0,
@@ -3543,6 +3545,7 @@ export default {
             console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
 
         },
+        
         async handleSelectedPromotionProducts(payload) {
             console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
 

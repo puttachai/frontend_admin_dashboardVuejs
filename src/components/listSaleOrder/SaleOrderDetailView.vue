@@ -453,7 +453,7 @@
                                       <input type="number" v-model.pro_quantity="product.pro_quantity" min="1" placeholder="จำนวน"
                                           class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
                                   </td> -->
-                  <td class="px-4 py-2 border">
+                  <!-- <td class="px-4 py-2 border">
                     <input
                       type="number"
                       :min="0"
@@ -461,6 +461,18 @@
                       step="1"
                       v-model.number="product.pro_quantity"
                       @input="validateQuantity(product)"
+                      class="w-full px-2 py-1 border rounded"
+                    />
+                  </td> -->
+                  <td class="px-4 py-2 border">
+                    <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)" -->
+                    <input
+                      type="number"
+                      :min="1"
+                      :max="product.pro_stock"
+                      step="1"
+                      v-model.number="product.pro_quantity"
+                      @blur="onQuantityChange(product)"
                       class="w-full px-2 py-1 border rounded"
                     />
                   </td>
@@ -1364,6 +1376,136 @@ export default {
         this.showPromotionProductSelector = true;
         console.log("เปิด popup 2");
       }, 100);
+    },
+
+    async submittedProduct() {
+      try {
+        const token = localStorage.getItem("token");
+
+        console.log("Check: this.selectedProducts", this.selectedProducts);
+
+        // สร้าง payload จาก selectedProducts ทั้งหมด
+        const payload = {
+          products: this.selectedProducts.map((product) => ({
+            pro_activity_id: product.pro_activity_id || 0,
+            pro_goods_id: product.pro_goods_id,
+            pro_goods_price: parseFloat(product.pro_unit_price) || 0,
+            pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
+            pro_erp_title: product.pro_erp_title || "",
+            pro_goods_num: product.pro_quantity, // ส่งจำนวนล่าสุด
+            pro_image: product.pro_images,
+            pro_sn: product.pro_sn,
+            pro_title: product.pro_title,
+            pro_units: product.pro_units,
+          })),
+        };
+
+        const response = await axios.post(`${BASE_URL}/cart_out/index`, payload, {
+          headers: {
+            "Content-Type": "application/json",
+            token: token,
+          },
+        });
+
+        console.log(" 🛑 response :", response);
+
+        if (response.data.code === 1) {
+          const data = response.data.data.products || [];
+          console.log("API response products:", data);
+
+          // ✅ วงเล็บให้ถูกต้องเพื่อไม่ให้ logic ผิด
+          const items = data.filter(
+            (item) =>
+              (item?.ML_Note === "item" || item?.ML_Note === "itemmonth") && item.pro_goods_id !== 0
+          );
+
+          const gifts = data.filter(
+            (item) =>
+              (item?.ML_Note === "zengsopng_day" || item?.ML_Note === "zengsopng_month") &&
+              item.pro_goods_id !== 0
+          );
+
+          const promotions = data.filter(
+            (item) =>
+              (item?.ML_Note === "promotion_day" || item?.ML_Note === "promotion_month") &&
+              item.pro_activity_id !== 0
+          );
+
+          // ✅ ผูกสินค้า + promotion + gift ตาม activity_id
+          this.selectedProducts = this.selectedProducts.map((product) => {
+            const matchedItem = items.find(
+              (item) =>
+                item.pro_goods_id == product.pro_goods_id &&
+                (item.ML_Note === "item" || item.ML_Note === "itemmonth")
+            );
+
+            if (!matchedItem) return product;
+
+            const activityId = matchedItem.st === false ? 0 : matchedItem.pro_activity_id;
+
+            const FinalPromotions = promotions.filter((promo) => {
+              const stMatch = promo.st === matchedItem.st;
+
+              if (matchedItem.st === true) {
+                return stMatch && promo.pro_activity_id === matchedItem.pro_activity_id;
+              } else {
+                return stMatch;
+              }
+            });
+
+            const FinalGifts = gifts.filter((gift) => {
+              const stMatch = gift.st === matchedItem.st;
+
+              if (matchedItem.st === true) {
+                return stMatch && gift.pro_activity_id === matchedItem.pro_activity_id;
+              } else {
+                return stMatch;
+              }
+            });
+
+            //
+            // const FinalPromotions = promotions.filter(promo =>
+            //     promo.st === matchedItem.st &&
+            //     promo.pro_activity_id === activityId
+            // );
+
+            // const FinalGifts = gifts.filter(gift =>
+            //     gift.st === matchedItem.st &&
+            //     gift.pro_activity_id === activityId
+            // );
+
+            return {
+              ...product,
+              ...matchedItem,
+              activity_id: activityId,
+              pro_activity_id: matchedItem.pro_activity_id,
+              promotions: FinalPromotions,
+              gifts: FinalGifts,
+            };
+          });
+
+          console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
+        } else {
+          alert(response.data.message || "เกิดข้อผิดพลาด");
+        }
+      } catch (error) {
+        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ API");
+        console.error(error);
+      }
+    },
+
+    async onQuantityChange(product) {
+      if (product.pro_quantity < 1) product.pro_quantity = 1;
+      if (product.pro_quantity > product.pro_stock) product.pro_quantity = product.pro_stock;
+
+      console.log("Check product.pro_quantity: ", product.pro_quantity);
+
+      product.pro_goods_num = product.pro_quantity;
+
+      // ✅ รอให้ submittedProduct ทำงานเสร็จ
+      if (this.selectedProducts && this.selectedProducts.length > 0) {
+        await this.submittedProduct();
+      }
     },
 
     //

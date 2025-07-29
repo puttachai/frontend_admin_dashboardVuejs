@@ -4,12 +4,16 @@
 
     <!-- ด้านบนของตาราง -->
     <div class="mb-4">
-      <input v-model="searchQuery" type="text" placeholder="🔍 ค้นหา หมายเลขสั่งซื้อ / รหัสลูกค้า / ชื่อร้าน"
-        class="w-full border border-gray-300 rounded-md px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500" />
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="🔍 ค้นหา หมายเลขสั่งซื้อ / รหัสลูกค้า / ชื่อร้าน"
+        class="w-full border border-gray-300 rounded-md px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+      />
     </div>
 
     <div class="overflow-auto rounded-lg shadow-md">
-      <table class="min-w-full text-sm text-left text-gray-700 divide-x divide-gray-200 ">
+      <table class="min-w-full text-sm text-left text-gray-700 divide-x divide-gray-200">
         <thead class="bg-gray-100 text-xs uppercase border">
           <tr class="border-r border-gray-300">
             <th class="p-3 border">Id</th>
@@ -20,21 +24,39 @@
             <th class="p-3 border text-right">ยอดคำสั่งซื้อล่าสุด</th>
             <th class="p-3 border text-right">ยอดหนี้คงค้าง</th>
             <th class="p-3 border">เวลาสร้าง</th>
-            <th class="p-3 border">ระยะเครดิต (days)</th> <!-- เพิ่ม -->
-            <th class="p-3 border">วงเงิน (limit)</th> <!-- เพิ่ม -->
-            <th class="p-3 border">พนักงานขาย (Sales)</th> <!-- เพิ่ม -->
+            <th class="p-3 border">ระยะเครดิต (days)</th>
+            <!-- เพิ่ม -->
+            <th class="p-3 border">วงเงิน (limit)</th>
+            <!-- เพิ่ม -->
+            <th class="p-3 border">พนักงานขาย (Sales)</th>
+            <!-- เพิ่ม -->
             <th class="p-3 border">สถานะประเภทหนี้</th>
             <th class="p-3 border">สถานะตรวจสอบ</th>
             <th class="p-3 border">การทำงาน</th>
+            <!-- <th class="p-3 border">ยกเลิกการคำสั่งซื้อ</th> -->
+
+            <!-- ถ้าเป็น crm ให้ซ่อนคอลัมน์นี้ -->
+            <th v-if="!isCrm" class="p-3 border">ยกเลิกการคำสั่งซื้อ</th>
           </tr>
         </thead>
 
         <tbody v-if="isLoading">
           <tr>
             <td colspan="11" class="py-10 text-center">
-              <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <svg
+                class="animate-spin h-8 w-8 text-blue-600 mx-auto"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
               </svg>
               <div class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</div>
@@ -45,7 +67,7 @@
         <tbody v-if="!isLoading" class="text-xs">
           <template v-for="order in filteredOrders" :key="order.id">
             <!-- divide-x divide-gray-200 -->
-            <tr class="border-b hover:bg-gray-50 ">
+            <tr class="border-b hover:bg-gray-50">
               <!-- <tr v-for="order in filteredOrders" :key="order.id" class="border-b hover:bg-gray-50"> -->
               <!-- <tr v-for="order in saleOrders" :key="order.id" class="border-b hover:bg-gray-50"> -->
               <td class="p-3">{{ order.id }}</td>
@@ -57,57 +79,75 @@
               <td class="p-3 text-right">{{ formatCurrency(order.total_paid) }}</td>
               <td class="p-3">{{ order.created_at }}</td>
 
-              <td class="p-3">{{ order.deBcreditTerm ? order.deBcreditTerm : 'ไม่มีข้อมูลกำหนด' }}</td>
-              <td class="p-3">{{ !order.deBlimit || isNaN(order.deBlimit) ? 'ไม่มีวงเงิน' :
-                formatCurrency(order.deBlimit) }}</td>
-              <td class="p-3">{{ order.deBsalesP ? order.deBsalesP : 'ไม่มีข้อมูล' }}</td>
+              <td class="p-3">
+                {{ order.deBcreditTerm ? order.deBcreditTerm : "ไม่มีข้อมูลกำหนด" }}
+              </td>
+              <td class="p-3">
+                {{
+                  !order.deBlimit || isNaN(order.deBlimit)
+                    ? "ไม่มีวงเงิน"
+                    : formatCurrency(order.deBlimit)
+                }}
+              </td>
+              <td class="p-3">{{ order.deBsalesP ? order.deBsalesP : "ไม่มีข้อมูล" }}</td>
               <!-- <td class="p-3">{{ order.status2 ? order.status2: 'ไม่มีสถานะ' }}</td> -->
-              <td :class="['p-3', getStatusColor(getHighestStatus(filteredExtraDetails(order)))]">
+              <td
+                :class="[
+                  'p-3',
+                  getStatusColor(getHighestStatus(filteredExtraDetails(order))),
+                  'w-[9rem]', // กำหนดความกว้างเป็น 12rem (48 * 0.25rem)
+                  'max-w-xs', // กำหนด max-width ถ้าต้องการจำกัด
+                  'break-words', // ถ้าข้อความยาวให้ตัดขึ้นบรรทัดใหม่
+                ]"
+              >
                 {{ getDisplayStatus(getHighestStatus(filteredExtraDetails(order))) }}
               </td>
-              <!-- <td :class="['p-3', getStatusColor(order.status2)]">
-
-                {{ getDisplayStatus(order.status2) }}
-              </td> -->
-
-              <!-- <td class="p-3">{{ order.status2 }}</td> -->
-
-              <!-- <td class="p-3 text-white" :class="{
-                'bg-green-500': order.status === 'ตรวจสอบเรียบร้อย',
-                'bg-yellow-500': order.status === 'รอตรวจสอบ',
-                'bg-red-500': order.status === 'การตรวจสอบล้มเหลว',
-                'bg-gray-800': order.status === 'ยังไม่ได้ตรวจสอบ',
-                'bg-black': order.status === 'ยกเลิกคำสั่งซื้อ',
-                // 'bg-green-500': order.status === 'เกินกำหนดชำระไม่เกิน 30 วัน', // ไม่เกิน 7 วัน 
-                // 'bg-yellow-500': order.status === 'เกินกำหนดชำระกิน 30 วัน',
-                // 'bg-red-500': order.status === 'เกินกำหนดชำระ 120 วัน', 
-                // 'bg-gray-800': order.status === 'เกินกำหนดชำระ 180 วัน',
-                // 'bg-black': order.status === 'ยกเลิกคำสั่งซื้อ'
-              }">
-                <span class="flex items-center space-x-1">
-                  <span class="w-2 h-2 rounded-full bg-white"></span>
-                  <span>{{ getDisplayStatus(order.status) }}</span>
-                </span>
-              </td> -->
 
               <td class="p-3">
                 <!-- :class="order.status === 'ยังไม่ได้ตรวจสอบ' ? 'bg-gray-500' : 'bg-green-500'" -->
                 <span class="flex items-center space-x-1">
-                  <span class="w-2 h-2 rounded-full" :class="{
-                    'bg-gray-500': order.status === 'ยังไม่ได้ตรวจสอบ',
-                    'bg-green-500': order.status === 'ตรวจสอบเรียบร้อย',
-                    'bg-red-500': order.status === 'การตรวจสอบล้มเหลว'
-                  }"></span>
+                  <span
+                    class="w-2 h-2 rounded-full"
+                    :class="{
+                      'bg-gray-500': order.status === 'ยังไม่ได้ตรวจสอบ',
+                      'bg-green-500': order.status === 'ตรวจสอบเรียบร้อย',
+                      'bg-red-500': order.status === 'การตรวจสอบล้มเหลว',
+                    }"
+                  ></span>
                   <span class="w-[90px]">{{ order.status }}</span>
                 </span>
               </td>
+
+              <!-- ปุ่ม ตรวจสอบ -->
               <td class="p-3">
                 <router-link :to="{ name: 'saleorderdetail', params: { id: order.sale_no } }">
-                  <button class="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+                  <button
+                    class="w-24 px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                  >
                     ตรวจสอบ
                   </button>
                 </router-link>
               </td>
+
+              <!-- ปุ่ม ลบ (แสดงเฉพาะผู้ที่ canApprove เท่านั้น) -->
+              <td class="p-3" v-if="canApprove">
+                <button
+                  @click="confirmDelete(order.id)"
+                  class="w-24 px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                >
+                  ลบ
+                </button>
+              </td>
+
+              <!-- ปุ่ม แก้ไข (แสดงเฉพาะผู้ที่ canEdit เท่านั้น) -->
+              <!-- <td class="p-3" v-if="canEdit">
+                <button
+                  @click="enableEditMode(order.id)"
+                  class="w-24 px-4 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm"
+                >
+                  แก้ไข
+                </button>
+              </td> -->
             </tr>
 
             <!-- ✅ แถวรายละเอียดเพิ่มเติม (ถ้ามีข้อมูลพ่วง) -->
@@ -125,23 +165,35 @@
             <!-- แถวรายละเอียดเพิ่มเติม -->
             <!-- <tr v-if="order.extra_details.length" class="bg-blue-50"> -->
 
-            <tr v-if="filteredExtraDetails(order).length > 0"
-              class="bg-blue-50 hover:bg-blue-100 transition-colors duration-300">
-              <td colspan="14" class="px-6 py-4 border rounded-md">
+            <tr
+              v-if="filteredExtraDetails(order).length > 0"
+              class="bg-blue-50 hover:bg-blue-100 transition-colors duration-300"
+            >
+              <td colspan="16" class="px-6 py-4 border rounded-md">
                 <div class="flex items-center space-x-2 text-blue-800 font-medium mb-3">
-                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    class="w-5 h-5 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   <span>ข้อมูลใบแจ้งหนี้ที่เกี่ยวข้อง</span>
                 </div>
 
                 <!-- Cards style -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-
-                  <div v-for="(d, i) in filteredExtraDetails(order)" :key="i"
-                    class="flex justify-between items-center bg-white shadow-sm rounded-lg p-4 border border-gray-200 transition-transform transform hover:scale-[1.015] hover:shadow-md duration-300">
+                  <div
+                    v-for="(d, i) in filteredExtraDetails(order)"
+                    :key="i"
+                    class="flex justify-between items-center bg-white shadow-sm rounded-lg p-4 border border-gray-200 transition-transform transform hover:scale-[1.015] hover:shadow-md duration-300"
+                  >
                     <!-- ข้อมูลฝั่งซ้าย -->
                     <div class="text-sm text-gray-800">
                       <div class="text-[13px]">
@@ -154,11 +206,15 @@
                         <strong class="text-[13px]">Overdue Days:</strong> {{ d.overdueDays }}
                       </div>
                       <div class="text-[13px]">
-                        <strong class="text-[13px]">Status:</strong> {{ getDisplayStatus(d.status2) }}
+                        <strong class="text-[13px]">Status:</strong>
+                        {{ getDisplayStatus(d.status2) }}
                       </div>
-                      <div class="text-[13px]"><strong class="text-[13px]">Status:</strong> {{ d.status2 }}</div>
                       <div class="text-[13px]">
-                        <strong class="text-[13px]">Amount Due:</strong> {{ formatCurrency(d.inInvAmount) }}
+                        <strong class="text-[13px]">Status:</strong> {{ d.status2 }}
+                      </div>
+                      <div class="text-[13px]">
+                        <strong class="text-[13px]">Amount Due:</strong>
+                        {{ formatCurrency(d.inInvAmount) }}
                       </div>
                     </div>
 
@@ -170,23 +226,20 @@
                     <div class="relative group z-50">
                       <div
                         class="w-14 h-14 flex cursor-pointer items-center justify-center rounded-full shadow-inner transition-transform transform group-hover:scale-105"
-                        :class="getStatusColor(d.status2)">
+                        :class="getStatusColor(d.status2)"
+                      >
                         <component :is="getStatusIcon(d.status2)" class="w-6 h-6" />
                       </div>
-                      <div class="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full
-                 bg-black text-white text-xs px-3 py-1 rounded-md opacity-0
-                 group-hover:opacity-100 group-hover:-translate-y-[130%] 
-                 transition-all duration-300 whitespace-nowrap z-60">
+                      <div
+                        class="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-black text-white text-xs px-3 py-1 rounded-md opacity-0 group-hover:opacity-100 group-hover:-translate-y-[130%] transition-all duration-300 whitespace-nowrap z-60"
+                      >
                         สถานะ: {{ d.status2 }}
                       </div>
                     </div>
                   </div>
-
                 </div>
               </td>
             </tr>
-
-
           </template>
         </tbody>
       </table>
@@ -196,11 +249,21 @@
     <div class="flex justify-between items-center mt-4">
       <span>Showing {{ filteredOrders.length }} of {{ totalRows }} rows</span>
       <div class="space-x-2">
-        <button :disabled="currentPage === 1" @click="goToPage(currentPage - 1)"
-          class="px-4 py-1 bg-gray-200 rounded">Prev</button>
+        <button
+          :disabled="currentPage === 1"
+          @click="goToPage(currentPage - 1)"
+          class="px-4 py-1 bg-gray-200 rounded"
+        >
+          Prev
+        </button>
         <span>หน้า {{ currentPage }} / {{ totalPages }}</span>
-        <button :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)"
-          class="px-4 py-1 bg-gray-200 rounded">Next</button>
+        <button
+          :disabled="currentPage === totalPages"
+          @click="goToPage(currentPage + 1)"
+          class="px-4 py-1 bg-gray-200 rounded"
+        >
+          Next
+        </button>
       </div>
     </div>
 
@@ -215,43 +278,55 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import { ref, onMounted, computed, watch } from "vue";
+import axios from "axios";
 // import { logActivity } from '@/services/activityLogger.js'
-import Swal from 'sweetalert2'
-import { CheckCircleIcon, AlertTriangleIcon, AlertOctagonIcon, XOctagonIcon, BanIcon, HelpCircleIcon } from 'lucide-vue-next'
+import Swal from "sweetalert2";
+import {
+  CheckCircleIcon,
+  AlertTriangleIcon,
+  AlertOctagonIcon,
+  XOctagonIcon,
+  BanIcon,
+  HelpCircleIcon,
+} from "lucide-vue-next";
 // import { Message } from 'tdesign-vue-next'
 
 // const BASE_URL = import.meta.env.VITE_API_URL
-const VITE_API_URL_C_SHARP = import.meta.env.VITE_API_URL_C_SHARP
-const BASE_URL = import.meta.env.VITE_API_URL_LOCAL
+const VITE_API_URL_C_SHARP = import.meta.env.VITE_API_URL_C_SHARP;
+const BASE_URL = import.meta.env.VITE_API_URL_LOCAL;
 
-const saleOrders = ref([])
+const saleOrders = ref([]);
 
-const totalRows = ref(0)
-const currentPage = ref(1)
-const limit = 10
+const totalRows = ref(0);
+const currentPage = ref(1);
+const limit = 10;
 
-const searchQuery = ref('') // <- ช่องค้นหา
+const searchQuery = ref(""); // <- ช่องค้นหา
 const isLoading = ref(false); // หรือ true ถ้าต้องการให้เริ่มต้นแสดง
 
+const isAdmin = computed(() => localStorage.getItem("role_admin") === "true");
+const isFa = computed(() => localStorage.getItem("role_fa") === "true");
+const isCrm = computed(() => localStorage.getItem("role_crm") === "true");
+
+const canApprove = computed(() => isFa.value || isAdmin.value);
+const canEdit = computed(() => isCrm.value || isAdmin.value);
+
 const statusPriority = {
-  'เขียว': 1,
-  'เหลือง': 2,
-  'ส้ม': 3,
-  'แดง': 4,
-  'ดำ': 5,
-  'ไม่มีสถานะ': 0,
-  'ยกเลิกคำสั่งซื้อ': 6
+  เขียว: 1,
+  เหลือง: 2,
+  ส้ม: 3,
+  แดง: 4,
+  ดำ: 5,
+  ไม่มีสถานะ: 0,
+  ยกเลิกคำสั่งซื้อ: 6,
 };
 
 const formatCurrency = (value) =>
   Number(value).toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  })
-
-
+  });
 
 // const getDisplayStatus = (status) => {
 //   switch (status) {
@@ -266,73 +341,93 @@ const formatCurrency = (value) =>
 
 const getDisplayStatus = (status) => {
   switch (status) {
-    case 'เขียว': return 'เกินกำหนดชำระไม่เกิน 30 วัน';
-    case 'เหลือง': return 'เกินกำหนดชำระเกิน 30 วัน';
-    case 'ส้ม': return 'เกินกำหนดชำระเกิน 30 วัน';
-    case 'แดง': return 'เกินกำหนดชำระ 120 วัน';
-    case 'ดำ': return 'เกินกำหนดชำระ 180 วัน';
-    case 'ไม่มีสถานะ': return 'ไม่มีสถานะ';
-    case 'ยกเลิกคำสั่งซื้อ': return 'ถูกยกเลิก';
-    default: return status || 'ไม่มีสถานะ';
+    case "เขียว":
+      return "เกินกำหนดชำระไม่เกิน 30 วัน";
+    case "เหลือง":
+      return "เกินกำหนดชำระเกิน 30 วัน";
+    case "ส้ม":
+      return "เกินกำหนดชำระเกิน 30 วัน";
+    case "แดง":
+      return "เกินกำหนดชำระ 120 วัน";
+    case "ดำ":
+      return "เกินกำหนดชำระ 180 วัน";
+    case "ไม่มีสถานะ":
+      return "ไม่มีสถานะ";
+    case "ยกเลิกคำสั่งซื้อ":
+      return "ถูกยกเลิก";
+    default:
+      return status || "ไม่มีสถานะ";
   }
-}
+};
 
 const getStatusColor = (status) => {
   switch (status) {
-    case 'เขียว': return 'bg-green-100 text-green-800';
-    case 'เหลือง': return 'bg-yellow-100 text-yellow-800';
-    case 'ส้ม': return 'bg-orange-100 text-orange-800';
-    case 'แดง': return 'bg-red-100 text-red-800';
-    case 'ดำ': return 'bg-gray-800 text-white';
-    case 'ไม่มีสถานะ': return 'bg-gray-200 text-gray-600';
-    case 'ยกเลิกคำสั่งซื้อ': return 'bg-gray-300 text-gray-700 italic';
-    default: return 'bg-gray-100 text-gray-500';
+    case "เขียว":
+      return "bg-green-100 text-green-800";
+    case "เหลือง":
+      return "bg-yellow-100 text-yellow-800";
+    case "ส้ม":
+      return "bg-orange-100 text-orange-800";
+    case "แดง":
+      return "bg-red-100 text-red-800";
+    case "ดำ":
+      return "bg-gray-800 text-white";
+    case "ไม่มีสถานะ":
+      return "bg-gray-200 text-gray-600";
+    case "ยกเลิกคำสั่งซื้อ":
+      return "bg-gray-300 text-gray-700 italic";
+    default:
+      return "bg-gray-100 text-gray-500";
   }
-}
+};
 
 // ✅ เพิ่ม icon ตามสถานะ
 const getStatusIcon = (status) => {
   switch (status) {
-    case 'เขียว': return CheckCircleIcon
-    case 'เหลือง': return AlertTriangleIcon
-    case 'ส้ม': return AlertTriangleIcon
-    case 'แดง': return AlertOctagonIcon
-    case 'ดำ': return XOctagonIcon
-    case 'ยกเลิกคำสั่งซื้อ': return BanIcon
-    default: return HelpCircleIcon
+    case "เขียว":
+      return CheckCircleIcon;
+    case "เหลือง":
+      return AlertTriangleIcon;
+    case "ส้ม":
+      return AlertTriangleIcon;
+    case "แดง":
+      return AlertOctagonIcon;
+    case "ดำ":
+      return XOctagonIcon;
+    case "ยกเลิกคำสั่งซื้อ":
+      return BanIcon;
+    default:
+      return HelpCircleIcon;
   }
-}
-
+};
 
 const getHighestStatus = (details) => {
-  if (!details || details.length === 0) return 'ไม่มีสถานะ';
+  if (!details || details.length === 0) return "ไม่มีสถานะ";
 
   return details.reduce((highest, current) => {
     const currentPriority = statusPriority[current.status2] ?? 0;
     const highestPriority = statusPriority[highest] ?? 0;
     return currentPriority > highestPriority ? current.status2 : highest;
-  }, 'ไม่มีสถานะ');
+  }, "ไม่มีสถานะ");
 };
 
-
 const filteredOrders = computed(() => {
+  const raw = searchQuery.value.trim();
+  if (!raw) return saleOrders.value;
 
-  const raw = searchQuery.value.trim()
-  if (!raw) return saleOrders.value
+  const keyword = raw.toLowerCase();
+  const parts = keyword.split(/\s+/); // แยกด้วยช่องว่าง
 
-  const keyword = raw.toLowerCase()
-  const parts = keyword.split(/\s+/) // แยกด้วยช่องว่าง
-
-  return saleOrders.value.filter(order => {
-    const saleNo = order.sale_no?.toLowerCase().trim() || ''
-    const customerCode = order.customer_code?.toLowerCase().trim() || ''
-    const shopName = order.shop_name?.toLowerCase().trim() || ''
-    const mobile = order.mobile?.toLowerCase().trim() || ''
-    const createdAt = order.created_at?.toLowerCase().trim() || ''
+  return saleOrders.value.filter((order) => {
+    const saleNo = order.sale_no?.toLowerCase().trim() || "";
+    const customerCode = order.customer_code?.toLowerCase().trim() || "";
+    const shopName = order.shop_name?.toLowerCase().trim() || "";
+    const mobile = order.mobile?.toLowerCase().trim() || "";
+    const createdAt = order.created_at?.toLowerCase().trim() || "";
 
     // เงื่อนไข: ตรวจทีละ keyword
-    return parts.every(part => {
-      const isoDate = convertThaiDateToISO(part)
+    return parts.every((part) => {
+      const isoDate = convertThaiDateToISO(part);
       return (
         saleNo.includes(part) ||
         customerCode.includes(part) ||
@@ -340,47 +435,136 @@ const filteredOrders = computed(() => {
         mobile.includes(part) ||
         (isoDate && createdAt.includes(isoDate)) ||
         createdAt.includes(part) // เผื่อ user พิมพ์ yyyy-mm-dd โดยตรง
-      )
-    })
-  })
-})
+      );
+    });
+  });
+});
 
 function convertThaiDateToISO(dateStr) {
-  const parts = dateStr.trim().split(/[-/]/)
-  if (parts.length !== 3) return null
+  const parts = dateStr.trim().split(/[-/]/);
+  if (parts.length !== 3) return null;
 
-  let [day, month, year] = parts.map(p => parseInt(p, 10))
+  let [day, month, year] = parts.map((p) => parseInt(p, 10));
 
   // ตรวจสอบว่าเป็นตัวเลขทั้งหมด
-  if (isNaN(day) || isNaN(month) || isNaN(year)) return null
+  if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
 
-  if (year > 2400) year -= 543
+  if (year > 2400) year -= 543;
 
-  const dateObj = new Date(year, month - 1, day)
+  const dateObj = new Date(year, month - 1, day);
 
   // ตรวจสอบว่าเป็น valid date
-  if (isNaN(dateObj.getTime())) return null
+  if (isNaN(dateObj.getTime())) return null;
 
-  return dateObj.toISOString().split('T')[0] // yyyy-mm-dd
+  return dateObj.toISOString().split("T")[0]; // yyyy-mm-dd
 }
 
+async function confirmDelete(orderId) {
+  console.log("Check orderId: ", orderId);
+
+  const result = await Swal.fire({
+    title: "ยืนยันการลบ",
+    text: "ต้องการลบรายการนี้ใช่หรือไม่? ข้อมูลที่เกี่ยวข้องจะถูกลบทั้งหมด",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "ใช่, ลบเลย",
+    cancelButtonText: "ยกเลิก",
+  });
+
+  // return;
+
+  if (result.isConfirmed) {
+    try {
+      const res = await axios.post(
+        `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/list_sale_orders/delete_order.php`,
+        { orderId },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (res.data.success) {
+        Swal.fire("ลบสำเร็จ", res.data.message, "success");
+        // โหลดข้อมูลใหม่
+        await fetchPage(currentPage.value);
+      } else {
+        Swal.fire("ผิดพลาด", res.data.message || "ลบไม่สำเร็จ", "error");
+      }
+    } catch (error) {
+      Swal.fire("ผิดพลาด", error.message || "เกิดข้อผิดพลาด", "error");
+    }
+  }
+}
 
 // ดึงข้อมูลหน้าปัจจุบัน
+// async function fetchPage(page = 1) {
+//   isLoading.value = true;
+//   try {
+//     // ${BASE_URL}
+//     const res = await axios.get(
+//       `${BASE_URL}/api_admin_dashboard/backend/api/list_sale_orders/get_list_sale_order.php?v=${Date.now()}`,
+//       { params: { page, limit } }
+//     );
+
+//     console.log("Check Log res :", res);
+
+//     if (res.data.success) {
+//       // console.log('Check Log res.data :',res.data);
+//       saleOrders.value = res.data.data.list_order.map((item) => ({
+//         id: item.id,
+//         sale_no: item.document_no,
+//         customer_code: item.customer_code,
+//         shop_name: item.full_name,
+//         mobile: item.phone,
+//         total_amount: item.final_total_price,
+//         total_paid: item.final_total_price,
+//         status: item.status,
+//         created_at: item.created_at,
+//         // ตัวอย่าง mock data
+//         extra_details: item.extra_list || [
+//           `รหัสสินค้า: ${item.id}-A`,
+//           `ยอดคงเหลือ: ${item.final_total_price}`,
+//           `หมายเหตุ: ${item.status}`,
+//           // `หมายเหตุ: ตรวจสอบแล้ว`
+//         ],
+//       }));
+
+//       console.log("Check Log saleOrders.value :", saleOrders.value);
+
+//       totalRows.value = res.data.data.total;
+//       currentPage.value = page;
+
+//       // await logActivity(' user ได้เข้าหน้า SaleOrderList', 'SaleOrderList.vue');
+//       // ✅ เรียกใช้ TypeCustomers หลังโหลดรายการเสร็จ
+//       await TypeCustomers();
+//     }
+//   } catch (e) {
+//     console.error(e);
+//   } finally {
+//     isLoading.value = false;
+//   }
+// }
+
 async function fetchPage(page = 1) {
-  isLoading.value = true
+  isLoading.value = true;
   try {
-    // ${BASE_URL}
     const res = await axios.get(
       `${BASE_URL}/api_admin_dashboard/backend/api/list_sale_orders/get_list_sale_order.php?v=${Date.now()}`,
-      { params: { page, limit } }
-    )
+      {
+        params: {
+          page,
+          limit,
+          search: searchQuery.value.trim(),
+        },
+      }
+    );
 
-    console.log('Check Log res :', res);
+    console.log("Check Log res :", res);
 
     if (res.data.success) {
-
-      // console.log('Check Log res.data :',res.data);
-      saleOrders.value = res.data.data.list_order.map(item => ({
+      saleOrders.value = res.data.data.list_order.map((item) => ({
         id: item.id,
         sale_no: item.document_no,
         customer_code: item.customer_code,
@@ -390,38 +574,25 @@ async function fetchPage(page = 1) {
         total_paid: item.final_total_price,
         status: item.status,
         created_at: item.created_at,
-        // ตัวอย่าง mock data
-        extra_details: item.extra_list || [
-          `รหัสสินค้า: ${item.id}-A`,
-          `ยอดคงเหลือ: ${item.final_total_price}`,
-          `หมายเหตุ: ${item.status}`
-          // `หมายเหตุ: ตรวจสอบแล้ว`
-        ]
-      }))
+        extra_details: item.extra_list || [],
+      }));
 
-      console.log('Check Log saleOrders.value :', saleOrders.value);
+      totalRows.value = res.data.data.total;
+      currentPage.value = page;
 
-      totalRows.value = res.data.data.total
-      currentPage.value = page
-
-      // await logActivity(' user ได้เข้าหน้า SaleOrderList', 'SaleOrderList.vue');
       // ✅ เรียกใช้ TypeCustomers หลังโหลดรายการเสร็จ
-      await TypeCustomers()
-      
+      await TypeCustomers();
     }
   } catch (e) {
-    console.error(e)
+    console.error(e);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-
 }
 
-
-
-// 
+//
 async function getTokenDebtStatusType() {
-  isLoading.value = true
+  isLoading.value = true;
 
   // const payload = {
   //   username: "DPower1",
@@ -431,10 +602,9 @@ async function getTokenDebtStatusType() {
   // console.log('Log payload: ', payload);
 
   try {
-
     const loginData = {
       username: "DPower1",
-      password: "1234"
+      password: "1234",
     };
 
     //fetch ใช้ await res.json() ในการรอค่าก่อนถ้าไม่ทำจะได้ Promise
@@ -449,48 +619,46 @@ async function getTokenDebtStatusType() {
 
     // const data = await res.json();.
 
-    const res = await axios.post(`${VITE_API_URL_C_SHARP}/api/Users/Login?v=${Date.now()}`,
+    const res = await axios.post(
+      `${VITE_API_URL_C_SHARP}/api/Users/Login?v=${Date.now()}`,
       loginData,
       {
         headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     const data = res.data;
 
-    console.log('Check Log data :', data);
-    console.log('Check Log data.token :', data.token);
+    console.log("Check Log data :", data);
+    console.log("Check Log data.token :", data.token);
 
     const tokenDebtStatusType = data.token;
-    console.log('Check Log res.tokenDebtStatusType :', tokenDebtStatusType);
+    console.log("Check Log res.tokenDebtStatusType :", tokenDebtStatusType);
 
     if (tokenDebtStatusType) {
-      localStorage.setItem('tokenDebtStatusType', tokenDebtStatusType);
+      localStorage.setItem("tokenDebtStatusType", tokenDebtStatusType);
       isLoading.value = false;
       return tokenDebtStatusType;
     } else {
       console.warn("⚠️ Token not found in response.");
       return null;
     }
-
-
   } catch (e) {
-    console.error(e)
+    console.error(e);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
 
-
 async function TypeCustomers() {
-  isLoading.value = true
+  isLoading.value = true;
 
   // 🔁 สร้าง payload จาก saleOrders
-  const payload = saleOrders.value.map(item => ({
-
+  const payload = saleOrders.value.map((item) => ({
     CustomerDocument: item.sale_no,
-    CustomerCode: item.customer_code
+    CustomerCode: item.customer_code,
   }));
 
   console.log(" payload: ", payload);
@@ -508,24 +676,25 @@ async function TypeCustomers() {
 
   try {
     // VITE_API_URL_C_SHARP
-    const res = await axios.post(`${VITE_API_URL_C_SHARP}/api/TypeCustomers?v=${Date.now()}`,
+    const res = await axios.post(
+      `${VITE_API_URL_C_SHARP}/api/TypeCustomers?v=${Date.now()}`,
       payload,
       {
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tokendebtStatusType}`
-        }
-      });
-
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokendebtStatusType}`,
+        },
+      }
+    );
 
     const data = res.data;
 
-    console.log('✅ Response from TypeCustomers:', data);
+    console.log("✅ Response from TypeCustomers:", data);
 
     if (data && Array.isArray(data)) {
       // 1) group by sale_no/customerDocument
       const grouped = {};
-      data.forEach(item => {
+      data.forEach((item) => {
         const key = item.customerDocument;
         if (!grouped[key]) {
           grouped[key] = {
@@ -534,7 +703,7 @@ async function TypeCustomers() {
             deBsalesP: item.deBsalesP,
             status2: item.status2,
             total_paid: 0,
-            extra_details: []
+            extra_details: [],
           };
         }
         grouped[key].total_paid += item.inInvAmount ?? 0;
@@ -543,15 +712,15 @@ async function TypeCustomers() {
           overdueDays: item.overdueDays || [],
           status2: item.status2 || [],
           inInvAmount: item.inInvAmount || [],
-          miHvnos: item.miHvnos || []
+          miHvnos: item.miHvnos || [],
         });
       });
 
       // 2) merge back into saleOrders.value
 
-      saleOrders.value = saleOrders.value.map(order => {
+      saleOrders.value = saleOrders.value.map((order) => {
         // หาว่าใน data มี deBcode ที่ตรงกับ customer_code ไหม
-        const matched = data.find(item => item.deBcode === order.customer_code);
+        const matched = data.find((item) => item.deBcode === order.customer_code);
 
         const hasMatch = !!matched;
         const deBcode = matched?.deBcode;
@@ -572,9 +741,10 @@ async function TypeCustomers() {
             deBsalesP: updates.deBsalesP,
             status2: updates.status2,
             total_paid: updates.total_paid,
-            extra_details: hasMatch && Array.isArray(updates.extra_details)
-              ? updates.extra_details.filter(d => typeof d === 'object' && d !== null)
-              : []
+            extra_details:
+              hasMatch && Array.isArray(updates.extra_details)
+                ? updates.extra_details.filter((d) => typeof d === "object" && d !== null)
+                : [],
             // extra_details: hasMatch ? updates.extra_details : []
           };
         }
@@ -582,70 +752,73 @@ async function TypeCustomers() {
         return order;
       });
 
-      console.table(data.map(item => ({
-        deBcode: item.deBcode,
-        customerDocument: item.customerDocument,
-        inInvAmount: item.inInvAmount
-      })));
+      console.table(
+        data.map((item) => ({
+          deBcode: item.deBcode,
+          customerDocument: item.customerDocument,
+          inInvAmount: item.inInvAmount,
+        }))
+      );
 
-      console.table(saleOrders.value.map(order => ({
-        sale_no: order.sale_no,
-        customer_code: order.customer_code,
-        extra_details: order.extra_details
-      })));
-
+      console.table(
+        saleOrders.value.map((order) => ({
+          sale_no: order.sale_no,
+          customer_code: order.customer_code,
+          extra_details: order.extra_details,
+        }))
+      );
 
       console.log("🎉 Grouped saleOrders:", saleOrders.value);
-
     } else {
       Swal.fire({
-        title: 'Not Data TypeCustomers',
-        text: 'Response from TypeCustomers is undefined',
-        icon: 'error'
+        title: "Not Data TypeCustomers",
+        text: "Response from TypeCustomers is undefined",
+        icon: "error",
       });
       console.error("❌ No valid data from API");
     }
 
     isLoading.value = false;
-
   } catch (e) {
-    console.error(e)
+    console.error(e);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
-
 
 function filteredExtraDetails(order) {
   if (!order.extra_details || !Array.isArray(order.extra_details)) return [];
-  return order.extra_details.filter(e =>
-    typeof e === 'object' &&
-    e !== null &&
-    Object.values(e).some(v => v !== '' && v !== undefined && !Number.isNaN(v))
+  return order.extra_details.filter(
+    (e) =>
+      typeof e === "object" &&
+      e !== null &&
+      Object.values(e).some((v) => v !== "" && v !== undefined && !Number.isNaN(v))
   );
 }
 
-saleOrders.value.forEach(o => {
+saleOrders.value.forEach((o) => {
   if (Array.isArray(o.extra_details)) {
-    console.log(o.sale_no, o.extra_details.map(e => typeof e));
+    console.log(
+      o.sale_no,
+      o.extra_details.map((e) => typeof e)
+    );
   }
 });
 
+watch(searchQuery, (newVal) => {
+  currentPage.value = 1;
+  fetchPage(1);
+});
 
-onMounted(() => fetchPage(1))
+onMounted(() => fetchPage(1));
 
-const totalPages = computed(() =>
-  Math.ceil(totalRows.value / limit)
-)
+const totalPages = computed(() => Math.ceil(totalRows.value / limit));
 
 function goToPage(page) {
-  if (page < 1 || page > totalPages.value) return
-  fetchPage(page)
+  if (page < 1 || page > totalPages.value) return;
+  fetchPage(page);
 }
-
-
 </script>
-
 
 <!-- <div v-for="(d, i) in filteredExtraDetails(order)" :key="i"
     class="flex flex-col bg-white shadow-sm rounded-lg p-4 border border-gray-200">
@@ -661,7 +834,6 @@ function goToPage(page) {
     </div>
 
   </div> -->
-
 
 <!-- // saleOrders.value = saleOrders.value.map(order => {
       //   const deBcode = data.find(item => item.deBcode === order.customer_code)?.deBcode;
@@ -766,8 +938,6 @@ function goToPage(page) {
 //   )
 // }) -->
 
-
-
 <!-- // const filteredOrders = computed(() => {
 //   if (!searchQuery.value.trim()) return saleOrders.value
 //   const kw = searchQuery.value.toLowerCase()
@@ -776,9 +946,6 @@ function goToPage(page) {
 //       .some(str => str.toLowerCase().includes(kw))
 //   )
 // }) -->
-
-
-
 
 <!-- 
 // onMounted(async () => {

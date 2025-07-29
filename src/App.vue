@@ -60,7 +60,6 @@ import i18n from './i18n'
 
 const isSidebarVisible = ref(true)
 
-
 onMounted(() => {
   const savedLocale = localStorage.getItem('locale')
   if (savedLocale) {

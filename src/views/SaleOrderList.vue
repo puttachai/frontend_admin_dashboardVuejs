@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4">
+  <div class="p-4 relative">
     <h1 class="text-2xl font-bold mb-4">รายการคำสั่งซื้อ</h1>
 
     <!-- ด้านบนของตาราง -->
@@ -12,8 +12,56 @@
       />
     </div>
 
-    <div class="overflow-auto rounded-lg shadow-md">
-      <table class="min-w-full text-sm text-left text-gray-700 divide-x divide-gray-200">
+    <!-- ปุ่มแจ้งเตือน-->
+    <!-- <transition name="slide-button">
+      <button
+        v-if="showAnimatedButton"
+        @click="scrollToRight"
+        class="fixed top-20 right-4 z-50 px-4 py-2 bg-blue-600 text-white rounded shadow-lg hover:bg-blue-700 transition"
+        title="คลิกเพื่อเลื่อนดูข้อมูลเพิ่มเติม"
+      >
+        แสดงข้อมูลเพิ่มเติม {{ isScrolledRight ? "◀" : "▶" }}
+      </button>
+    </transition> -->
+
+    <transition name="slide-button">
+      <button
+        v-if="showAnimatedButton"
+        @click="scrollToRight"
+        class="fixed top-20 right-4 z-50 flex items-center gap-2 px-5 py-3 bg-yellow-400 text-white rounded-lg shadow-lg hover:bg-yellow-700 transition duration-300 ease-in-out"
+        title="คลิกเพื่อเลื่อนดูข้อมูลเพิ่มเติม"
+      >
+        <!-- 🔔 ไอคอนแจ้งเตือน -->
+        <svg
+          class="w-5 h-5 text-white"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+          />
+        </svg>
+
+        <!-- ข้อความ -->
+        <span class="font-medium"> แสดงข้อมูลเพิ่มเติม {{ isScrolledRight ? "◀" : "▶" }} </span>
+      </button>
+    </transition>
+
+    <!-- <table class="min-w-full || [1500px] text-sm text-left text-gray-700 divide-x divide-gray-200"> -->
+    <div
+      ref="tableWrapper"
+      style="max-width: 100%"
+      class="overflow-auto rounded-lg shadow-md"
+      @scroll="onScroll"
+    >
+      <table
+        class="min-w-[1500px] table-fixed text-sm text-left text-gray-700 divide-x divide-gray-200 border border-gray-300"
+      >
         <thead class="bg-gray-100 text-xs uppercase border">
           <tr class="border-r border-gray-300">
             <th class="p-3 border">Id</th>
@@ -98,6 +146,7 @@
                   'w-[9rem]', // กำหนดความกว้างเป็น 12rem (48 * 0.25rem)
                   'max-w-xs', // กำหนด max-width ถ้าต้องการจำกัด
                   'break-words', // ถ้าข้อความยาวให้ตัดขึ้นบรรทัดใหม่
+                  'border-t-2 border-b-2 border-gray-300', // ใช้เฉพาะขอบบนและขอบล่าง
                 ]"
               >
                 {{ getDisplayStatus(getHighestStatus(filteredExtraDetails(order))) }}
@@ -278,7 +327,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed, watch, reactive } from "vue";
 import axios from "axios";
 // import { logActivity } from '@/services/activityLogger.js'
 import Swal from "sweetalert2";
@@ -295,6 +344,12 @@ import {
 // const BASE_URL = import.meta.env.VITE_API_URL
 const VITE_API_URL_C_SHARP = import.meta.env.VITE_API_URL_C_SHARP;
 const BASE_URL = import.meta.env.VITE_API_URL_LOCAL;
+
+const tableWrapper = ref(null);
+const noticeBox = ref(null);
+const showNotice = ref(false);
+const isScrolledRight = ref(false); // เก็บสถานะเลื่อนขวาหรือยัง
+const showAnimatedButton = ref(false);
 
 const saleOrders = ref([]);
 
@@ -338,6 +393,57 @@ const formatCurrency = (value) =>
 //     default: return status;
 //   }
 // }
+
+// เมื่อ component โหลดเสร็จ แสดงปุ่มพร้อม animation
+onMounted(() => {
+  showAnimatedButton.value = true;
+
+  // ซ่อนปุ่มหลังจาก 10 วินาที
+  setTimeout(() => {
+    showAnimatedButton.value = false;
+  }, 10000);
+});
+
+function scrollToRight() {
+  if (!tableWrapper.value) return;
+
+  if (!isScrolledRight.value) {
+    // เลื่อนไปขวาสุด
+    tableWrapper.value.scrollTo({
+      left: tableWrapper.value.scrollWidth,
+      behavior: "smooth",
+    });
+    isScrolledRight.value = true;
+  } else {
+    // ถ้าเลื่อนขวาแล้ว กดอีกทีเลื่อนกลับซ้ายสุด
+    tableWrapper.value.scrollTo({
+      left: 0,
+      behavior: "smooth",
+    });
+    isScrolledRight.value = false;
+  }
+
+  // แสดงแจ้งเตือน (optional)
+  showNotice.value = true;
+  setTimeout(() => {
+    showNotice.value = false;
+  }, 3000);
+}
+
+function onScroll() {
+  if (!tableWrapper.value || !noticeBox.value) return;
+
+  const scrollLeft = tableWrapper.value.scrollLeft;
+  // เลื่อนกล่องแจ้งเตือนไปขวาตาม scrollLeft แต่ไม่เกิน container width - notice width
+  const maxTranslateX = tableWrapper.value.clientWidth - noticeBox.value.offsetWidth;
+
+  // -scrollLeft เพราะกล่องอยู่ติดซ้าย แต่ scroll คือเลื่อนไปขวา => กล่องต้องเลื่อนกลับไปทางซ้าย
+  let translateX = -scrollLeft;
+
+  if (translateX < -maxTranslateX) translateX = -maxTranslateX;
+  if (translateX > 0) translateX = 0;
+
+}
 
 const getDisplayStatus = (status) => {
   switch (status) {
@@ -819,6 +925,42 @@ function goToPage(page) {
   fetchPage(page);
 }
 </script>
+
+<!-- <style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style> -->
+
+<style scoped>
+.slide-button-enter-active {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+.slide-button-leave-active {
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+.slide-button-enter-from {
+  transform: translateX(200%);
+  opacity: 0;
+}
+.slide-button-enter-to {
+  transform: translateX(0%);
+  opacity: 1;
+}
+.slide-button-leave-from {
+  transform: translateX(0%);
+  opacity: 1;
+}
+.slide-button-leave-to {
+  transform: translateX(200%);
+  opacity: 0;
+}
+</style>
 
 <!-- <div v-for="(d, i) in filteredExtraDetails(order)" :key="i"
     class="flex flex-col bg-white shadow-sm rounded-lg p-4 border border-gray-200">

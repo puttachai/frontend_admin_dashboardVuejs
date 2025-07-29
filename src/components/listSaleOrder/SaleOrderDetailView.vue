@@ -33,9 +33,20 @@
         <div
           class="flex flex-wrap justify-end gap-3 responsive-action-buttons md:gap-4 md:flex-nowrap"
         >
-          <!-- ปุ่ม อนุมัติ (approve) -->
+       
+          <!-- ✅ ถ้าอนุมัติแล้ว -->
+          <div
+            v-if="approvedVoucherNo === 'ตรวจสอบเรียบร้อย'"
+            class="flex items-center gap-2 bg-green-500 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg disabled:bg-white disabled:text-red-600 disabled:border disabled:border-green-500 disabled:cursor-not-allowed"
+          >
+            <!-- เอกสาร: {{ documentNo_route_params }} ได้รับการอนุมัติแล้ว -->
+            <span class="material-icons">add_task</span>
+            <span> เอกสาร: {{ documentNo_route_params }} ได้รับการอนุมัติแล้ว </span>
+          </div>
+
+          <!-- ✅ ถ้ายังไม่อนุมัติ -->
           <button
-            v-if="canApprove && isReadOnly"
+            v-else-if="canApprove && isReadOnly"
             @click="saveDocument"
             class="flex items-center gap-2 bg-green-500 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg"
           >
@@ -43,9 +54,13 @@
             <span>อนุมัติเอกสาร</span>
           </button>
 
+          <!-- <div v-if="approvedVoucherNo" class="text-green-600 font-semibold mt-2">
+            ✅ เอกสารนี้ได้รับการอนุมัติแล้ว: {{ approvedVoucherNo }}
+          </div> -->
+
           <!-- ปุ่ม แก้ไข (edit) -->
           <button
-            v-if="canEdit && isReadOnly"
+            v-if="canEdit && isReadOnly && approvedVoucherNo !== 'ตรวจสอบเรียบร้อย'" 
             @click="enableEditMode"
             class="bg-yellow-500 items-center text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-yellow-600 transition"
           >
@@ -471,6 +486,7 @@
                       :min="1"
                       :max="product.pro_stock"
                       step="1"
+                      :disabled="isReadOnly"
                       v-model.number="product.pro_quantity"
                       @blur="onQuantityChange(product)"
                       class="w-full px-2 py-1 border rounded"
@@ -801,11 +817,37 @@
                 >
                 </textarea>
               </div>
+
               <div>
+                <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
+                <div class="bottom-6 right-6 z-50 justify-self-end">
+                  <button
+                    @click="showAddressPopup = true"
+                    :disabled="isReadOnly"
+                    class="bg-purple-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition"
+                  >
+                    + เลือกที่อยู่ / จัดส่ง
+                  </button>
+                </div>
+
+                <!-- ✅ แสดง Popup -->
+                <DeliveryAddressPopup
+                  v-if="showAddressPopup"
+                  :existingAddress="selectedAddress"
+                  @close="showAddressPopup = false"
+                  @submitted="handleAddressSelected"
+                />
+              
                 <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">
                   {{ errors.receiverAddress }}
                 </p>
               </div>
+
+              <!-- <div>
+                <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">
+                  {{ errors.receiverAddress }}
+                </p>
+              </div> -->
 
               <!-- <button class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">
                               ตรวจสอบที่อยู่
@@ -960,6 +1002,8 @@ export default {
   },
   data() {
     return {
+      approvedVoucherNo: "", // สำหรับเก็บเลขที่เอกสารที่อนุมัติแล้ว
+
       currentDocumentNo: "", // แสดง document_no ใน breadcrumb
 
       // documentNo_route_params: route.params.id,
@@ -1098,7 +1142,18 @@ export default {
     };
   },
 
-  mounted() {
+  // mounted() {
+  //   const docNo = this.$route.params.id;
+
+  //   this.documentNo_route_params = docNo;
+  //   // ดึงค่าจาก URL param
+  //   this.currentDocumentNo = `Sale Order: ${docNo}`;
+
+  //   // loadDataDocument
+  //   this.loadDocumentData(this.documentNo_route_params);
+  // },
+
+  async mounted() {
     const docNo = this.$route.params.id;
 
     this.documentNo_route_params = docNo;
@@ -1107,6 +1162,50 @@ export default {
 
     // loadDataDocument
     this.loadDocumentData(this.documentNo_route_params);
+
+    try {
+      const res = await axios.get(
+        `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/document_running/get_approved_status.php?documentNo=${docNo}`
+      );
+
+      if (res.data.success && res.data.status) {
+        const status = res.data.status;
+
+        if (status === "ตรวจสอบเรียบร้อย") {
+          this.approvedVoucherNo = status;
+        } else {
+          this.approvedVoucherNo = ""; // ยังไม่อนุมัติ
+        }
+      } else {
+        this.approvedVoucherNo = "";
+      }
+    } catch (err) {
+      console.error("โหลดสถานะล้มเหลว", err);
+      this.approvedVoucherNo = "";
+    }
+
+    // try {
+    //   const res = await axios.get(
+    //     `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/document_running/get_approved_status.php?documentNo=${docNo}`
+    //   );
+    //   if (res.data.success && res.data.status) {
+    //     const VoucherNoStatus = res.data.status;
+
+    //     if (VoucherNoStatus == "ตรวจสอบเรียบร้อย") {
+    //       this.approvedVoucherNo = VoucherNoStatus;
+    //     } else if (VoucherNoStatus == "ยังไม่ได้ตรวจสอบ") {
+    //       this.approvedVoucherNo == false;
+    //     } else if (VoucherNoStatus == "การตรวจสอบล้มเหลว") {
+    //       this.approvedVoucherNo == false;
+    //     }
+
+    //     // this.approvedVoucherNo
+    //   } else {
+    //     this.approvedVoucherNo = ""; // ยังไม่อนุมัติ
+    //   }
+    // } catch (err) {
+    //   console.error("โหลดสถานะล้มเหลว", err);
+    // }
   },
 
   watch: {
@@ -2592,6 +2691,31 @@ export default {
       console.log("😵‍💫😵‍💫 showMoreData:", this.showMoreData);
     },
 
+    async updateOrderStatus(documentNo) {
+      try {
+        const response = await axios.post(
+          `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/document_running/update_status_order.php`,
+          {
+            documentNo: documentNo,
+            status: "ตรวจสอบเรียบร้อย",
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data?.success) {
+          console.log("📦 อัปเดตสถานะสำเร็จ:", response.data.message);
+        } else {
+          console.warn("⚠️ อัปเดตสถานะไม่สำเร็จ:", response.data.message);
+        }
+      } catch (error) {
+        console.error("❌ เกิดข้อผิดพลาดในการอัปเดตสถานะ:", error);
+      }
+    },
+
     async getAuthToken() {
       // localStorage.removeItem("mac5_token");
       const tokenData = JSON.parse(localStorage.getItem("mac5_token")) || null;
@@ -2662,18 +2786,6 @@ export default {
 
         console.log("Approve new document");
 
-        // const isValid = await this.validateForm();
-        // const isValid = this.isValid;
-        // if (!isValid) {
-        //   console.warn("❌ ข้อมูลไม่ครบ", this.errors);
-        //   Swal.fire({
-        //     icon: 'error',
-        //     title: 'ไม่สามารถบันทึกได้',
-        //     text: 'กรุณากรอกข้อมูลให้ครบถ้วน',
-        //   });
-        //   return;
-        // }
-
         try {
           const token = await this.getAuthToken();
           console.log("🔑 token", token);
@@ -2697,9 +2809,16 @@ export default {
           console.log("✅ Macfive ส่งสำเร็จ", macfiveResponse);
 
           if (macfiveResponse.data?.Success) {
+            this.approvedVoucherNo = macfiveResponse.data?.VoucherNo || "";
+
+            console.log("📦 รายการ DocumentNo :", this.approvedVoucherNo);
+
+            // update สถานะใน Database
+            await this.updateOrderStatus(this.approvedVoucherNo);
+
             Swal.fire({
               title: "อนุมัติรายการสั่งซื้อสำเร็จ",
-              text: "อนุมัติรายการเรียบร้อย",
+              text: `อนุมัติเอกสารสำเร็จ: ${this.approvedVoucherNo}`,
               icon: "success",
             });
           } else {

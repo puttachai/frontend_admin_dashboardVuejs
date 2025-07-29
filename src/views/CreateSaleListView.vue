@@ -642,6 +642,7 @@
                                     class="w-full text-gray-700 border rounded px-3 py-2 resize-none">
                         </textarea>
                             </div>
+                            
                             <div>
 
                                 <!-- ✅ ปุ่ม popup ด้านล่างขวา -->

@@ -35,6 +35,10 @@ console.log("Show BASE_URL: ", BASE_URL);
 const mobile = ref('')
 const password = ref('')
 const customer = ref('')
+
+const customer_id = ref('')
+const customer_no = ref('')
+
 const error = ref('')
 const router = useRouter()
 
@@ -57,15 +61,6 @@ const handleLogin = async () => {
 
     console.log("Show Data: ", response);
     console.log("Show response.data.data.data2: ", response.data.data.data2);
-    // console.log(response.data.data.data.data2[0].nickname_admin);
-
-    // const crm_accountSet = undefined; //'crm' ||
-    // const fa_accountSet = 'fa' || undefined;
-
-    // localStorage.setItem('crm_account', crm_accountSet);
-    // localStorage.setItem('fa_account', fa_accountSet);
-
-    // const accountType = localStorage.getItem('crm_account' || 'null' || localStorage.getItem('fa_account') || 'null');
 
     if (response.data.code == 1) {
       // const groupStr = response.data.data.data2.groups || "";
@@ -101,10 +96,18 @@ const handleLogin = async () => {
 
       // บันทึกสถานะ login
       localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('customer_id', customer_id.value);  //23
+      localStorage.setItem('customer_no', customer_no.value); //"AP00025202"
       localStorage.setItem('account', mobile.value);
       localStorage.setItem('password', password.value);
       localStorage.setItem('token', response.data.data.token || '');
       localStorage.setItem('level', response.data.data.level || '');
+
+      // const getcustomer_id = localStorage.getItem('customer_id', customer_id.value)
+      // const getcustomer_no = localStorage.getItem('customer_no', customer_no.value)
+
+      // console.log('Check customer_id: ', getcustomer_id) 
+      // console.log('Check customer_no: ', getcustomer_no)
 
       // แจ้งเตือน login สำเร็จ
       Swal.fire({

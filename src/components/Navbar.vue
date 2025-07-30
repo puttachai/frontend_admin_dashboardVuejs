@@ -384,6 +384,9 @@ export default {
           localStorage.removeItem('crm_account')
           localStorage.removeItem('fa_account')
 
+          localStorage.removeItem('customer_id')
+          localStorage.removeItem('customer_no')
+
           router.push('/')
         } catch (error) {
           console.error('Error Delete employees:', error)

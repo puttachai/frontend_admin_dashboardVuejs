@@ -28,10 +28,10 @@
       <button
         v-if="showAnimatedButton"
         @click="scrollToRight"
-        class="fixed top-20 right-4 z-50 flex items-center gap-2 px-5 py-3 bg-yellow-400 text-white rounded-lg shadow-lg hover:bg-yellow-700 transition duration-300 ease-in-out"
+        class="fixed top-20 right-4 z-50 flex items-center gap-2 px-5 py-3 bg-yellow-400 text-white rounded-lg shadow-lg hover:bg-yellow-700 transition duration-300 ease-in-out max-[480px]:px-1 max-[480px]:py-2 max-[480px]:text-sm max-[480px]:gap-1"
         title="คลิกเพื่อเลื่อนดูข้อมูลเพิ่มเติม"
       >
-        <!-- 🔔 ไอคอนแจ้งเตือน -->
+        <!-- ไอคอนแจ้งเตือน -->
         <svg
           class="w-5 h-5 text-white"
           fill="none"
@@ -295,21 +295,32 @@
     </div>
 
     <!-- pagination -->
-    <div class="flex justify-between items-center mt-4">
-      <span>Showing {{ filteredOrders.length }} of {{ totalRows }} rows</span>
-      <div class="space-x-2">
+    <!-- pagination -->
+    <div
+      class="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-4 gap-2 sm:gap-0 text-sm sm:text-base"
+    >
+      <!-- จำนวนรายการ -->
+      <span class="text-center sm:text-left text-xs">
+        Showing {{ filteredOrders.length }} of {{ totalRows }} rows
+      </span>
+
+      <!-- ปุ่ม pagination -->
+      <div class="flex justify-center sm:justify-end items-center space-x-2">
         <button
           :disabled="currentPage === 1"
           @click="goToPage(currentPage - 1)"
-          class="px-4 py-1 bg-gray-200 rounded"
+          class="px-3 py-1 bg-gray-200 text-ms rounded disabled:opacity-50"
         >
           Prev
         </button>
-        <span>หน้า {{ currentPage }} / {{ totalPages }}</span>
+
+        <span class="mx-1">หน้า </span>
+        <span class="mx-1"> {{ currentPage }} / {{ totalPages }}</span>
+
         <button
           :disabled="currentPage === totalPages"
           @click="goToPage(currentPage + 1)"
-          class="px-4 py-1 bg-gray-200 rounded"
+          class="px-3 py-1 bg-gray-200 text-ms rounded disabled:opacity-50"
         >
           Next
         </button>
@@ -442,7 +453,6 @@ function onScroll() {
 
   if (translateX < -maxTranslateX) translateX = -maxTranslateX;
   if (translateX > 0) translateX = 0;
-
 }
 
 const getDisplayStatus = (status) => {
@@ -840,6 +850,16 @@ async function TypeCustomers() {
         }
 
         if (updates) {
+          // เก็บ deBlimit ไว้ใน localStorage โดยใช้ customer_code เป็น key
+          try {
+            localStorage.setItem(
+              `deBlimit_${order.customer_code}`,
+              JSON.stringify(updates.deBlimit)
+            );
+          } catch (e) {
+            console.warn("❗ เก็บ localStorage ไม่ได้:", e);
+          }
+
           return {
             ...order,
             deBcreditTerm: updates.deBcreditTerm,
@@ -857,6 +877,12 @@ async function TypeCustomers() {
 
         return order;
       });
+
+      // บันทึกเข้า localStorage
+      localStorage.setItem("deBlimit_all", JSON.stringify(allLimits));
+
+      const storedLimits = JSON.parse(localStorage.getItem("deBlimit_all") || "[]");
+      console.log("💾 deBlimit ที่บันทึกไว้:", storedLimits);
 
       console.table(
         data.map((item) => ({

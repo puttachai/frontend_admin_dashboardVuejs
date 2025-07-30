@@ -468,6 +468,7 @@
                                       <input type="number" v-model.pro_quantity="product.pro_quantity" min="1" placeholder="จำนวน"
                                           class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
                                   </td> -->
+                  <!-- เก่าไม่ใช้ -->
                   <!-- <td class="px-4 py-2 border">
                     <input
                       type="number"
@@ -479,9 +480,10 @@
                       class="w-full px-2 py-1 border rounded"
                     />
                   </td> -->
-                  <td class="px-4 py-2 border">
+                  <!-- ใหม่ใช้ -->
+                  <!-- <td class="px-4 py-2 border"> -->
                     <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)" -->
-                    <input
+                    <!-- <input
                       type="number"
                       :min="1"
                       :max="product.pro_stock"
@@ -491,7 +493,13 @@
                       @blur="onQuantityChange(product)"
                       class="w-full px-2 py-1 border rounded"
                     />
-                  </td>
+                  </td> -->
+                   <td class="px-4 py-2 border">
+                        <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)", @blur="onQuantityChange(product)" = ต้องคลิกพื้นที่ว่างถึงจะไป , v-model.number="product.pro_quantity" @input="onQuantityChange($event,product)-->
+                        <input type="number" :min="1" :max="product.pro_stock" step="1" @blur="onQuantityBlur(product)"
+                            v-model="product.pro_quantity" @input="onQuantityChange($event, product)" 
+                            class="w-full px-2 py-1 border rounded" />
+                   </td>
                   <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
                   <!-- <td class="px-4 py-2 border">{{ product.pro_stock }}</td> -->
                   <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
@@ -1593,19 +1601,68 @@ export default {
       }
     },
 
-    async onQuantityChange(product) {
-      if (product.pro_quantity < 1) product.pro_quantity = 1;
-      if (product.pro_quantity > product.pro_stock) product.pro_quantity = product.pro_stock;
+      async onQuantityBlur(product) {
+            if (product.pro_quantity === '' || product.pro_quantity === null) {
+                product.pro_quantity = 1;
+                product.pro_goods_num = 1;
+                try {
+                    await this.submittedProduct();
+                } catch (error) {
+                    console.error('Error submitting product on blur:', error);
+                }
+            }
+        },
 
-      console.log("Check product.pro_quantity: ", product.pro_quantity);
+        async onQuantityChange(event, product) {
+            let value = event.target.value;
 
-      product.pro_goods_num = product.pro_quantity;
+            // อนุญาตให้ว่างได้ระหว่างพิมพ์
+            if (value === '') {
+                product.pro_quantity = '';
+                // ยังไม่เรียก submittedProduct เพราะยังไม่ใช่ตัวเลขที่สมบูรณ์
+                return;
+            }
 
-      // ✅ รอให้ submittedProduct ทำงานเสร็จ
-      if (this.selectedProducts && this.selectedProducts.length > 0) {
-        await this.submittedProduct();
-      }
-    },
+            // แปลงเป็นเลขจำนวนเต็ม
+            value = Number(value);
+
+            if (isNaN(value)) {
+                // กรณีป้อนค่าไม่ใช่ตัวเลข เช่น '-' หรืออะไรที่ไม่ถูกต้อง
+                product.pro_quantity = '';
+                return;
+            }
+
+            // validate ขอบเขตจำนวน
+            if (value < 1) {
+                product.pro_quantity = 1;
+            } else if (value > product.pro_stock) {
+                product.pro_quantity = product.pro_stock;
+            } else {
+                product.pro_quantity = value;
+            }
+
+            product.pro_goods_num = product.pro_quantity;
+
+            try {
+                await this.submittedProduct();
+            } catch (error) {
+                console.error('Error submitting product:', error);
+            }
+        },
+
+    // async onQuantityChange(product) {
+    //   if (product.pro_quantity < 1) product.pro_quantity = 1;
+    //   if (product.pro_quantity > product.pro_stock) product.pro_quantity = product.pro_stock;
+
+    //   console.log("Check product.pro_quantity: ", product.pro_quantity);
+
+    //   product.pro_goods_num = product.pro_quantity;
+
+    //   // ✅ รอให้ submittedProduct ทำงานเสร็จ
+    //   if (this.selectedProducts && this.selectedProducts.length > 0) {
+    //     await this.submittedProduct();
+    //   }
+    // },
 
     //
     async addSelectedProductsWithmonth(payload) {

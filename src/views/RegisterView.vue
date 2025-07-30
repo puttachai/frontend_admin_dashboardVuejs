@@ -128,7 +128,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import router from '@/router';
 
-const BASE_URL = import.meta.env.VITE_API_URL_LOCAL;
+const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 // const BASE_URL = import.meta.env.VITE_API_URL;
 
 const formData = ref({
@@ -225,7 +225,7 @@ const register = async () => {
     try {
 
         // const response = await axios.post('http://localhost/register.php', formData.value)
-        const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/register.php`, payload, {
+        const response = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/register.php`, payload, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

@@ -375,9 +375,9 @@
                                             class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
                                     </td> -->
                                     <td class="px-4 py-2 border">
-                                        <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)" -->
-                                        <input type="number" :min="1" :max="product.pro_stock" step="1"
-                                            v-model.number="product.pro_quantity" @blur="onQuantityChange(product)"
+                                        <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)", @blur="onQuantityChange(product)" = ต้องคลิกพื้นที่ว่างถึงจะไป , v-model.number="product.pro_quantity" @input="onQuantityChange($event,product)-->
+                                        <input type="number" :min="1" :max="product.pro_stock" step="1" @blur="onQuantityBlur(product)"
+                                            v-model="product.pro_quantity" @input="onQuantityChange($event, product)" 
                                             class="w-full px-2 py-1 border rounded" />
                                     </td>
                                     <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
@@ -643,27 +643,31 @@
                         </textarea>
                             </div>
                             
-                            <div>
+                            <div class="flex justify-end gap-4 mt-4">
+
+                                <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
+                                <div class="bottom-6 right-6 z-50 justify-self-end">
+                                    <button @click="showAddressPopupBase = true" :disabled="isReadOnly"
+                                        class="bg-green-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-green-700 transition">
+                                        + เลือกที่อยู่ / จัดส่ง เดิมที่มีอยู่
+                                    </button>
+                                </div>
 
                                 <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
                                 <div class="bottom-6 right-6 z-50 justify-self-end">
                                     <button @click="showAddressPopup = true" :disabled="isReadOnly"
                                         class="bg-purple-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
-                                        + เลือกที่อยู่ / จัดส่ง
+                                        + เพิ่มที่อยู่ / จัดส่ง ใหม่ 
                                     </button>
                                 </div>
 
                                 <!-- ✅ แสดง Popup -->
                                 <DeliveryAddressPopup v-if="showAddressPopup" :existingAddress="selectedAddress"
                                     @close="showAddressPopup = false" @submitted="handleAddressSelected" />
-                                <!-- โครตเจ๋ง -->
-                                <!-- <div class="fixed bottom-6 right-6 z-50">
-                                    <button @click="showAddressPopup = true"
-                                        class="bg-purple-600 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
-                                        + เลือกที่อยู่ / จัดส่ง
-                                    </button>
-                                </div> -->
 
+                                <DeliveryAddressPopupBase v-if="showAddressPopupBase" :existingAddressBase="selectedAddressBase"
+                                    @close="showAddressPopupBase = false" :customerNo="customerData.customer_no" @submitted="handleAddressSelectedBase" />
+                               
                                 <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">{{
                                     errors.receiverAddress }} </p>
                             </div>
@@ -838,6 +842,7 @@ import ProductSelector from '../components/ProductSelector.vue';
 import PromotionSelector from '../components/PromotionSelector.vue';
 import Promotion_ProductSelector from '../components/Promotion_ProductSelector.vue';
 import DeliveryAddressPopup from '@/components/DeliveryAddressPopup.vue'
+import DeliveryAddressPopupBase from '@/components/DeliveryAddressPopupBase.vue'
 
 // import { logActivity } from '@/services/activityLogger.js'
 
@@ -879,6 +884,7 @@ export default {
         PromotionSelector,
         Promotion_ProductSelector,
         DeliveryAddressPopup,
+        DeliveryAddressPopupBase,
         'flat-pickr': Flatpickr,
         // ConfirmEditPopup
     },
@@ -891,10 +897,12 @@ export default {
             isVathidden: false, //  เริ่มต้นให้คิดภาษี
 
             // ตัวแปรควบคุม popup
-            showAddressPopup: false, // ควบคุมการแสดง popup ที่อยู่]
+            showAddressPopup: false, // ควบคุมการแสดง popup ที่อยู่
+            showAddressPopupBase: false, // ควบคุมการแสดง popup ที่อยู่
 
             //  เก็บข้อมูลที่อยู่ที่เลือกจาก popup
             selectedAddress: [],
+            selectedAddressBase: [],
 
             isConfirmed: false, // สำหรับควบคุมปุ่ม "ยืนยันการบันทึก"
             lockedDocumentNos: [], // เอกสารที่ถูกล็อก (เก็บใน LocalStorage หรือดึงจาก backend)
@@ -1534,19 +1542,102 @@ export default {
         //     this.submittedProduct(product, index);
         // },
 
-        async onQuantityChange(product) {
-            if (product.pro_quantity < 1) product.pro_quantity = 1;
-            if (product.pro_quantity > product.pro_stock) product.pro_quantity = product.pro_stock;
+        // async onQuantityChange(event, product) {
+        //     let value = event.target.value;
 
-            console.log('Check product.pro_quantity: ',product.pro_quantity);
+        //     // ให้ว่างได้ตอนพิมพ์
+        //     if (value === '') {
+        //     product.pro_quantity = '';
+        //     return; // ยังไม่ต้องไปต่อ
+        //     }
+
+        //     // แปลงเป็นตัวเลข
+        //     value = Number(value);
+
+        //     // ถ้าน้อยกว่า 1 ให้ตั้งเป็น 1 เลย
+        //     if (value < 1) {
+        //     product.pro_quantity = 1;
+        //     }
+        //     // ถ้ามากกว่า stock ก็ให้เท่ากับ stock
+        //     else if (value > product.pro_stock) {
+        //     product.pro_quantity = product.pro_stock;
+        //     } else {
+        //     product.pro_quantity = value;
+        //     }
+
+        //     product.pro_goods_num = product.pro_quantity;
+
+        //     try {
+        //     // รอให้ submittedProduct ทำงานเสร็จ (async)
+        //     await this.submittedProduct();
+        //     } catch (error) {
+        //     console.error('Error submitting product:', error);
+        //     }
+        // },
+
+        async onQuantityBlur(product) {
+            if (product.pro_quantity === '' || product.pro_quantity === null) {
+                product.pro_quantity = 1;
+                product.pro_goods_num = 1;
+                try {
+                    await this.submittedProduct();
+                } catch (error) {
+                    console.error('Error submitting product on blur:', error);
+                }
+            }
+        },
+
+        async onQuantityChange(event, product) {
+            let value = event.target.value;
+
+            // อนุญาตให้ว่างได้ระหว่างพิมพ์
+            if (value === '') {
+                product.pro_quantity = '';
+                // ยังไม่เรียก submittedProduct เพราะยังไม่ใช่ตัวเลขที่สมบูรณ์
+                return;
+            }
+
+            // แปลงเป็นเลขจำนวนเต็ม
+            value = Number(value);
+
+            if (isNaN(value)) {
+                // กรณีป้อนค่าไม่ใช่ตัวเลข เช่น '-' หรืออะไรที่ไม่ถูกต้อง
+                product.pro_quantity = '';
+                return;
+            }
+
+            // validate ขอบเขตจำนวน
+            if (value < 1) {
+                product.pro_quantity = 1;
+            } else if (value > product.pro_stock) {
+                product.pro_quantity = product.pro_stock;
+            } else {
+                product.pro_quantity = value;
+            }
 
             product.pro_goods_num = product.pro_quantity;
 
-            // ✅ รอให้ submittedProduct ทำงานเสร็จ
-            if (this.selectedProducts && this.selectedProducts.length > 0) {
+            try {
                 await this.submittedProduct();
+            } catch (error) {
+                console.error('Error submitting product:', error);
             }
         },
+
+
+        // async onQuantityChange(product) {
+        //     if (product.pro_quantity < 1) product.pro_quantity = 1;
+        //     if (product.pro_quantity > product.pro_stock) product.pro_quantity = product.pro_stock;
+
+        //     console.log('Check product.pro_quantity: ',product.pro_quantity);
+
+        //     product.pro_goods_num = product.pro_quantity;
+
+        //     // ✅ รอให้ submittedProduct ทำงานเสร็จ
+        //     if (this.selectedProducts && this.selectedProducts.length > 0) {
+        //         await this.submittedProduct();
+        //     }
+        // },
 
         // ใช้ได้ดีเลย
         // onQuantityChange(product) {
@@ -1965,7 +2056,7 @@ export default {
                 }
             }
 
-            if (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) {
+            if (!this.selectedAddress || !this.selectedAddressBase || Object.keys(this.selectedAddress).length === 0) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'กรุณาเลือกที่อยู่จัดส่ง',
@@ -1974,7 +2065,7 @@ export default {
             }
 
             // ✅ เพิ่ม selectedAddress เข้าไป
-            payload.append('deliveryAddress', JSON.stringify(this.selectedAddress));
+            payload.append('deliveryAddress', JSON.stringify(this.selectedAddress || this.selectedAddressBase));
             // console.log('asdasdasdads',payload);
             // for (let pair of payload.entries()) {
             //     console.log("🤯 payload asdasdasfadfafas", pair[0] + ': ' + pair[1]);
@@ -2619,7 +2710,7 @@ export default {
                 // }
 
                 // ✅ เพิ่ม selectedAddress เข้าไป
-                payload.append('deliveryAddress', JSON.stringify(this.selectedAddress));
+                payload.append('deliveryAddress', JSON.stringify(this.selectedAddress || this.selectedAddressBase));
 
                 // console.log("🤯 Log Value payload: ", payload);
 
@@ -2998,8 +3089,39 @@ export default {
             this.formData.receiverAddress = fullAddress;
             this.formData.address = fullAddress;
             this.formData.receiverPhone = DC_tel;
-            console.log('📍 ที่อยู่ที่เลือก:', this.formData.receiverAddress);
-            console.log('📍object ที่อยู่ที่เลือก:', this.selectedAddress);
+            console.log('📍 ที่อยู่ที่เลือกใหม่:', this.formData.receiverAddress);
+            console.log('📍object ที่อยู่ที่เลือกใหม่:', this.selectedAddress);
+
+            // 📌 ใส่ไว้ใน saveDocument()
+            // await this.saveDocument(addressData);
+        },
+
+        handleAddressSelectedBase(data) {
+            // async handleAddressSelected(data) {
+            console.log('📍 ที่อยู่ที่เลือก:', data);
+            const { DC_add1, DC_add2, DC_add3, DC_tel } = data
+            const fullAddress = `${DC_add1}, ${DC_add2}, ${DC_add3}, เบอร์โทร: ${DC_tel}`
+            this.selectedAddressBase = fullAddress
+
+            // ✅ เก็บ object เต็ม ๆ
+            this.selectedAddressBase = {
+                DC_id: data.DC_id, // สมมติว่า DC_id คือ id ที่อยู่
+                DC_add1: data.DC_add1,
+                // province_id: this.findProvinceId(data.DC_add3),
+                // amphure_id: this.findAmphureId(data.DC_add2),
+                // tambon_id: this.findTambonId(data.DC_add2),
+                DC_add3: data.DC_add3,
+                DC_add2: data.DC_add2,
+                DC_tel: data.DC_tel,
+                DC_zone: data.DC_zone || '',
+            };
+
+            // ✅ แสดงผลใน UI
+            this.formData.receiverAddress = fullAddress;
+            this.formData.address = fullAddress;
+            this.formData.receiverPhone = DC_tel;
+            console.log('📍 ที่อยู่ที่เลือกเดิม:', this.formData.receiverAddress);
+            console.log('📍object ที่อยู่ที่เลือเดิม:', this.selectedAddressBase);
 
             // 📌 ใส่ไว้ใน saveDocument()
             // await this.saveDocument(addressData);

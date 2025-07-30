@@ -118,7 +118,8 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 Chart.register(...registerables);
 Chart.register(ChartDataLabels);
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+// const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 
   export default {
     name: 'Dashboard',
@@ -144,7 +145,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
   },
   methods: {
     fetchLatestEmployees() {
-      fetch(`${BASE_URL}/api_admin_dashboard/backend/api/get-latest-employees.php`)
+      fetch(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/get-latest-employees.php`)
         .then(res => res.json())
         .then(data => {
           this.latestEmployees = data;
@@ -154,7 +155,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
         });
     },
     fetchdepartments(){
-      fetch(`${BASE_URL}/api_admin_dashboard/backend/api/api_department_count.php`)
+      fetch(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/api_department_count.php`)
       .then(res => res.json())
   .then(result => {
     if(result.success) {
@@ -219,7 +220,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
     },
     
     fetchSalaryData() {
-      fetch(`${BASE_URL}/api_admin_dashboard/backend/api/get_top_salary.php`)
+      fetch(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/get_top_salary.php`)
         .then(res => res.json())
         .then(result => {
           if (result.success) {

@@ -376,8 +376,9 @@
                                     </td> -->
                                     <td class="px-4 py-2 border">
                                         <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)", @blur="onQuantityChange(product)" = ต้องคลิกพื้นที่ว่างถึงจะไป , v-model.number="product.pro_quantity" @input="onQuantityChange($event,product)-->
-                                        <input type="number" :min="1" :max="product.pro_stock" step="1" @blur="onQuantityBlur(product)"
-                                            v-model="product.pro_quantity" @input="onQuantityChange($event, product)" 
+                                        <input type="number" :min="1" :max="product.pro_stock" step="1"
+                                            @blur="onQuantityBlur(product)" v-model="product.pro_quantity"
+                                            @input="onQuantityChange($event, product)" :disabled="isReadOnly"
                                             class="w-full px-2 py-1 border rounded" />
                                     </td>
                                     <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
@@ -642,7 +643,7 @@
                                     class="w-full text-gray-700 border rounded px-3 py-2 resize-none">
                         </textarea>
                             </div>
-                            
+
                             <div class="flex justify-end gap-4 mt-4">
 
                                 <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
@@ -657,7 +658,7 @@
                                 <div class="bottom-6 right-6 z-50 justify-self-end">
                                     <button @click="showAddressPopup = true" :disabled="isReadOnly"
                                         class="bg-purple-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
-                                        + เพิ่มที่อยู่ / จัดส่ง ใหม่ 
+                                        + เพิ่มที่อยู่ / จัดส่ง ใหม่
                                     </button>
                                 </div>
 
@@ -665,9 +666,10 @@
                                 <DeliveryAddressPopup v-if="showAddressPopup" :existingAddress="selectedAddress"
                                     @close="showAddressPopup = false" @submitted="handleAddressSelected" />
 
-                                <DeliveryAddressPopupBase v-if="showAddressPopupBase" :existingAddressBase="selectedAddressBase"
-                                    @close="showAddressPopupBase = false" :customerNo="customerData.customer_no" @submitted="handleAddressSelectedBase" />
-                               
+                                <DeliveryAddressPopupBase v-if="showAddressPopupBase"
+                                    :existingAddressBase="selectedAddressBase" @close="showAddressPopupBase = false"
+                                    :customerNo="customerData.customer_no" @submitted="handleAddressSelectedBase" />
+
                                 <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">{{
                                     errors.receiverAddress }} </p>
                             </div>
@@ -1227,6 +1229,8 @@ export default {
             try {
                 const token = localStorage.getItem('token');
 
+                console.log('Check: token', token);
+                console.log('Check: token NULL',);
                 console.log('Check: this.selectedProducts', this.selectedProducts);
 
                 // สร้าง payload จาก selectedProducts ทั้งหมด
@@ -1312,16 +1316,6 @@ export default {
                             }
                         });
 
-                        //
-                        // const FinalPromotions = promotions.filter(promo =>
-                        //     promo.st === matchedItem.st &&
-                        //     promo.pro_activity_id === activityId
-                        // );
-
-                        // const FinalGifts = gifts.filter(gift =>
-                        //     gift.st === matchedItem.st &&
-                        //     gift.pro_activity_id === activityId
-                        // );
 
                         return {
                             ...product,
@@ -1333,63 +1327,7 @@ export default {
                         };
                     });
 
-
-                    // 2. รวมข้อมูลทั้งหมด (items, gifts, promotions) เข้าไปใน selectedProducts
-                    // this.selectedProducts = this.selectedProducts.map((product, i) => {
-                    //     // หาว่า product นี้ match กับ item ตัวไหน (เช่น จาก item_id)
-                    //     const matchedItem = items.find(item => item.item_id === product.item_id) || {};
-
-                    //     const activityId = item.st === false ? false : item.pro_activity_id;
-
-                    //     const FinalPromotions = promotions.filter(promo => {
-                    //         const stMatch = promo.st === item.st;
-
-                    //         if (item.st === true) {
-                    //             return stMatch && promo.pro_activity_id === item.pro_activity_id;
-                    //         } else {
-                    //             return stMatch;
-                    //         }
-                    //     });
-
-                    //     const FinalGifts = gifts.filter(gift => {
-                    //         const stMatch = gift.st === item.st;
-
-                    //         if (item.st === true) {
-                    //             return stMatch && gift.pro_activity_id === item.pro_activity_id;
-                    //         } else {
-                    //             return stMatch;
-                    //         }
-                    //     });
-
-                    //     return {
-                    //         ...product,
-                    //         ...matchedItem,
-                    //         pro_activity_id: activityId,
-                    //         gifts: FinalGifts,           // ส่งไปทั้งก้อน
-                    //         promotions: FinalPromotions  // ส่งไปทั้งก้อน
-                    //     };
-                    // });
-
-                    // console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
-
-
-                    // }
-
-                    // // 2. รวมข้อมูลทั้งหมด (items, gifts, promotions) เข้าไปใน selectedProducts
-                    // this.selectedProducts = this.selectedProducts.map((product, i) => {
-                    //     // หาว่า product นี้ match กับ item ตัวไหน (เช่น จาก item_id)
-                    //     const matchedItem = items.find(item => item.item_id === product.item_id) || {};
-
-                    //     return {
-                    //         ...product,
-                    //         ...matchedItem,
-                    //         gifts: gifts,           // ส่งไปทั้งก้อน
-                    //         promotions: promotions  // ส่งไปทั้งก้อน
-                    //     };
-                    // });
-
                     console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
-
 
                 } else {
                     alert(response.data.message || 'เกิดข้อผิดพลาด');
@@ -1945,6 +1883,7 @@ export default {
             } catch (err) {
                 const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการสร้างเลขเอกสาร';
                 Swal.fire({ text: message, icon: 'error' });
+                this.isLoading = false;
                 return;
             }
 
@@ -2056,7 +1995,23 @@ export default {
                 }
             }
 
-            if (!this.selectedAddress || !this.selectedAddressBase || Object.keys(this.selectedAddress).length === 0) {
+            // if (!this.selectedAddress || !this.selectedAddressBase || Object.keys(this.selectedAddress).length === 0 || Object.keys(this.formData.receiverAddress).length === 0) {
+            //     console.log('ข้อมูลบางรายการไม่ครบ กรุณาเลือกที่อยู่จัดส่ง');
+            //     Swal.fire({
+            //         icon: 'warning',
+            //         title: 'กรุณาเลือกที่อยู่จัดส่ง',
+            //     });
+            //     return;
+            // }
+
+            if (
+                (
+                    (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) &&
+                    (!this.selectedAddressBase || Object.keys(this.selectedAddressBase).length === 0)
+                ) ||
+                Object.keys(this.formData.receiverAddress).length === 0
+            ) {
+                console.log('ข้อมูลบางรายการไม่ครบ กรุณาเลือกที่อยู่จัดส่ง');
                 Swal.fire({
                     icon: 'warning',
                     title: 'กรุณาเลือกที่อยู่จัดส่ง',
@@ -2120,6 +2075,7 @@ export default {
                 } else {
                     Swal.fire({ text: 'asdadas', icon: 'error' });
                     console.log('resData', resData);
+                    this.isLoading = false;
                 }
 
                 // this.selectedAddress = {
@@ -2139,6 +2095,7 @@ export default {
                 const message = err.response?.data?.message || err.message || 'Unknown error';
                 Swal.fire({ text: message, icon: 'error' });
                 console.log('a454545654564 catch');
+                this.isLoading = false;
             }
 
         },
@@ -2520,6 +2477,7 @@ export default {
                     title: 'ขอ Token ไม่สำเร็จ',
                     text: 'ไม่สามารถขอ token ได้ กรุณาลองใหม่อีกครั้ง',
                 });
+                this.isLoading = false;
                 console.error("❌ ดึง token ไม่สำเร็จ:", err);
                 throw err;
             }
@@ -2574,6 +2532,7 @@ export default {
             } catch (err) {
                 const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาด';
                 Swal.fire('ผิดพลาด', message, 'error');
+                this.isLoading = false;
             }
 
         },
@@ -2746,7 +2705,7 @@ export default {
 
                     // อัปเดต URL ไปยัง `saleList` พร้อม `documentNo` ใหม่ sale-order/H1-SO25680726-00031
                     // this.$router.push(`/sale-order/${newDocumentNo}`);
-                    
+
                     this.$router.push(`/saleList?documentNo=${newDocumentNo}`);
 
                     Swal.fire({ text: resData.message, icon: 'success' });
@@ -3099,8 +3058,8 @@ export default {
         handleAddressSelectedBase(data) {
             // async handleAddressSelected(data) {
             console.log('📍 ที่อยู่ที่เลือก:', data);
-            const { DC_add1, DC_add2, DC_add3, DC_tel } = data
-            const fullAddress = `${DC_add1}, ${DC_add2}, ${DC_add3}, เบอร์โทร: ${DC_tel}`
+            const { DC_add1, DC_tel } = data  //DC_add2, DC_add3,
+            const fullAddress = `${DC_add1},  เบอร์โทร: ${DC_tel}` //${DC_add2}, ${DC_add3},
             this.selectedAddressBase = fullAddress
 
             // ✅ เก็บ object เต็ม ๆ
@@ -3121,7 +3080,7 @@ export default {
             this.formData.address = fullAddress;
             this.formData.receiverPhone = DC_tel;
             console.log('📍 ที่อยู่ที่เลือกเดิม:', this.formData.receiverAddress);
-            console.log('📍object ที่อยู่ที่เลือเดิม:', this.selectedAddressBase);
+            console.log('📍object ที่อยู่ที่เลือกเดิม:', this.selectedAddressBase);
 
             // 📌 ใส่ไว้ใน saveDocument()
             // await this.saveDocument(addressData);
@@ -3401,7 +3360,7 @@ export default {
                 const fullActivityGifts = giftsDay.filter(gift => gift.pro_activity_id === item.pro_activity_id && gift.st === item.st);
                 const fullActivityPromotions = promotions.filter(promo => promo.pro_activity_id === item.pro_activity_id && promo.st === item.st)
 
-  
+
                 const FinalPromotions = promotions.filter(promo => {
                     const stMatch = promo.st === item.st;
 
@@ -3441,15 +3400,15 @@ export default {
                 item.st = Boolean(item.st);
 
                 console.log("sss Chack item.st: ", item.st);
- 
+
 
                 // หา item ที่ pro_sn เดียวกันแต่ activity ต่างกัน
                 const similarItem = this.selectedProducts.find(sp =>
                     sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
-                    sp.activity_id !== activityId && 
+                    sp.activity_id !== activityId &&
                     sp.st !== item.st
                 );
-    
+
                 const activity_id_ItemIsok = this.selectedProducts.find(sp =>
                     sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
                     sp.activity_id !== activityId &&
@@ -3473,18 +3432,24 @@ export default {
 
                 console.log("✅ this.selectedProducts:", this.selectedProducts);
                 console.log("✅ this.selectedProducts.length === 0:", this.selectedProducts.length === 0);
-                
+
                 const caseType = (() => {
                     if (this.selectedProducts.length === 0) return 'EMPTY';
-                    if (alreadyExists) return 'EXISTS';
-                    // if (alreadyExists2) return 'EXISTS2';
                     if (activity_id_ItemIs_Not_ok) return 'ACTIVITY_ID_ITEM_IS_Not_OK';
                     if (activity_id_ItemIsok) return 'ACTIVITY_ID_ITEM_ISOK';
-                    // if (similarItem || alreadyExists) return 'ACTIVITY_NOT_LOOP';
                     if (similarItem) return 'SIMILAR_SN_DIFFERENT_ACTIVITY';
-
-
+                    if (alreadyExists) return 'EXISTS';
                     return 'NEW';
+                    // if (this.selectedProducts.length === 0) return 'EMPTY';
+                    // if (alreadyExists) return 'EXISTS';
+                    // // if (alreadyExists2) return 'EXISTS2';
+                    // if (activity_id_ItemIs_Not_ok) return 'ACTIVITY_ID_ITEM_IS_Not_OK';
+                    // if (activity_id_ItemIsok) return 'ACTIVITY_ID_ITEM_ISOK';
+                    // // if (similarItem || alreadyExists) return 'ACTIVITY_NOT_LOOP';
+                    // if (similarItem) return 'SIMILAR_SN_DIFFERENT_ACTIVITY';
+
+
+                    // return 'NEW';
                 })();
 
                 switch (caseType) {
@@ -3527,6 +3492,29 @@ export default {
                         });
                         console.log('NEW || EMPTY');
                         break;
+
+                    case 'SIMILAR_SN_DIFFERENT_ACTIVITY':
+                        // 1) เปลี่ยน activity_id ของรายการเดิมให้ตรงกับตัวใหม่
+                        Object.assign(similarItem, {
+                            activity_id: activityId,
+                            st: item.st,
+                            pro_goods_num: item.pro_goods_num,
+                            pro_quantity: item.pro_goods_num,
+                            // 2) อัปเดต promotions/gifts
+                            promotions: FinalPromotions,
+                            gifts: FinalGifts,
+                            // … field อื่นๆ ตามที่ต้องการ
+                        });
+                        console.log('SIMILAR_SN_DIFFERENT_ACTIVITY: ย้ายไป activity ใหม่ พร้อมโหลด promotions');
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'อัปเดตโปรโมชั่นสำเร็จ',
+                            text: `ปรับข้อมูล ${matchedTitle.pro_erp_title || item.pro_title} เป็น st=${item.st}`,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        break;
+
 
                     case 'EXISTS':
                         Object.assign(alreadyExists, {
@@ -3602,7 +3590,7 @@ export default {
 
                     case 'ACTIVITY_ID_ITEM_IS_Not_OK':
                         Object.assign(activity_id_ItemIs_Not_ok, {
-                             ...item,
+                            ...item,
                             pro_id: item.pro_sku_price_id,
                             activity_id: activityId,
                             pro_quantity: item.pro_goods_num,
@@ -3668,7 +3656,7 @@ export default {
             console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
 
         },
-        
+
         async handleSelectedPromotionProducts(payload) {
             console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
 
@@ -3896,7 +3884,7 @@ export default {
                 // หา item ที่ pro_sn เดียวกันแต่ activity ต่างกัน
                 const similarItem = this.selectedProducts.find(sp =>
                     sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
-                    sp.activity_id !== activityId && 
+                    sp.activity_id !== activityId &&
                     sp.st !== item.st
                 );
                 // const similarItem = this.selectedProducts.find(sp =>
@@ -3927,18 +3915,25 @@ export default {
 
                 console.log("✅ this.selectedProducts:", this.selectedProducts);
                 console.log("✅ this.selectedProducts.length === 0:", this.selectedProducts.length === 0);
-                
+
                 const caseType = (() => {
+
                     if (this.selectedProducts.length === 0) return 'EMPTY';
-                    if (alreadyExists) return 'EXISTS';
-                    // if (alreadyExists2) return 'EXISTS2';
                     if (activity_id_ItemIs_Not_ok) return 'ACTIVITY_ID_ITEM_IS_Not_OK';
                     if (activity_id_ItemIsok) return 'ACTIVITY_ID_ITEM_ISOK';
-                    // if (similarItem || alreadyExists) return 'ACTIVITY_NOT_LOOP';
                     if (similarItem) return 'SIMILAR_SN_DIFFERENT_ACTIVITY';
-
-
+                    if (alreadyExists) return 'EXISTS';
                     return 'NEW';
+                    // if (this.selectedProducts.length === 0) return 'EMPTY';
+                    // if (alreadyExists) return 'EXISTS';
+                    // // if (alreadyExists2) return 'EXISTS2';
+                    // if (activity_id_ItemIs_Not_ok) return 'ACTIVITY_ID_ITEM_IS_Not_OK';
+                    // if (activity_id_ItemIsok) return 'ACTIVITY_ID_ITEM_ISOK';
+                    // // if (similarItem || alreadyExists) return 'ACTIVITY_NOT_LOOP';
+                    // if (similarItem) return 'SIMILAR_SN_DIFFERENT_ACTIVITY';
+
+
+                    // return 'NEW';
                 })();
 
                 switch (caseType) {
@@ -3982,10 +3977,33 @@ export default {
                         console.log('NEW || EMPTY');
                         break;
 
+                    case 'SIMILAR_SN_DIFFERENT_ACTIVITY':
+                        // 1) เปลี่ยน activity_id ของรายการเดิมให้ตรงกับตัวใหม่
+                        Object.assign(similarItem, {
+                            activity_id: activityId,
+                            st: item.st,
+                            pro_goods_num: item.pro_goods_num,
+                            pro_quantity: item.pro_goods_num,
+                            // 2) อัปเดต promotions/gifts
+                            promotions: FinalPromotions,
+                            gifts: FinalGifts,
+                            // … field อื่นๆ ตามที่ต้องการ
+                        });
+                        console.log('SIMILAR_SN_DIFFERENT_ACTIVITY: ย้ายไป activity ใหม่ พร้อมโหลด promotions');
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'อัปเดตโปรโมชั่นสำเร็จ',
+                            text: `ปรับข้อมูล ${matchedTitle.pro_erp_title || item.pro_title} เป็น st=${item.st}`,
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        break;
+
                     case 'EXISTS':
                         Object.assign(alreadyExists, {
                             ...item,
                             pro_id: item.pro_sku_price_id,
+                            // pro_activity_id: item.pro_activity_id,
                             activity_id: activityId,
                             pro_quantity: item.pro_goods_num,
                             pro_goods_num: item.pro_goods_num,
@@ -4056,7 +4074,7 @@ export default {
 
                     case 'ACTIVITY_ID_ITEM_IS_Not_OK':
                         Object.assign(activity_id_ItemIs_Not_ok, {
-                             ...item,
+                            ...item,
                             pro_id: item.pro_sku_price_id,
                             activity_id: activityId,
                             pro_quantity: item.pro_goods_num,

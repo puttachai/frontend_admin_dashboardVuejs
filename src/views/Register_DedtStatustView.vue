@@ -25,7 +25,7 @@
             </div>
 
             <!-- Form Fields -->
-            <form class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form @submit.prevent="register" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Employee ID</label>
                     <input type="text" readonly v-model="formData.emp_ids"
@@ -98,7 +98,8 @@
                 </div> -->
 
                 <div class="md:col-span-2 mt-4">
-                    <button type="submit" @click="register"
+                    <!-- @click="register" -->
+                    <button type="submit" 
                         class="w-full bg-purple-700 text-white py-2 px-4 rounded-md hover:bg-purple-800 transition">Register
                     </button>
                 </div>
@@ -121,7 +122,7 @@ import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
-const BASE_URL = import.meta.env.VITE_API_URL_LOCAL;
+const BASE_URL_LOCAL= import.meta.env.VITE_API_URL_LOCAL;
 // const BASE_URL = import.meta.env.VITE_API_URL;
 
 const formData = ref({
@@ -145,8 +146,18 @@ const register = async () => {
     //     return
     // }
 
+    if (!formData.value.image) {
+    Swal.fire({
+        title: 'กรุณาเลือกรูปภาพ',
+        text: 'คุณต้องแนบรูปภาพก่อนสมัครสมาชิก',
+        icon: 'warning',
+    });
+    return;
+}
+
     // สร้างรหัสใหม่ก่อนส่ง
     formData.value.emp_ids = generateEmpId();
+    
 
     const payload = new FormData();
     for (const key in formData.value) {
@@ -163,7 +174,7 @@ const register = async () => {
     try {
 
         // const response = await axios.post('http://localhost/register.php', formData.value)
-        const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/register.php`, payload, {
+        const response = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/register.php`, payload, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -226,8 +237,12 @@ const register = async () => {
         };
         reader.readAsDataURL(file);
 
+        console.log('Check file: ', file);
+
         // ถ้าต้องการส่งภาพพร้อม formData:
         formData.value.image = file; // เก็บไฟล์ไว้สำหรับ POST
+
+        console.log('Check ormData.value.image: ', formData.value.image);
     } else {
         previewImage.value = null;
         alert("Please select a valid image file.");

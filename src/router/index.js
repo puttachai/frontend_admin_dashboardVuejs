@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 // import HomeView from '../views/HomeView.vue'
 import DashboardView from "../views/DashboardView.vue";
 import RegisterView from "../views/RegisterView.vue";
+import RegisterDedtStatustView from "../views/Register_DedtStatustView.vue";
 import ShowDataEmpView from "../views/ShowDataEmpView.vue";
 import TechStackView from "../views/TechStackView.vue";
 import CreateSaleList from "../views/CreateSaleListView.vue";
@@ -94,6 +95,16 @@ const routes = [
     // โค้ดนี้จะสร้างไฟล์แยก (เช่น About.[hash].js) สำหรับเส้นทางนี้โดยเฉพาะ
     // ซึ่งจะโหลดไฟล์นั้นแบบ lazy-load (โหลดเมื่อมีการเข้า route นั้นเท่านั้น)
     component: RegisterView,
+  },
+  // new
+  {
+    path: "/registerdedtStatust",
+    name: "registerdedtStatust",
+    meta: { requiresAuth: true }, //  ต้องทำการ login ก่อน
+    // การแบ่งโค้ดตามระดับของ route
+    // โค้ดนี้จะสร้างไฟล์แยก (เช่น About.[hash].js) สำหรับเส้นทางนี้โดยเฉพาะ
+    // ซึ่งจะโหลดไฟล์นั้นแบบ lazy-load (โหลดเมื่อมีการเข้า route นั้นเท่านั้น)
+    component: RegisterDedtStatustView,
   },
   {
     path: "/showdataemp",

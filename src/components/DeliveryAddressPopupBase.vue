@@ -4,39 +4,20 @@
       <h2 class="text-lg text-gray-600 font-semibold mb-4">กรอกข้อมูลที่อยู่/จัดส่ง</h2>
       <form @submit.prevent="submitAddress">
         <div class="space-y-4">
-          <!-- จังหวัด -->
-          <div>
-            <label class="text-sm text-gray-600">จังหวัด</label>
-            <select
-              v-model="form.province_id"
-              @change="onProvinceChange"
-              class="w-full text-gray-600 border rounded px-3 py-2"
-            >
-              <option value="">-- กรุณาเลือกจังหวัด --</option>
-              <option v-for="p in provinces" :key="p.id" :value="p.id">{{ p.name_th }}</option>
-            </select>
-          </div>
-
-          <!-- เขต/อำเภอ -->
-          <div>
-            <label class="text-sm text-gray-600">เขต/อำเภอ</label>
-            <select
-              v-model="form.amphure_id"
-              @change="onAmphureChange"
-              class="w-full text-gray-600 border rounded px-3 py-2"
-            >
-              <option value="">-- กรุณาเลือกอำเภอ --</option>
-              <option v-for="a in amphures" :key="a.id" :value="a.id">{{ a.name_th }}</option>
-            </select>
-          </div>
-
-          <!-- ตำบล/แขวง -->
-          <div>
-            <label class="text-sm text-gray-600">แขวง/ตำบล</label>
-            <select v-model="form.tambon_id" class="w-full text-gray-600 border rounded px-3 py-2">
-              <option value="">-- กรุณาเลือกตำบล --</option>
-              <option v-for="t in tambons" :key="t.id" :value="t.id">{{ t.name_th }}</option>
-            </select>
+           <!-- รายการที่อยู่จาก API -->
+          <div v-if="addressList.length" class="mt-6">
+            <h3 class="text-md font-semibold text-gray-700 mb-2">เลือกที่อยู่จากระบบ</h3>
+            <ul class="space-y-2 max-h-60 overflow-y-auto">
+              <li
+                v-for="addr in addressList"
+                :key="addr.id"
+                @click="selectAddress(addr)"
+                class="border p-3 rounded cursor-pointer hover:bg-blue-50"
+                :class="{ 'bg-blue-100 border-blue-500': selectedAddressId === addr.id }"
+              >
+                <p class="text-gray-700 text-sm leading-relaxed">{{ addr.address }}</p>
+              </li>
+            </ul>
           </div>
 
           <!-- ที่อยู่เพิ่มเติม -->
@@ -66,6 +47,7 @@
               ตกลง
             </button>
           </div>
+         
         </div>
       </form>
     </div>
@@ -88,8 +70,11 @@ export default {
   name: "DeliveryAddressPopupBase",
   data() {
     return {
+      customerData: JSON.parse(localStorage.getItem("selectDataCustomer") || "null"),
+      customerDataRow: JSON.parse(localStorage.getItem("selectDataCustomerRow") || "null"),
 
-      customerData: JSON.parse(localStorage.getItem('selectDataCustomer') || 'null'),
+      addressList: [], // ข้อมูลที่อยู่ทั้งหมดจาก API
+      selectedAddressId: null, // เก็บ ID ที่อยู่ที่ผู้ใช้เลือก
 
       form: {
         province_id: "",
@@ -127,6 +112,7 @@ export default {
     this.fetchLocationData().then(() => {
       this.prefillAddressForm();
     });
+    this.loadCustomerAddresses(); // โหลดที่อยู่
   },
 
   methods: {
@@ -179,7 +165,7 @@ export default {
 
     async getAuthToken() {
       // localStorage.removeItem("mac5_token");
-      const tokenData = JSON.parse(localStorage.getItem("mac5_token")) || null;
+      const tokenData = JSON.parse(localStorage.getItem("token_userlogin")) || null;
 
       // console.log("🔑 Check tokenData :", tokenData);
 
@@ -203,25 +189,28 @@ export default {
         },
       });
 
-      // 🔄 ถ้าไม่มี token หรือหมดอายุ ให้ขอใหม่
-      const secretKeyData = qs.stringify({
-        secretKey1: import.meta.env.VITE_SECRET_KEY1,
-        secretKey2: import.meta.env.VITE_SECRET_KEY2,
-      });
-
       try {
-        const authResponse = await axios.post(`${BASE_URL_AUTH}`, secretKeyData, {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
+        const authResponse = await axios.post(
+          "https://backend2.d-power.online:58915/api/Users/Login",
+          {
+            username: "DPower1", // ใส่จริงตรงนี้
+            password: "1234", // หรือใช้จาก .env ก็ได้
           },
-        });
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-        const token = authResponse.data.Token;
+        console.log("authResponse 🔑 Token :", authResponse);
+
+        const token = authResponse.data.token;
         if (!token) throw new Error("ไม่สามารถดึง token ได้");
 
         // 📝 บันทึก token และ timestamp ลง localStorage
         localStorage.setItem(
-          "mac5_token",
+          "token_userlogin",
           JSON.stringify({
             token,
             timestamp: now,
@@ -230,6 +219,7 @@ export default {
 
         Swal.close(); // ✅ ปิด Swal เมื่อเรียบร้อย
         return token;
+
       } catch (err) {
         Swal.fire({
           icon: "error",
@@ -239,6 +229,45 @@ export default {
         console.error("❌ ดึง token ไม่สำเร็จ:", err);
         throw err;
       }
+    },
+
+    async loadCustomerAddresses() {
+      try {
+        const token = await this.getAuthToken(); // ดึง token
+
+        console.log("Check this.customerData:", this.customerData);
+        // console.log('Check this.customerDataRow:',this.customerDataRow);
+
+        const customerNo = this.customerData?.data2.customer_no || ""; // ดึงจาก localStorage หรือ prop
+        console.log("Check customerNo: ", customerNo);
+
+        const response = await axios.post(
+          "https://203.154.60.148:58915/api/AddressCustomers",
+          qs.stringify({ CustomerCode: customerNo }),
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+          }
+        );
+
+        console.log("Check response.data: ", response.data);
+
+        this.addressList = response.data || [];
+      } catch (err) {
+        console.error("❌ โหลดข้อมูลที่อยู่ล้มเหลว:", err);
+        Swal.fire({
+          icon: "error",
+          title: "โหลดที่อยู่ไม่สำเร็จ",
+          text: "ไม่สามารถโหลดข้อมูลที่อยู่ของลูกค้าได้",
+        });
+      }
+    },
+
+    selectAddress(addr) {
+      this.selectedAddressId = addr.id;
+      this.form.detail = addr.address; // ดึงมาใส่ฟอร์ม
     },
 
     async submitAddress() {

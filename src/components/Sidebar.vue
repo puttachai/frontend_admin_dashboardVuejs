@@ -28,7 +28,8 @@
                 <span class="material-icons">space_dashboard</span>
                 <span class="text">Dashboard</span>
             </router-link>
-            <router-link class="button" to="/register">
+            <!-- register -->
+            <router-link class="button" to="/registerdedtStatust">
                 <span class="material-icons">group</span>
                 <span class="text">Register</span>
             </router-link>

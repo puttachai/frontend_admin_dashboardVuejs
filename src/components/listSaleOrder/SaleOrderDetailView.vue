@@ -33,7 +33,6 @@
         <div
           class="flex flex-wrap justify-end gap-3 responsive-action-buttons md:gap-4 md:flex-nowrap"
         >
-
           <!-- ✅ ถ้าอนุมัติแล้ว -->
           <div
             v-if="approvedVoucherNo === 'ตรวจสอบเรียบร้อย'"
@@ -60,7 +59,7 @@
 
           <!-- ปุ่ม แก้ไข (edit) -->
           <button
-            v-if="canEdit && isReadOnly && approvedVoucherNo !== 'ตรวจสอบเรียบร้อย'" 
+            v-if="canEdit && isReadOnly && approvedVoucherNo !== 'ตรวจสอบเรียบร้อย'"
             @click="enableEditMode"
             class="bg-yellow-500 items-center text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-yellow-600 transition"
           >
@@ -482,8 +481,8 @@
                   </td> -->
                   <!-- ใหม่ใช้ -->
                   <!-- <td class="px-4 py-2 border"> -->
-                    <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)" -->
-                    <!-- <input
+                  <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)" -->
+                  <!-- <input
                       type="number"
                       :min="1"
                       :max="product.pro_stock"
@@ -494,12 +493,20 @@
                       class="w-full px-2 py-1 border rounded"
                     />
                   </td> -->
-                   <td class="px-4 py-2 border">
-                        <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)", @blur="onQuantityChange(product)" = ต้องคลิกพื้นที่ว่างถึงจะไป , v-model.number="product.pro_quantity" @input="onQuantityChange($event,product)-->
-                        <input type="number" :min="1" :max="product.pro_stock" step="1" @blur="onQuantityBlur(product)"
-                            v-model="product.pro_quantity" @input="onQuantityChange($event, product)" 
-                            class="w-full px-2 py-1 border rounded" />
-                   </td>
+                  <td class="px-4 py-2 border">
+                    <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)", @blur="onQuantityChange(product)" = ต้องคลิกพื้นที่ว่างถึงจะไป , v-model.number="product.pro_quantity" @input="onQuantityChange($event,product)-->
+                    <input
+                      type="number"
+                      :min="1"
+                      :max="product.pro_stock"
+                      step="1"
+                      @blur="onQuantityBlur(product)"
+                      v-model="product.pro_quantity"
+                      @input="onQuantityChange($event, product)"
+                      :disabled="isReadOnly"
+                      class="w-full px-2 py-1 border rounded"
+                    />
+                  </td>
                   <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
                   <!-- <td class="px-4 py-2 border">{{ product.pro_stock }}</td> -->
                   <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
@@ -826,8 +833,9 @@
                 </textarea>
               </div>
 
-              <div>
-                <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
+              <!-- <div>
+                 ✅ ปุ่ม popup ด้านล่างขวา -->
+              <!--
                 <div class="bottom-6 right-6 z-50 justify-self-end">
                   <button
                     @click="showAddressPopup = true"
@@ -838,6 +846,43 @@
                   </button>
                 </div>
 
+                 ✅ แสดง Popup -->
+              <!--
+                <DeliveryAddressPopup
+                  v-if="showAddressPopup"
+                  :existingAddress="selectedAddress"
+                  @close="showAddressPopup = false"
+                  @submitted="handleAddressSelected"
+                />
+
+                <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">
+                  {{ errors.receiverAddress }}
+                </p>
+              </div> -->
+
+              <div class="flex justify-end gap-4 mt-4">
+                <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
+                <div class="bottom-6 right-6 z-50 justify-self-end">
+                  <button
+                    @click="showAddressPopupBase = true"
+                    :disabled="isReadOnly"
+                    class="bg-green-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-green-700 transition"
+                  >
+                    + เลือกที่อยู่ / จัดส่ง เดิมที่มีอยู่
+                  </button>
+                </div>
+
+                <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
+                <div class="bottom-6 right-6 z-50 justify-self-end">
+                  <button
+                    @click="showAddressPopup = true"
+                    :disabled="isReadOnly"
+                    class="bg-purple-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition"
+                  >
+                    + เพิ่มที่อยู่ / จัดส่ง ใหม่
+                  </button>
+                </div>
+
                 <!-- ✅ แสดง Popup -->
                 <DeliveryAddressPopup
                   v-if="showAddressPopup"
@@ -845,7 +890,15 @@
                   @close="showAddressPopup = false"
                   @submitted="handleAddressSelected"
                 />
-              
+
+                <DeliveryAddressPopupBase
+                  v-if="showAddressPopupBase"
+                  :existingAddressBase="selectedAddressBase"
+                  @close="showAddressPopupBase = false"
+                  :customerNo="customerData.customer_no"
+                  @submitted="handleAddressSelectedBase"
+                />
+
                 <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">
                   {{ errors.receiverAddress }}
                 </p>
@@ -977,6 +1030,7 @@ import ProductSelector from "@/components/ProductSelector.vue";
 import PromotionSelector from "@/components/PromotionSelector.vue";
 import Promotion_ProductSelector from "@/components/Promotion_ProductSelector.vue";
 import DeliveryAddressPopup from "@/components/DeliveryAddressPopup.vue";
+import DeliveryAddressPopupBase from '@/components/DeliveryAddressPopupBase.vue'
 // import ConfirmEditPopup from '@/components/saleOrder/ConfirmEditPopup.vue'
 import qs from "qs";
 import Flatpickr from "vue-flatpickr-component";
@@ -1005,6 +1059,7 @@ export default {
     PromotionSelector,
     Promotion_ProductSelector,
     DeliveryAddressPopup,
+    DeliveryAddressPopupBase,
     "flat-pickr": Flatpickr,
     // ConfirmEditPopup
   },
@@ -1024,9 +1079,11 @@ export default {
 
       // ตัวแปรควบคุม popup
       showAddressPopup: false, // ควบคุมการแสดง popup ที่อยู่]
+      showAddressPopupBase: false, // ควบคุมการแสดง popup ที่อยู่]
 
       //  เก็บข้อมูลที่อยู่ที่เลือกจาก popup
       selectedAddress: [],
+      selectedAddressBase: [],
 
       // … existing data …
       isReadOnly: true, // ใช้ควบคุมสถานะ readonly
@@ -1489,6 +1546,9 @@ export default {
       try {
         const token = localStorage.getItem("token");
 
+        console.log("Check: token", token);
+        console.log("Check: token NULL");
+
         console.log("Check: this.selectedProducts", this.selectedProducts);
 
         // สร้าง payload จาก selectedProducts ทั้งหมด
@@ -1593,62 +1653,75 @@ export default {
 
           console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
         } else {
-          alert(response.data.message || "เกิดข้อผิดพลาด");
+          // alert(response.data.message || "เกิดข้อผิดพลาด");
+          Swal.fire({
+            icon: "error",
+            title: "กรุณาเลือกร้านค้าของลูกค้า",
+            text: `กรุณาเลือกร้านค้าของลูกค้าก่อนตรวจสอบหรือแก้ไขข้อมูล`,
+            confirmButtonText: "ไปยังหน้าเลือกร้านค้า",
+            allowOutsideClick: false, // กันไม่ให้คลิกข้างนอกเพื่อปิด
+            allowEscapeKey: false, // กันไม่ให้กด ESC เพื่อปิด
+          }).then((result) => {
+            if (result.isConfirmed) {
+              this.$router.push("/customer"); // เปลี่ยนเส้นทางไปยังหน้า customer
+            }
+          });
         }
       } catch (error) {
-        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ API");
+        // alert("เกิดข้อผิดพลาดในการเชื่อมต่อ API");
+        Swal.fire("ผิดพลาด", response.data.message, "error");
         console.error(error);
       }
     },
 
-      async onQuantityBlur(product) {
-            if (product.pro_quantity === '' || product.pro_quantity === null) {
-                product.pro_quantity = 1;
-                product.pro_goods_num = 1;
-                try {
-                    await this.submittedProduct();
-                } catch (error) {
-                    console.error('Error submitting product on blur:', error);
-                }
-            }
-        },
+    async onQuantityBlur(product) {
+      if (product.pro_quantity === "" || product.pro_quantity === null) {
+        product.pro_quantity = 1;
+        product.pro_goods_num = 1;
+        try {
+          await this.submittedProduct();
+        } catch (error) {
+          console.error("Error submitting product on blur:", error);
+        }
+      }
+    },
 
-        async onQuantityChange(event, product) {
-            let value = event.target.value;
+    async onQuantityChange(event, product) {
+      let value = event.target.value;
 
-            // อนุญาตให้ว่างได้ระหว่างพิมพ์
-            if (value === '') {
-                product.pro_quantity = '';
-                // ยังไม่เรียก submittedProduct เพราะยังไม่ใช่ตัวเลขที่สมบูรณ์
-                return;
-            }
+      // อนุญาตให้ว่างได้ระหว่างพิมพ์
+      if (value === "") {
+        product.pro_quantity = "";
+        // ยังไม่เรียก submittedProduct เพราะยังไม่ใช่ตัวเลขที่สมบูรณ์
+        return;
+      }
 
-            // แปลงเป็นเลขจำนวนเต็ม
-            value = Number(value);
+      // แปลงเป็นเลขจำนวนเต็ม
+      value = Number(value);
 
-            if (isNaN(value)) {
-                // กรณีป้อนค่าไม่ใช่ตัวเลข เช่น '-' หรืออะไรที่ไม่ถูกต้อง
-                product.pro_quantity = '';
-                return;
-            }
+      if (isNaN(value)) {
+        // กรณีป้อนค่าไม่ใช่ตัวเลข เช่น '-' หรืออะไรที่ไม่ถูกต้อง
+        product.pro_quantity = "";
+        return;
+      }
 
-            // validate ขอบเขตจำนวน
-            if (value < 1) {
-                product.pro_quantity = 1;
-            } else if (value > product.pro_stock) {
-                product.pro_quantity = product.pro_stock;
-            } else {
-                product.pro_quantity = value;
-            }
+      // validate ขอบเขตจำนวน
+      if (value < 1) {
+        product.pro_quantity = 1;
+      } else if (value > product.pro_stock) {
+        product.pro_quantity = product.pro_stock;
+      } else {
+        product.pro_quantity = value;
+      }
 
-            product.pro_goods_num = product.pro_quantity;
+      product.pro_goods_num = product.pro_quantity;
 
-            try {
-                await this.submittedProduct();
-            } catch (error) {
-                console.error('Error submitting product:', error);
-            }
-        },
+      try {
+        await this.submittedProduct();
+      } catch (error) {
+        console.error("Error submitting product:", error);
+      }
+    },
 
     // async onQuantityChange(product) {
     //   if (product.pro_quantity < 1) product.pro_quantity = 1;
@@ -1787,11 +1860,17 @@ export default {
           if (this.selectedProducts.length === 0) return "EMPTY";
           if (activity_id_ItemIs_Not_ok) return "ACTIVITY_ID_ITEM_IS_Not_OK";
           if (activity_id_ItemIsok) return "ACTIVITY_ID_ITEM_ISOK";
-          // if (similarItem || alreadyExists) return 'ACTIVITY_NOT_LOOP';
+          if (similarItem) return "SIMILAR_SN_DIFFERENT_ACTIVITY";
           if (alreadyExists) return "EXISTS";
-          // if (similarItem) return "SIMILAR_SN_DIFFERENT_ACTIVITY";
-
           return "NEW";
+          // if (this.selectedProducts.length === 0) return "EMPTY";
+          // if (activity_id_ItemIs_Not_ok) return "ACTIVITY_ID_ITEM_IS_Not_OK";
+          // if (activity_id_ItemIsok) return "ACTIVITY_ID_ITEM_ISOK";
+          // // if (similarItem || alreadyExists) return 'ACTIVITY_NOT_LOOP';
+          // if (alreadyExists) return "EXISTS";
+          // // if (similarItem) return "SIMILAR_SN_DIFFERENT_ACTIVITY";
+
+          // return "NEW";
         })();
 
         switch (caseType) {
@@ -1833,6 +1912,28 @@ export default {
               // promotions: promotions.filter(promo => promo.pro_activity_id === item.pro_activity_id)
             });
             console.log("NEW || EMPTY");
+            break;
+
+          case "SIMILAR_SN_DIFFERENT_ACTIVITY":
+            // 1) เปลี่ยน activity_id ของรายการเดิมให้ตรงกับตัวใหม่
+            Object.assign(similarItem, {
+              activity_id: activityId,
+              st: item.st,
+              pro_goods_num: item.pro_goods_num,
+              pro_quantity: item.pro_goods_num,
+              // 2) อัปเดต promotions/gifts
+              promotions: FinalPromotions,
+              gifts: FinalGifts,
+              // … field อื่นๆ ตามที่ต้องการ
+            });
+            console.log("SIMILAR_SN_DIFFERENT_ACTIVITY: ย้ายไป activity ใหม่ พร้อมโหลด promotions");
+            Swal.fire({
+              icon: "info",
+              title: "อัปเดตโปรโมชั่นสำเร็จ",
+              text: `ปรับข้อมูล ${matchedTitle.pro_erp_title || item.pro_title} เป็น st=${item.st}`,
+              showConfirmButton: false,
+              timer: 1500,
+            });
             break;
 
           case "EXISTS":
@@ -2060,12 +2161,12 @@ export default {
         //     sp.st === item.st // false = false And true = true
         // );
 
-        // const alreadyExists = this.selectedProducts.find(
-        //   (sp) =>
-        //     parseInt(sp.pro_goods_id) === parseInt(item.pro_goods_id) &&
-        //     parseInt(sp.pro_activity_id) === parseInt(item.pro_activity_id) &&
-        //     Boolean(sp.st) === Boolean(item.st)
-        // );
+        const alreadyExists = this.selectedProducts.find(
+          (sp) =>
+            parseInt(sp.pro_goods_id) === parseInt(item.pro_goods_id) &&
+            parseInt(sp.pro_activity_id) === parseInt(item.pro_activity_id) &&
+            Boolean(sp.st) === Boolean(item.st)
+        );
 
         //หา item ที่ activity_id เดียวกันและ st เหมือนกัน
         const alreadyExists_not_st = this.selectedProducts.find(
@@ -2082,11 +2183,17 @@ export default {
 
         const caseType = (() => {
           if (this.selectedProducts.length === 0) return "EMPTY";
-          if (matchedByActivityAndGoods) return "UPDATE_SAME_ITEM";
-          // if (alreadyExists) return "EXISTS";
-          if (alreadyExists_not_st) return "EXISTSNOTST";
           if (activity_id_ItemIs_Not_ok) return "ACTIVITY_ID_ITEM_IS_Not_OK";
           if (activity_id_ItemIsok) return "ACTIVITY_ID_ITEM_ISOK";
+          if (similarItem) return "SIMILAR_SN_DIFFERENT_ACTIVITY";
+          if (alreadyExists) return "EXISTS";
+          return "NEW";
+          // if (this.selectedProducts.length === 0) return "EMPTY";
+          // if (matchedByActivityAndGoods) return "UPDATE_SAME_ITEM";
+          // // if (alreadyExists) return "EXISTS";
+          // if (alreadyExists_not_st) return "EXISTSNOTST";
+          // if (activity_id_ItemIs_Not_ok) return "ACTIVITY_ID_ITEM_IS_Not_OK";
+          // if (activity_id_ItemIsok) return "ACTIVITY_ID_ITEM_ISOK";
           // if (similarItem || alreadyExists) return 'ACTIVITY_NOT_LOOP';
           // if (similarItem) return "SIMILAR_SN_DIFFERENT_ACTIVITY";
 
@@ -2137,6 +2244,28 @@ export default {
               // promotions: promotions.filter(promo => promo.pro_activity_id === item.pro_activity_id)
             });
             console.log("NEW || EMPTY");
+            break;
+
+          case "SIMILAR_SN_DIFFERENT_ACTIVITY":
+            // 1) เปลี่ยน activity_id ของรายการเดิมให้ตรงกับตัวใหม่
+            Object.assign(similarItem, {
+              activity_id: activityId,
+              st: item.st,
+              pro_goods_num: item.pro_goods_num,
+              pro_quantity: item.pro_goods_num,
+              // 2) อัปเดต promotions/gifts
+              promotions: FinalPromotions,
+              gifts: FinalGifts,
+              // … field อื่นๆ ตามที่ต้องการ
+            });
+            console.log("SIMILAR_SN_DIFFERENT_ACTIVITY: ย้ายไป activity ใหม่ พร้อมโหลด promotions");
+            Swal.fire({
+              icon: "info",
+              title: "อัปเดตโปรโมชั่นสำเร็จ",
+              text: `ปรับข้อมูล ${matchedTitle.pro_erp_title || item.pro_title} เป็น st=${item.st}`,
+              showConfirmButton: false,
+              timer: 1500,
+            });
             break;
 
           case "UPDATE_SAME_ITEM":
@@ -2479,7 +2608,20 @@ export default {
           }
         }
 
-        if (!this.formData.receiverName) {
+        // if (!this.formData.receiverName) {
+        //   Swal.fire({
+        //     icon: "warning",
+        //     title: "กรุณาเลือกที่อยู่จัดส่ง",
+        //   });
+        //   return;
+        // }
+
+        if (
+          ((!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) &&
+            (!this.selectedAddressBase || Object.keys(this.selectedAddressBase).length === 0)) ||
+          Object.keys(this.formData.receiverAddress).length === 0
+        ) {
+          console.log("ข้อมูลบางรายการไม่ครบ กรุณาเลือกที่อยู่จัดส่ง");
           Swal.fire({
             icon: "warning",
             title: "กรุณาเลือกที่อยู่จัดส่ง",
@@ -2495,7 +2637,10 @@ export default {
         // }
 
         // ✅ เพิ่ม selectedAddress เข้าไป
-        payload.append("deliveryAddress", JSON.stringify(this.selectedAddress));
+        payload.append(
+          "deliveryAddress",
+          JSON.stringify(this.selectedAddress || this.selectedAddressBase)
+        );
 
         // console.log("🤯 Log Value payload: ", payload);
 
@@ -2513,6 +2658,7 @@ export default {
         // return;
 
         const response = await axios.post(
+          // `https://backend2.d-power.online:56916/api_admin_dashboard/backend/api/sale_order/update_sale_order.php`,
           `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/sale_order/update_sale_order.php`,
           // `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/update_sale_order.php`,
           payload
@@ -2545,6 +2691,7 @@ export default {
       } catch (err) {
         const message = err.response?.data?.message || err.message || "Unknown error";
         Swal.fire({ text: message, icon: "error" });
+        this.isLoading = false;
       }
     },
 
@@ -2641,6 +2788,37 @@ export default {
       this.formData.receiverPhone = DC_tel;
       console.log("📍 ที่อยู่ที่เลือก:", this.formData.receiverAddress);
       console.log("📍object ที่อยู่ที่เลือก:", this.selectedAddress);
+
+      // 📌 ใส่ไว้ใน saveDocument()
+      // await this.saveDocument(addressData);
+    },
+
+    handleAddressSelectedBase(data) {
+      // async handleAddressSelected(data) {
+      console.log("📍 ที่อยู่ที่เลือก:", data);
+      const { DC_add1, DC_tel } = data; //DC_add2, DC_add3,
+      const fullAddress = `${DC_add1},  เบอร์โทร: ${DC_tel}`; //${DC_add2}, ${DC_add3},
+      this.selectedAddressBase = fullAddress;
+
+      // ✅ เก็บ object เต็ม ๆ
+      this.selectedAddressBase = {
+        DC_id: data.DC_id, // สมมติว่า DC_id คือ id ที่อยู่
+        DC_add1: data.DC_add1,
+        // province_id: this.findProvinceId(data.DC_add3),
+        // amphure_id: this.findAmphureId(data.DC_add2),
+        // tambon_id: this.findTambonId(data.DC_add2),
+        DC_add3: data.DC_add3,
+        DC_add2: data.DC_add2,
+        DC_tel: data.DC_tel,
+        DC_zone: data.DC_zone || "",
+      };
+
+      // ✅ แสดงผลใน UI
+      this.formData.receiverAddress = fullAddress;
+      this.formData.address = fullAddress;
+      this.formData.receiverPhone = DC_tel;
+      console.log("📍 ที่อยู่ที่เลือกเดิม:", this.formData.receiverAddress);
+      console.log("📍object ที่อยู่ที่เลือกเดิม:", this.selectedAddressBase);
 
       // 📌 ใส่ไว้ใน saveDocument()
       // await this.saveDocument(addressData);

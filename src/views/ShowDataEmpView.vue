@@ -92,16 +92,16 @@ const employees = ref([]);
 const showPopup = ref(false);
 const selectedEmployee = ref(null);
 
-const BASE_URL = import.meta.env.VITE_API_URL_LOCAL;
-// const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
+// const BASE_URL_LOCAL = import.meta.env.VITE_API_URL;
 
 onMounted(async () => {
 
     try {
 
-        console.log("Log BASE_URL: ", BASE_URL);
+        console.log("Log BASE_URL_LOCAL: ", BASE_URL_LOCAL);
 
-        const respone = await axios.get(`${BASE_URL}/api_admin_dashboard/backend/api/get_dataEmployee.php`,)
+        const respone = await axios.get(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/get_dataEmployee.php`,)
         employees.value = respone.data;
         console.log("Log respone: ", respone);
         console.log("Success Fully");
@@ -128,7 +128,7 @@ onMounted(async () => {
     //     }
     // };
     const updateEmployeeInList = async () => {
-        const res = await axios.get(`${BASE_URL}/api_admin_dashboard/backend/api/get_dataEmployee.php`);
+        const res = await axios.get(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/get_dataEmployee.php`);
         // employees.value = res.data.employees;
         employees.value = res.data;
         showPopup.value = false;
@@ -149,7 +149,7 @@ onMounted(async () => {
 
             try {
 
-                const response = await axios.post(`${BASE_URL}/api_admin_dashboard/backend/api/Delete_Employee.php`, {id: employee.id} );
+                const response = await axios.post(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/Delete_Employee.php`, {id: employee.id} );
                 console.log("Log value response:",response);
 
                 const resData = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;

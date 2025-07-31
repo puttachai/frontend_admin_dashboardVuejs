@@ -895,7 +895,7 @@
                   v-if="showAddressPopupBase"
                   :existingAddressBase="selectedAddressBase"
                   @close="showAddressPopupBase = false"
-                  :customerNo="customerData.customer_no"
+                  :customerNo="formData.customerCode"
                   @submitted="handleAddressSelectedBase"
                 />
 

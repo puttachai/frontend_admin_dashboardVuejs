@@ -61,6 +61,7 @@ import qs from "qs"; // อย่าลืม import
 // import.meta.env.VITE_DELIVERY_ADDRESS
 
 const BASE_URL_DELIVERY_ADDRESS = import.meta.env.VITE_DELIVERY_ADDRESS;
+const BASE_URL_C_SHARP = import.meta.env.VITE_API_URL_C_SHARP;
 const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 
 const BASE_URL_AUTH = import.meta.env.VITE_API_URL_AUTH;
@@ -101,10 +102,10 @@ export default {
       type: Object,
       default: () => ({}),
     },
-    // customerNo: {
-    //   type: [String, Number],
-    //   required: true,
-    // },
+    customerNo: {
+      type: [String, Number],
+      required: true,
+    },
   },
 
   mounted() {
@@ -191,7 +192,7 @@ export default {
 
       try {
         const authResponse = await axios.post(
-          "https://backend2.d-power.online:58915/api/Users/Login",
+          `${BASE_URL_C_SHARP}/api/Users/Login`, //https://backend2.d-power.online:58915
           {
             username: "DPower1", // ใส่จริงตรงนี้
             password: "1234", // หรือใช้จาก .env ก็ได้
@@ -242,7 +243,7 @@ export default {
         console.log("Check customerNo: ", customerNo);
 
         const response = await axios.post(
-          "https://203.154.60.148:58915/api/AddressCustomers",
+          `${BASE_URL_C_SHARP}/api/AddressCustomers`, // `${BASE_URL_C_SHARP}/api/Users/Login`, //https://backend2.d-power.online:58915
           qs.stringify({ CustomerCode: customerNo }),
           {
             headers: {

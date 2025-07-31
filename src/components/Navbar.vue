@@ -90,10 +90,11 @@
               <div class="pt-2">
                 <!-- <div id="google_translate_element"></div> -->
 
+                <!-- ยังไม่ใช้ -->
                 <!-- ปุ่มไอคอน Google Translate -->
-                <button @click="toggleTranslate" class="text-white ml-4 hover:text-yellow-300" title="Translate">
+                <!-- <button @click="toggleTranslate" class="text-white ml-4 hover:text-yellow-300" title="Translate">
                   <span class="material-icons text-[28px]">translate</span>
-                </button>
+                </button> -->
 
                 <!-- กล่องแสดง Google Translate (แสดง/ซ่อน) -->
                 <!-- <div id="google_translate_element" v-show="showTranslate"

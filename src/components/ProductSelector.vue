@@ -936,76 +936,76 @@ async function confirmSelection() {
 
 
   
-// 🔁 รวมสินค้า "ธรรมดา" กับ "โปรโมชัน" ที่เป็นสินค้าเดียวกัน (pro_sku_price_id ตรงกัน)
-const mergedProductsMap = new Map();
+// // 🔁 รวมสินค้า "ธรรมดา" กับ "โปรโมชัน" ที่เป็นสินค้าเดียวกัน (pro_sku_price_id ตรงกัน)
+// const mergedProductsMap = new Map();
 
-// const hasPromo = (data) =>
-//   data.pro_activity_id !== undefined &&
-//   data.pro_activity_id !== null &&
-//   data.pro_activity_id !== 0 &&
-//   data.pro_activity_id !== "0";
+// // const hasPromo = (data) =>
+// //   data.pro_activity_id !== undefined &&
+// //   data.pro_activity_id !== null &&
+// //   data.pro_activity_id !== 0 &&
+// //   data.pro_activity_id !== "0";
 
-// วน loop ทีละตัว
-for (const item of sum_products) {
-  const key = item.pro_sku_price_id;
+// // วน loop ทีละตัว
+// for (const item of sum_products) {
+//   const key = item.pro_sku_price_id;
 
-  // เช็คว่าเจอสินค้านี้แล้วหรือยัง (จากธรรมดาหรือโปรฯ ก่อนหน้า)
-  if (!mergedProductsMap.has(key)) {
-    mergedProductsMap.set(key, { ...item }); // ถ้ายังไม่มีก็ set ใหม่เลย
-  } else {
-    const existing = mergedProductsMap.get(key);
+//   // เช็คว่าเจอสินค้านี้แล้วหรือยัง (จากธรรมดาหรือโปรฯ ก่อนหน้า)
+//   if (!mergedProductsMap.has(key)) {
+//     mergedProductsMap.set(key, { ...item }); // ถ้ายังไม่มีก็ set ใหม่เลย
+//   } else {
+//     const existing = mergedProductsMap.get(key);
 
-    // ✅ เงื่อนไข: ถ้าอันหนึ่งเป็นสินค้าธรรมดา (ไม่มีโปร_activity_id) และอีกอันมี → ให้รวม
-    if (
-      (!existing.pro_activity_id && item.pro_activity_id) ||
-      (existing.pro_activity_id && !item.pro_activity_id)
-      // (hasPromo(existing) && !hasPromo(item)) ||
-      // (!hasPromo(existing) && hasPromo(item))
-    ) {
-      // รวมจำนวน
-      const totalQty =
-        (Number(existing.pro_goods_num) || 0) +
-        (Number(item.pro_goods_num) || 0);
+//     // ✅ เงื่อนไข: ถ้าอันหนึ่งเป็นสินค้าธรรมดา (ไม่มีโปร_activity_id) และอีกอันมี → ให้รวม
+//     if (
+//       (!existing.pro_activity_id && item.pro_activity_id) ||
+//       (existing.pro_activity_id && !item.pro_activity_id)
+//       // (hasPromo(existing) && !hasPromo(item)) ||
+//       // (!hasPromo(existing) && hasPromo(item))
+//     ) {
+//       // รวมจำนวน
+//       const totalQty =
+//         (Number(existing.pro_goods_num) || 0) +
+//         (Number(item.pro_goods_num) || 0);
 
-      // คัดลอกค่าโดยอิงจากตัวที่เป็นโปรโมชันไว้เป็นหลัก
-      const promoData = existing.pro_activity_id ? existing : item;
-      // const promoData = hasPromo(item) ? item : existing;
+//       // คัดลอกค่าโดยอิงจากตัวที่เป็นโปรโมชันไว้เป็นหลัก
+//       const promoData = existing.pro_activity_id ? existing : item;
+//       // const promoData = hasPromo(item) ? item : existing;
 
-      // ✅ บันทึกกลับโดยใช้ข้อมูลของโปรโมชัน พร้อมจำนวนรวม
-      mergedProductsMap.set(key, {
-        ...promoData,
-        pro_goods_num: totalQty,
-        pro_quantity: totalQty,
-        last_quantity: Number(item.pro_goods_num || 0), // เก็บจำนวนของอันล่าสุด (ไว้เช็ค stock)
-        st: true // ✔️ ให้เป็นสินค้าพร้อมโปร
-      });
-    } else {
-      // ถ้าไม่เข้าเงื่อนไข (เป็นของประเภทเดียวกันทั้งคู่) ก็รวมจำนวนปกติ
-      const totalQty =
-        (Number(existing.pro_goods_num) || 0) +
-        (Number(item.pro_goods_num) || 0);
+//       // ✅ บันทึกกลับโดยใช้ข้อมูลของโปรโมชัน พร้อมจำนวนรวม
+//       mergedProductsMap.set(key, {
+//         ...promoData,
+//         pro_goods_num: totalQty,
+//         pro_quantity: totalQty,
+//         last_quantity: Number(item.pro_goods_num || 0), // เก็บจำนวนของอันล่าสุด (ไว้เช็ค stock)
+//         st: true // ✔️ ให้เป็นสินค้าพร้อมโปร
+//       });
+//     } else {
+//       // ถ้าไม่เข้าเงื่อนไข (เป็นของประเภทเดียวกันทั้งคู่) ก็รวมจำนวนปกติ
+//       const totalQty =
+//         (Number(existing.pro_goods_num) || 0) +
+//         (Number(item.pro_goods_num) || 0);
 
-      mergedProductsMap.set(key, {
-        ...existing,
-        pro_goods_num: totalQty,
-        pro_quantity: totalQty
-      });
-    }
-  }
-}
+//       mergedProductsMap.set(key, {
+//         ...existing,
+//         pro_goods_num: totalQty,
+//         pro_quantity: totalQty
+//       });
+//     }
+//   }
+// }
 
-// เปลี่ยนกลับเป็น array
-const mergedProducts = Array.from(mergedProductsMap.values());
+// // เปลี่ยนกลับเป็น array
+// const mergedProducts = Array.from(mergedProductsMap.values());
 
-console.log('✅ 🔄 mergedProducts (หลังรวมสินค้าธรรมดา+โปร):', mergedProducts);
+// console.log('✅ 🔄 mergedProducts (หลังรวมสินค้าธรรมดา+โปร):', mergedProducts);
 
 
   ///////////////////////////////
   const productErrors = [];
 
   // สร้าง grouped ทั้งหมดจาก sum_products
-  const grouped = groupBy(mergedProducts, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`); //
-  // const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`); //
+  // const grouped = groupBy(mergedProducts, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`); //
+  const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`); //
 
   // แยก grouped สำหรับ last_quantity เก็บจาก selectedProducts (รายการเพิ่มใหม่)
   const groupedLastQuantity = groupBy(selectedProducts, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`); //

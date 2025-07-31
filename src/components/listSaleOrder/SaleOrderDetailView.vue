@@ -3055,13 +3055,21 @@ export default {
               title: "อนุมัติรายการสั่งซื้อสำเร็จ",
               text: `อนุมัติเอกสารสำเร็จ: ${this.approvedVoucherNo}`,
               icon: "success",
+            })
+            .then(() => {
+              // ✅ รีเฟรชหน้าเมื่อกด OK
+              location.reload();
             });
+            // location.reload();
+
           } else {
             Swal.fire({
               title: "ไม่สามารถอนุมัติรายการสั่งซื้อได้",
               text: "กรุณาลองใหม่อีกครั้ง",
               icon: "error",
-            });
+            })
+            
+            // location.reload();
             const message = err.response?.data?.message || err.message || "เกิดข้อผิดพลาด";
             console.error("เกิดข้อผิดพลาด", message);
           }

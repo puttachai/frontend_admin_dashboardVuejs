@@ -1177,8 +1177,12 @@ async function submittedProduct(newproduct) {
       // ใช้ได้
       // แยกข้อมูลออกเป็น 3 ก้อน //  ,  
       const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
-      const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
-      const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
+      const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day');
+      // const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
+      // const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
+      const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day');
+      const promotionsmonth = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_month');
+      const giftsmonth = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_month');
 
       const emitTitles = newproduct.map(p => ({
         // const emitTitles = selectedProducts.map(p => ({
@@ -1231,6 +1235,8 @@ async function submittedProduct(newproduct) {
         items,
         gifts,
         promotions,
+        promotionsmonth,
+        giftsmonth,
         emitTitles
       });
 

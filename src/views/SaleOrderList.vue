@@ -352,9 +352,11 @@ import {
 } from "lucide-vue-next";
 // import { Message } from 'tdesign-vue-next'
 
+// const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
+
 // const BASE_URL = import.meta.env.VITE_API_URL
 const VITE_API_URL_C_SHARP = import.meta.env.VITE_API_URL_C_SHARP;
-const BASE_URL = import.meta.env.VITE_API_URL_LOCAL;
+const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 
 const tableWrapper = ref(null);
 const noticeBox = ref(null);
@@ -667,7 +669,7 @@ async function fetchPage(page = 1) {
   isLoading.value = true;
   try {
     const res = await axios.get(
-      `${BASE_URL}/api_admin_dashboard/backend/api/list_sale_orders/get_list_sale_order.php?v=${Date.now()}`,
+      `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/list_sale_orders/get_list_sale_order.php?v=${Date.now()}`,
       {
         params: {
           page,

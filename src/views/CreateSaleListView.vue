@@ -1340,14 +1340,13 @@ export default {
                         item.pro_activity_id !== 0
                     );
 
-
-
                     // ✅ ผูกสินค้า + promotion + gift ตาม activity_id
                     this.selectedProducts = this.selectedProducts.map((product) => {
                         const matchedItem = items.find(item =>
                             item.pro_goods_id == product.pro_goods_id &&
                             (item.ML_Note === "item" || item.ML_Note === "itemmonth") && 
-                            item.pro_activity_id == product.pro_activity_id
+                            item.pro_activity_id == product.pro_activity_id && 
+                            item.pro_sku_price_id == product.pro_sku_price_id
                         );
 
                         if (!matchedItem) return product;
@@ -3527,6 +3526,7 @@ export default {
             for (const group of Object.values(grouped)) {
                 if (group[0].promotions && Array.isArray(group[0].promotions)) {
                     for (const promo of group[0].promotions) {
+
                         allPromotions.push({
 
                             title: promo.title,
@@ -3537,12 +3537,12 @@ export default {
                             pro_sn: promo.pro_sn,
                             prosn: promo.prosn,
                             pro_goods_id: promo.pro_goods_id || 0,
-                            pro_goods_num: promo.pro_goods_num || 0,
+                            pro_goods_num: promo.pro_goods_num || promo.pro_quantity || 0,
                             pro_image: promo.pro_image || '',
                             pro_sku_price_id: promo.pro_sku_price_id || 0,
                             user_id: promo.user_id || 0,
                             st: promo.st,
-                            stock: promo.stock || 0,
+                            stock: promo.stock,
 
                         });
                     }
@@ -3550,9 +3550,15 @@ export default {
 
                 if (group[0].gifts && Array.isArray(group[0].gifts)) {
                     for (const gift of group[0].gifts) {
+                        
+                        console.log("🎁 gift:", gift); // <--- log gift object
+                        console.log("🎁 gift.pro_goods_num:", gift.pro_goods_num); // <--- log gift object
+                        console.log("🎁 gift.pro_quantity:", gift.pro_quantity); // <--- log gift object
+
                         allGifts.push({
                             title: gift.title,
-                            pro_goods_num: gift.pro_goods_num || 0,
+                            // pro_goods_num: gift.pro_goods_num || 0,
+                            pro_goods_num: gift.pro_goods_num || gift.pro_quantity || 0,
                             pro_image: gift.pro_image || '',
                             ML_Note: gift.ML_Note || '',
                             note: gift.note || '',
@@ -3564,7 +3570,7 @@ export default {
                             pro_sku_price_id: gift.pro_sku_price_id || 0,
                             user_id: gift.user_id || 0,
                             st: gift.st,
-                            stock: gift.stock || 0,
+                            stock: gift.stock,
                         });
                     }
                 }

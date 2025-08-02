@@ -710,12 +710,13 @@
                     }) }}</span> -->
         </div>
 
+        <!-- :disabled="isReadOnly" -->
         <div class="text-gray-700 flex items-center justify-end">
           <input
             type="checkbox"
             v-model="isVathidden"
             id="vatCheckbox"
-            :disabled="isReadOnly"
+            
             class="mr-2"
           />
           <label for="vatCheckbox">แสดงภาษีมูลค่าเพิ่ม (7%) และมูลค่าก่อนภาษี</label>
@@ -3119,9 +3120,30 @@ export default {
       const productPromotions = this.selectedProducts.flatMap((item) => item.promotions || []);
       const productGifts = this.selectedProducts.flatMap((item) => item.gifts || []);
 
+      // // 🧮 รวมทั้งหมด
+      // const allPromotions = [...(this.formData.promotions || []), ...productPromotions];
+      // const allGifts = [...(this.formData.gifts || []), ...productGifts];
+
+      // allPromotions.forEach((promo) => {
+      //   if (promo.pro_sn === "P02-ZZ-9999") {
+      //     console.warn(`🚫 บล็อกโปรโมชั่น: ${promo.title} (${promo.pro_sn})`);
+      //   }
+      // });
+
       // 🧮 รวมทั้งหมด
-      const allPromotions = [...(this.formData.promotions || []), ...productPromotions];
-      const allGifts = [...(this.formData.gifts || []), ...productGifts];
+      let allPromotions = [...(this.formData.promotions || []), ...productPromotions];
+      let allGifts = [...(this.formData.gifts || []), ...productGifts];
+
+      // 🎯 กรองข้อมูลซ้ำใน promotions และ gifts
+      allPromotions = allPromotions.filter(
+          (promo, index, self) =>
+              index === self.findIndex((p) => p.pro_sn === promo.pro_sn && p.pro_activity_id === promo.pro_activity_id)
+      );
+
+      allGifts = allGifts.filter(
+          (gift, index, self) =>
+              index === self.findIndex((g) => g.pro_sn === gift.pro_sn && g.pro_activity_id === gift.pro_activity_id)
+      );
 
       allPromotions.forEach((promo) => {
         if (promo.pro_sn === "P02-ZZ-9999") {
@@ -3134,7 +3156,9 @@ export default {
 
       const countProducts = this.selectedProducts.length;
       const countGifts = allGifts.length;
-      const countPromotions = allPromotions.length;
+      const countPromotions = filteredPromotions.length;
+      // const countPromotions = allPromotions.length;
+
       const totalItems = countProducts + countGifts + countPromotions;
 
       const discountMacfive = this.formData.totalDiscount;
@@ -3230,10 +3254,10 @@ export default {
             ML_vnumber: docNo,
             ML_per: "DP001", //"DP001",
             ML_supcus: this.formData.customerCode,
-            ML_stk: gift.pro_sn || "N/A",
+            ML_stk: gift.pro_sn || gift.prosn || "N/A",
             ML_sto: "MAIN",
             ML_item: this.selectedProducts.length + index + 1,
-            ML_quan: parseFloat(gift.pro_goods_num),
+            ML_quan: gift.pro_goods_num || 0,
             ML_cog: 0,
             ML_netL: 0,
             ML_cut: 0,
@@ -3258,7 +3282,7 @@ export default {
             ML_stk: promo.pro_sn || "N/A",
             ML_sto: "MAIN",
             ML_item: this.selectedProducts.length + this.formData.gifts.length + index + 1,
-            ML_quan: parseFloat(promo.pro_goods_num),
+            ML_quan: promo.pro_goods_num || 0,
             ML_cog: 0,
             ML_netL: 0,
             ML_cut: 0,

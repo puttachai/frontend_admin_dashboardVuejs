@@ -432,182 +432,116 @@
           </tbody>
 
           <tbody v-if="!isLoading">
-            <!-- แสดงรายการสินค้า -->
-            <!-- 👉 Group by pro_activity_id -->
-            <template
-              v-for="(group, activityId) in groupByActivityId(selectedProducts)"
-              :key="activityId"
-            >
-              <!-- 🔁 Loop สินค้าในกลุ่มนั้น -->
-              <template v-for="(product, index) in group" :key="product.pro_id">
-                <!-- 🔳 สินค้า -->
-                <tr class="text-center bg-white">
-                  <td class="px-4 py-2 border">{{ product.pro_id }}</td>
-                  <td class="px-4 py-2 border">
-                    <template v-if="product.pro_images">
-                      <img
-                        :src="
-                          product.pro_images.startsWith('http')
-                            ? product.pro_images
-                            : BASE_URL_IMAGE + product.pro_images
-                        "
-                        class="w-10 h-10 rounded-full mx-auto"
-                      />
-                    </template>
-                    <template v-else>
-                      <span class="material-icons text-gray-400 text-4xl">broken_image</span>
-                    </template>
-                  </td>
-                  <td class="px-4 py-2 border">
-                    {{ product.pro_erp_title == 0 ? product.pro_title : product.pro_erp_title }}
-                  </td>
-                  <td class="px-4 py-2 border">{{ product.pro_goods_sku_text || "-" }}</td>
-                  <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
-                  <!-- <td class="px-4 text-gray-700 py-2 border">
-                                      <input type="number" v-model.pro_quantity="product.pro_quantity" min="1" placeholder="จำนวน"
-                                          class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
-                                  </td> -->
-                  <!-- เก่าไม่ใช้ -->
-                  <!-- <td class="px-4 py-2 border">
-                    <input
-                      type="number"
-                      :min="0"
-                      :max="product.pro_stock"
-                      step="1"
-                      v-model.number="product.pro_quantity"
-                      @input="validateQuantity(product)"
-                      class="w-full px-2 py-1 border rounded"
-                    />
-                  </td> -->
-                  <!-- ใหม่ใช้ -->
-                  <!-- <td class="px-4 py-2 border"> -->
-                  <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)" -->
-                  <!-- <input
-                      type="number"
-                      :min="1"
-                      :max="product.pro_stock"
-                      step="1"
-                      :disabled="isReadOnly"
-                      v-model.number="product.pro_quantity"
-                      @blur="onQuantityChange(product)"
-                      class="w-full px-2 py-1 border rounded"
-                    />
-                  </td> -->
-                  <td class="px-4 py-2 border">
-                    <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)", @blur="onQuantityChange(product)" = ต้องคลิกพื้นที่ว่างถึงจะไป , v-model.number="product.pro_quantity" @input="onQuantityChange($event,product)-->
-                    <input
-                      type="number"
-                      :min="1"
-                      :max="product.pro_stock"
-                      step="1"
-                      @blur="onQuantityBlur(product)"
-                      v-model="product.pro_quantity"
-                      @input="onQuantityChange($event, product)"
-                      :disabled="isReadOnly"
-                      class="w-full px-2 py-1 border rounded"
-                    />
-                  </td>
-                  <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
-                  <!-- <td class="px-4 py-2 border">{{ product.pro_stock }}</td> -->
-                  <td class="px-4 py-2 border">{{ product.pro_unit_price }}</td>
-                  <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
-                  <td class="px-4 py-2 border">{{ totalprice(product) }}</td>
-                  <!-- <td class="px-4 py-2 border text-red-500 cursor-pointer hover:text-red-700"
-                                      :disabled="isReadOnly"
-                                      @click="removeProduct(index, activityId)">
-                                      ลบ
-                  </td> -->
-                  <!-- ใช้ได้ -->
-                  <td
-                    class="px-4 py-2 border"
-                    :class="{
-                      'text-red-500 cursor-pointer hover:text-red-700': !isReadOnly,
-                      'text-gray-400 cursor-not-allowed': isReadOnly,
-                    }"
-                    @click="!isReadOnly && removeProduct(index, activityId)"
-                  >
-                    ลบ
-                  </td>
-                </tr>
-              </template>
 
-              <!-- 🟦 โปรโมชั่น (มินิมอล + ลูกเล่นไอคอน) -->
-              <tr
-                v-if="group[0].promotions && group[0].promotions.length > 0"
-                class="bg-blue-50 hover:bg-blue-100 transition-colors duration-300"
-              >
-                <td colspan="9" class="px-6 py-4 border rounded-md">
-                  <div class="flex items-center space-x-2 text-blue-800 font-medium">
-                    <svg
-                      class="w-5 h-5 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <span>โปรโมชั่น</span>
-                  </div>
-                  <ul class="list-disc list-inside ml-6 mt-2 text-sm text-gray-700">
-                    <li v-for="(promotion, promoIndex) in group[0].promotions" :key="promoIndex">
-                      {{ promotion.title }}
-                    </li>
-                  </ul>
-                </td>
-              </tr>
+             <template v-for="(groupObj, activityKey) in groupByActivityId(selectedProducts)"
+                            :key="activityKey">
+                            <!-- 🧩 แสดงชื่อหัวแต่ละกลุ่มโปรโมชัน -->
+                            <tr>
+                                <td colspan="9"
+                                    class="px-6 py-3 bg-gray-100 font-semibold text-left text-lg text-gray-800 border">
+                                    {{ groupObj.title }}
+                                </td>
+                            </tr>
 
-              <!-- 🟨 ของแถม (มินิมอล + รูปภาพ + ฟีล modern card) -->
-              <tr
-                v-if="group[0].gifts && group[0].gifts.length > 0"
-                class="bg-yellow-50 hover:bg-yellow-100 transition-colors duration-300"
-              >
-                <td colspan="9" class="px-6 py-4 border rounded-md">
-                  <div class="flex items-center space-x-2 text-yellow-800 font-medium">
-                    <svg
-                      class="w-5 h-5 text-yellow-600"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 8c-1.1 0-2 .9-2 2m4 0a2 2 0 00-2-2m0 4a2 2 0 002-2m-4 0a2 2 0 012-2m0 4a2 2 0 01-2-2m8-6H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8l-6-6z"
-                      />
-                    </svg>
-                    <span>ของแถม</span>
-                  </div>
-                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                    <div
-                      v-for="(gift, giftIndex) in group[0].gifts"
-                      :key="giftIndex"
-                      class="flex items-center bg-white shadow-sm rounded-lg p-2 border border-gray-200"
-                    >
-                      <img
-                        v-if="gift.pro_image"
-                        :src="
-                          gift.pro_image.startsWith('http')
-                            ? gift.pro_image
-                            : BASE_URL_IMAGE + gift.pro_image
-                        "
-                        class="w-12 h-12 object-cover rounded mr-4"
-                        alt="gift image"
-                      />
-                      <div class="text-sm text-gray-800">
-                        <div class="font-semibold">{{ gift.title }}</div>
-                        <div class="text-gray-500">จำนวน: {{ gift.pro_goods_num }}</div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </template>
+                            <!-- 🔁 สินค้าในแต่ละก้อน -->
+                            <template v-for="(product, index) in groupObj.items" :key="product.pro_id">
+                                <!-- ✅ Copy <tr> สินค้าเดิมของคุณมาใส่ตรงนี้ -->
+                                <!-- เช่น: -->
+                                <tr class="text-center bg-white">
+                                    <td class="px-4 py-2 border">{{ product.pro_id }}</td>
+                                    <td class="px-4 py-2 border">
+                                        <template v-if="product.pro_images">
+                                            <img :src="product.pro_images.startsWith('http') ? product.pro_images : BASE_URL_IMAGE + product.pro_images"
+                                                class="w-10 h-10 rounded-full mx-auto" />
+                                        </template>
+                                        <template v-else>
+                                            <span class="material-icons text-gray-400 text-4xl">broken_image</span>
+                                        </template>
+                                    </td>
+                                    <td class="px-4 py-2 border">
+                                        {{ product.pro_erp_title === '0' ? product.pro_title : product.pro_erp_title ||
+                                        product.erp_title }}
+                                    </td>
+                                    <td class="px-4 py-2 border">{{ product.pro_goods_sku_text || '-' }}</td>
+                                    <td class="px-4 py-2 border">
+                                        <input type="number" :min="1" :max="product.pro_stock" step="1"
+                                            @blur="onQuantityBlur(product)" v-model="product.pro_quantity"
+                                            @input="onQuantityChange($event, product)"
+                                            @keypress="onlyNumberInput($event)" :disabled="isReadOnly"
+                                            class="w-full px-2 py-1 border rounded" />
+                                    </td>
+                                    <td class="px-4 py-2 border">{{ product.pro_goods_price || product.pro_unit_price }}
+                                    </td>
+                                    <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
+                                    <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString() || 0 }}
+                                    </td>
+                                    <td class="px-4 py-2 border" :class="{
+                                        'text-red-500 cursor-pointer hover:text-red-700': !isReadOnly,
+                                        'text-gray-400 cursor-not-allowed': isReadOnly
+                                    }" @click="!isReadOnly && removeProduct(index, activityKey)">
+                                        ลบ
+                                    </td>
+                                </tr>
+                                <!-- ❗ แจ้งเตือนเฉพาะกรณี: เป็นสินค้าจากโปรโมชั่นแต่ไม่เข้าเงื่อนไข -->
+                                <tr v-if="product.pro_activity_id != 0 && product.st == false">
+                                    <td colspan="9"
+                                        class="px-6 py-3 bg-red-50 text-red-700 text-sm border-l-4 border-red-400">
+                                        ⚠️ สินค้านี้ถูกเลือกมาจากโปรโมชั่น แต่ยอดซื้อไม่เข้าเงื่อนไข
+                                        และจะไม่ถูกนำไปรวมคำนวณในโปรโมชั่นรายวัน
+                                    </td>
+                                </tr>
+
+                            </template>
+
+                            <!-- 🔽 แสดง Promotions ถ้ามี -->
+                            <tr v-if="groupObj.items[0].promotions && groupObj.items[0].promotions.length > 0"
+                                class="bg-blue-50 hover:bg-blue-100 transition-colors duration-300">
+                                <td colspan="9" class="px-6 py-4 border rounded-md">
+                                    <div class="flex items-center space-x-2 text-blue-800 font-medium">
+                                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor"
+                                            stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span>โปรโมชั่น</span>
+                                    </div>
+                                    <ul class="list-disc list-inside ml-6 mt-2 text-sm text-gray-700">
+                                        <li v-for="(promotion, promoIndex) in groupObj.items[0].promotions"
+                                            :key="promoIndex">
+                                            {{ promotion.title }}
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+
+                            <!-- 🔽 แสดง Gifts ถ้ามี -->
+                            <tr v-if="groupObj.items[0].gifts && groupObj.items[0].gifts.length > 0"
+                                class="bg-yellow-50 hover:bg-yellow-100 transition-colors duration-300">
+                                <td colspan="9" class="px-6 py-4 border rounded-md">
+                                    <div class="flex items-center space-x-2 text-yellow-800 font-medium">
+                                        <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor"
+                                            stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M12 8c-1.1 0-2 .9-2 2m4 0a2 2 0 00-2-2m0 4a2 2 0 002-2m-4 0a2 2 0 012-2m0 4a2 2 0 01-2-2m8-6H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V8l-6-6z" />
+                                        </svg>
+                                        <span>ของแถม</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                                        <div v-for="(gift, giftIndex) in groupObj.items[0].gifts" :key="giftIndex"
+                                            class="flex items-center bg-white shadow-sm rounded-lg p-2 border border-gray-200">
+                                            <img v-if="gift.pro_image"
+                                                :src="gift.pro_image.startsWith('http') ? gift.pro_image : BASE_URL_IMAGE + gift.pro_image"
+                                                class="w-12 h-12 object-cover rounded mr-4" alt="gift image" />
+                                            <div class="text-sm text-gray-800">
+                                                <div class="font-semibold">{{ gift.title }}</div>
+                                                <div class="text-gray-500">จำนวน: {{ gift.pro_goods_num }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+
           </tbody>
         </table>
       </div>
@@ -1227,7 +1161,7 @@ export default {
     this.currentDocumentNo = `Sale Order: ${docNo}`;
 
     // loadDataDocument
-    this.loadDocumentData(this.documentNo_route_params);
+    await this.loadDocumentData(this.documentNo_route_params);
 
     try {
       const res = await axios.get(
@@ -1393,21 +1327,6 @@ export default {
           `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/sale_order/get_sale_order.php?documentNo=${documentNo_route_params}`
         );
 
-        // const jsonStr = response.data.replace(/^\uFEFF/, '').trim();
-        // // แปลงสตริงเป็นอ็อบเจกต์
-        // const resData = JSON.parse(jsonStr);
-
-        // เคลียร์ BOM ถ้ามี
-        //   if (typeof raw === 'string' && raw.charCodeAt(0) === 0xFEFF) {
-        //     raw = raw.slice(1);
-        //   }
-        //  */
-        //console.log('log raw: ', raw)
-
-        // const resData = typeof raw === 'string' ? JSON.parse(raw) : raw;
-
-        //console.log('✅ Clean JSON:', resData);
-
         // const resData = JSON.parse(response.data);
         const resData = response.data;
 
@@ -1453,8 +1372,12 @@ export default {
           this.selectedProducts = resData.data.productList.map((product) => {
             console.log("🛠️ กำลัง map product:", product); // 👈 log ตรงนี้เช็กแต่ละตัว
             const productObj = {
+              
+           
+             
               item_id: product.id,
               pro_id: product.pro_sku_price_id,
+              pro_sku_price_id: product.pro_sku_price_id, 
               // pro_id: product.pro_id,
               pro_erp_title: product.pro_erp_title,
               pro_title: product.pro_title,
@@ -1479,24 +1402,8 @@ export default {
               // promotions: matchedPromotions,
               // gifts: matchedGifts
               // ✅ ดึงจาก product โดยตรง
-              promotions: product.promotions || [],
-              gifts: product.gifts || [],
-              // item_id: product.id, // item_id: 774
-              // pro_id: product.pro_id,
-              // pro_erp_title: product.pro_name,
-              // pro_quantity: product.qty,
-              // pro_unit_price: parseFloat(product.unit_price),
-              // pro_discount: parseFloat(product.discount),
-              // pro_total_price: parseFloat(product.total_price),
-              // pro_images: product.pro_images,
-              // pro_sn: product.sn,
-              // pro_unit: product.unit || '',
-              // activity_id: product.pro_activity_id || null,
-              // pro_activity_id: product.pro_activity_id || 0, // ✅ ใช้ชื่อนี้ให้ตรง backend
-              // pro_goods_sku_text: product.pro_goods_sku_text || '',
-              //
-              // promotions: matchedPromotions,
-              // gifts: matchedGifts
+              // promotions: product.promotions || [],
+              // gifts: product.gifts || [],
               // ✅ ดึงจาก product โดยตรง
               promotions: product.promotions || [],
               gifts: product.gifts || [],
@@ -1543,186 +1450,391 @@ export default {
       }, 100);
     },
 
-    async submittedProduct() {
-      try {
-        const token = localStorage.getItem("token");
+    // async submittedProduct() {
+    //   try {
+    //     const token = localStorage.getItem("token");
 
-        console.log("Check: token", token);
-        console.log("Check: token NULL");
+    //     console.log("Check: token", token);
+    //     console.log("Check: token NULL");
 
-        console.log("Check: this.selectedProducts", this.selectedProducts);
+    //     console.log("Check: this.selectedProducts", this.selectedProducts);
 
-        // สร้าง payload จาก selectedProducts ทั้งหมด
-        const payload = {
-          products: this.selectedProducts.map((product) => ({
-            pro_activity_id: product.pro_activity_id || 0,
-            pro_goods_id: product.pro_goods_id,
-            pro_goods_price: parseFloat(product.pro_unit_price) || 0,
-            pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
-            pro_erp_title: product.pro_erp_title || "",
-            pro_goods_num: product.pro_quantity, // ส่งจำนวนล่าสุด
-            pro_image: product.pro_images,
-            pro_sn: product.pro_sn,
-            pro_title: product.pro_title,
-            pro_units: product.pro_units,
-          })),
-        };
+    //     // สร้าง payload จาก selectedProducts ทั้งหมด
+    //     const payload = {
+    //       products: this.selectedProducts.map((product) => ({
+    //         pro_activity_id: product.pro_activity_id || 0,
+    //         pro_goods_id: product.pro_goods_id,
+    //         pro_goods_price: parseFloat(product.pro_unit_price) || 0,
+    //         pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
+    //         pro_erp_title: product.pro_erp_title || "",
+    //         pro_goods_num: product.pro_quantity, // ส่งจำนวนล่าสุด
+    //         pro_image: product.pro_images,
+    //         pro_sn: product.pro_sn,
+    //         pro_title: product.pro_title,
+    //         pro_units: product.pro_units,
+    //       })),
+    //     };
 
-        const response = await axios.post(`${BASE_URL}/cart_out/index`, payload, {
-          headers: {
-            "Content-Type": "application/json",
-            token: token,
-          },
-        });
+    //     const response = await axios.post(`${BASE_URL}/cart_out/index`, payload, {
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         token: token,
+    //       },
+    //     });
 
-        console.log(" 🛑 response :", response);
+    //     console.log(" 🛑 response :", response);
 
-        if (response.data.code === 1) {
-          const data = response.data.data.products || [];
-          console.log("API response products:", data);
+    //     if (response.data.code === 1) {
+    //       const data = response.data.data.products || [];
+    //       console.log("API response products:", data);
 
-          // ✅ วงเล็บให้ถูกต้องเพื่อไม่ให้ logic ผิด
-          const items = data.filter(
-            (item) =>
-              (item?.ML_Note === "item" || item?.ML_Note === "itemmonth") && item.pro_goods_id !== 0
-          );
+    //       // ✅ วงเล็บให้ถูกต้องเพื่อไม่ให้ logic ผิด
+    //       const items = data.filter(
+    //         (item) =>
+    //           (item?.ML_Note === "item" || item?.ML_Note === "itemmonth") && item.pro_goods_id !== 0
+    //       );
 
-          const gifts = data.filter(
-            (item) =>
-              (item?.ML_Note === "zengsopng_day" || item?.ML_Note === "zengsopng_month") &&
-              item.pro_goods_id !== 0
-          );
+    //       const gifts = data.filter(
+    //         (item) =>
+    //           (item?.ML_Note === "zengsopng_day" || item?.ML_Note === "zengsopng_month") &&
+    //           item.pro_goods_id !== 0
+    //       );
 
-          const promotions = data.filter(
-            (item) =>
-              (item?.ML_Note === "promotion_day" || item?.ML_Note === "promotion_month") &&
-              item.pro_activity_id !== 0
-          );
+    //       const promotions = data.filter(
+    //         (item) =>
+    //           (item?.ML_Note === "promotion_day" || item?.ML_Note === "promotion_month") &&
+    //           item.pro_activity_id !== 0
+    //       );
 
-          // ✅ ผูกสินค้า + promotion + gift ตาม activity_id
-          this.selectedProducts = this.selectedProducts.map((product) => {
-            const matchedItem = items.find(
-              (item) =>
-                item.pro_goods_id == product.pro_goods_id &&
-                (item.ML_Note === "item" || item.ML_Note === "itemmonth")
-            );
+    //       // ✅ ผูกสินค้า + promotion + gift ตาม activity_id
+    //       this.selectedProducts = this.selectedProducts.map((product) => {
+    //         const matchedItem = items.find(
+    //           (item) =>
+    //             item.pro_goods_id == product.pro_goods_id &&
+    //             (item.ML_Note === "item" || item.ML_Note === "itemmonth")
+    //         );
 
-            if (!matchedItem) return product;
+    //         if (!matchedItem) return product;
 
-            const activityId = matchedItem.st === false ? 0 : matchedItem.pro_activity_id;
+    //         const activityId = matchedItem.st === false ? 0 : matchedItem.pro_activity_id;
 
-            const FinalPromotions = promotions.filter((promo) => {
-              const stMatch = promo.st === matchedItem.st;
+    //         const FinalPromotions = promotions.filter((promo) => {
+    //           const stMatch = promo.st === matchedItem.st;
 
-              if (matchedItem.st === true) {
-                return stMatch && promo.pro_activity_id === matchedItem.pro_activity_id;
-              } else {
-                return stMatch;
-              }
-            });
+    //           if (matchedItem.st === true) {
+    //             return stMatch && promo.pro_activity_id === matchedItem.pro_activity_id;
+    //           } else {
+    //             return stMatch;
+    //           }
+    //         });
 
-            const FinalGifts = gifts.filter((gift) => {
-              const stMatch = gift.st === matchedItem.st;
+    //         const FinalGifts = gifts.filter((gift) => {
+    //           const stMatch = gift.st === matchedItem.st;
 
-              if (matchedItem.st === true) {
-                return stMatch && gift.pro_activity_id === matchedItem.pro_activity_id;
-              } else {
-                return stMatch;
-              }
-            });
+    //           if (matchedItem.st === true) {
+    //             return stMatch && gift.pro_activity_id === matchedItem.pro_activity_id;
+    //           } else {
+    //             return stMatch;
+    //           }
+    //         });
 
-            //
-            // const FinalPromotions = promotions.filter(promo =>
-            //     promo.st === matchedItem.st &&
-            //     promo.pro_activity_id === activityId
-            // );
+    //         //
+    //         // const FinalPromotions = promotions.filter(promo =>
+    //         //     promo.st === matchedItem.st &&
+    //         //     promo.pro_activity_id === activityId
+    //         // );
 
-            // const FinalGifts = gifts.filter(gift =>
-            //     gift.st === matchedItem.st &&
-            //     gift.pro_activity_id === activityId
-            // );
+    //         // const FinalGifts = gifts.filter(gift =>
+    //         //     gift.st === matchedItem.st &&
+    //         //     gift.pro_activity_id === activityId
+    //         // );
 
-            return {
-              ...product,
-              ...matchedItem,
-              activity_id: activityId,
-              pro_activity_id: matchedItem.pro_activity_id,
-              promotions: FinalPromotions,
-              gifts: FinalGifts,
-            };
-          });
+    //         return {
+    //           ...product,
+    //           ...matchedItem,
+    //           activity_id: activityId,
+    //           pro_activity_id: matchedItem.pro_activity_id,
+    //           promotions: FinalPromotions,
+    //           gifts: FinalGifts,
+    //         };
+    //       });
 
-          console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
-        } else {
-          // alert(response.data.message || "เกิดข้อผิดพลาด");
-          Swal.fire({
-            icon: "error",
-            title: "กรุณาเลือกร้านค้าของลูกค้า",
-            text: `กรุณาเลือกร้านค้าของลูกค้าก่อนตรวจสอบหรือแก้ไขข้อมูล`,
-            confirmButtonText: "ไปยังหน้าเลือกร้านค้า",
-            allowOutsideClick: false, // กันไม่ให้คลิกข้างนอกเพื่อปิด
-            allowEscapeKey: false, // กันไม่ให้กด ESC เพื่อปิด
-          }).then((result) => {
-            if (result.isConfirmed) {
-              this.$router.push("/customer"); // เปลี่ยนเส้นทางไปยังหน้า customer
+    //       console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
+    //     } else {
+    //       // alert(response.data.message || "เกิดข้อผิดพลาด");
+    //       Swal.fire({
+    //         icon: "error",
+    //         title: "กรุณาเลือกร้านค้าของลูกค้า",
+    //         text: `กรุณาเลือกร้านค้าของลูกค้าก่อนตรวจสอบหรือแก้ไขข้อมูล`,
+    //         confirmButtonText: "ไปยังหน้าเลือกร้านค้า",
+    //         allowOutsideClick: false, // กันไม่ให้คลิกข้างนอกเพื่อปิด
+    //         allowEscapeKey: false, // กันไม่ให้กด ESC เพื่อปิด
+    //       }).then((result) => {
+    //         if (result.isConfirmed) {
+    //           this.$router.push("/customer"); // เปลี่ยนเส้นทางไปยังหน้า customer
+    //         }
+    //       });
+    //     }
+    //   } catch (error) {
+    //     // alert("เกิดข้อผิดพลาดในการเชื่อมต่อ API");
+    //     Swal.fire("ผิดพลาด", response.data.message, "error");
+    //     console.error(error);
+    //   }
+    // },
+
+       async submittedProduct() {
+
+            try {
+                const token = localStorage.getItem('token');
+
+                console.log('Check: this.selectedProducts', this.selectedProducts);
+
+                // สร้าง payload จาก selectedProducts ทั้งหมด
+                const payload = {
+                    products: this.selectedProducts.map(product => ({
+                        pro_activity_id: product.pro_activity_id || 0,
+                        pro_goods_id: product.pro_goods_id,
+                        pro_goods_price: parseFloat(product.pro_unit_price) || 0,
+                        pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
+                        pro_erp_title: product.pro_erp_title || '',
+                        pro_goods_num: product.pro_quantity, // ส่งจำนวนล่าสุด
+                        pro_image: product.pro_images,
+                        pro_sn: product.pro_sn,
+                        pro_title: product.pro_title,
+                        pro_units: product.pro_units
+                    }))
+                };
+
+                const response = await axios.post(
+                    `${BASE_URL}/cart_out/index`,
+                    payload,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            token: token,
+                        },
+                    }
+                );
+
+                console.log(' 🛑 response :', response);
+
+                if (response.data.code === 1) {
+                    const data = response.data.data.products || [];
+                    console.log('API response products:', data);
+
+
+                    // ✅ วงเล็บให้ถูกต้องเพื่อไม่ให้ logic ผิด
+                    const items = data.filter(item =>
+                        (item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth') &&
+                        item.pro_goods_id !== 0
+                    );
+
+                    const gifts = data.filter(item =>
+                        (item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month') &&
+                        item.pro_goods_id !== 0
+                    );
+
+                    const promotions = data.filter(item =>
+                        (item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month') &&
+                        item.pro_activity_id !== 0
+                    );
+
+                    // ✅ ผูกสินค้า + promotion + gift ตาม activity_id
+                    this.selectedProducts = this.selectedProducts.map((product) => {
+                        const matchedItem = items.find(item =>
+                            item.pro_goods_id == product.pro_goods_id &&
+                            (item.ML_Note === "item" || item.ML_Note === "itemmonth") &&
+                            item.pro_activity_id == product.pro_activity_id &&
+                            item.pro_sku_price_id == product.pro_sku_price_id
+                        );
+
+                        if (!matchedItem) return product;
+
+                        const activityId = matchedItem.st === false ? 0 : matchedItem.pro_activity_id;
+
+                        const FinalPromotions = promotions.filter(promo => {
+                            const stMatch = promo.st === matchedItem.st;
+
+                            if (matchedItem.st === true) {
+                                return stMatch && promo.pro_activity_id === matchedItem.pro_activity_id;
+                            } else {
+                                return stMatch;
+                            }
+                        });
+
+                        const FinalGifts = gifts.filter(gift => {
+                            const stMatch = gift.st === matchedItem.st;
+
+                            if (matchedItem.st === true) {
+                                return stMatch && gift.pro_activity_id === matchedItem.pro_activity_id;
+                            } else {
+                                return stMatch;
+                            }
+                        });
+
+                        return {
+                            ...product,
+                            ...matchedItem,
+                            activity_id: activityId,
+                            pro_activity_id: matchedItem.pro_activity_id,
+                            pro_unit_price: matchedItem.pro_goods_price,
+                            promotions: FinalPromotions,
+                            gifts: FinalGifts
+                        };
+                    });
+
+                    console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
+
+                } else {
+                    alert(response.data.message || 'เกิดข้อผิดพลาด');
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ API');
+                console.error(error);
             }
-          });
-        }
-      } catch (error) {
-        // alert("เกิดข้อผิดพลาดในการเชื่อมต่อ API");
-        Swal.fire("ผิดพลาด", response.data.message, "error");
-        console.error(error);
-      }
-    },
+        },
 
-    async onQuantityBlur(product) {
-      if (product.pro_quantity === "" || product.pro_quantity === null) {
-        product.pro_quantity = 1;
-        product.pro_goods_num = 1;
-        try {
-          await this.submittedProduct();
-        } catch (error) {
-          console.error("Error submitting product on blur:", error);
-        }
-      }
-    },
+          onlyNumberInput(event) {
+            const key = event.key;
+            // อนุญาตเฉพาะตัวเลข 0-9 เท่านั้น
+            if (!/^\d$/.test(key)) {
+                event.preventDefault();
+            }
+        },
 
-    async onQuantityChange(event, product) {
-      let value = event.target.value;
+        async onQuantityBlur(product) {
+            if (product.pro_quantity === '' || product.pro_quantity === null) {
+                product.pro_quantity = 1;
+                product.pro_goods_num = 1;
+                try {
+                    console.log('Check product.pro_quantity: ', product.pro_quantity);
+                    console.log('Check product.pro_goods_num: ', product.pro_goods_num);
+                    await this.submittedProduct();
+                } catch (error) {
+                    console.error('Error submitting product on blur:', error);
+                }
+            }
+        },
 
-      // อนุญาตให้ว่างได้ระหว่างพิมพ์
-      if (value === "") {
-        product.pro_quantity = "";
-        // ยังไม่เรียก submittedProduct เพราะยังไม่ใช่ตัวเลขที่สมบูรณ์
-        return;
-      }
+        async onQuantityChange(event, product) {
+            let value = event.target.value;
 
-      // แปลงเป็นเลขจำนวนเต็ม
-      value = Number(value);
+            // อนุญาตให้ว่างได้ระหว่างพิมพ์
+            if (value === '') {
+                product.pro_quantity = '';
+                // ยังไม่เรียก submittedProduct เพราะยังไม่ใช่ตัวเลขที่สมบูรณ์
+                return;
+            }
+            console.log('Check value: ', value);
+            // แปลงเป็นเลขจำนวนเต็ม
+            value = Number(value);
+            console.log('Check value: ', value);
 
-      if (isNaN(value)) {
-        // กรณีป้อนค่าไม่ใช่ตัวเลข เช่น '-' หรืออะไรที่ไม่ถูกต้อง
-        product.pro_quantity = "";
-        return;
-      }
+            if (isNaN(value)) {
 
-      // validate ขอบเขตจำนวน
-      if (value < 1) {
-        product.pro_quantity = 1;
-      } else if (value > product.pro_stock) {
-        product.pro_quantity = product.pro_stock;
-      } else {
-        product.pro_quantity = value;
-      }
+                // กรณีป้อนค่าไม่ใช่ตัวเลข เช่น '-' หรืออะไรที่ไม่ถูกต้อง
+                product.pro_quantity = '';
+                return;
+            }
 
-      product.pro_goods_num = product.pro_quantity;
+            // validate ขอบเขตจำนวน
+            if (value < 1) {
+                product.pro_quantity = 1;
+            } else if (value > product.pro_stock) {
+                console.log('Check pro_stock: ');
+                product.pro_quantity = product.pro_stock;
+            } else {
+                console.log('Check else pro_goods_num: ');
+                product.pro_goods_num = value;
+                product.pro_quantity = value;
+            }
 
-      try {
-        await this.submittedProduct();
-      } catch (error) {
-        console.error("Error submitting product:", error);
-      }
-    },
+            console.log('Check product: ', product);
+            console.log('Check product.pro_quantity: ', product.pro_quantity);
+
+            console.log('Check product: ', product);
+
+
+            try {
+                console.log('Check product.pro_quantity: ', product.pro_quantity);
+                console.log('Check product.pro_goods_num: ', product.pro_goods_num);
+                console.log('Check this.selectedProducts: ', this.selectedProducts);
+
+
+                // this.selectedProducts = this.selectedProducts.map(item => ({
+                //     ...item,
+                //     pro_goods_num: product.pro_goods_num || 0, // ใช้ค่าเดิมหรือ 0 หากไม่มี
+                //     pro_quantity: product.pro_quantity || 0, // ใช้ pro_goods_num เป็นค่า pro_quantity
+                // }));
+                this.selectedProducts = this.selectedProducts.map(item => {
+                    if (
+                        item.pro_sku_price_id === product.pro_sku_price_id &&
+                        item.pro_activity_id === product.pro_activity_id
+                    ) {
+                        return {
+                            ...item,
+                            pro_goods_num: product.pro_goods_num || 0,
+                            pro_quantity: product.pro_quantity || 0,
+                        };
+                    }
+                    return item; // คืนค่า item เดิมถ้าเงื่อนไขไม่ตรง
+                });
+                // this.$forceUpdate();
+
+                await this.submittedProduct();
+            } catch (error) {
+                console.error('Error submitting product:', error);
+            }
+        },
+
+    // async onQuantityBlur(product) {
+    //   if (product.pro_quantity === "" || product.pro_quantity === null) {
+    //     product.pro_quantity = 1;
+    //     product.pro_goods_num = 1;
+    //     try {
+    //       await this.submittedProduct();
+    //     } catch (error) {
+    //       console.error("Error submitting product on blur:", error);
+    //     }
+    //   }
+    // },
+
+    // async onQuantityChange(event, product) {
+    //   let value = event.target.value;
+
+    //   // อนุญาตให้ว่างได้ระหว่างพิมพ์
+    //   if (value === "") {
+    //     product.pro_quantity = "";
+    //     // ยังไม่เรียก submittedProduct เพราะยังไม่ใช่ตัวเลขที่สมบูรณ์
+    //     return;
+    //   }
+
+    //   // แปลงเป็นเลขจำนวนเต็ม
+    //   value = Number(value);
+
+    //   if (isNaN(value)) {
+    //     // กรณีป้อนค่าไม่ใช่ตัวเลข เช่น '-' หรืออะไรที่ไม่ถูกต้อง
+    //     product.pro_quantity = "";
+    //     return;
+    //   }
+
+    //   // validate ขอบเขตจำนวน
+    //   if (value < 1) {
+    //     product.pro_quantity = 1;
+    //   } else if (value > product.pro_stock) {
+    //     product.pro_quantity = product.pro_stock;
+    //   } else {
+    //     product.pro_quantity = value;
+    //   }
+
+    //   product.pro_goods_num = product.pro_quantity;
+
+    //   try {
+    //     await this.submittedProduct();
+    //   } catch (error) {
+    //     console.error("Error submitting product:", error);
+    //   }
+    // },
 
     // async onQuantityChange(product) {
     //   if (product.pro_quantity < 1) product.pro_quantity = 1;
@@ -2560,20 +2672,7 @@ export default {
             pro_units: product.pro_units, //
             activity_id: product.activity_id || product.pro_activity_id || 0, // เพิ่ม activity_id 0 ถ้าไม่มี
             pro_activity_id: product.pro_activity_id || 0, // เพิ่ม pro_activity_id ถ้ามี
-            // item_id: product.item_id ?? 0, // ✅ ใส่ id เดิมถ้ามี
-            // pro_id: product.pro_id,
-            // pro_erp_title: product.pro_erp_title,
-            // pro_name: product.pro_erp_title,
-            // pro_quantity: product.pro_quantity,
-            // pro_unit_price: product.pro_unit_price,
-            // totalDiscount: this.formData.totalDiscount || 0, // รวมราคาต่อสินค้า
-            // pro_discount: this.formData.discount || 0, // รวมราคาต่อสินค้า
-            // pro_total_price: total, // รวมราคาต่อสินค้า
-            // pro_images: product.pro_images,
-            // pro_sn: product.pro_sn,
-            // prosn: product.prosn,
-            // pro_units: product.pro_units,
-            // pro_activity_id: product.pro_activity_id || 0 // ✅ เพิ่มบรรทัดนี้!
+           
           };
         });
 
@@ -2704,64 +2803,133 @@ export default {
       return isFormChanged || isProductChanged;
     },
 
-    // new function
-    extractPromotionsAndGifts() {
-      const grouped = this.groupByActivityId(this.selectedProducts);
 
-      console.log("🛒 grouped:", grouped);
+    
+  extractPromotionsAndGifts() {
+    const grouped = this.groupByActivityId(this.selectedProducts);
+    const allPromotions = [];
+    const allGifts = [];
 
-      const allPromotions = [];
-      const allGifts = [];
+    // วนแต่ละกลุ่มผลลัพธ์
+    for (const groupObj of Object.values(grouped)) {
+      // ถ้ามีกลุ่มสินค้า
+      if (!Array.isArray(groupObj.items) || groupObj.items.length === 0) continue;
 
-      for (const group of Object.values(grouped)) {
-        if (group[0].promotions && Array.isArray(group[0].promotions)) {
-          for (const promo of group[0].promotions) {
-            allPromotions.push({
-              title: promo.title,
-              ML_Note: promo.ML_Note || "",
-              note: promo.note || "",
-              pro_activity_id: promo.pro_activity_id || 0,
-              activity_id: promo.pro_activity_id || 0,
-              pro_sn: promo.pro_sn || promo.prosn,
-              prosn: promo.prosn || promo.pro_sn,
-              stock: promo.pro_stock || promo.stock,
-              st: promo.st,
-              pro_goods_id: promo.pro_goods_id || 0,
-              pro_goods_num: promo.pro_goods_num || 0,
-              pro_image: promo.pro_image || "",
-              pro_sku_price_id: promo.pro_sku_price_id || 0,
-              user_id: promo.user_id || 0,
-            });
-          }
-        }
+      // เอาสินค้าตัวแรกมาเป็นต้นแบบ promotions/gifts
+      const firstItem = groupObj.items[0];
 
-        if (group[0].gifts && Array.isArray(group[0].gifts)) {
-          for (const gift of group[0].gifts) {
-            allGifts.push({
-              title: gift.title,
-              pro_goods_num: gift.pro_goods_num || 0,
-              pro_image: gift.pro_image || "",
-              ML_Note: gift.ML_Note || "",
-              note: gift.note || "",
-              pro_activity_id: gift.pro_activity_id || 0,
-              activity_id: gift.pro_activity_id || 0,
-              pro_sn: gift.pro_sn || gift.prosn,
-              prosn: gift.prosn || gift.pro_sn,
-              stock: gift.pro_stock || gift.stock,
-              st: gift.st,
-              pro_goods_id: gift.pro_goods_id || 0,
-              pro_sku_price_id: gift.pro_sku_price_id || 0,
-              user_id: gift.user_id || 0,
-            });
-          }
+      // ถ้ามี promotions เป็น array
+      if (Array.isArray(firstItem.promotions)) {
+        for (const promo of firstItem.promotions) {
+          allPromotions.push({
+            title: promo.title,
+            ML_Note: promo.ML_Note || '',
+            note: promo.note || '',
+            pro_activity_id: promo.pro_activity_id || 0,
+            activity_id: promo.pro_activity_id || 0,
+            pro_sn: promo.pro_sn,
+            prosn: promo.prosn,
+            pro_goods_id: promo.pro_goods_id || 0,
+            pro_goods_num: promo.pro_goods_num || promo.pro_quantity || 0,
+            pro_image: promo.pro_image || '',
+            pro_sku_price_id: promo.pro_sku_price_id || 0,
+            user_id: promo.user_id || 0,
+            st: promo.st,
+            stock: promo.stock,
+          });
         }
       }
 
-      return {
-        promotions: allPromotions,
-        gifts: allGifts,
-      };
-    },
+      // ถ้ามี gifts เป็น array
+      if (Array.isArray(firstItem.gifts)) {
+        for (const gift of firstItem.gifts) {
+          allGifts.push({
+            title: gift.title,
+            pro_goods_num: gift.pro_goods_num || gift.pro_quantity || 0,
+            pro_image: gift.pro_image || '',
+            ML_Note: gift.ML_Note || '',
+            note: gift.note || '',
+            pro_activity_id: gift.pro_activity_id || 0,
+            activity_id: gift.pro_activity_id || 0,
+            pro_sn: gift.pro_sn,
+            prosn: gift.prosn,
+            pro_goods_id: gift.pro_goods_id || 0,
+            pro_sku_price_id: gift.pro_sku_price_id || 0,
+            user_id: gift.user_id || 0,
+            st: gift.st,
+            stock: gift.stock,
+          });
+        }
+      }
+    }
+
+    return {
+      promotions: allPromotions,
+      gifts: allGifts
+    };
+  },
+
+
+
+    // ใช้ได้ดีเลย
+    // new function
+    // extractPromotionsAndGifts() {
+    //   const grouped = this.groupByActivityId(this.selectedProducts);
+
+    //   console.log("🛒 grouped:", grouped);
+
+    //   const allPromotions = [];
+    //   const allGifts = [];
+
+    //   for (const group of Object.values(grouped)) {
+    //     if (group[0].promotions && Array.isArray(group[0].promotions)) {
+    //       for (const promo of group[0].promotions) {
+    //         allPromotions.push({
+    //           title: promo.title,
+    //           ML_Note: promo.ML_Note || "",
+    //           note: promo.note || "",
+    //           pro_activity_id: promo.pro_activity_id || 0,
+    //           activity_id: promo.pro_activity_id || 0,
+    //           pro_sn: promo.pro_sn || promo.prosn,
+    //           prosn: promo.prosn || promo.pro_sn,
+    //           stock: promo.pro_stock || promo.stock,
+    //           st: promo.st,
+    //           pro_goods_id: promo.pro_goods_id || 0,
+    //           pro_goods_num: promo.pro_goods_num || 0,
+    //           pro_image: promo.pro_image || "",
+    //           pro_sku_price_id: promo.pro_sku_price_id || 0,
+    //           user_id: promo.user_id || 0,
+    //         });
+    //       }
+    //     }
+
+    //     if (group[0].gifts && Array.isArray(group[0].gifts)) {
+    //       for (const gift of group[0].gifts) {
+    //         allGifts.push({
+    //           title: gift.title,
+    //           pro_goods_num: gift.pro_goods_num || 0,
+    //           pro_image: gift.pro_image || "",
+    //           ML_Note: gift.ML_Note || "",
+    //           note: gift.note || "",
+    //           pro_activity_id: gift.pro_activity_id || 0,
+    //           activity_id: gift.pro_activity_id || 0,
+    //           pro_sn: gift.pro_sn || gift.prosn,
+    //           prosn: gift.prosn || gift.pro_sn,
+    //           stock: gift.pro_stock || gift.stock,
+    //           st: gift.st,
+    //           pro_goods_id: gift.pro_goods_id || 0,
+    //           pro_sku_price_id: gift.pro_sku_price_id || 0,
+    //           user_id: gift.user_id || 0,
+    //         });
+    //       }
+    //     }
+    //   }
+
+    //   return {
+    //     promotions: allPromotions,
+    //     gifts: allGifts,
+    //   };
+    // },
 
     handleAddressSelected(data) {
       // async handleAddressSelected(data) {
@@ -2898,22 +3066,107 @@ export default {
       );
     },
 
-    groupByActivityId(products) {
-      return products.reduce((acc, item) => {
-        const key = `${item.activity_id || "no-activity"}-st${item.st ?? 0}`;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(item);
-        return acc;
-      }, {});
-    },
+    
+        // groupByActivityId(products) {
+        //     return products.reduce((acc, item) => {
+        //         // เงื่อนไขพิเศษ: pro_activity_id !== 0 และ st === false
+        //         if (item.pro_activity_id !== 0 && item.st === false) {
+        //             const key = 'invalid-activity';
+        //             if (!acc[key]) {
+        //                 acc[key] = {
+        //                     title: '🎯โปรโมชันรายเดือน',
+        //                     items: []
+        //                 };
+        //             }
+        //             acc[key].items.push(item);
+        //             return acc;
+        //         }
+
+        //         // เงื่อนไขปกติ
+        //         const isMonthly = item.pro_activity_id === 0;
+        //         const key = isMonthly
+        //             ? `monthly-st${item.st ?? 0}`
+        //             : `promo-${item.pro_activity_id}-st${item.st ?? 0}`;
+
+        //         if (!acc[key]) {
+        //             acc[key] = {
+        //                 title: isMonthly
+        //                     ? '🎯 โปรโมชั่นรายเดือน'
+        //                     : `🔥 โปรโมชั่นรายวัน ${item.pro_activity_id}`,
+        //                 items: []
+        //             };
+        //         }
+
+        //         acc[key].items.push(item);
+        //         return acc;
+        //     }, {});
+        // },
+        
+
+groupByActivityId(products) {
+  return products.reduce((acc, item) => {
+    // พยายามดึง pro_activity_id และ st จาก promotions
+    const promoIdRaw = item.promotions?.[0]?.pro_activity_id ?? null;
+    const promoStRaw = item.promotions?.[0]?.st;
+
+    const promoId = Number(promoIdRaw);
+    const promoSt = !!promoStRaw; // ✅ แปลงเป็น true/false ไม่ว่ามาจาก 1, 0, true, false
+
+    let key, title;
+
+    if (!isNaN(promoIdRaw)) {
+      // ถ้ามี promotion ให้ใช้โปรโมชันนั้นเป็นตัวกำหนดกลุ่ม
+      key = `promo-${promoId}-st${Number(promoSt)}`; // ให้ได้ st0 หรือ st1
+      title = promoSt
+        ? `🔥 โปรโมชั่นรายวัน ${promoId}`
+        : `🎯 โปรโมชั่นรายเดือน ${promoId}`;
+    } else {
+      // ถ้าไม่มี promotion ให้ fallback ไปใช้ข้อมูลจาก item
+      const pid = Number(item.pro_activity_id);
+      const stRaw = item.st ?? item.process ?? false;
+      const st = !!stRaw;
+
+      if (pid === 0 && !st) {
+        key = `monthly-st${Number(st)}`;
+        title = '🎯 โปรโมชั่นรายเดือน';
+      } else if (pid !== 0 && !st) {
+        key = `invalid-activity`;
+        title = '⚠️ โปรไม่เข้าเงื่อนไข';
+      } else {
+        key = `promo-${pid}-st${Number(st)}`;
+        title = `🔥 โปรโมชั่นรายวัน ${pid}`;
+      }
+    }
+
+    if (!acc[key]) {
+      acc[key] = {
+        title,
+        items: [],
+        promotions: [],
+        gifts: []
+      };
+    }
+
+    acc[key].items.push(item);
+    if (item.promotions) acc[key].promotions.push(...item.promotions);
+    if (item.gifts) acc[key].gifts.push(...item.gifts);
+
+    return acc;
+  }, {});
+},
+
+
+    // groupByActivityId(products) {
+    //   return products.reduce((acc, item) => {
+    //     const key = `${item.activity_id || "no-activity"}-st${item.st ?? 0}`;
+    //     if (!acc[key]) acc[key] = [];
+    //     acc[key].push(item);
+    //     return acc;
+    //   }, {});
+    // },
 
     totalprice(product) {
-      // const qty = product.qty || 0;
-      // const price = product.pro_unit_price || 0;
-      // const discount = product.discount || 0;
-      // const totalprice = (qty * price - discount).toFixed(2);
-      // console.log('Log value:', totalprice);
-      // return totalprice;
+     
       const qty = product.pro_quantity || 0; // ใช้ pro_quantity แทน qty
       const price = product.pro_unit_price || 0;
       const discount = product.discount || 0;

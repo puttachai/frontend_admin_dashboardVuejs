@@ -1396,7 +1396,6 @@ export default {
 
                     console.log("📋 รายการสินค้าในตาราง:", this.selectedProducts);
 
-
                 } else {
                     alert(response.data.message || 'เกิดข้อผิดพลาด');
                 }

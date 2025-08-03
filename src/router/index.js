@@ -13,6 +13,8 @@ import SaleOrderDetail from "../components/listSaleOrder/SaleOrderDetailView.vue
 
 // import ActivityLogView from "../views/ActivityLogView.vue";
 
+import LoginForm from "../views/LoginView.vue";
+
 import AuthLayout from "../components/AuthLayout.vue";
 import SinginForm from "../components/SinginForm.vue";
 import SignupForm from "../components/SignupForm.vue";
@@ -51,27 +53,51 @@ if (Array.isArray(getCustomer_id)) {
 const routes = [
   {
     path: "/",
-    redirect: "/singin",
+    redirect: "/login",
+    // redirect: "/singin",
+  },
+
+  {
+    path: "/login",
+    name: "login",
+    component: LoginForm,
   },
 
   {
     path: "/singin",
     component: AuthLayout,
+    meta: { requiresAuth: true }, //  // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
     children: [
       {
         path: "",
         name: "singin",
+        component: SinginForm,
+        meta: { requiresAuth: true }, //  // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
+      },
+    ],
+  },
+  {
+    path: "/singin",
+    component: AuthLayout,
+    meta: { requiresAuth: true }, //  // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
+    children: [
+      {
+        path: "",
+        name: "singin",
+        meta: { requiresAuth: true }, // // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
         component: SinginForm,
       },
     ],
   },
   {
     path: "/signup",
-    component: AuthLayout,
+    component: AuthLayout, // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
+    meta: { requiresAuth: true }, //  ต้องทำการ login ก่อน
     children: [
       {
         path: "",
         name: "signup",
+        meta: { requiresAuth: true }, // // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
         component: SignupForm,
         // meta: { layout: 'auth' }, // ไม่ให้สืบทอดคลาสจากหน้า App
       },

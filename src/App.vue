@@ -8,7 +8,7 @@ import Sidebar from './components/Sidebar.vue'
 // import LoginView from './views/LoginView.vue'
 
 const route = useRoute()
-const hideLayout = ['singin', 'signup']
+const hideLayout = ['singin', 'signup', 'login']
 
 </script>
 

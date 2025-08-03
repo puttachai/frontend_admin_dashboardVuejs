@@ -133,7 +133,9 @@
               <td class="px-4 text-gray-700 py-2 border text-center">
                 <!-- max item.stock -->
                 <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
-                  v-model.number="item.amount" :min="0" :max="item.stock" @input="validateAmount(item)"
+                  v-model.number="item.amount" :min="0" :max="item.stock"
+                  @keypress="onlyNumberInput($event)"
+                  @input="validateAmount(item)"
                   placeholder="0" />
               </td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
@@ -355,6 +357,15 @@ function handleCheckboxChange(item, event) {
     selectedIds.value = selectedIds.value.filter(id => id !== item.id);
     item.amount = 0;
   }
+}
+
+
+function onlyNumberInput(event) {
+    const key = event.key;
+    // อนุญาตเฉพาะตัวเลข 0-9 เท่านั้น
+    if (!/^\d$/.test(key)) {
+    event.preventDefault();
+    }
 }
 
 
@@ -1176,13 +1187,13 @@ async function submittedProduct(newproduct) {
 
       // ใช้ได้
       // แยกข้อมูลออกเป็น 3 ก้อน //  ,  
-      const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
-      const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day');
       // const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
-      // const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
-      const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day');
-      const promotionsmonth = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_month');
-      const giftsmonth = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_month');
+      // const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day');
+      const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
+      const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
+      const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
+      // const promotionsmonth = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_month');
+      // const giftsmonth = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_month');
 
       const emitTitles = newproduct.map(p => ({
         // const emitTitles = selectedProducts.map(p => ({
@@ -1235,8 +1246,8 @@ async function submittedProduct(newproduct) {
         items,
         gifts,
         promotions,
-        promotionsmonth,
-        giftsmonth,
+        // promotionsmonth,
+        // giftsmonth,
         emitTitles
       });
 

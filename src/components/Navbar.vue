@@ -33,16 +33,21 @@
           </router-link>
 
           <!-- ข้อความที่ขยับ -->
-          <div class="ml-2 overflow-hidden text-white whitespace-nowrap max-w-[220px] hidden md:block message-slide"
+          <div class="ml-2 overflow-hidden text-white whitespace-nowrap max-w-[280px] hidden md:block message-slide"
+            v-show="showSlidingMessage">
+            Welcome to D-Power’s Admin Dashboard
+          </div>
+          <!-- <div class="ml-2 overflow-hidden text-white whitespace-nowrap max-w-[220px] hidden md:block message-slide"
             v-show="showSlidingMessage">
             Welcome to Admin Dashboard!
-          </div>
+          </div> -->
         </div>
 
         <!-- Title (ตรงกลาง) -->
         <div v-if="!contact" class="boxTitel absolute left-1/2 transform -translate-x-1/2">
           <router-link to="/dashboard">
-            <h4 class="welcome font-semibold text-xl text-center">The Welcome to Admin Dashboard</h4>
+            <h4 class="welcome font-semibold text-xl text-center">Welcome to the D-Power Sales Dashboard</h4>
+            <!-- <h4 class="welcome font-semibold text-xl text-center">The Welcome to Admin Dashboard</h4> -->
           </router-link>
         </div>
 
@@ -490,7 +495,8 @@ body>.skiptranslate {
 
 }
 
-@media (max-width: 680px) {
+@media (max-width: 820px) {
+/* @media (max-width: 680px) { */
 
   .welcome,
   .boxTitel {

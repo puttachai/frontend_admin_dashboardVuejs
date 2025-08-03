@@ -351,10 +351,22 @@
                     <tbody v-if="!isLoading">
                         <!-- แสดงรายการสินค้า -->
                         <!-- 👉 Group by pro_activity_id -->
-                        <template v-for="(group, activityId) in groupByActivityId(selectedProducts)" :key="activityId">
-                            <!-- 🔁 Loop สินค้าในกลุ่มนั้น -->
-                            <template v-for="(product, index) in group" :key="product.pro_id">
-                                <!-- 🔳 สินค้า -->
+
+
+                        <template v-for="(groupObj, activityKey) in groupByActivityId(selectedProducts)"
+                            :key="activityKey">
+                            <!-- 🧩 แสดงชื่อหัวแต่ละกลุ่มโปรโมชัน -->
+                            <tr>
+                                <td colspan="9"
+                                    class="px-6 py-3 bg-gray-100 font-semibold text-left text-lg text-gray-800 border">
+                                    {{ groupObj.title }}
+                                </td>
+                            </tr>
+
+                            <!-- 🔁 สินค้าในแต่ละก้อน -->
+                            <template v-for="(product, index) in groupObj.items" :key="product.pro_id">
+                                <!-- ✅ Copy <tr> สินค้าเดิมของคุณมาใส่ตรงนี้ -->
+                                <!-- เช่น: -->
                                 <tr class="text-center bg-white">
                                     <td class="px-4 py-2 border">{{ product.pro_id }}</td>
                                     <td class="px-4 py-2 border">
@@ -366,45 +378,43 @@
                                             <span class="material-icons text-gray-400 text-4xl">broken_image</span>
                                         </template>
                                     </td>
-                                    <td class="px-4 py-2 border">{{ product.pro_erp_title === '0' ? product.pro_title :
-                                        product.pro_erp_title || product.erp_title }}</td>
-                                    <td class="px-4 py-2 border">{{ product.pro_goods_sku_text || '-' }}</td>
-                                    <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
-                                    <!-- <td class="px-4 text-gray-700 py-2 border">
-                                        <input type="number" v-model.pro_quantity="product.pro_quantity" min="1" placeholder="จำนวน"
-                                            class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
-                                    </td> -->
                                     <td class="px-4 py-2 border">
-                                        <!-- @input="validateQuantity(product)" @blur="onQuantityChange(product, index)", @blur="onQuantityChange(product)" = ต้องคลิกพื้นที่ว่างถึงจะไป , v-model.number="product.pro_quantity" @input="onQuantityChange($event,product)-->
+                                        {{ product.pro_erp_title === '0' ? product.pro_title : product.pro_erp_title ||
+                                        product.erp_title }}
+                                    </td>
+                                    <td class="px-4 py-2 border">{{ product.pro_goods_sku_text || '-' }}</td>
+                                    <td class="px-4 py-2 border">
                                         <input type="number" :min="1" :max="product.pro_stock" step="1"
                                             @blur="onQuantityBlur(product)" v-model="product.pro_quantity"
-                                            @input="onQuantityChange($event, product)" :disabled="isReadOnly"
+                                            @input="onQuantityChange($event, product)"
+                                            @keypress="onlyNumberInput($event)" :disabled="isReadOnly"
                                             class="w-full px-2 py-1 border rounded" />
                                     </td>
-                                    <!-- <td class="px-4 py-2 border">{{ product.pro_quantity }}</td> -->
-                                    <!-- <td class="px-4 py-2 border">{{ product.pro_stock }}</td> -->
                                     <td class="px-4 py-2 border">{{ product.pro_goods_price || product.pro_unit_price }}
                                     </td>
                                     <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
                                     <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString() || 0 }}
                                     </td>
-                                    <!-- <td class="px-4 py-2 border">{{ totalprice(product) }}</td> -->
-                                    <!-- <td class="px-4 py-2 border text-red-500 cursor-pointer hover:text-red-700"
-                                        :disabled="isReadOnly"
-                                        @click="removeProduct(index, activityId)">
-                                        ลบ
-                                    </td> -->
                                     <td class="px-4 py-2 border" :class="{
                                         'text-red-500 cursor-pointer hover:text-red-700': !isReadOnly,
                                         'text-gray-400 cursor-not-allowed': isReadOnly
-                                    }" @click="!isReadOnly && removeProduct(index, activityId)">
+                                    }" @click="!isReadOnly && removeProduct(index, activityKey)">
                                         ลบ
                                     </td>
                                 </tr>
+                                <!-- ❗ แจ้งเตือนเฉพาะกรณี: เป็นสินค้าจากโปรโมชั่นแต่ไม่เข้าเงื่อนไข -->
+                                <tr v-if="product.pro_activity_id != 0 && product.st === false">
+                                    <td colspan="9"
+                                        class="px-6 py-3 bg-red-50 text-red-700 text-sm border-l-4 border-red-400">
+                                        ⚠️ สินค้านี้ถูกเลือกมาจากโปรโมชั่น แต่ยอดซื้อไม่เข้าเงื่อนไข
+                                        และจะไม่ถูกนำไปรวมคำนวณในโปรโมชั่นรายวัน
+                                    </td>
+                                </tr>
+
                             </template>
 
-                            <!-- 🟦 โปรโมชั่น (มินิมอล + ลูกเล่นไอคอน) -->
-                            <tr v-if="group[0].promotions && group[0].promotions.length > 0"
+                            <!-- 🔽 แสดง Promotions ถ้ามี -->
+                            <tr v-if="groupObj.items[0].promotions && groupObj.items[0].promotions.length > 0"
                                 class="bg-blue-50 hover:bg-blue-100 transition-colors duration-300">
                                 <td colspan="9" class="px-6 py-4 border rounded-md">
                                     <div class="flex items-center space-x-2 text-blue-800 font-medium">
@@ -416,16 +426,16 @@
                                         <span>โปรโมชั่น</span>
                                     </div>
                                     <ul class="list-disc list-inside ml-6 mt-2 text-sm text-gray-700">
-                                        <li v-for="(promotion, promoIndex) in group[0].promotions" :key="promoIndex">
+                                        <li v-for="(promotion, promoIndex) in groupObj.items[0].promotions"
+                                            :key="promoIndex">
                                             {{ promotion.title }}
                                         </li>
                                     </ul>
                                 </td>
                             </tr>
 
-
-                            <!-- 🟨 ของแถม (มินิมอล + รูปภาพ + ฟีล modern card) -->
-                            <tr v-if="group[0].gifts && group[0].gifts.length > 0"
+                            <!-- 🔽 แสดง Gifts ถ้ามี -->
+                            <tr v-if="groupObj.items[0].gifts && groupObj.items[0].gifts.length > 0"
                                 class="bg-yellow-50 hover:bg-yellow-100 transition-colors duration-300">
                                 <td colspan="9" class="px-6 py-4 border rounded-md">
                                     <div class="flex items-center space-x-2 text-yellow-800 font-medium">
@@ -437,7 +447,7 @@
                                         <span>ของแถม</span>
                                     </div>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                                        <div v-for="(gift, giftIndex) in group[0].gifts" :key="giftIndex"
+                                        <div v-for="(gift, giftIndex) in groupObj.items[0].gifts" :key="giftIndex"
                                             class="flex items-center bg-white shadow-sm rounded-lg p-2 border border-gray-200">
                                             <img v-if="gift.pro_image"
                                                 :src="gift.pro_image.startsWith('http') ? gift.pro_image : BASE_URL_IMAGE + gift.pro_image"
@@ -450,16 +460,16 @@
                                     </div>
                                 </td>
                             </tr>
-
                         </template>
+
 
                         <!-- <template v-for="(group, activityId) in groupByActivityIdmonth(selectedProducts)"
                             :key="activityId"> -->
-                
-                             <!-- fsfs  -->
 
-                            <!-- 🟦 โปรโมชั่น (มินิมอล + ลูกเล่นไอคอน) -->
-                            <!-- <tr v-if="group[0].promotionsmonth && group[0].promotionsmonth.length > 0"
+                        <!-- fsfs  -->
+
+                        <!-- 🟦 โปรโมชั่น (มินิมอล + ลูกเล่นไอคอน) -->
+                        <!-- <tr v-if="group[0].promotionsmonth && group[0].promotionsmonth.length > 0"
                                 class="bg-blue-50 hover:bg-blue-100 transition-colors duration-300">
                                 <td colspan="9" class="px-6 py-4 border rounded-md">
                                     <div class="flex items-center space-x-2 text-blue-800 font-medium">
@@ -480,8 +490,8 @@
                             </tr> -->
 
 
-                            <!-- 🟨 ของแถม (มินิมอล + รูปภาพ + ฟีล modern card) -->
-                            <!--<tr v-if="group[0].giftsmonth && group[0].giftsmonth.length > 0"
+                        <!-- 🟨 ของแถม (มินิมอล + รูปภาพ + ฟีล modern card) -->
+                        <!--<tr v-if="group[0].giftsmonth && group[0].giftsmonth.length > 0"
                                 class="bg-yellow-50 hover:bg-yellow-100 transition-colors duration-300">
                                 <td colspan="9" class="px-6 py-4 border rounded-md">
                                     <div class="flex items-center space-x-2 text-yellow-800 font-medium">
@@ -535,7 +545,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -1307,7 +1317,7 @@ export default {
                 };
 
                 const response = await axios.post(
-                `${BASE_URL}/cart_out/index`,
+                    `${BASE_URL}/cart_out/index`,
                     payload,
                     {
                         headers: {
@@ -1344,8 +1354,8 @@ export default {
                     this.selectedProducts = this.selectedProducts.map((product) => {
                         const matchedItem = items.find(item =>
                             item.pro_goods_id == product.pro_goods_id &&
-                            (item.ML_Note === "item" || item.ML_Note === "itemmonth") && 
-                            item.pro_activity_id == product.pro_activity_id && 
+                            (item.ML_Note === "item" || item.ML_Note === "itemmonth") &&
+                            item.pro_activity_id == product.pro_activity_id &&
                             item.pro_sku_price_id == product.pro_sku_price_id
                         );
 
@@ -1378,6 +1388,7 @@ export default {
                             ...matchedItem,
                             activity_id: activityId,
                             pro_activity_id: matchedItem.pro_activity_id,
+                            pro_unit_price: matchedItem.pro_goods_price,
                             promotions: FinalPromotions,
                             gifts: FinalGifts
                         };
@@ -2014,6 +2025,14 @@ export default {
         //     }
         // },
 
+        onlyNumberInput(event) {
+            const key = event.key;
+            // อนุญาตเฉพาะตัวเลข 0-9 เท่านั้น
+            if (!/^\d$/.test(key)) {
+                event.preventDefault();
+            }
+        },
+
         async onQuantityBlur(product) {
             if (product.pro_quantity === '' || product.pro_quantity === null) {
                 product.pro_quantity = 1;
@@ -2132,18 +2151,145 @@ export default {
         //         return acc;
         //     }, {});
         // },
-        
+
+
+        // // // ใช้ได้ 1000% ใช้อยู๋
+        // groupByActivityId(products) {
+        //     return products.reduce((acc, item) => {
+        //         //1515/stfalse
+        //         const isMonthly = item.pro_activity_id === 0;
+        //         const key = `${item.activity_id || 'no-activity'}-st${item.st ?? false}`;
+        //         // if (!acc[key]) acc[key] = [];
+        //          if (!acc[key]) acc[key] = {
+        //             title: isMonthly
+        //                 ? '🎯 โปรโมชั่นรายเดือน'
+        //                 : `🔥 โปรโมชั่นรายวัน ${item.pro_activity_id}`,
+        //             items: []
+        //         };
+        //         // acc[key].push(item);
+        //         acc[key].items.push(item);
+        //         return acc;
+        //     }, {});
+        // },
+
+
+        //         groupByActivityId(products) {
+        //     return products.reduce((acc, item) => {
+        //         const isMonthly = item.pro_activity_id === 0;
+        //         const isActive = item.st === true;
+
+        //         const key = isMonthly
+        //             ? `monthly-st${isActive ? 'true' : 'false'}`
+        //             : `promo-${item.pro_activity_id}-st${isActive ? 'true' : 'false'}`;
+
+        //         // สร้างชื่อกลุ่มที่อ่านง่าย
+        //         const title = isMonthly
+        //             ? `🎯 โปรโมชั่นรายเดือน (${isActive ? 'ใช้งานอยู่' : 'ยังไม่เปิดใช้งาน'})`
+        //             : `🔥 โปรโมชั่นรายวัน #${item.pro_activity_id} (${isActive ? 'ใช้งานอยู่' : 'ยังไม่เปิดใช้งาน'})`;
+
+        //         if (!acc[key]) {
+        //             acc[key] = {
+        //                 title,
+        //                 items: []
+        //             };
+        //         }
+
+        //         acc[key].items.push(item);
+        //         return acc;
+        //     }, {});
+        // },
+
+
 
         groupByActivityId(products) {
             return products.reduce((acc, item) => {
-                //1515/stfalse
-                const key = `${item.activity_id || 'no-activity'}-st${item.st ?? 0}`;
-                if (!acc[key]) acc[key] = [];
-                acc[key].push(item);
+                // เงื่อนไขพิเศษ: pro_activity_id !== 0 และ st === false
+                if (item.pro_activity_id !== 0 && item.st === false) {
+                    const key = 'invalid-activity';
+                    if (!acc[key]) {
+                        acc[key] = {
+                            title: '🎯โปรโมชันรายเดือน',
+                            items: []
+                        };
+                    }
+                    acc[key].items.push(item);
+                    return acc;
+                }
+
+                // เงื่อนไขปกติ
+                const isMonthly = item.pro_activity_id === 0;
+                const key = isMonthly
+                    ? `monthly-st${item.st ?? 0}`
+                    : `promo-${item.pro_activity_id}-st${item.st ?? 0}`;
+
+                if (!acc[key]) {
+                    acc[key] = {
+                        title: isMonthly
+                            ? '🎯 โปรโมชั่นรายเดือน'
+                            : `🔥 โปรโมชั่นรายวัน ${item.pro_activity_id}`,
+                        items: []
+                    };
+                }
+
+                acc[key].items.push(item);
                 return acc;
             }, {});
         },
-        
+
+
+
+        //โอเคเลย
+        // groupByActivityId(products) {
+        //     return products.reduce((acc, item) => {
+        //         const isMonthly = item.pro_activity_id === 0;
+        //         const isFalse = item.st === false;
+
+        //         let key;
+        //         if (isFalse) {
+        //             key = 'st-false-group';
+        //         } else {
+        //             key = isMonthly
+        //                 ? `monthly-st-true`
+        //                 : `promo-${item.pro_activity_id}-st-true`;
+        //         }
+
+        //         if (!acc[key]) {
+        //             acc[key] = {
+        //                 title: isFalse
+        //                     ? '⚠️ กลุ่มที่ไม่ได้ระบุสถานะ (st = false)'
+        //                     : isMonthly
+        //                         ? '🎯 โปรโมชั่นรายเดือน (st = true)'
+        //                         : `🔥 โปรโมชั่นรายวัน ${item.pro_activity_id} (st = true)`,
+        //                 items: []
+        //             };
+        //         }
+
+        //         acc[key].items.push(item);
+        //         return acc;
+        //     }, {});
+        // },
+
+
+        // groupByActivityId(products) {
+        //     return products.reduce((acc, item) => {
+        //         const isMonthly = item.pro_activity_id === 0;
+        //         const key = isMonthly
+        //             ? `monthly-st${item.st ?? 0}`
+        //             : `promo-${item.pro_activity_id}-st${item.st ?? 0}`;
+
+        //         if (!acc[key]) acc[key] = {
+        //             title: isMonthly
+        //                 ? '🎯 โปรโมชั่นรายเดือน'
+        //                 : `🔥 โปรโมชั่นรายวัน ${item.pro_activity_id}`,
+        //             items: []
+        //         };
+
+        //         acc[key].items.push(item);
+        //         return acc;
+        //     }, {});
+        // },
+
+
 
 
         // แยกกลุ่ม promotions
@@ -3504,7 +3650,7 @@ export default {
 
 
                     this.isLoading = false;
-                    ;
+
                 } else {
                     Swal.fire({ text: resData.message, icon: 'error' });
                     this.isLoading = false;
@@ -3525,6 +3671,7 @@ export default {
 
             for (const group of Object.values(grouped)) {
                 if (group[0].promotions && Array.isArray(group[0].promotions)) {
+
                     for (const promo of group[0].promotions) {
 
                         allPromotions.push({
@@ -3550,7 +3697,7 @@ export default {
 
                 if (group[0].gifts && Array.isArray(group[0].gifts)) {
                     for (const gift of group[0].gifts) {
-                        
+
                         console.log("🎁 gift:", gift); // <--- log gift object
                         console.log("🎁 gift.pro_goods_num:", gift.pro_goods_num); // <--- log gift object
                         console.log("🎁 gift.pro_quantity:", gift.pro_quantity); // <--- log gift object
@@ -4282,7 +4429,7 @@ export default {
             // const gifts = payload.gifts || [];
             const giftsDay = payload.gifts || [];
             const promotions = payload.promotions || [];
-            const promotionsmonth = payload.promotionsmonth || [];
+            // const promotionsmonth = payload.promotionsmonth || [];
             const emitTitles = payload.emitTitles || [];
 
             console.log("✅ payload:", payload);

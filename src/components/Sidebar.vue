@@ -18,7 +18,8 @@
             </button>
         </div>
 
-        <h3>Menu</h3>
+        <h3>เมนู</h3>
+        <!-- <h3>Menu</h3> -->
         <div class="menu">
             <!-- <router-link class="button" to="/">
                 <span class="material-icons">home</span>
@@ -26,28 +27,34 @@
             </router-link> -->
             <router-link class="button" to="/dashboard">
                 <span class="material-icons">space_dashboard</span>
-                <span class="text">Dashboard</span>
+                <span class="text">แดชบอร์ด</span>
+                <!-- <span class="text">Dashboard</span> -->
             </router-link>
             <!-- register -->
             <router-link class="button" to="/registerdedtStatust">
                 <span class="material-icons">group</span>
-                <span class="text">Register</span>
+                <span class="text">ลงทะเบียนผู้ใช้</span>
+                <!-- <span class="text">Register</span> -->
             </router-link>
             <router-link class="button" to="/showdataemp">
                 <span class="material-icons">list_alt</span>
-                <span class="text">List User Employee</span>
+                <span class="text">รายชื่อผู้ใช้และพนักงาน</span>
+                <!-- <span class="text">List User Employee</span> -->
             </router-link>
             <router-link class="button" to="/saleorder">
                 <span class="material-icons">receipt_long</span>
-                <span class="text">List Sale Order</span>
+                <span class="text">รายการใบสั่งขาย</span>
+                <!-- <span class="text">List Sale Order</span> -->
             </router-link>
             <router-link class="button" to="/customer">
                 <span class="material-icons">person</span>
-                <span class="text">Customer</span>
+                <span class="text">ลูกค้า</span>
+                <!-- <span class="text">Customer</span> -->
             </router-link>
             <router-link class="button" to="/createsalelist">
                 <span class="material-icons">assignment_add</span>
-                <span class="text">Create a sales list</span>
+                <span class="text">สร้างรายการขาย</span>
+                <!-- <span class="text">Create a sales list</span> -->
             </router-link>
             <!-- <router-link class="button" to="/activity-log">
                 <span class="material-symbols-outlined">browse_activity</span>

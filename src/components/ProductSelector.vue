@@ -118,7 +118,9 @@
             </td> -->
               <td class="px-4 text-gray-700 py-2 border text-center">
                 <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
-                  v-model.number="item.amount" :min="0" :max="item.stock" @input="validateAmount(item)"
+                  v-model.number="item.amount" :min="0" :max="item.stock" 
+                  @keypress="onlyNumberInput($event)"
+                  @input="validateAmount(item)"
                   placeholder="0" />
               </td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
@@ -393,6 +395,14 @@ function handleCheckboxChange(item, event) {
   }
 }
 
+
+function onlyNumberInput(event) {
+    const key = event.key;
+    // อนุญาตเฉพาะตัวเลข 0-9 เท่านั้น
+    if (!/^\d$/.test(key)) {
+    event.preventDefault();
+    }
+}
 
 function validateAmount(item) {
   if (item.amount < 0) {

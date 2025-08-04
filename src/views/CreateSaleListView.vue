@@ -1389,6 +1389,7 @@ export default {
                             activity_id: activityId,
                             pro_activity_id: matchedItem.pro_activity_id,
                             pro_unit_price: matchedItem.pro_goods_price,
+                            pro_goods_id: matchedItem.pro_goods_id,
                             promotions: FinalPromotions,
                             gifts: FinalGifts
                         };
@@ -4270,29 +4271,29 @@ export default {
 
                 // หา item ที่ pro_sn เดียวกันแต่ activity ต่างกัน
                 const similarItem = this.selectedProducts.find(sp =>
-                    sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
-                    sp.activity_id !== activityId &&
-                    sp.st !== item.st
+                    sp.pro_sn == (matchedTitle.pro_sn || item.pro_sn) &&
+                    sp.activity_id != activityId &&
+                    sp.st != item.st
                 );
 
                 const activity_id_ItemIsok = this.selectedProducts.find(sp =>
-                    sp.pro_sn === (matchedTitle.pro_sn || item.pro_sn) &&
-                    sp.activity_id !== activityId &&
-                    sp.st === item.st
+                    sp.pro_sn == (matchedTitle.pro_sn || item.pro_sn) &&
+                    sp.activity_id != activityId &&
+                    sp.st == item.st
                 );
 
                 const activity_id_ItemIs_Not_ok = this.selectedProducts.find(sp =>
-                    sp.pro_id === item.pro_sku_price_id &&
-                    sp.activity_id === activityId &&
+                    sp.pro_id == item.pro_sku_price_id &&
+                    sp.activity_id == activityId &&
                     // sp.st !== item.st
-                    Boolean(sp.st) !== Boolean(item.st)// different st
+                    Boolean(sp.st) != Boolean(item.st)// different st
                 );
 
                 //หา item ที่ activity_id เดียวกันและ st เหมือนกัน 
                 const alreadyExists = this.selectedProducts.find(sp =>
-                    sp.pro_id === item.pro_sku_price_id &&
-                    sp.activity_id === activityId &&
-                    Boolean(sp.st) === Boolean(item.st)
+                    sp.pro_id == item.pro_sku_price_id &&
+                    sp.activity_id == activityId &&
+                    sp.st == item.st
                 );
 
                 // New
@@ -4956,8 +4957,10 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
                     // 1. ดึงกลุ่ม product ที่ activityId เดียวกัน
-                    const group = this.groupByActivityId(this.selectedProducts)[activityId];
-                    const productToRemove = group[index];
+                    const groupObj = this.groupByActivityId(this.selectedProducts)[activityId];
+                    // const productToRemove = group[index];
+
+                    const productToRemove = groupObj?.items?.[index];
 
                     if (!productToRemove) return;
 
@@ -4971,10 +4974,10 @@ export default {
                     // 2. ลบสินค้า, promotion, gift ที่มีค่าตรงกันทั้งหมด
                     this.selectedProducts = this.selectedProducts.filter(p =>
                         !(
-                            p.pro_goods_id === pro_goods_id &&
-                            p.pro_activity_id === pro_activity_id &&
-                            p.pro_sku_price_id === pro_sku_price_id &&
-                            p.st === st
+                            p.pro_goods_id == pro_goods_id &&
+                            p.pro_activity_id == pro_activity_id &&
+                            p.pro_sku_price_id == pro_sku_price_id &&
+                            p.st == st
                         )
                     );
 

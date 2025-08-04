@@ -3004,8 +3004,9 @@ export default {
       }).then((result) => {
         if (result.isConfirmed) {
           // 1. ดึงกลุ่ม product ที่ activityId เดียวกัน
-          const group = this.groupByActivityId(this.selectedProducts)[activityId];
-          const productToRemove = group[index];
+          const groupObj = this.groupByActivityId(this.selectedProducts)[activityId];
+          const productToRemove = groupObj?.items?.[index];
+          // const productToRemove = group[index];
 
           if (!productToRemove) return;
 
@@ -3015,12 +3016,17 @@ export default {
           this.selectedProducts = this.selectedProducts.filter(
             (p) =>
               !(
-                p.pro_goods_id === pro_goods_id &&
-                p.pro_activity_id === pro_activity_id &&
-                p.pro_sku_price_id === pro_sku_price_id &&
-                p.st === st
+                p.pro_goods_id == pro_goods_id &&
+                p.pro_activity_id == pro_activity_id &&
+                p.pro_sku_price_id == pro_sku_price_id &&
+                p.st == st
               )
           );
+
+            // p.pro_goods_id === pro_goods_id &&
+            //     p.pro_activity_id === pro_activity_id &&
+            //     p.pro_sku_price_id === pro_sku_price_id &&
+            //     p.st === st
 
           // 3. อัปเดตข้อมูลของโปรโมชั่นและของแถมใหม่ทันที
           // this.submittedProduct(); // เรียกเพื่อ refresh ของแถม / โปร ทันที

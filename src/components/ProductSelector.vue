@@ -93,6 +93,7 @@
             <tr v-for="item in paginatedProducts" :key="item.id">
               <td class="px-4 py-2 border text-center">
                 <!-- v-model="selectedIds" :value="item.id" -->
+                   <!-- <input type="checkbox" v-model="selectedIds" :value="item.id" -->
                 <input type="checkbox"  :checked="selectedIds.includes(item.id)"
                   @change="handleCheckboxChange(item, $event)" />
               </td>
@@ -158,9 +159,9 @@
 
   </div>
 
-
-
 </template>
+
+
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
@@ -170,6 +171,7 @@ import { Pagination, ConfigProvider } from 'tdesign-vue-next'
 import enConfig from 'tdesign-vue-next/es/locale/en_US'
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { quantity } from 'chartist';
 
 
 const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
@@ -212,7 +214,7 @@ const pageSize = ref(10)
 const selectedIds = ref([])
 const allSelectedIds = ref([]); // ✅ เก็บ ID ของสินค้าทุกหน้าที่ถูกเลือก
 
-const selectedProducts = ref([]);
+const selectedProducts = ref([]); // ✅ เก็บสินค้าที่เลือกข้ามหน้า
 const showProductSelector = ref(false);
 
 const dataselect = ref([])
@@ -260,6 +262,7 @@ const isAllSelected = computed(() =>
 
 // เช็คว่าตอนนี้สินค้าได้ถูกเลือกเป็นรายการอะไรบ้าง
 watch(selectedIds, (newVal) => {
+  // const selectedProducts = paginatedProducts.value.filter(p =>
   const selectedProducts = tableData.value.filter(p =>
     // const selectedProducts = props.productList.filter(p =>
     newVal.includes(p.id)
@@ -267,52 +270,6 @@ watch(selectedIds, (newVal) => {
   console.log("สินค้าที่เลือกอยู่ตอนนี้:", selectedProducts);
 });
 
-// watch(pageSize, (newVal) => {
-//   if (newVal !== 10) {
-//     pageSize.value = 10;
-//   }
-// });
-
-// function toggleSelectProduct(productId, checked) {
-//   if (checked) {
-//     if (!allSelectedIds.value.includes(productId)) {
-//       allSelectedIds.value.push(productId);
-//     }
-//   } else {
-//     allSelectedIds.value = allSelectedIds.value.filter(id => id !== productId);
-//   }
-// }
-
-//
-// function toggleSelectProduct(productId, checked) {
-//   if (checked) {
-//     if (!allSelectedIds.value.includes(productId)) {
-//       allSelectedIds.value.push(productId);
-//     }
-//   } else {
-//     allSelectedIds.value = allSelectedIds.value.filter(id => id !== productId);
-//   }
-
-//   // 👇 อัปเดต selectedIds ให้แสดงค่าบนหน้าปัจจุบันให้ตรงกับ allSelectedIds
-//   const pageIds = paginatedProducts.value.map(item => item.id);
-//   selectedIds.value = allSelectedIds.value.filter(id => pageIds.includes(id));
-// }
-
-
-// function toggleSelectAll(event) {
-//   const pageIds = paginatedProducts.value.map(item => item.id);
-
-//   if (event.target.checked) {
-//     allSelectedIds.value = [...new Set([...allSelectedIds.value, ...pageIds])];
-//   } else {
-//     allSelectedIds.value = allSelectedIds.value.filter(id => !pageIds.includes(id));
-//   }
-
-//   // 👇 อัปเดต selectedIds เช่นเดียวกัน
-//   selectedIds.value = allSelectedIds.value.filter(id => pageIds.includes(id));
-// }
-
-// function เลือกสินค้าทั้งหมด
 
 // function เลือกสินค้าทั้งหมด
 function toggleSelectAll(event) {
@@ -342,19 +299,6 @@ function toggleSelectAll(event) {
     });
   }
 }
-// function toggleSelectAll(event) {
-//   if (event.target.checked) {
-//     const pageIds = paginatedProducts.value.map(item => item.id)
-//     selectedIds.value = [...new Set([...selectedIds.value, ...pageIds])]
-
-//     console.log('toggleSelectAll selectedIds:', pageIds);
-//   } else {
-//     const pageIds = paginatedProducts.value.map(item => item.id)
-//     selectedIds.value = selectedIds.value.filter(id => !pageIds.includes(id))
-//     console.log('Error selectedIds:', pageIds);
-//   }
-// }
-
 
 // // function เลือกสินค้าทั้งหมด
 // function toggleSelectAll(event) {
@@ -371,29 +315,64 @@ function toggleSelectAll(event) {
 // }
 
 
-function handleCheckboxChange(item, event) {
-  if (item.stock === 0) {
-    event.target.checked = false; // ยกเลิกติ๊ก
-    Swal.fire({
-      icon: 'warning',
-      title: 'รายการสินค้าหมด',
-      text: `ไม่สามารถเลือก "${item.erp_title}" ได้ เนื่องจากสินค้าหมด`,
-    });
-    return;
-  }
 
+// ใช้ได้ 100 %
+function handleCheckboxChange(item, event) {
   if (event.target.checked) {
+    // ติ๊กเลือก
+     console.log(`✅ Selected item:`, item)
+    selectedIds.value.push(item.id)
+
+        // บังคับให้ค่าในตารางเปลี่ยนทันที
+        // 1) บังคับให้ amount = 1
+    if (!item.amount || item.amount === 0) {
+      item.amount = 1;
+    }
+
+    // เก็บ id
     if (!selectedIds.value.includes(item.id)) {
       selectedIds.value.push(item.id);
-      if (!item.amount || item.amount === 0) {
-        item.amount = 1; // เพิ่มจำนวนถ้ายังไม่กำหนด
-      }
     }
+
+     // เก็บ object ไว้ใน selectedProducts
+    if (!selectedProducts.value.find(p => p.id === item.id)) {
+      selectedProducts.value.push({ ...item})  
+    }
+
   } else {
-    selectedIds.value = selectedIds.value.filter(id => id !== item.id);
+    // ยกเลิก
+    console.log(`❌ Deselected item:`, item)
     item.amount = 0;
+    selectedIds.value = selectedIds.value.filter(id => id !== item.id)
+    selectedProducts.value = selectedProducts.value.filter(p => p.id !== item.id)
   }
 }
+
+
+
+// function handleCheckboxChange(item, event) {
+//   if (item.stock === 0) {
+//     event.target.checked = false; // ยกเลิกติ๊ก
+//     Swal.fire({
+//       icon: 'warning',
+//       title: 'รายการสินค้าหมด',
+//       text: `ไม่สามารถเลือก "${item.erp_title}" ได้ เนื่องจากสินค้าหมด`,
+//     });
+//     return;
+//   }
+
+//   if (event.target.checked) {
+//     if (!selectedIds.value.includes(item.id)) {
+//       selectedIds.value.push(item.id);
+//       if (!item.amount || item.amount === 0) {
+//         item.amount = 1; // เพิ่มจำนวนถ้ายังไม่กำหนด
+//       }
+//     }
+//   } else {
+//     selectedIds.value = selectedIds.value.filter(id => id !== item.id);
+//     item.amount = 0;
+//   }
+// }
 
 
 function onlyNumberInput(event) {
@@ -405,23 +384,46 @@ function onlyNumberInput(event) {
 }
 
 function validateAmount(item) {
-  if (item.amount < 0) {
-    item.amount = 0;
-  } else if (item.amount > item.stock) {
-    item.amount = item.stock;
-  }
+  // บังคับขอบเขต
+  if (item.amount < 0) item.amount = 0
+  if (item.amount > item.stock) item.amount = item.stock
 
-  // logic ติ๊ก checkbox อัตโนมัติ
-  if (item.amount > 0) {
-    if (!selectedIds.value.includes(item.id)) {
-      selectedIds.value.push(item.id);
-    }
-  } else {
-    // ถ้าใส่ 0 หรือลบออก ให้เอาออกจาก selectedIds
-    selectedIds.value = selectedIds.value.filter(id => id !== item.id);
-  }
+  const isAlreadySelected = selectedIds.value.includes(item.id)
 
+  if (item.amount > 0 && !isAlreadySelected) {
+    // ถ้ายังไม่ถูกติ๊ก ให้ติ๊ก
+    selectedIds.value.push(item.id)
+    selectedProducts.value.push({ ...item })
+    console.log(`🖊️ Auto-checked because amount>0:`, item)
+  }
+  if (item.amount === 0 && isAlreadySelected) {
+    // ถ้าลบเหลือ 0 ให้ยกเลิกติ๊ก
+    selectedIds.value = selectedIds.value.filter(id => id !== item.id)
+    selectedProducts.value = selectedProducts.value.filter(p => p.id !== item.id)
+    console.log(`🗑️ Auto-unticked because amount=0:`, item)
+  }
 }
+
+
+// เคยใช้ได้
+// function validateAmount(item) {
+//   if (item.amount < 0) {
+//     item.amount = 0;
+//   } else if (item.amount > item.stock) {
+//     item.amount = item.stock;
+//   }
+
+//   // logic ติ๊ก checkbox อัตโนมัติ
+//   if (item.amount > 0) {
+//     if (!selectedIds.value.includes(item.id)) {
+//       selectedIds.value.push(item.id);
+//     }
+//   } else {
+//     // ถ้าใส่ 0 หรือลบออก ให้เอาออกจาก selectedIds
+//     selectedIds.value = selectedIds.value.filter(id => id !== item.id);
+//   }
+
+// }
 
 
 const searchSku = async () => {
@@ -544,6 +546,28 @@ async function SearchProducstSubmit() {
 
         tableData.value = searchProducts;
 
+         // hydrate ค่าเดิมเข้า tableData
+        tableData.value.forEach(item => {
+          const old = selectedProducts.value.find(p => p.id === item.id);
+          if (old) {
+            item.amount = old.amount;
+            if (!selectedIds.value.includes(item.id)) {
+              selectedIds.value.push(item.id);
+            }
+          }
+        });
+        // console.log("tableData หลัง hydrate:", tableData.value);      
+        // หลัง tableData.value = searchProducts;
+        // tableData.value.forEach(item => {
+        //   const old = selectedProducts.value.find(p => p.id === item.id)
+        //   if (old) {
+        //     item.amount = old.amount
+        //     if (!selectedIds.value.includes(item.id)) {
+        //       selectedIds.value.push(item.id)
+        //     }
+        //   }
+        // })
+
         // tableData.value = searchProducts.map(item => ({
         //   ...item,
         //   imageLoaded: false
@@ -616,6 +640,17 @@ async function SearchProducstSubmit() {
         const searchProducts = data.data2 || [];
 
         tableData.value = searchProducts;
+
+           // hydrate ค่าเดิมเข้า tableData
+          tableData.value.forEach(item => {
+            const old = selectedProducts.value.find(p => p.id === item.id);
+            if (old) {
+              item.amount = old.amount;
+              if (!selectedIds.value.includes(item.id)) {
+                selectedIds.value.push(item.id);
+              }
+            }
+          });
 
         // tableData.value = searchProducts.map(item => ({
         //   ...item,
@@ -850,56 +885,57 @@ async function confirmSelection() {
     }
   }
 
-    // const selectedProducts = tableData.value
-    // // const selectedProducts = props.productList
-    // .filter(p => selectedIds.value.includes(p.id))
-    // .map(p => ({
-    //   pro_activity_id: p.activity_id ?? 0, // 1167
-    //   pro_goods_id: p.goods_id, // pro_goods_id
-    //   pro_sku_price_id: p.id, // pro_sku_price_id
-    //   pro_erp_title: p.erp_title,
-    //   pro_title: p.title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
-    //   pro_sn: p.sn,
-    //   pro_image: p.image, // pro_image
-    //   pro_goods_num: p.amount || 0, // pro_goods_num
-    //   pro_quantity: p.amount || 0,
+  console.log('🎯 selectedProducts.value:', selectedProducts.value);
 
-    //   pro_goods_price: p.price, // "215.00"
-    //   pro_units: p.units,
-    //   stock: p.stock || 0,
+  const selectedProductsNew = selectedProducts.value.map(p => ({
+    pro_activity_id: p.activity_id ?? 0,
+    pro_goods_id: p.goods_id,
+    pro_goods_price: p.price || p.goods_price,
+    pro_sku_price_id: p.id,
+    pro_goods_num: p.amount || 0,
+    stock: p.stock || 0,
+    pro_image: p.image,
+    pro_erp_title: p.erp_title,
+    pro_title: p.title,
+    pro_code: p.activity_code || 0,
+    pro_m_code: p.pro_m_code || 0,
+    pro_sn: p.sn,
+    pro_units: p.units,
+  }));
 
-    // }));
+   console.log('🎯🎯🎯 selectedProducts.value:', selectedProductsNew);
 
-  const selectedProducts = tableData.value
-    .filter(p => selectedIds.value.includes(p.id))
-    // .map(p => {
-    .map(p => ({
+  // ใช้ได้
+  // const selectedProducts = tableData.value
+  //   .filter(p => selectedIds.value.includes(p.id))
+  //   // .map(p => {
+  //   .map(p => ({
 
-      // return {
-      pro_activity_id: p.activity_id ?? 0, // 1167 
-      // pro_id: p.activity_id, // 1167
-      pro_goods_id: p.goods_id, // 13872 
-      pro_goods_price: p.price || p.goods_price, // "215.00" 
-      pro_sku_price_id: p.id, //sku_price_id // 50983  
-      pro_goods_num: p.amount || 0, // 1 
-      stock: p.stock || 0,
-      // pro_quantity: p.quantity || 0, // 1 
-      pro_image: p.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.jpg   
-      pro_erp_title: p.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP" 
+  //     // return {
+  //     pro_activity_id: p.activity_id ?? 0, // 1167 
+  //     // pro_id: p.activity_id, // 1167
+  //     pro_goods_id: p.goods_id, // 13872 
+  //     pro_goods_price: p.price || p.goods_price, // "215.00" 
+  //     pro_sku_price_id: p.id, //sku_price_id // 50983  
+  //     pro_goods_num: p.amount || 0, // 1 
+  //     stock: p.stock || 0,
+  //     // pro_quantity: p.quantity || 0, // 1 
+  //     pro_image: p.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.jpg   
+  //     pro_erp_title: p.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP" 
 
-      pro_title: p.title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
-      pro_code: p.activity_code || 0, // x
-      pro_m_code: p.pro_m_code || 0, // x 
-      // pro_goods_sku_text: p.goods_sku_text, // 
-      pro_sn: p.sn, //"2010102DP0057" 
-      pro_units: p.units, // "PCS" 
+  //     pro_title: p.title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
+  //     pro_code: p.activity_code || 0, // x
+  //     pro_m_code: p.pro_m_code || 0, // x 
+  //     // pro_goods_sku_text: p.goods_sku_text, // 
+  //     pro_sn: p.sn, //"2010102DP0057" 
+  //     pro_units: p.units, // "PCS" 
 
-    }));
+  //   }));
 
 
   const sum_products = [
     ...(Array.isArray(get_productOld_raw) ? get_productOld_raw : []),
-    ...selectedProducts
+    ...selectedProductsNew
   ];
 
   // const sum_products = [...get_productOld_raw, ...selectedProducts];
@@ -922,6 +958,7 @@ async function confirmSelection() {
           pro_goods_num: quantity,
           pro_quantity: quantity,
           last_quantity: quantity,
+          pro_goods_id: item.pro_goods_id || item.goods_id, // pro_goods_id
           // last_quantity: 0, // เริ่มจาก 0 ก่อน
           pro_erp_title: item.pro_erp_title || item.erp_title || item.title,
           pro_image: item.pro_images || item.pro_image || '', // ✅ ตั้งชื่อใหม่
@@ -1018,7 +1055,7 @@ async function confirmSelection() {
   const grouped = groupBy(sum_products, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`); //
 
   // แยก grouped สำหรับ last_quantity เก็บจาก selectedProducts (รายการเพิ่มใหม่)
-  const groupedLastQuantity = groupBy(selectedProducts, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`); //
+  const groupedLastQuantity = groupBy(selectedProductsNew, item => `${item.pro_activity_id}_${item.pro_sku_price_id}`); //
   console.log('🔹 grouped:', grouped);
   console.log('🔹 groupedArray:', groupedLastQuantity);
 
@@ -1551,6 +1588,28 @@ function onInput() {
 
 onMounted(() => {
   SearchProducstSubmit(); // โหลดสินค้าทั้งหมดรอบแรก
+
+  // if (props.selectProducts_old_month?.length) {
+  //   selectedProducts.value = props.selectProducts_old_month.map(p => ({
+  //     // ต้อง map ให้มีฟิลด์ id, amount, stock, units, price, erp_title, etc  
+  //     id: p.pro_sku_price_id,
+  //     amount: p.pro_goods_num,
+  //     stock: p.pro_stock,
+  //     goods_id: p.pro_goods_id || p.goods_id,
+  //     pro_goods_id: p.pro_goods_id || p.goods_id,
+  //     units: p.pro_units,
+  //     price: p.pro_unit_price,
+  //     erp_title: p.pro_erp_title,
+  //     sn: p.pro_sn,
+  //     image: p.pro_image,
+  //     title: p.pro_title,
+  //     // …ใส่ field ที่คุณใช้ต่อไปใน confirmSelection() ให้ครบ
+  //   }))
+  //   // และให้ selectedIds สะท้อน id เหล่านั้นด้วย
+  //   selectedIds.value = selectedProducts.value.map(p => p.id)
+  // }
+
+
 
   // tableData.value = props.productList.map(item => ({
   //   ...item,

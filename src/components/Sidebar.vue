@@ -69,12 +69,12 @@
 
         <div class="flex flex_x"></div>
 
-        <div class="menu">
+        <!-- <div class="menu">
             <router-link class="button" to="/techstack">
                 <span class="material-icons">code</span>
                 <span class="text">TeckStack</span>
             </router-link>
-        </div>
+        </div> -->
         <!-- <div class="menu">
             <router-link class="button" to="/setting">
                 <span class="material-icons">settings</span>

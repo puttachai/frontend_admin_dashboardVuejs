@@ -418,6 +418,7 @@
                         class="w-12 h-12 object-cover rounded mr-4" alt="gift image" />
                       <div class="text-sm text-gray-800">
                         <div class="font-semibold">{{ gift.title }}</div>
+                        <div class="font-semibold">{{ gift.color || gift.pro_goods_sku_text}}</div>
                         <div class="text-gray-500">จำนวน: {{ gift.pro_goods_num }}</div>
                       </div>
                     </div>
@@ -1802,7 +1803,8 @@ export default {
               pro_title: matchedTitle.pro_title,
               // pro_erp_title: matchedTitle.pro_erp_title && matchedTitle.pro_erp_title === 0 || item.pro_erp_title || '',
               pro_unit_price: item.pro_goods_price || "",
-              pro_goods_sku_text: item.pro_goods_sku_text || "",
+              // pro_goods_sku_text: item.pro_goods_sku_text || "",
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               pro_sn: matchedTitle.pro_sn || item.pro_sn || "",
               pro_images: item.pro_image || "",
               pro_quantity: item.pro_goods_num || 0,
@@ -1832,6 +1834,7 @@ export default {
               st: item.st,
               pro_goods_num: item.pro_goods_num,
               pro_quantity: item.pro_goods_num,
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               // 2) อัปเดต promotions/gifts
               promotions: FinalPromotions,
               gifts: FinalGifts,
@@ -1854,6 +1857,7 @@ export default {
               activity_id: activityId,
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               gifts: FinalGifts,
               promotions: FinalPromotions,
 
@@ -1879,6 +1883,7 @@ export default {
               activity_id: activityId,
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               gifts: FinalGifts, //fullActivityGifts ||
               promotions: FinalPromotions, //
               // เพิ่มค่าอื่น ๆ ที่จำเป็น
@@ -1899,6 +1904,7 @@ export default {
               activity_id: activityId,
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               gifts: FinalGifts_Not_activuty,
               promotions: FinalPromotions_Not_activuty,
               // เพิ่มค่าอื่น ๆ ที่จำเป็น
@@ -2131,7 +2137,8 @@ export default {
               pro_title: matchedTitle.pro_title,
               // pro_erp_title: matchedTitle.pro_erp_title && matchedTitle.pro_erp_title === 0 || item.pro_erp_title || '',
               pro_unit_price: item.pro_goods_price || "",
-              pro_goods_sku_text: item.pro_goods_sku_text || "",
+              // pro_goods_sku_text: item.pro_goods_sku_text || "",
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               pro_sn: matchedTitle.pro_sn || item.pro_sn || "",
               prosn: item.prosn || "",
               pro_images: item.pro_image || "",
@@ -2163,6 +2170,7 @@ export default {
               st: item.st,
               pro_goods_num: item.pro_goods_num,
               pro_quantity: item.pro_goods_num,
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               // 2) อัปเดต promotions/gifts
               promotions: FinalPromotions,
               gifts: FinalGifts,
@@ -2185,6 +2193,7 @@ export default {
               activity_id: activityId,
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               gifts: FinalGifts,
               promotions: FinalPromotions,
             });
@@ -2205,6 +2214,7 @@ export default {
               activity_id: activityId,
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               gifts: FinalGifts,
               promotions: FinalPromotions,
 
@@ -2231,6 +2241,7 @@ export default {
               activity_id: activityId,
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               gifts: FinalGifts,
               promotions: FinalPromotions,
 
@@ -2257,6 +2268,7 @@ export default {
               activity_id: activityId,
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               gifts: FinalGifts, //fullActivityGifts ||
               promotions: FinalPromotions, //
               // เพิ่มค่าอื่น ๆ ที่จำเป็น
@@ -2278,6 +2290,7 @@ export default {
               activity_id: activityId,
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
+              pro_goods_sku_text: item.color || item.pro_goods_sku_text || '',
               gifts: FinalGifts_Not_activuty,
               promotions: FinalPromotions_Not_activuty,
               // เพิ่มค่าอื่น ๆ ที่จำเป็น
@@ -2462,6 +2475,7 @@ export default {
             totalDiscount: this.formData.totalDiscount || 0, // รวมราคาต่อสินค้า
             pro_discount: this.formData.discount || 0, // รวมราคาต่อสินค้า
             pro_image: product.pro_images, //
+            pro_goods_sku_text : product.pro_goods_sku_text || '',
             pro_sn: product.pro_sn, //
             prosn: product.prosn, //
             st: product.st,
@@ -2683,6 +2697,8 @@ export default {
               note: gift.note || '',
               pro_activity_id: gift.pro_activity_id || 0,
               activity_id: gift.pro_activity_id || 0,
+              // pro_goods_sku_text : gift.color || '',
+              pro_goods_sku_text : gift.color || gift.pro_goods_sku_text || '',
               pro_sn: gift.pro_sn,
               prosn: gift.prosn,
               pro_goods_id: gift.pro_goods_id || 0,

@@ -270,6 +270,16 @@ watch(selectedIds, (newVal) => {
   console.log("สินค้าที่เลือกอยู่ตอนนี้:", selectedProducts);
 });
 
+// อัปเดต จำนวนสินค้าใน selectedProducts เมื่อ tableData เปลี่ยนแปลง
+watch(tableData, (newTable) => {
+  newTable.forEach(item => {
+    watch(() => item.amount, val => {
+      const sel = selectedProducts.value.find(p => p.id === item.id)
+      if (sel) sel.amount = val
+    })
+  })
+}, { immediate: true })
+
 
 // function เลือกสินค้าทั้งหมด
 function toggleSelectAll(event) {
@@ -328,6 +338,7 @@ function handleCheckboxChange(item, event) {
     if (!item.amount || item.amount === 0) {
       item.amount = 1;
     }
+    
 
     // เก็บ id
     if (!selectedIds.value.includes(item.id)) {
@@ -337,6 +348,7 @@ function handleCheckboxChange(item, event) {
      // เก็บ object ไว้ใน selectedProducts
     if (!selectedProducts.value.find(p => p.id === item.id)) {
       selectedProducts.value.push({ ...item})  
+      // selectedProducts.value.push(item)    // เอา item ตรงๆ มาเก็บ ไม่ต้อง ...item
     }
 
   } else {
@@ -402,6 +414,12 @@ function validateAmount(item) {
     selectedProducts.value = selectedProducts.value.filter(p => p.id !== item.id)
     console.log(`🗑️ Auto-unticked because amount=0:`, item)
   }
+    // 2) อัปเดต amount ใน selectedProducts ด้วย
+  const idx = selectedProducts.value.findIndex(p => p.id === item.id)
+  if (idx !== -1) {
+    selectedProducts.value[idx].amount = item.amount
+  }
+  console.log(`✅ Updated amount for ${item.erp_title}:`, item.amount)
 }
 
 

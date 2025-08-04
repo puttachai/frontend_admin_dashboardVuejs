@@ -2798,18 +2798,22 @@ export default {
             //     return;
             // }
 
+            // const addr = String(this.formData.receiverAddress || '').trim();
+
             if (
                 (
                     (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) &&
                     (!this.selectedAddressBase || Object.keys(this.selectedAddressBase).length === 0)
                 ) ||
                 Object.keys(this.formData.receiverAddress).length === 0
+                // addr === ''
             ) {
                 console.log('ข้อมูลบางรายการไม่ครบ กรุณาเลือกที่อยู่จัดส่ง');
                 Swal.fire({
                     icon: 'warning',
                     title: 'กรุณาเลือกที่อยู่จัดส่ง',
                 });
+                this.isLoading = false; // ปิด loading
                 return;
             }
 

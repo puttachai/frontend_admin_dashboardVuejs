@@ -1,0 +1,96 @@
+/* src/assets/print.css (หรือ App.vue แต่ไม่ต้องระบุ scoped) */
+
+@page {
+  size: A4;
+  margin: 10mm;
+  
+}
+
+
+@media print {
+  /* ซ่อนทุก element */
+  body * {
+    visibility: hidden !important;
+    
+  }
+
+  /* table,
+  th,
+  td {
+    border: 1px solid black; ใช้ถ้าต้องการ
+  } */
+
+  .print-page table {
+    border-bottom: none !important;
+  }
+
+  .print-page:last-child table {
+    border-bottom: none !important;
+  }
+
+
+  .print-page {
+    page-break-after: always;
+    min-height: 255mm; 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  
+  /* ยกเว้นเฉพาะเลย์เอาต์ของเรา */
+  .print-container,
+  .print-container * {
+    visibility: visible !important;
+  }
+  /* ดึง print-container ขึ้นมาบนสุด */
+  .print-container {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    padding: 10mm !important;
+    border-bottom: none !important; /* ซ่อน border-bottom */
+    border: none !important; /* ซ่อน border-bottom */
+  }
+
+    .print-a4 {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    height: 277mm; /* 297mm - 10mm top/bottom margin */
+    padding: 10mm;
+    box-sizing: border-box;
+  }
+
+  .header-section,
+  .footer-section {
+    flex-shrink: 0;
+  }
+
+  .body-section {
+    flex-grow: 1;
+  }
+
+  /* ซ่อนปุ่มที่ไม่อยากให้โผล่ */
+  .no-print {
+    display: none !important;
+  }
+ 
+  .signature {
+    /* display: none !important; */
+    /* border-b border-gray-300 pt-4 */
+    border-bottom: none !important;
+  }
+
+}
+
+/* สำหรับสกรีน ก็จะมีเงื่อนไขให้แสดง shadow, centering */
+@media screen {
+  .print-container {
+    max-width: 800px;
+    margin: 3rem auto;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+}

@@ -10,6 +10,7 @@ import CustomerView from "../views/CustomerView.vue";
 
 import SaleOrderList from "@/views/SaleOrderList.vue";
 import SaleOrderDetail from "../components/listSaleOrder/SaleOrderDetailView.vue";
+import Print from "../components/listSaleOrder/PrintView.vue";
 
 // import ActivityLogView from "../views/ActivityLogView.vue";
 
@@ -63,46 +64,46 @@ const routes = [
     component: LoginForm,
   },
 
-  {
-    path: "/singin",
-    component: AuthLayout,
-    meta: { requiresAuth: true }, //  // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
-    children: [
-      {
-        path: "",
-        name: "singin",
-        component: SinginForm,
-        meta: { requiresAuth: true }, //  // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
-      },
-    ],
-  },
-  {
-    path: "/singin",
-    component: AuthLayout,
-    meta: { requiresAuth: true }, //  // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
-    children: [
-      {
-        path: "",
-        name: "singin",
-        meta: { requiresAuth: true }, // // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
-        component: SinginForm,
-      },
-    ],
-  },
-  {
-    path: "/signup",
-    component: AuthLayout, // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
-    meta: { requiresAuth: true }, //  ต้องทำการ login ก่อน
-    children: [
-      {
-        path: "",
-        name: "signup",
-        meta: { requiresAuth: true }, // // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
-        component: SignupForm,
-        // meta: { layout: 'auth' }, // ไม่ให้สืบทอดคลาสจากหน้า App
-      },
-    ],
-  },
+  // {
+  //   path: "/singin",
+  //   component: AuthLayout,
+  //   meta: { requiresAuth: true }, //  // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
+  //   children: [
+  //     {
+  //       path: "",
+  //       name: "singin",
+  //       component: SinginForm,
+  //       meta: { requiresAuth: true }, //  // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
+  //     },
+  //   ],
+  // },
+  // {
+  //   path: "/singin",
+  //   component: AuthLayout,
+  //   meta: { requiresAuth: true }, //  // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
+  //   children: [
+  //     {
+  //       path: "",
+  //       name: "singin",
+  //       meta: { requiresAuth: true }, // // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
+  //       component: SinginForm,
+  //     },
+  //   ],
+  // },
+  // {
+  //   path: "/signup",
+  //   component: AuthLayout, // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
+  //   meta: { requiresAuth: true }, //  ต้องทำการ login ก่อน
+  //   children: [
+  //     {
+  //       path: "",
+  //       name: "signup",
+  //       meta: { requiresAuth: true }, // // พึ่งเพิ่มใหม่ไม่ได้ใช้แล้ว
+  //       component: SignupForm,
+  //       // meta: { layout: 'auth' }, // ไม่ให้สืบทอดคลาสจากหน้า App
+  //     },
+  //   ],
+  // },
 
   {
     path: "/dashboard",
@@ -179,6 +180,15 @@ const routes = [
     // โค้ดนี้จะสร้างไฟล์แยก (เช่น About.[hash].js) สำหรับเส้นทางนี้โดยเฉพาะ
     // ซึ่งจะโหลดไฟล์นั้นแบบ lazy-load (โหลดเมื่อมีการเข้า route นั้นเท่านั้น)
     component: CreateSaleList,
+  },
+
+
+  {
+    // path: '/print-order', // รับ ID ใบสั่งซื้อด้วย
+    path: '/print-order/:id', // รับ ID ใบสั่งซื้อด้วย
+    name: 'PrintOrder',
+    meta: { requiresAuth: true }, //  ต้องทำการ login ก่อน
+    component: Print,
   },
 
   {

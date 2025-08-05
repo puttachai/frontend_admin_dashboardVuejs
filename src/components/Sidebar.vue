@@ -51,11 +51,23 @@
                 <span class="text">ลูกค้า</span>
                 <!-- <span class="text">Customer</span> -->
             </router-link>
-            <router-link class="button" to="/createsalelist">
+
+            <!-- <span class="text">Create a sales list</span> -->
+            <!-- <router-link class="button" to="/createsalelist">
+                <span class="material-icons">assignment_add</span>
+                <span class="text">สร้างรายการขาย</span>    
+            </router-link> -->
+            
+            <router-link class="button" to="/createsalelist" @click.native.prevent="forceReload">
                 <span class="material-icons">assignment_add</span>
                 <span class="text">สร้างรายการขาย</span>
-                <!-- <span class="text">Create a sales list</span> -->
             </router-link>
+
+            <!-- <router-link class="button" to="/createsalelist" @click.native="forceReload">
+                <span class="material-icons">assignment_add</span>
+                <span class="text">สร้างรายการขาย</span>
+                 <span class="text">Create a sales list</span>
+            </router-link> -->
             <!-- <router-link class="button" to="/activity-log">
                 <span class="material-symbols-outlined">browse_activity</span>
                 <span class="text">activitylog</span>
@@ -88,6 +100,10 @@
 <script setup>
 
 import { ref } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+
+const router = useRouter();
+const route = useRoute();
 
 const is_expanded = ref(localStorage.getItem("is_expanded") === "true");
 
@@ -97,6 +113,42 @@ const ToggleMenu = () => {
     // set ค่าให้ตอนทำการรีเฟสหน้าจะไม่ทำการปิด sidebar
     localStorage.setItem("is_expanded", is_expanded.value);
 }
+
+
+function forceReload(event) {
+    // เส้นทางลิงก์เป้าหมาย
+    const targetHref = event.currentTarget.getAttribute('href');
+    // เส้นทางปัจจุบัน + query string
+    const currentFullPath = route.fullPath; // e.g. "/saleList?documentNo=H1-SO25680805-00006"
+
+    // ถ้าเรากำลังอยู่ที่ saleList?... แล้วกดไป createsalelist ให้รีโหลดทั้งหน้า
+    if (
+        currentFullPath.startsWith('/saleList') &&
+        targetHref === '/createsalelist'
+    ) {
+        event.preventDefault();               // ยกเลิกการทำงานของ router-link
+        window.location.href = targetHref;    // บังคับให้โหลดใหม่ทั้งหน้า
+        return;
+    }
+
+}
+
+// const forceReload = (event) => {
+//   const targetHref = event.currentTarget.getAttribute('href');
+
+//   // ถ้าไม่ใช่หน้า /createsalelist ให้รีเฟรช
+//   if (!targetHref.includes('/createsalelist')) {
+//     event.preventDefault(); // ป้องกัน router-link ปกติ
+//     window.location.href = targetHref; // รีโหลดหน้าใหม่
+//   }
+//   // ถ้าเป็น /createsalelist ให้ปล่อยให้ router-link ทำงานตามปกติ
+// };
+
+// const forceReload = (event) => {
+//   event.preventDefault(); // ป้องกันไม่ให้ router-link ทำงาน
+//   window.location.href = event.currentTarget.getAttribute('href'); // บังคับ reload ทั้งหน้า
+// }
+
 </script>
 
 <style lang="scss" scoped>

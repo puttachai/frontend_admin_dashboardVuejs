@@ -195,14 +195,15 @@
                             </p>
                         </div>
 
+                        <div class="">
+                            <label class="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์ลูกค้า</label>
+                            <input type="text" v-model="formData.phone" :readonly="isReadOnly"
+                                class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
+                         </div>
+
                         <!-- เงื่อนไขแสดงเพิ่มเติม -->
                         <div v-if="showMore">
-                            <div class="">
-                                <label class="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์ลูกค้า</label>
-                                <input type="text" v-model="formData.phone" :readonly="isReadOnly"
-                                    class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
-                            </div>
-
+                            
                             <div class="mt-4">
                                 <label class="block text-sm font-medium text-gray-700">อีเมลลูกค้า</label>
                                 <input type="text" v-model="formData.email" :readonly="isReadOnly"
@@ -454,7 +455,8 @@
                                                 class="w-12 h-12 object-cover rounded mr-4" alt="gift image" />
                                             <div class="text-sm text-gray-800">
                                                 <div class="font-semibold">{{ gift.title }}</div>
-                                                <div class="font-semibold">{{ gift.color || gift.pro_goods_sku_text}}</div>
+                                                <div class="font-semibold">{{ gift.color || gift.pro_goods_sku_text }}
+                                                </div>
                                                 <div class="text-gray-500">จำนวน: {{ gift.pro_goods_num }}</div>
                                             </div>
                                         </div>
@@ -546,7 +548,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                        }}</p>
+                    }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -696,7 +698,7 @@
                             </p>
                         </div>
 
-                        <div v-if="showMoreAdress">
+                        <!-- <div v-if="showMoreAdress"> -->
 
                             <div>
                                 <label class="text-sm text-gray-700 block mb-1">อีเมลผู้รับ</label>
@@ -747,25 +749,26 @@
                             <!-- <button class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">
                                 ตรวจสอบที่อยู่
                             </button> -->
-                        </div>
+                        <!-- </div> -->
                     </div>
                 </div>
 
                 <!-- ปุ่ม Show More / Show Less -->
+                 <!-- ไม่ได้ใช้งาน -->
                 <!-- <button @click="showMoreAdress = !showMoreAdress" type="button"
                     class="mt-4 text-purple-600 hover:underline focus:outline-none">
                     {{ showMoreAdress ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼ ' }}
                 </button> -->
-                <div class="mt-4 flex items-center space-x-2">
+
+                <!-- ใช้งานได้ -->
+                <!-- <div class="mt-4 flex items-center space-x-2">
                     <button @click="showMoreAdress = !showMoreAdress" type="button"
                         class="text-purple-600 hover:underline focus:outline-none">
                         {{ showMoreAdress ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼ ' }}
                     </button>
-
-                    <!-- ✅ เพิ่มข้อความแจ้งเตือนด้านข้างปุ่ม -->
                     <span class="text-red-500 text-xs">*</span>
                     <span class="text-red-500 text-xs">จำเป็นต้องกรอกข้อมูลนี้</span>
-                </div>
+                </div> -->
 
             </div>
 
@@ -814,8 +817,8 @@
 
                     <div>
                         <label class="text-sm text-gray-700 block mb-1">Tracking No.
-                            <span class="text-red-500 text-xs ml-1">*</span>
-                            <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
+                            <!-- <span class="text-red-500 text-xs ml-1">*</span> -->
+                            <!-- <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span> -->
                         </label>
                         <input type="text" v-model="formData.trackingNo" :readonly="isReadOnly"
                             class="w-full text-gray-700 border rounded px-3 py-2" />
@@ -1301,21 +1304,63 @@ export default {
 
                 console.log('Check: this.selectedProducts', this.selectedProducts);
 
+                // ⚠️ กรองก่อนว่า ต้องไม่เป็น '' หรือ null หรือ undefined
+                // const validProducts = this.selectedProducts.filter(product => {
+                //     return product.pro_goods_num !== '' && product.pro_goods_num !== null && product.pro_goods_num !== undefined;
+                // });
+
+                    const productsForApi = this.selectedProducts.map(product => {
+                        // ตรวจสอบ pro_quantity/pro_goods_num ว่าว่างหรือไม่
+                        const qty = (product.pro_goods_num === '' || product.pro_goods_num == null)
+                            ? 1
+                            : Number(product.pro_goods_num);
+
+                        return {
+                            pro_activity_id: product.pro_activity_id || 0,
+                            pro_goods_id: product.pro_goods_id,
+                            pro_goods_price: parseFloat(product.pro_unit_price) || 0,
+                            pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
+                            pro_erp_title: product.pro_erp_title || '',
+                            pro_goods_num: qty,               // ใช้ qty ที่ตรวจสอบแล้ว
+                            pro_image: product.pro_images,
+                            pro_sn: product.pro_sn,
+                            pro_title: product.pro_title,
+                            pro_units: product.pro_units
+                        };
+                        });
+
+                        // 2) กรองทิ้งรายการที่ qty <= 0 (ไม่ควรมี แต่ป้องกันไว้)
+                        const validProducts = productsForApi.filter(p => p.pro_goods_num > 0);
+
+                        if (validProducts.length === 0) {
+                        console.log('⛔ ไม่มีสินค้าที่มีจำนวนที่ถูกต้อง ไม่เรียก API');
+                        return;
+                        }
+
+                // ถ้าไม่มีสินค้า valid เลย → ไม่ต้องเรียก API
+                if (validProducts.length === 0) {
+                    console.log('⛔ ไม่มีสินค้าที่มีจำนวนที่ถูกต้อง ไม่เรียก API');
+                    return;
+                }
+
+                    const payload = { products: validProducts };
+                    
                 // สร้าง payload จาก selectedProducts ทั้งหมด
-                const payload = {
-                    products: this.selectedProducts.map(product => ({
-                        pro_activity_id: product.pro_activity_id || 0,
-                        pro_goods_id: product.pro_goods_id,
-                        pro_goods_price: parseFloat(product.pro_unit_price) || 0,
-                        pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
-                        pro_erp_title: product.pro_erp_title || '',
-                        pro_goods_num: product.pro_quantity, // ส่งจำนวนล่าสุด
-                        pro_image: product.pro_images,
-                        pro_sn: product.pro_sn,
-                        pro_title: product.pro_title,
-                        pro_units: product.pro_units
-                    }))
-                };
+                // const payload = {
+                //     products: validProducts.map(product => ({
+                //     // products: this.selectedProducts.map(product => ({
+                //         pro_activity_id: product.pro_activity_id || 0,
+                //         pro_goods_id: product.pro_goods_id,
+                //         pro_goods_price: parseFloat(product.pro_unit_price) || 0,
+                //         pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
+                //         pro_erp_title: product.pro_erp_title || '',
+                //         pro_goods_num: product.pro_quantity, // ส่งจำนวนล่าสุด
+                //         pro_image: product.pro_images,
+                //         pro_sn: product.pro_sn,
+                //         pro_title: product.pro_title,
+                //         pro_units: product.pro_units
+                //     }))
+                // };
 
                 const response = await axios.post(
                     `${BASE_URL}/cart_out/index`,
@@ -2035,17 +2080,45 @@ export default {
         },
 
         async onQuantityBlur(product) {
+
+            // ถ้าเป็นค่าว่าง ไม่ต้องเรียก submittedProduct ทันที รอให้ผู้ใช้กรอกก่อน
             if (product.pro_quantity === '' || product.pro_quantity === null) {
                 product.pro_quantity = 1;
                 product.pro_goods_num = 1;
+                // return;
+                // รอสักเล็กน้อยก่อนเรียก (กันกรณีพิมพ์ยังไม่จบ)
+                setTimeout(async () => {
+                    try {
+                        await this.submittedProduct();
+                    } catch (error) {
+                        console.error('Error submitting product after blur timeout:', error);
+                    }
+                }, 500); // รอ 200ms
+            } else {
                 try {
-                    console.log('Check product.pro_quantity: ', product.pro_quantity);
-                    console.log('Check product.pro_goods_num: ', product.pro_goods_num);
-                    await this.submittedProduct();
+                      console.log('Nooooooooooooooooooooo');
+                        if (product.pro_quantity == '' || product.pro_quantity == null) {
+                           return; // ถ้าเป็นค่าว่าง ไม่ต้องเรียก submittedProduct ทันที รอให้ผู้ใช้กรอกก่อน
+                        }else{
+                             await this.submittedProduct();
+                        }
+                    // await this.submittedProduct();
                 } catch (error) {
                     console.error('Error submitting product on blur:', error);
                 }
             }
+            // if (product.pro_quantity === '' || product.pro_quantity === null) {
+            //     product.pro_quantity = 1;
+            //     product.pro_goods_num = 1;
+
+            //     try {
+            //         console.log('Check product.pro_quantity: ', product.pro_quantity);
+            //         console.log('Check product.pro_goods_num: ', product.pro_goods_num);
+            //         await this.submittedProduct();
+            //     } catch (error) {
+            //         console.error('Error submitting product on blur:', error);
+            //     }
+            // }
         },
 
         async onQuantityChange(event, product) {
@@ -2054,6 +2127,7 @@ export default {
             // อนุญาตให้ว่างได้ระหว่างพิมพ์
             if (value === '') {
                 product.pro_quantity = '';
+                product.pro_goods_num = '';
                 // ยังไม่เรียก submittedProduct เพราะยังไม่ใช่ตัวเลขที่สมบูรณ์
                 return;
             }
@@ -2113,7 +2187,30 @@ export default {
                 });
                 // this.$forceUpdate();
 
-                await this.submittedProduct();
+                setTimeout(async () => {
+                    try {
+
+                        console.log('Check product.pro_quantity: ', product.pro_quantity);
+                        console.log('Check product.pro_goods_num: ', product.pro_goods_num);
+
+                        console.log('เรียก ฟังก์ชัน submittedProduct หลังจากเปลี่ยนแปลงจำนวนสินค้า');
+
+                        if (product.pro_quantity == '' || product.pro_quantity == null || product.pro_goods_num == '' || product.pro_goods_num == null) {
+
+                            console.log('Nooobbb');
+
+                           return; // ถ้าเป็นค่าว่าง ไม่ต้องเรียก submittedProduct ทันที รอให้ผู้ใช้กรอกก่อน
+                        }else if(product.pro_quantity != '' || product.pro_quantity != null || product.pro_goods_num != '' || product.pro_goods_num != null){
+                            console.log('Yessssssssssssssssssss');
+                             await this.submittedProduct();
+                        }
+                       
+                    } catch (error) {
+                        console.error('Error submitting product after blur timeout:', error);
+                    }
+                }, 500); // รอ 200ms
+
+                // await this.submittedProduct();
             } catch (error) {
                 console.error('Error submitting product:', error);
             }
@@ -2748,12 +2845,12 @@ export default {
                     activity_id: product.activity_id || 0, // เพิ่ม activity_id 0 ถ้าไม่มี
                     pro_activity_id: product.pro_activity_id || 0, // เพิ่ม pro_activity_id ถ้ามี
                     promotions: product.promotions || [],   // <= เพิ่มตรงนี้
-                    gifts: product.gifts || [], // <= เพิ่มตรงนี้
+                    // gifts: product.gifts || [], // <= เพิ่มตรงนี้
                     gifts: product.gifts.map(g => ({
-                    ...g,
-                    pro_goods_sku_text: g.color || g.pro_goods_sku_text || ''
-                }))
-            };
+                        ...g,
+                        pro_goods_sku_text: g.color || g.pro_goods_sku_text || ''
+                    }))
+                };
             });
 
 
@@ -3766,7 +3863,7 @@ export default {
                             note: gift.note || '',
                             pro_activity_id: gift.pro_activity_id || 0,
                             activity_id: gift.pro_activity_id || 0,
-                            pro_goods_sku_text : gift.color || gift.pro_goods_sku_text || '',
+                            pro_goods_sku_text: gift.color || gift.pro_goods_sku_text || '',
                             pro_sn: gift.pro_sn,
                             prosn: gift.prosn,
                             pro_goods_id: gift.pro_goods_id || 0,

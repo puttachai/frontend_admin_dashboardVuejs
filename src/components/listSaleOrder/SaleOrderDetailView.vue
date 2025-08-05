@@ -196,15 +196,17 @@
               </p>
             </div>
 
-            <!-- เงื่อนไขแสดงเพิ่มเติม -->
-            <div v-if="showMore">
-              <div class="">
+            <div class="">
                 <label class="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์ลูกค้า</label>
                 <input type="text" v-model="formData.phone" :readonly="isReadOnly"
                   class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
               </div>
 
-              <div class="mt-4">
+            <!-- เงื่อนไขแสดงเพิ่มเติม -->
+            <div v-if="showMore">
+              
+
+              <div class=""> <!-- mt-4 -->
                 <label class="block text-sm font-medium text-gray-700">อีเมลลูกค้า</label>
                 <input type="text" v-model="formData.email" :readonly="isReadOnly"
                   class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
@@ -592,7 +594,7 @@
               </p>
             </div>
 
-            <div v-if="showMoreAdress">
+            <!-- <div v-if="showMoreAdress"> -->
               <div>
                 <label class="text-sm text-gray-700 block mb-1">อีเมลผู้รับ</label>
                 <input type="email" v-model="formData.receiverEmail" :readonly="isReadOnly"
@@ -637,7 +639,7 @@
               </div> -->
 
               <div class="flex justify-end gap-4 mt-4">
-                <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
+                <!-- ปุ่ม popup ด้านล่างขวา -->
                 <div class="bottom-6 right-6 z-50 justify-self-end">
                   <button @click="showAddressPopupBase = true" :disabled="isReadOnly"
                     class="bg-green-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-green-700 transition">
@@ -645,7 +647,7 @@
                   </button>
                 </div>
 
-                <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
+                <!-- ปุ่ม popup ด้านล่างขวา -->
                 <div class="bottom-6 right-6 z-50 justify-self-end">
                   <button @click="showAddressPopup = true" :disabled="isReadOnly"
                     class="bg-purple-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
@@ -675,26 +677,27 @@
               <!-- <button class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">
                               ตรวจสอบที่อยู่
                           </button> -->
-            </div>
+            <!-- </div> -->
           </div>
         </div>
 
         <!-- ปุ่ม Show More / Show Less -->
+         <!-- ไม่ได้ใช้ -->
         <!-- <button @click="showMoreAdress = !showMoreAdress" type="button"
                   class="mt-4 text-purple-600 hover:underline focus:outline-none">
                   {{ showMoreAdress ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼ ' }}
               </button> -->
-        <div class="mt-4 flex items-center space-x-2">
+        <!-- ใช้งานได้ -->
+         <!-- ✅ เพิ่มข้อความแจ้งเตือนด้านข้างปุ่ม -->
+        <!-- <div class="mt-4 flex items-center space-x-2">
           <button @click="showMoreAdress = !showMoreAdress" type="button"
             class="text-purple-600 hover:underline focus:outline-none">
             {{ showMoreAdress ? "แสดงน้อยลง ▲" : "แสดงเพิ่มเติม ▼ " }}
           </button>
-
-          <!-- ✅ เพิ่มข้อความแจ้งเตือนด้านข้างปุ่ม -->
           <span class="text-red-500 text-xs">*</span>
           <span class="text-red-500 text-xs">จำเป็นต้องกรอกข้อมูลนี้</span>
-        </div>
-      </div>
+        </div>-->
+      </div> 
 
       <!-- ขวา: ข้อมูลการจัดส่งสินค้า -->
       <div>
@@ -726,8 +729,8 @@
 
           <div>
             <label class="text-sm text-gray-700 block mb-1">Tracking No.
-              <span class="text-red-500 text-xs ml-1">*</span>
-              <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
+              <!-- <span class="text-red-500 text-xs ml-1">*</span>
+              <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span> -->
             </label>
             <input type="text" v-model="formData.trackingNo" :readonly="isReadOnly"
               class="w-full text-gray-700 border rounded px-3 py-2" />
@@ -1388,21 +1391,57 @@ export default {
 
         console.log('Check: this.selectedProducts', this.selectedProducts);
 
+          const productsForApi = this.selectedProducts.map(product => {
+                    // ตรวจสอบ pro_quantity/pro_goods_num ว่าว่างหรือไม่
+                    const qty = (product.pro_goods_num === '' || product.pro_goods_num == null)
+                        ? 1
+                        : Number(product.pro_goods_num);
+
+                    return {
+                        pro_activity_id: product.pro_activity_id || 0,
+                        pro_goods_id: product.pro_goods_id,
+                        pro_goods_price: parseFloat(product.pro_unit_price) || 0,
+                        pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
+                        pro_erp_title: product.pro_erp_title || '',
+                        pro_goods_num: qty,               // ใช้ qty ที่ตรวจสอบแล้ว
+                        pro_image: product.pro_images,
+                        pro_sn: product.pro_sn,
+                        pro_title: product.pro_title,
+                        pro_units: product.pro_units
+                    };
+                    });
+
+                    // 2) กรองทิ้งรายการที่ qty <= 0 (ไม่ควรมี แต่ป้องกันไว้)
+                    const validProducts = productsForApi.filter(p => p.pro_goods_num > 0);
+
+                    if (validProducts.length === 0) {
+                    console.log('⛔ ไม่มีสินค้าที่มีจำนวนที่ถูกต้อง ไม่เรียก API');
+                    return;
+                    }
+
+            // ถ้าไม่มีสินค้า valid เลย → ไม่ต้องเรียก API
+            if (validProducts.length === 0) {
+                console.log('⛔ ไม่มีสินค้าที่มีจำนวนที่ถูกต้อง ไม่เรียก API');
+                return;
+            }
+
+        const payload = { products: validProducts };
+
         // สร้าง payload จาก selectedProducts ทั้งหมด
-        const payload = {
-          products: this.selectedProducts.map(product => ({
-            pro_activity_id: product.pro_activity_id || 0,
-            pro_goods_id: product.pro_goods_id,
-            pro_goods_price: parseFloat(product.pro_unit_price) || 0,
-            pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
-            pro_erp_title: product.pro_erp_title || '',
-            pro_goods_num: product.pro_quantity, // ส่งจำนวนล่าสุด
-            pro_image: product.pro_images,
-            pro_sn: product.pro_sn,
-            pro_title: product.pro_title,
-            pro_units: product.pro_units
-          }))
-        };
+        // const payload = {
+        //   products: this.selectedProducts.map(product => ({
+        //     pro_activity_id: product.pro_activity_id || 0,
+        //     pro_goods_id: product.pro_goods_id,
+        //     pro_goods_price: parseFloat(product.pro_unit_price) || 0,
+        //     pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
+        //     pro_erp_title: product.pro_erp_title || '',
+        //     pro_goods_num: product.pro_quantity, // ส่งจำนวนล่าสุด
+        //     pro_image: product.pro_images,
+        //     pro_sn: product.pro_sn,
+        //     pro_title: product.pro_title,
+        //     pro_units: product.pro_units
+        //   }))
+        // };
 
         const response = await axios.post(
           `${BASE_URL}/cart_out/index`,
@@ -1502,17 +1541,43 @@ export default {
     },
 
     async onQuantityBlur(product) {
-      if (product.pro_quantity === '' || product.pro_quantity === null) {
-        product.pro_quantity = 1;
-        product.pro_goods_num = 1;
-        try {
-          console.log('Check product.pro_quantity: ', product.pro_quantity);
-          console.log('Check product.pro_goods_num: ', product.pro_goods_num);
-          await this.submittedProduct();
-        } catch (error) {
-          console.error('Error submitting product on blur:', error);
-        }
-      }
+       // ถ้าเป็นค่าว่าง ไม่ต้องเรียก submittedProduct ทันที รอให้ผู้ใช้กรอกก่อน
+            if (product.pro_quantity === '' || product.pro_quantity === null) {
+                product.pro_quantity = 1;
+                product.pro_goods_num = 1;
+                // return;
+                // รอสักเล็กน้อยก่อนเรียก (กันกรณีพิมพ์ยังไม่จบ)
+                setTimeout(async () => {
+                    try {
+                        await this.submittedProduct();
+                    } catch (error) {
+                        console.error('Error submitting product after blur timeout:', error);
+                    }
+                }, 400); // รอ 200ms
+            } else {
+                try {
+                      console.log('Nooooooooooooooooooooo');
+                        if (product.pro_quantity == '' || product.pro_quantity == null) {
+                           return; // ถ้าเป็นค่าว่าง ไม่ต้องเรียก submittedProduct ทันที รอให้ผู้ใช้กรอกก่อน
+                        }else{
+                             await this.submittedProduct();
+                        }
+                    // await this.submittedProduct();
+                } catch (error) {
+                    console.error('Error submitting product on blur:', error);
+                }
+            }
+      // if (product.pro_quantity === '' || product.pro_quantity === null) {
+      //   product.pro_quantity = 1;
+      //   product.pro_goods_num = 1;
+      //   try {
+      //     console.log('Check product.pro_quantity: ', product.pro_quantity);
+      //     console.log('Check product.pro_goods_num: ', product.pro_goods_num);
+      //     await this.submittedProduct();
+      //   } catch (error) {
+      //     console.error('Error submitting product on blur:', error);
+      //   }
+      // }
     },
 
     async onQuantityChange(event, product) {
@@ -1580,7 +1645,30 @@ export default {
         });
         // this.$forceUpdate();
 
-        await this.submittedProduct();
+          setTimeout(async () => {
+                  try {
+
+                      console.log('Check product.pro_quantity: ', product.pro_quantity);
+                      console.log('Check product.pro_goods_num: ', product.pro_goods_num);
+
+                      console.log('เรียก ฟังก์ชัน submittedProduct หลังจากเปลี่ยนแปลงจำนวนสินค้า');
+
+                      if (product.pro_quantity == '' || product.pro_quantity == null || product.pro_goods_num == '' || product.pro_goods_num == null) {
+
+                          console.log('Nooobbb');
+
+                          return; // ถ้าเป็นค่าว่าง ไม่ต้องเรียก submittedProduct ทันที รอให้ผู้ใช้กรอกก่อน
+                      }else if(product.pro_quantity != '' || product.pro_quantity != null || product.pro_goods_num != '' || product.pro_goods_num != null){
+                          console.log('Yessssssssssssssssssss');
+                            await this.submittedProduct();
+                      }
+                      
+                  } catch (error) {
+                      console.error('Error submitting product after blur timeout:', error);
+                  }
+              }, 400); // รอ 200ms
+                
+        // await this.submittedProduct();
       } catch (error) {
         console.error('Error submitting product:', error);
       }
@@ -3345,7 +3433,7 @@ export default {
             ML_cut: 1,
             ML_unit: "PCS", // || "PCS", //หน่วย
             // ML_unit: item.pro_unit,// || "PCS", //หน่วย
-            ML_des: item.pro_erp_title, // ชื่อสินค้า erp-title
+            ML_des: item.pro_erp_title + '' + item.pro_goods_sku_text, // ชื่อสินค้า erp-title
             ML_addcost: 0,
             ML_discL: 0,
             ML_deldate: formatDate(now), // วันที่สร้าง
@@ -3370,7 +3458,7 @@ export default {
             ML_cut: 0,
             ML_unit: "PCS", //"PCS",
             // ML_unit: gift.pro_unit, //"PCS",
-            ML_des: gift.title,
+            ML_des: gift.title + '' + gift.pro_goods_sku_text,
             ML_addcost: 0,
             ML_discL: 0,
             ML_deldate: formatDate(now),

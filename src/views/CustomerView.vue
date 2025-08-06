@@ -532,16 +532,8 @@ export default {
         console.log("log selectDataCustomerRow: ", selectDataCustomerRow);
         console.log("log gettoken: ", gettoken);
 
-        //  const selectDataCustomer = JSON.parse(localStorage.getItem('selectDataCustomer'));
-        //  console.log('log selectDataCustomer: ', selectDataCustomer);
-
-        // 🔥 กระตุ้นให้องค์ประกอบอื่น (เช่น Navbar) รับรู้การเปลี่ยนแปลง
-        // window.dispatchEvent(new Event('storage'))
-
-        // 🔥 แจ้งให้ Navbar โหลดใหม่
+        // แจ้งให้ Navbar โหลดใหม่
         eventBus.emit("customerChanged");
-
-        // window.location.reload();
 
         this.$router.push("/dashboard");
       } else {
@@ -553,12 +545,10 @@ export default {
         // });
       }
 
-      // return {
-      //     accountLoginCustomerSubmit
-      // }
     },
   },
 };
+
 </script>
 
 <style scoped>

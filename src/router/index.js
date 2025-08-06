@@ -16,9 +16,9 @@ import Print from "../components/listSaleOrder/PrintView.vue";
 
 import LoginForm from "../views/LoginView.vue";
 
-import AuthLayout from "../components/AuthLayout.vue";
-import SinginForm from "../components/SinginForm.vue";
-import SignupForm from "../components/SignupForm.vue";
+// import AuthLayout from "../components/AuthLayout.vue";
+// import SinginForm from "../components/SinginForm.vue";
+// import SignupForm from "../components/SignupForm.vue";
 import Swal from "sweetalert2";
 // import { useRoute } from 'vue-router'
 // import { computed } from 'vue'

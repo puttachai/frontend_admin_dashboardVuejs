@@ -68,6 +68,7 @@
             <th class="p-3 border">หมายเลขสั่งซื้อ</th>
             <th class="p-3 border">รหัสลูกค้า</th>
             <th class="p-3 border">ชื่อร้าน</th>
+            <th class="p-3 border">พน.เร่งรัด</th>
             <th class="p-3 border">เบอร์โทรศัพท์</th>
             <th class="p-3 border text-right">ยอดคำสั่งซื้อล่าสุด</th>
             <th class="p-3 border text-right">ยอดหนี้คงค้าง</th>
@@ -122,6 +123,8 @@
               <td class="p-3">{{ order.sale_no }}</td>
               <td class="p-3">{{ order.customer_code }}</td>
               <td class="p-3">{{ order.shop_name }}</td>
+              <!-- <td class="p-3">{{ order.shop_name }}</td> -->
+              <td class="p-3">{{ order.employee_name ? order.employee_name : "ไม่มีข้อมูล" }}</td>
               <td class="p-3">{{ order.mobile }}</td>
               <td class="p-3 text-right">{{ formatCurrency(order.total_amount) }}</td>
               <td class="p-3 text-right">{{ formatCurrency(order.total_paid) }}</td>
@@ -692,6 +695,8 @@ async function fetchPage(page = 1) {
         total_paid: item.final_total_price,
         status: item.status,
         created_at: item.created_at,
+        employee_name: item.employee_name, // 
+        employee_phone: item.employee_phone, // ถ้าจะใช้
         extra_details: item.extra_list || [],
       }));
 

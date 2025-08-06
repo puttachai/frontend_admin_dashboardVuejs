@@ -108,7 +108,8 @@
                 </template>
               </td>
 
-              <td class="px-4 text-gray-700 py-2 border">{{ item.erp_title }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.title + ' ' + item.goods_sku_text ?? '' }}</td>
+              <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.erp_title }}</td> -->
               <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? 'ไม่มีสี' }}</td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.sn }}</td>
               <!-- <td class="px-4 py-2 border">{{ item.promotion }}</td> -->

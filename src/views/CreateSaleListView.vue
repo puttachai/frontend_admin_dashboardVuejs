@@ -2650,6 +2650,7 @@ export default {
                 receiverPhone: 'เบอร์ผู้รับ',
                 // receiverEmail: 'อีเมลผู้รับ',
                 receiverAddress: 'ที่อยู่ผู้รับ',
+                deliveryType: 'ประเภทการจัดส่ง',
                 deliveryDate: 'วันที่จัดส่ง',
                 // trackingNo: 'เลขติดตาม',
                 // deliveryType: 'ประเภทการจัดส่ง'

@@ -68,7 +68,7 @@
             <th class="p-3 border">หมายเลขสั่งซื้อ</th>
             <th class="p-3 border">รหัสลูกค้า</th>
             <th class="p-3 border">ชื่อร้าน</th>
-            <th class="p-3 border">พน.เร่งรัด</th>
+            <th class="p-3 border">พนง.เร่งรัด</th>
             <th class="p-3 border">เบอร์โทรศัพท์</th>
             <th class="p-3 border text-right">ยอดคำสั่งซื้อล่าสุด</th>
             <th class="p-3 border text-right">ยอดหนี้คงค้าง</th>

@@ -21,15 +21,31 @@
         <h3>เมนู</h3>
         <!-- <h3>Menu</h3> -->
         <div class="menu">
+            <router-link class="button" to="/createsalelist" @click.native.prevent="forceReload">
+                <span class="material-icons">assignment_add</span>
+                <span class="text">สร้างรายการขาย</span>
+            </router-link>
+            <router-link class="button" to="/customer">
+                <span class="material-icons">person</span>
+                <span class="text">ลูกค้า</span>
+                <!-- <span class="text">Customer</span> -->
+            </router-link>
+             <router-link class="button" to="/saleorder">
+                <span class="material-icons">receipt_long</span>
+                <span class="text">รายการใบสั่งขาย</span>
+                <!-- <span class="text">List Sale Order</span> -->
+            </router-link>
+            
             <!-- <router-link class="button" to="/">
                 <span class="material-icons">home</span>
                 <span class="text">home</span>
             </router-link> -->
-            <router-link class="button" to="/dashboard">
+            <!-- <router-link class="button" to="/dashboard">
                 <span class="material-icons">space_dashboard</span>
                 <span class="text">แดชบอร์ด</span>
-                <!-- <span class="text">Dashboard</span> -->
-            </router-link>
+                
+            </router-link> -->
+            <!-- <span class="text">Dashboard</span> -->
             <!-- register -->
             <router-link class="button" to="/registerdedtStatust">
                 <span class="material-icons">group</span>
@@ -41,16 +57,7 @@
                 <span class="text">รายชื่อผู้ใช้และพนักงาน</span>
                 <!-- <span class="text">List User Employee</span> -->
             </router-link>
-            <router-link class="button" to="/saleorder">
-                <span class="material-icons">receipt_long</span>
-                <span class="text">รายการใบสั่งขาย</span>
-                <!-- <span class="text">List Sale Order</span> -->
-            </router-link>
-            <router-link class="button" to="/customer">
-                <span class="material-icons">person</span>
-                <span class="text">ลูกค้า</span>
-                <!-- <span class="text">Customer</span> -->
-            </router-link>
+           
 
             <!-- <span class="text">Create a sales list</span> -->
             <!-- <router-link class="button" to="/createsalelist">
@@ -58,10 +65,7 @@
                 <span class="text">สร้างรายการขาย</span>    
             </router-link> -->
             
-            <router-link class="button" to="/createsalelist" @click.native.prevent="forceReload">
-                <span class="material-icons">assignment_add</span>
-                <span class="text">สร้างรายการขาย</span>
-            </router-link>
+            
 
             <!-- <router-link class="button" to="/createsalelist" @click.native="forceReload">
                 <span class="material-icons">assignment_add</span>

@@ -1,30 +1,20 @@
 <template>
-  <div
-    class="print-container bg-white shadow-lg rounded-xl p-10 font-sans text-gray-800 text-[15px]"
-    ref="printArea"
-  >
+  <div class="print-container bg-white shadow-lg rounded-xl p-10 font-sans text-gray-800 text-[15px]" ref="printArea">
     <!-- class="page-section" -->
     <!-- ✅ Header (แสดงทุกหน้า) -->
     <!-- BUTTON -->
     <div class="no-print text-end mb-8">
-      <button
-        @click="print"
-        class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md text-xs"
-      >
+      <button @click="print" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md text-xs">
         พิมพ์เอกสาร
       </button>
     </div>
 
-    <div
-      v-for="(chunk, pageIndex) in paginatedItems"
-      :key="pageIndex"
-      class="print-page"
-      :class="{ 'print-page': pageIndex < paginatedItems.length - 1 }"
-    >
+    <div v-for="(chunk, pageIndex) in paginatedItems" :key="pageIndex" class="print-page"
+      :class="{ 'print-page': pageIndex < paginatedItems.length - 1 }">
       <!-- HEADER -->
       <!-- ✅ Header (แสดงทุกหน้า) -->
       <div class="header-section shrink-0">
-     
+
         <!-- LOGO + COMPANY INFO -->
         <div class="flex justify-between items-start border-b border-gray-300 pb-2">
           <img src="@/assets/logo.svg" class="w-12" />
@@ -76,30 +66,50 @@
             </tr>
           </thead>
           <tbody>
-            <!-- v-for="(item, index) in printData.productList" -->
-            <tr
-              v-for="(item, index) in chunk"
-              :key="index"
-              :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
-              class="text-[11px] align-top"
-            >
-              <!-- <td class="border border-gray-300 px-2 py-1 text-center">{{ index + 1 }}</td> -->
-              <td class="border border-gray-300 px-2 py-1 text-center">{{ pageIndex * 10 + index + 1 }}</td>
-              <td class="border border-gray-300 px-2 py-1">{{ item.pro_sku_price_id }}</td>
-              <td class="border border-gray-300 px-2 py-1">{{ item.pro_erp_title }}</td>
-              <td class="border border-gray-300 px-2 py-1 text-right">{{ item.pro_goods_num }}</td>
-              <td class="border border-gray-300 px-2 py-1 text-center">
-                {{ item.pro_unit || "-" }}
-              </td>
-              <td class="border border-gray-300 px-2 py-1 text-right">
-                {{ formatCurrency(item.pro_unit_price) }}
-              </td>
-              <td class="border border-gray-300 px-2 py-1 text-right">{{ item.pro_discount }}</td>
-              <td class="border border-gray-300 px-2 py-1 text-right">
-                {{ formatCurrency(item.pro_total_price) }}
-              </td>
-            </tr>
+
+            <template v-for="(item, index) in chunk" :key="index">
+              <!-- สินค้าหลัก -->
+              <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'" class="text-[11px] align-top">
+                <td class="border border-gray-300 px-2 py-1 text-center">{{ pageIndex * 10 + index + 1 }}</td>
+                <td class="border border-gray-300 px-2 py-1">{{ item.pro_sku_price_id }}</td>
+                <td class="border border-gray-300 px-2 py-1">{{ item.pro_erp_title }}</td>
+                <td class="border border-gray-300 px-2 py-1 text-right">{{ item.pro_goods_num }}</td>
+                <td class="border border-gray-300 px-2 py-1 text-center">{{ item.pro_unit || '-' }}</td>
+                <td class="border border-gray-300 px-2 py-1 text-right">{{ formatCurrency(item.pro_unit_price) }}</td>
+                <td class="border border-gray-300 px-2 py-1 text-right">{{ item.discount }}</td>
+                <td class="border border-gray-300 px-2 py-1 text-right">{{ formatCurrency(item.pro_total_price) }}</td>
+              </tr>
+
+              <!-- แสดงหัวข้อ "ของแถม" ถ้ามี -->
+              <!-- ✅ เฉพาะหน้า "สุดท้าย" ให้แสดงของแถมรวม -->
+
+
+            </template>
+            <!-- ✅ เฉพาะหน้าสุดท้าย -->
+<tr v-if="isLastPage(pageIndex) && uniqueGifts.length > 0">
+  <td colspan="8" class="border border-gray-300 bg-yellow-100 text-left px-2 py-1 font-semibold text-[12px]">
+    🎁 รายการของแถม 
+  </td>
+</tr>
+<tr
+  v-for="(gift, gIndex) in uniqueGifts"
+  :key="'gift-unique-' + gIndex"
+  v-if="isLastPage(pageIndex)"
+  class="text-[11px] bg-yellow-50"
+>
+  <td class="border border-gray-300 px-2 py-1 text-center">-</td>
+  <td class="border border-gray-300 px-2 py-1">{{ gift.pro_sku_price_id || '-' }}</td>
+  <td class="border border-gray-300 px-2 py-1">{{ gift.title }} - {{ gift.pro_goods_sku_text }}</td>
+  <td class="border border-gray-300 px-2 py-1 text-right">{{ gift.pro_goods_num }}</td>
+  <td class="border border-gray-300 px-2 py-1 text-center">PCS</td>
+  <td class="border border-gray-300 px-2 py-1 text-right">0.00</td>
+  <td class="border border-gray-300 px-2 py-1 text-right">-</td>
+  <td class="border border-gray-300 px-2 py-1 text-right">0.00</td>
+</tr>
+
           </tbody>
+
+
         </table>
       </div>
 
@@ -120,7 +130,7 @@
           <div class="mt-2">
             <!-- font-bold -->
             <p>จำนวนเงินทั้งสิ้น:
-            {{ formatCurrency(printData.order.final_total_price) }}</p>
+              {{ formatCurrency(printData.order.final_total_price) }}</p>
             <!-- <strong>จำนวนเงินทั้งสิ้น:</strong> {{ formatCurrency(grandTotal) }} -->
           </div>
         </div>
@@ -150,6 +160,9 @@ import Swal from "sweetalert2"; // ✅ อย่าลืม import
 const route = useRoute();
 const router = useRouter();
 
+// const isLastPage = (pageIndex) => pageIndex === paginatedItems.value.length - 1;
+const isLastPage = (index) => index === paginatedItems.value.length - 1;
+
 const printData = ref({
   order: {},
   productList: [],
@@ -166,7 +179,7 @@ onMounted(() => {
   const raw = sessionStorage.getItem("printData");
   if (raw) {
     const parsed = JSON.parse(raw);
-    
+
     // ✅ เช็คว่า parsed มีข้อมูลหรือไม่
     if (
       !parsed ||
@@ -222,6 +235,125 @@ const chunkArray = (array, size) => {
 };
 
 const paginatedItems = computed(() => chunkArray(printData.value?.productList, 10));
+
+
+const uniqueGifts = computed(() => {
+  const giftMap = new Map();
+
+  printData.value.productList.forEach((product) => {
+    product.gifts?.forEach((gift) => {
+      if (!giftMap.has(gift.id)) {
+        giftMap.set(gift.id, gift);
+      }
+    });
+  });
+
+  return Array.from(giftMap.values());
+});
+
+
+const collectUniqueGifts = () => {
+  const seen = new Set();
+  const result = [];
+
+  printData.value.productList.forEach(product => {
+    product.gifts?.forEach(gift => {
+      const uniqueKey = gift.id;
+      if (!seen.has(uniqueKey)) {
+        seen.add(uniqueKey);
+        result.push(gift);
+      }
+    });
+  });
+
+  printData.value.gifts = result;
+};
+
+// เรียกใช้ตอนโหลดข้อมูล
+onMounted(() => {
+  collectUniqueGifts();
+});
+
+const print = () => window.print();
+
+const formatCurrency = (num) =>
+  new Intl.NumberFormat("th-TH", {
+    style: "currency",
+    currency: "THB",
+  }).format(num);
+</script>
+
+
+<!-- 
+
+
+// function groupByActivityId(products) {
+//   return products.reduce((acc, item) => {
+//     const promoId = item.promotions?.[0]?.pro_activity_id ?? null;
+//     const promoSt = item.promotions?.[0]?.st ?? null;
+
+//     let key, title;
+//     if (promoId !== null) {
+//       key = `promo-${promoId}-st${promoSt}`;
+//       title = promoSt
+//         ? `🔥 โปรโมชั่นรายวัน ${promoId}`
+//         : `🎯 โปรโมชั่นรายเดือน ${promoId}`;
+//     } else {
+//       const pid = Number(item.pro_activity_id);
+//       const st = item.st ? 1 : 0;
+//       key = pid === 0
+//         ? `monthly-st${st}`
+//         : `invalid-activity`;
+//       title = pid === 0
+//         ? '🎯 โปรโมชั่นรายเดือน'
+//         : '⚠️ โปรไม่เข้าเงื่อนไข';
+//     }
+
+//     if (!acc[key]) {
+//       acc[key] = {
+//         title,
+//         items: [],
+//         promotions: [],
+//         gifts: []
+//       };
+//     }
+
+//     acc[key].items.push(item);
+//     if (item.promotions) acc[key].promotions.push(...item.promotions);
+//     if (item.gifts) acc[key].gifts.push(...item.gifts);
+
+//     return acc;
+//   }, {});
+// }
+
+// const groupedProducts = computed(() => groupByActivityId(printData.value.productList));
+
+// // แยกสินค้าโปรรายเดือนและรายวัน
+// const monthlyProducts = computed(() => {
+//   return printData.value.productList.filter(
+//     (item) => item.pro_activity_id === 0 && item.st === 0
+//   );
+// });
+
+// const dailyProducts = computed(() => {
+//   return printData.value.productList.filter(
+//     (item) => !(item.pro_activity_id === 0 && item.st === 0)
+//   );
+// });
+
+// // แบ่งหน้าละ 10 รายการ (หรือปรับได้)
+// function paginate(items, perPage = 10) {
+//   const pages = [];
+//   for (let i = 0; i < items.length; i += perPage) {
+//     pages.push(items.slice(i, i + perPage));
+//   }
+//   return pages;
+// }
+
+// const monthlyPages = computed(() => paginate(monthlyProducts.value));
+// const dailyPages = computed(() => paginate(dailyProducts.value));
+
+
 // const paginatedItems = computed(() => chunkArray(orderItems.value, 10));
 
 const print = () => window.print();
@@ -232,6 +364,35 @@ const formatCurrency = (num) =>
     currency: "THB",
   }).format(num);
 </script>
+ -->
+
+
+<!-- <tbody>
+            <!-- v-for="(item, index) in printData.productList" -->
+<!--
+            <tr
+              v-for="(item, index) in chunk"
+              :key="index"
+              :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
+              class="text-[11px] align-top"
+            >
+              <!-- <td class="border border-gray-300 px-2 py-1 text-center">{{ index + 1 }}</td> 
+              <td class="border border-gray-300 px-2 py-1 text-center">{{ pageIndex * 10 + index + 1 }}</td>
+              <td class="border border-gray-300 px-2 py-1">{{ item.pro_sku_price_id }}</td>
+              <td class="border border-gray-300 px-2 py-1">{{ item.pro_erp_title }}</td>
+              <td class="border border-gray-300 px-2 py-1 text-right">{{ item.pro_goods_num }}</td>
+              <td class="border border-gray-300 px-2 py-1 text-center">
+                {{ item.pro_unit || "-" }}
+              </td>
+              <td class="border border-gray-300 px-2 py-1 text-right">
+                {{ formatCurrency(item.pro_unit_price) }}
+              </td>
+              <td class="border border-gray-300 px-2 py-1 text-right">{{ item.pro_discount }}</td>
+              <td class="border border-gray-300 px-2 py-1 text-right">
+                {{ formatCurrency(item.pro_total_price) }}
+              </td>
+            </tr>
+          </tbody> -->
 
 <!-- const orderItems = ref([
   {

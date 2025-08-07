@@ -535,7 +535,8 @@ export default {
         // แจ้งให้ Navbar โหลดใหม่
         eventBus.emit("customerChanged");
 
-        this.$router.push("/dashboard");
+        this.$router.push("/createsalelist");
+        // this.$router.push("/dashboard");
       } else {
         error.value = response.data.message || "failed";
         // Swal.fire({

@@ -330,7 +330,7 @@ const searchPromotion_no = async () => {
 
       // ?from=specialprice
       const response = await axios.post(
-        `${BASE_URL}/goods2/activityList`,
+        `${BASE_URL}/goods2/activityList2`,
         {
           version: '2.0.2',
           // keywords: keyword.value,
@@ -413,7 +413,7 @@ const searchPromotion_no = async () => {
 
       // ?from=specialprice
       const response = await axios.post(
-        `${BASE_URL}/goods2/activityList`,
+        `${BASE_URL}/goods2/activityList2`,
         {
           version: '2.0.2',
           pageSize: pageSize.value,
@@ -553,7 +553,7 @@ async function SearchPromotionSubmit() {
 
       // ?from=specialprice
       const response = await axios.post(
-        `${BASE_URL}/goods2/activityList`,
+        `${BASE_URL}/goods2/activityList2`,
         {
           version: '2.0.2',
           // keywords: keyword.value,
@@ -619,7 +619,7 @@ async function SearchPromotionSubmit() {
 
       // ?from=specialprice
       const response = await axios.post(
-        `${BASE_URL}/goods2/activityList`,
+        `${BASE_URL}/goods2/activityList2`,
         {
           version: '2.0.2',
           pageSize: pageSize.value,
@@ -724,7 +724,7 @@ async function getPromotion(page = 1) {
 
       // ?from=specialprice
       const response = await axios.post(
-        `${BASE_URL}/goods2/activityList`,
+        `${BASE_URL}/goods2/activityList2`,
         {}, //  body 
         {
           params: {
@@ -852,7 +852,7 @@ function handleSelectedProducts(products) {
 
 //     // ?from=specialprice
 //     const response = await axios.post(
-//       `${BASE_URL}/goods2/activityList`,
+//       `${BASE_URL}/goods2/activityList2`,
 //       {
 //         keywords: keyword.value,
 //         level: getLevel

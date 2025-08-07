@@ -534,7 +534,7 @@
 
         <!-- :disabled="isReadOnly" -->
         <div class="text-gray-700 flex items-center justify-end">
-          <input type="checkbox" v-model="isVathidden" id="vatCheckbox" class="mr-2" />
+          <input type="checkbox" v-model="isVathidden" id="vatCheckbox" :disabled="isReadOnly" class="mr-2" />
           <label for="vatCheckbox">แสดงภาษีมูลค่าเพิ่ม (7%) และมูลค่าก่อนภาษี</label>
           <!-- แสดงภาษีเมื่อ isVatIncluded === true -->
           <span v-if="isVathidden" class="ml-2 text-gray-700">
@@ -554,6 +554,25 @@
                         }) }}
                     </span> -->
         </div>
+
+        <div v-if="!formData.deliveryFee === 0 " class="text-gray-700">
+                    ค่าจัดส่ง:
+                    <span class="ml-2 text-gray-700" >
+                       {{ formData.deliveryFee ? formData.deliveryFee.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }) : '0.00' }}
+                    </span>
+                </div>
+                <div v-if="!formData.totalDiscount === 0" class="text-gray-700">
+                    ส่วนลดท้ายบิล:
+                    <span class="ml-2 text-gray-700" >
+                       {{ formData.totalDiscount ? formData.totalDiscount.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }) : '0.00' }}
+                    </span>
+                </div>
 
         <div class="text-xl font-bold text-purple-700 mt-2">
           มูลค่ารวมสุทธิ:
@@ -833,7 +852,9 @@ export default {
       isLoading: false, // สำหรับ loading spinner
 
       isVatIncluded: true, //  เริ่มต้นให้คิดภาษี
+
       isVathidden: false, //  เริ่มต้นให้คิดภาษี
+      originalIsVathidden: false,
 
       // ตัวแปรควบคุม popup
       showAddressPopup: false, // ควบคุมการแสดง popup ที่อยู่]
@@ -890,6 +911,9 @@ export default {
       deliveryAddress: [], // 🏡 เก็บข้อมูลที่อยู่จาก so_delivery_address
 
       formData: {
+
+        vatVisible: false, // ตัวนี้ไว้เก็บสถานะว่าติ๊กไว้หรือไม่
+
         listCode: "",
         sellDate: "",
         order_Id: "",
@@ -1047,7 +1071,8 @@ export default {
         return sum + (qty * price - discount);
       }, 0);
       const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
-      const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
+      // const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
+      const totalDiscount = Math.abs(parseFloat(this.formData.totalDiscount || 0)) || 0;
       const total = subtotal + deliveryFee - totalDiscount;
       return total < 0 ? 0 : total;
     },
@@ -1221,11 +1246,16 @@ export default {
             price_before_tax: resData.data.order.price_before_tax || 0,
             final_total_price: resData.data.order.final_total_price || 0,
             documentNo: resData.data.order.document_no || "",
+            vatVisible: resData.data.order.vat_visible || false,
+            
 
             //
             promotions: resData.data.promotions || [],
             gifts: resData.data.gifts || [],
           };
+
+          this.isVathidden = !!Number(resData.data.order.vat_visible);
+          this.originalIsVathidden = this.isVathidden; // เก็บค่าเดิมไว้เปรียบเทียบ
 
           console.log("📄 ข้อมูลเอกสารที่โหลด:", resData.data.productList);
           console.log("🔍 ก่อน map this.selectedProducts:", this.selectedProducts);
@@ -1518,6 +1548,18 @@ export default {
           const data = response.data.data.products || [];
           console.log('API response products:', data);
 
+          const datasumdiscount = response.data.data;
+
+          console.log('API response datasumdiscount:', datasumdiscount);
+
+          if (datasumdiscount.discount_month !== undefined || datasumdiscount.discount_day !== undefined) {
+              const discountMonth = Math.abs(Number(datasumdiscount.discount_month) || 0);
+              const discountDay = Math.abs(Number(datasumdiscount.discount_day) || 0);
+              this.formData.totalDiscount = discountMonth + discountDay;
+              console.log("🎯 รวมส่วนลดทั้งหมด:", this.formData.totalDiscount);
+          } else {
+              console.warn("⚠️ ไม่พบ discount_day หรือ discount_month ใน datasumdiscount:", datasumdiscount);
+          }
 
           // ✅ วงเล็บให้ถูกต้องเพื่อไม่ให้ logic ผิด
           const items = data.filter(item =>
@@ -1804,6 +1846,17 @@ export default {
       const giftsDay = payload.gifts || [];
       const promotions = payload.promotions || [];
       const emitTitles = payload.emitTitles || [];
+
+      const datasumdiscount = payload.datasumdiscount || [];
+
+      if (datasumdiscount.discount_month !== undefined || datasumdiscount.discount_day !== undefined) {
+          const discountMonth = Math.abs(Number(datasumdiscount.discount_month) || 0);
+          const discountDay = Math.abs(Number(datasumdiscount.discount_day) || 0);
+          this.formData.totalDiscount = discountMonth + discountDay;
+          console.log("🎯 รวมส่วนลดทั้งหมด:", this.formData.totalDiscount);
+      } else {
+          console.warn("⚠️ ไม่พบ discount_day หรือ discount_month ใน datasumdiscount:", datasumdiscount);
+      }
 
       console.log("✅ payload:", payload);
 
@@ -2097,6 +2150,17 @@ export default {
       const giftsDay = payload.gifts || [];
       const promotions = payload.promotions || [];
       const emitTitles = payload.emitTitles || [];
+
+      const datasumdiscount = payload.datasumdiscount || [];
+
+      if (datasumdiscount.discount_month !== undefined || datasumdiscount.discount_day !== undefined) {
+          const discountMonth = Math.abs(Number(datasumdiscount.discount_month) || 0);
+          const discountDay = Math.abs(Number(datasumdiscount.discount_day) || 0);
+          this.formData.totalDiscount = discountMonth + discountDay;
+          console.log("🎯 รวมส่วนลดทั้งหมด:", this.formData.totalDiscount);
+      } else {
+          console.warn("⚠️ ไม่พบ discount_day หรือ discount_month ใน datasumdiscount:", datasumdiscount);
+      }
 
       console.log("✅ payload:", payload);
 
@@ -2654,6 +2718,8 @@ export default {
 
         this.formData.final_total_price = parseFloat(this.grandTotal.toFixed(2));
         // this.formData.final_total_price = parseFloat(this.grandTotal);
+        
+        this.formData.vatVisible = this.isVathidden ? 1 : 0;
 
         const payload = new FormData();
 
@@ -2792,7 +2858,8 @@ export default {
       const isFormChanged = JSON.stringify(this.formData) !== JSON.stringify(this.originalFormData);
       const isProductChanged =
         JSON.stringify(this.selectedProducts) !== JSON.stringify(this.originalSelectedProducts);
-      return isFormChanged || isProductChanged;
+      const isVatChanged = this.isVathidden !== this.originalIsVathidden;
+        return isFormChanged || isProductChanged || isVatChanged;
     },
 
 
@@ -3428,7 +3495,7 @@ export default {
           MH_date: formatDateTime(now),
           MH_type: "PS",
           MH_vnumber: docNo,
-          MH_process: 5,
+          MH_process: 9, // 9 = อนุมัติ
           MH_supcus: this.formData.customerCode,
           MH_noItems: totalItems, //
           // MH_noItems: this.formData.productList.length,

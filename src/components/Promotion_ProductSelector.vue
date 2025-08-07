@@ -1177,6 +1177,7 @@ async function submittedProduct(newproduct) {
 
     if (response.data.code === 1) {
       const data = response.data.data.products || [];
+      const datasumdiscount = response.data.data;
 
       console.log("Check Value data:", data);
 
@@ -1218,7 +1219,7 @@ async function submittedProduct(newproduct) {
       console.log("✅ Promotions:", promotions);
 
       // ใช้ได้
-      console.log("🔁 Emit กลับไปหน้า parent:", { items, gifts, promotions, emitTitles });
+      console.log("🔁 Emit กลับไปหน้า parent:", { items, gifts, promotions, emitTitles, datasumdiscount });
       // console.log("🔁 Emit กลับไปหน้า parent:", { items, itemsMonth, giftsDay, giftsMonth, promotionsDay, promotionsMonth});
       // ส่งข้อมูลกลับไปยังหน้าหลัก
 
@@ -1248,7 +1249,8 @@ async function submittedProduct(newproduct) {
         promotions,
         // promotionsmonth,
         // giftsmonth,
-        emitTitles
+        emitTitles,
+        datasumdiscount
       });
 
       emit('close'); // 

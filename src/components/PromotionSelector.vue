@@ -324,7 +324,6 @@ const searchPromotion_no = async () => {
   if (!keyword_promotion_no.value.trim()) {
     try {
 
-
       const gettoken = localStorage.getItem('token');
       console.log("log value token:", gettoken);
 
@@ -711,6 +710,7 @@ async function SearchPromotionSubmit() {
     //satisfies
   }
 };
+
 //page = 1
 async function getPromotion(page = 1) {
   isLoading.value = true;

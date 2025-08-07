@@ -53,7 +53,7 @@
 
         <!-- PRODUCT TABLE -->
         <table class="w-full border border-gray-300 text-xs">
-          <thead class="bg-gray-100 text-[12px] font-semibold">
+          <thead class="bg-gray-100 text-[10px] font-semibold">
             <tr>
               <th class="border border-gray-300 px-2 py-2 text-center">ลำดับ</th>
               <th class="border border-gray-300 px-2 py-2 text-left">รหัสสินค้า</th>
@@ -69,7 +69,7 @@
 
             <template v-for="(item, index) in chunk" :key="index">
               <!-- สินค้าหลัก -->
-              <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'" class="text-[11px] align-top">
+              <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'" class="text-[10px] align-top">
                 <td class="border border-gray-300 px-2 py-1 text-center">{{ pageIndex * 10 + index + 1 }}</td>
                 <td class="border border-gray-300 px-2 py-1">{{ item.pro_sku_price_id }}</td>
                 <td class="border border-gray-300 px-2 py-1">{{ item.pro_erp_title }}</td>
@@ -232,7 +232,7 @@ const chunkArray = (array, size) => {
   return chunks;
 };
 
-const paginatedItems = computed(() => chunkArray(printData.value?.productList, 10));
+const paginatedItems = computed(() => chunkArray(printData.value?.productList, 16));
 
 
 const uniqueGifts = computed(() => {

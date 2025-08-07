@@ -256,6 +256,14 @@ export default {
         console.log("Check response.data: ", response.data);
 
         this.addressList = response.data || [];
+        
+        // ✅ ถ้ามี defaultAddress == 1 ให้เลือกอัตโนมัติ
+        const defaultAddr = this.addressList.find(addr => addr.defaultAddress === 1);
+        if (defaultAddr) {
+          this.selectedAddressId = defaultAddr.id;
+          this.form.detail = defaultAddr.address;
+        }
+
       } catch (err) {
         console.error("❌ โหลดข้อมูลที่อยู่ล้มเหลว:", err);
         Swal.fire({

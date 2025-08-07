@@ -60,12 +60,32 @@
             </label> -->
           </div>
 
+          <div class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              v-model="rememberMe"
+              class="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-400"
+            />
+            <label for="rememberMe" class="text-sm text-gray-600">จำฉันไว้</label>
+          </div>
+
+
           <button
+            type="submit"
+            :disabled="isLoading"
+            class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg shadow-md transition-transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span v-if="!isLoading">LOGIN</span>
+            <span v-else>กำลังเข้าสู่ระบบ...</span>
+          </button>
+
+          <!-- <button
             type="submit"
             class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg shadow-md transition-transform hover:scale-[1.02]"
           >
             LOGIN
-          </button>
+          </button> -->
 
           <div class="text-center text-sm text-gray-400">หรือเข้าสู่ระบบด้วยวิธีอื่น</div>
           <div class="flex justify-center">
@@ -84,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
@@ -105,12 +125,34 @@ const customer_no = ref('')
 const error = ref('')
 const router = useRouter()
 
+const isLoading = ref(false)
+const rememberMe = ref(false)
 
 const toggleInfo = () => {
   showMore.value = !showMore.value
 }
 
+
+// โหลดค่าที่เคยจำไว้ (ตอน mounted)
+onMounted(() => {
+  const remembered = localStorage.getItem("remember_me") === "true";
+  const rememberedUsername = localStorage.getItem("remembered_username") || '';
+  const rememberedPassword = localStorage.getItem("remembered_password") || '';
+
+  if (remembered) {
+    username.value = rememberedUsername;
+    password.value = rememberedPassword;
+    rememberMe.value = true;
+  }
+});
+
+
 const handleLogin = async () => {
+  if (isLoading.value) return; // ป้องกันการกดซ้ำ
+
+
+   isLoading.value = true;
+
   try {
     console.log("Show BASE_URL try: ", BASE_URL);
     const response = await axios.post(`${BASE_URL}/user/accountLogin4`, {
@@ -169,6 +211,17 @@ const handleLogin = async () => {
       localStorage.setItem('token', response.data.data.token || '');
       localStorage.setItem('level', response.data.data.level || '');
 
+      // บันทึกหรือเคลียร์การจดจำ
+      if (rememberMe.value) {
+        localStorage.setItem("remember_me", "true");
+        localStorage.setItem("remembered_username", username.value);
+        localStorage.setItem("remembered_password", password.value);
+      } else {
+        localStorage.removeItem("remember_me");
+        localStorage.removeItem("remembered_username");
+        localStorage.removeItem("remembered_password");
+      }
+
       // แจ้งเตือน login สำเร็จ
       Swal.fire({
         title: 'ล็อกอินสำเร็จ',
@@ -178,7 +231,7 @@ const handleLogin = async () => {
       });
 
       // 👉 ตรวจเงื่อนไข redirect
-      if (isCrm || isProduct) {
+      if (isCrm || isProduct || isFa || isAdmin) {
         router.push("/customer");
       } else {
         router.push("/dashboard");
@@ -193,6 +246,8 @@ const handleLogin = async () => {
       text: error.value || 'โปรดลองใหม่ภายหลัง',
       icon: 'error',
     });
+  } finally {
+    isLoading.value = false; // เปิดให้กดได้อีกครั้ง
   }
 }
 

@@ -86,26 +86,24 @@
 
             </template>
             <!-- ✅ เฉพาะหน้าสุดท้าย -->
-<tr v-if="isLastPage(pageIndex) && uniqueGifts.length > 0">
-  <td colspan="8" class="border border-gray-300 bg-yellow-100 text-left px-2 py-1 font-semibold text-[12px]">
-    🎁 รายการของแถม 
-  </td>
-</tr>
-<tr
-  v-for="(gift, gIndex) in uniqueGifts"
-  :key="'gift-unique-' + gIndex"
-  v-if="isLastPage(pageIndex)"
-  class="text-[11px] bg-yellow-50"
->
-  <td class="border border-gray-300 px-2 py-1 text-center">-</td>
-  <td class="border border-gray-300 px-2 py-1">{{ gift.pro_sku_price_id || '-' }}</td>
-  <td class="border border-gray-300 px-2 py-1">{{ gift.title }} - {{ gift.pro_goods_sku_text }}</td>
-  <td class="border border-gray-300 px-2 py-1 text-right">{{ gift.pro_goods_num }}</td>
-  <td class="border border-gray-300 px-2 py-1 text-center">PCS</td>
-  <td class="border border-gray-300 px-2 py-1 text-right">0.00</td>
-  <td class="border border-gray-300 px-2 py-1 text-right">-</td>
-  <td class="border border-gray-300 px-2 py-1 text-right">0.00</td>
-</tr>
+            <tr v-if="isLastPage(pageIndex) && uniqueGifts.length > 0">
+              <td colspan="8"
+                class="border border-gray-300 bg-yellow-100 text-left px-2 py-1 font-semibold text-[12px]">
+                🎁 รายการของแถม
+              </td>
+            </tr>
+            <tr v-for="(gift, gIndex) in uniqueGifts" :key="'gift-unique-' + gIndex" v-if="isLastPage(pageIndex)"
+              class="text-[11px] bg-yellow-50">
+              <td class="border border-gray-300 px-2 py-1 text-center">-</td>
+              <td class="border border-gray-300 px-2 py-1">{{ gift.pro_sku_price_id || '-' }}</td>
+              <td class="border border-gray-300 px-2 py-1">{{ gift.title }} - {{ gift.pro_goods_sku_text }}</td>
+              <td class="border border-gray-300 px-2 py-1 text-right">{{ gift.pro_goods_num }}</td>
+              <!-- <td class="border border-gray-300 px-2 py-1 text-right">{{ gift.units }}</td> -->
+              <td class="border border-gray-300 px-2 py-1 text-center">PCS</td>
+              <td class="border border-gray-300 px-2 py-1 text-right">0.00</td>
+              <td class="border border-gray-300 px-2 py-1 text-right">-</td>
+              <td class="border border-gray-300 px-2 py-1 text-right">0.00</td>
+            </tr>
 
           </tbody>
 

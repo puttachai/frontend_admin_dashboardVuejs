@@ -266,6 +266,9 @@ const router = createRouter({
 
 // ✅ ⬇️ วางไว้ที่นี่ หลังสร้าง router แล้ว
 router.beforeEach((to, from, next) => {
+
+// const orderStore = useOrderStore()
+
   const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
   const customerRaw = localStorage.getItem("selectDataCustomerRow");
 

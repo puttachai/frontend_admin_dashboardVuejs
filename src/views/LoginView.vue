@@ -108,7 +108,9 @@ import { ref, onMounted } from 'vue'
 import Swal from 'sweetalert2'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import { useOrderStore } from '@/stores/orderStore'
 
+const orderStore = useOrderStore()
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 console.log("Show BASE_URL: ", BASE_URL);
@@ -229,6 +231,9 @@ const handleLogin = async () => {
         timer: 1500,
         showConfirmButton: false,
       });
+
+      // หลังจาก login สำเร็จ
+      await orderStore.fetchPendingOrders()
 
       // 👉 ตรวจเงื่อนไข redirect
       if (isCrm || isProduct || isFa || isAdmin) {

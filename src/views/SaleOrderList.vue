@@ -353,6 +353,9 @@ import {
   BanIcon,
   HelpCircleIcon,
 } from "lucide-vue-next";
+
+// import { eventBus } from '@/utils/eventBus'
+
 // import { Message } from 'tdesign-vue-next'
 
 // const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
@@ -702,6 +705,12 @@ async function fetchPage(page = 1) {
 
       totalRows.value = res.data.data.total;
       currentPage.value = page;
+
+      // // ✅ คำนวณจำนวน Order ที่ยังไม่อนุมัติ
+      // const pendingCount = saleOrders.value.filter(o => o.status !== 'ตรวจสอบเรียบร้อย').length;
+
+      // // ✅ ส่งไปให้ Navbar ผ่าน eventBus
+      // eventBus.emit('updateOrderNotification', pendingCount);
 
       // ✅ เรียกใช้ TypeCustomers หลังโหลดรายการเสร็จ
       await TypeCustomers();

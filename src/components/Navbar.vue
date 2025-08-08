@@ -387,6 +387,9 @@ export default {
           localStorage.removeItem('selectDataCustomer')
           localStorage.removeItem('selectDataCustomerRow')
 
+          // localStorage.removeItem('token_address')
+          // localStorage.removeItem('mac5_token')
+
           localStorage.removeItem('crm_account')
           localStorage.removeItem('fa_account')
 

@@ -38,9 +38,13 @@
 
         <!-- SELLER INFO -->
         <div class="info-section mb-4 ">
-          <div class="text-xs pb-1 pb-1"><strong>รหัสลูกค้า: </strong>{{ printData.order.customerCode }}</div>
-          <div class="text-xs pb-1">
-            <strong>เลขที่อ้างอิง: </strong>{{ printData.order.documentNo }}
+          <div class="flex justify-between text-xs">
+            <div class="text-xs pb-1 pb-1">
+              <strong>รหัสลูกค้า: </strong>{{ printData.order.customerCode }}
+            </div>
+            <div class="text-xs pb-1">
+              <strong>เลขที่อ้างอิง: </strong>{{ printData.order.documentNo }}
+            </div>
           </div>
           <!-- <div><strong>รหัสลูกค้า:</strong> ก-0001</div> -->
           <div class="text-xs pb-1"><strong>ชื่อลูกค้า: </strong>{{ printData.order.fullName }}</div>

@@ -494,6 +494,13 @@
           class="w-full border px-3 py-2 rounded text-gray-700"></textarea>
       </div>
 
+      <!-- รายละเอียดคำสั่งงาน -->
+      <div class="mt-4">
+          <label class="block font-medium mb-1 text-gray-700">รายละเอียดคำสั่งงาน</label>
+          <textarea rows="3" v-model="formData.workDetail" :readonly="isReadOnly"
+              class="w-full border px-3 py-2 rounded text-gray-700"></textarea>
+      </div>
+
       <!-- รวม -->
       <!-- รวม -->
       <!-- <div class="mt-6 text-right space-y-1">
@@ -941,6 +948,7 @@ export default {
         receiverEmail: "" || "-",
         receiverAddress: "",
         note: "" || "-",
+        workDetail: '' || '-',
 
         promotions: [], // เก็บรายการสินค้าที่เลือก
         gifts: [], // เก็บรายการของแถม
@@ -1238,6 +1246,7 @@ export default {
             receiverEmail: resData.data.order.receiver_email || "",
             receiverAddress: resData.data.order.receiver_address || "",
             note: resData.data.order.note || "",
+            workDetail: resData.data.order.work_detail || '',
             deliveryDate: resData.data.order.delivery_date || "",
             trackingNo: resData.data.order.tracking_no || "",
             deliveryType: resData.data.order.delivery_type || "",
@@ -2772,48 +2781,6 @@ export default {
           return;
         }
 
-
-        // const addr = String(this.formData.receiverAddress || '').trim();
-
-        // if (
-        //   (
-        //     (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) &&
-        //     (!this.selectedAddressBase || Object.keys(this.selectedAddressBase).length === 0)
-        //   ) ||
-        //   // Object.keys(this.formData.receiverAddress).length === 0
-        //   addr === '' 
-        //   // !this.formData.receiverAddress || this.formData.receiverAddress.trim() === ''
-        // ) {
-        //   console.log('ข้อมูลบางรายการไม่ครบ กรุณาเลือกที่อยู่จัดส่ง');
-        //   Swal.fire({
-        //     icon: 'warning',
-        //     title: 'กรุณาเลือกที่อยู่จัดส่ง',
-        //   });
-        //   return;
-        // }
-
-        // if (
-        //     (
-        //         (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) &&
-        //         (!this.selectedAddressBase || Object.keys(this.selectedAddressBase).length === 0)
-        //     ) ||
-        //     Object.keys(this.formData.receiverAddress).length === 0
-        // ) {
-        //     console.log('ข้อมูลบางรายการไม่ครบ กรุณาเลือกที่อยู่จัดส่ง');
-        //     Swal.fire({
-        //         icon: 'warning',
-        //         title: 'กรุณาเลือกที่อยู่จัดส่ง',
-        //     });
-        //     return;
-        // }
-
-        // else if (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) {
-        //     Swal.fire({
-        //         icon: 'warning',
-        //         title: 'กรุณาเลือกที่อยู่จัดส่ง',
-        //     });
-        // }
-
         // ✅ เพิ่ม selectedAddress เข้าไป
         payload.append(
           "deliveryAddress",
@@ -2872,6 +2839,8 @@ export default {
         this.isLoading = false;
       }
     },
+
+
 
     // ฟังก์ชันเปรียบเทียบข้อมูล
     isDataChanged() {
@@ -3293,8 +3262,8 @@ export default {
     },
 
     async getAuthToken() {
-      // localStorage.removeItem("mac5_token");
-      const tokenData = JSON.parse(localStorage.getItem("mac5_token")) || null;
+      // localStorage.removeItem("token_address");
+      const tokenData = JSON.parse(localStorage.getItem("token_address")) || null;
 
       // console.log("🔑 Check tokenData :", tokenData);
 
@@ -3336,7 +3305,7 @@ export default {
 
         // 📝 บันทึก token และ timestamp ลง localStorage
         localStorage.setItem(
-          "mac5_token",
+          "token_address",
           JSON.stringify({
             token,
             timestamp: now,

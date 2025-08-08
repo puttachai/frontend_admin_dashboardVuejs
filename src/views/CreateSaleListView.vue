@@ -199,11 +199,11 @@
                             <label class="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์ลูกค้า</label>
                             <input type="text" v-model="formData.phone" :readonly="isReadOnly"
                                 class="mt-1 block w-full text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
-                         </div>
+                        </div>
 
                         <!-- เงื่อนไขแสดงเพิ่มเติม -->
                         <div v-if="showMore">
-                            
+
                             <div class="mt-4">
                                 <label class="block text-sm font-medium text-gray-700">อีเมลลูกค้า</label>
                                 <input type="text" v-model="formData.email" :readonly="isReadOnly"
@@ -391,13 +391,14 @@
                                             @keypress="onlyNumberInput($event)" :disabled="isReadOnly"
                                             class="w-full px-2 py-1 border rounded" />
                                     </td>
-                                    <td class="px-4 py-2 border">{{ product.pro_goods_price || product.pro_unit_price ? product.pro_goods_price 
-                                     || product.pro_unit_price.toLocaleString(undefined, {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                    }) : '0.00' }}
+                                    <td class="px-4 py-2 border">{{ product.pro_goods_price || product.pro_unit_price ?
+                                        product.pro_goods_price
+                                        || product.pro_unit_price.toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        }) : '0.00' }}
                                     </td>
-                                     
+
                                     <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
                                     <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString() || 0 }}
                                     </td>
@@ -553,7 +554,7 @@
                     </select>
                     <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">{{
                         errors.deliveryType
-                    }}</p>
+                        }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -576,6 +577,13 @@
             <div class="mt-4">
                 <label class="block font-medium mb-1 text-gray-700">หมายเหตุ</label>
                 <textarea rows="3" v-model="formData.note" :readonly="isReadOnly"
+                    class="w-full border px-3 py-2 rounded text-gray-700"></textarea>
+            </div>
+
+            <!-- รายละเอียดคำสั่งงาน -->
+            <div class="mt-4">
+                <label class="block font-medium mb-1 text-gray-700">รายละเอียดคำสั่งงาน</label>
+                <textarea rows="3" v-model="formData.workDetail" :readonly="isReadOnly"
                     class="w-full border px-3 py-2 rounded text-gray-700"></textarea>
             </div>
 
@@ -616,7 +624,8 @@
                 </div>
 
                 <div class="text-gray-700 flex items-center justify-end">
-                    <input type="checkbox" v-model="isVathidden" id="vatCheckbox" @change="handleVatToggle" :disabled="isReadOnly" class="mr-2" />
+                    <input type="checkbox" v-model="isVathidden" id="vatCheckbox" @change="handleVatToggle"
+                        :disabled="isReadOnly" class="mr-2" />
                     <label for="vatCheckbox">แสดงภาษีมูลค่าเพิ่ม (7%) และมูลค่าก่อนภาษี</label>
                     <!-- แสดงภาษีเมื่อ isVatIncluded === true -->
                     <span v-if="isVathidden" class="ml-2 text-gray-700">
@@ -632,10 +641,10 @@
                     </span> -->
                 </div>
 
-                <div v-if="!formData.deliveryFee == 0 " class="text-gray-700">
+                <div v-if="!formData.deliveryFee == 0" class="text-gray-700">
                     ค่าจัดส่ง:
-                    <span class="ml-2 text-gray-700" >
-                       {{ formData.deliveryFee ? formData.deliveryFee.toLocaleString(undefined, {
+                    <span class="ml-2 text-gray-700">
+                        {{ formData.deliveryFee ? formData.deliveryFee.toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
                         }) : '0.00' }}
@@ -643,8 +652,8 @@
                 </div>
                 <div v-if="!formData.totalDiscount == 0" class="text-gray-700">
                     ส่วนลดท้ายบิล:
-                    <span class="ml-2 text-gray-700" >
-                       {{ formData.totalDiscount ? formData.totalDiscount.toLocaleString(undefined, {
+                    <span class="ml-2 text-gray-700">
+                        {{ formData.totalDiscount ? formData.totalDiscount.toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
                         }) : '0.00' }}
@@ -724,53 +733,53 @@
 
                         <!-- <div v-if="showMoreAdress"> -->
 
-                            <div>
-                                <label class="text-sm text-gray-700 block mb-1">อีเมลผู้รับ</label>
-                                <input type="email" v-model="formData.receiverEmail" :readonly="isReadOnly"
-                                    class="w-full text-gray-700 border rounded px-3 py-2" />
+                        <div>
+                            <label class="text-sm text-gray-700 block mb-1">อีเมลผู้รับ</label>
+                            <input type="email" v-model="formData.receiverEmail" :readonly="isReadOnly"
+                                class="w-full text-gray-700 border rounded px-3 py-2" />
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="text-sm text-gray-700 block mb-1">ที่อยู่/จัดส่ง
+                                <span class="text-red-500 text-xs ml-1">*</span>
+                                <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
+                            </label>
+                            <textarea rows="4" v-model="formData.receiverAddress" disabled :readonly="isReadOnly"
+                                class="w-full text-gray-700 border rounded px-3 py-2 resize-none">
+                    </textarea>
+                        </div>
+
+                        <div class="flex justify-end gap-4 mt-4">
+
+                            <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
+                            <div class="bottom-6 right-6 z-50 justify-self-end">
+                                <button @click="showAddressPopupBase = true" :disabled="isReadOnly"
+                                    class="bg-green-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-green-700 transition">
+                                    + เลือกที่อยู่ / จัดส่ง เดิมที่มีอยู่
+                                </button>
                             </div>
 
-                            <div class="mt-4">
-                                <label class="text-sm text-gray-700 block mb-1">ที่อยู่/จัดส่ง
-                                    <span class="text-red-500 text-xs ml-1">*</span>
-                                    <span class="text-red-500 text-xs ml-1">จำเป็นต้องกรอกข้อมูลนี้</span>
-                                </label>
-                                <textarea rows="4" v-model="formData.receiverAddress" disabled :readonly="isReadOnly"
-                                    class="w-full text-gray-700 border rounded px-3 py-2 resize-none">
-                        </textarea>
+                            <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
+                            <div class="bottom-6 right-6 z-50 justify-self-end">
+                                <button @click="showAddressPopup = true" :disabled="isReadOnly"
+                                    class="bg-purple-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
+                                    + เพิ่มที่อยู่ / จัดส่ง ใหม่
+                                </button>
                             </div>
 
-                            <div class="flex justify-end gap-4 mt-4">
+                            <!-- ✅ แสดง Popup -->
+                            <DeliveryAddressPopup v-if="showAddressPopup" :existingAddress="selectedAddress"
+                                @close="showAddressPopup = false" @submitted="handleAddressSelected" />
 
-                                <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
-                                <div class="bottom-6 right-6 z-50 justify-self-end">
-                                    <button @click="showAddressPopupBase = true" :disabled="isReadOnly"
-                                        class="bg-green-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-green-700 transition">
-                                        + เลือกที่อยู่ / จัดส่ง เดิมที่มีอยู่
-                                    </button>
-                                </div>
+                            <DeliveryAddressPopupBase v-if="showAddressPopupBase"
+                                :existingAddressBase="selectedAddressBase" @close="showAddressPopupBase = false"
+                                :customerNo="customerData.customer_no" @submitted="handleAddressSelectedBase" />
 
-                                <!-- ✅ ปุ่ม popup ด้านล่างขวา -->
-                                <div class="bottom-6 right-6 z-50 justify-self-end">
-                                    <button @click="showAddressPopup = true" :disabled="isReadOnly"
-                                        class="bg-purple-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
-                                        + เพิ่มที่อยู่ / จัดส่ง ใหม่
-                                    </button>
-                                </div>
+                            <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">{{
+                                errors.receiverAddress }} </p>
+                        </div>
 
-                                <!-- ✅ แสดง Popup -->
-                                <DeliveryAddressPopup v-if="showAddressPopup" :existingAddress="selectedAddress"
-                                    @close="showAddressPopup = false" @submitted="handleAddressSelected" />
-
-                                <DeliveryAddressPopupBase v-if="showAddressPopupBase"
-                                    :existingAddressBase="selectedAddressBase" @close="showAddressPopupBase = false"
-                                    :customerNo="customerData.customer_no" @submitted="handleAddressSelectedBase" />
-
-                                <p v-if="formTouched && errors.receiverAddress" class="text-red-500 text-sm mt-1">{{
-                                    errors.receiverAddress }} </p>
-                            </div>
-
-                            <!-- <button class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">
+                        <!-- <button class="mt-2 px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700">
                                 ตรวจสอบที่อยู่
                             </button> -->
                         <!-- </div> -->
@@ -778,7 +787,7 @@
                 </div>
 
                 <!-- ปุ่ม Show More / Show Less -->
-                 <!-- ไม่ได้ใช้งาน -->
+                <!-- ไม่ได้ใช้งาน -->
                 <!-- <button @click="showMoreAdress = !showMoreAdress" type="button"
                     class="mt-4 text-purple-600 hover:underline focus:outline-none">
                     {{ showMoreAdress ? 'แสดงน้อยลง ▲' : 'แสดงเพิ่มเติม ▼ ' }}
@@ -962,6 +971,7 @@ flatpickr.localize(Thai)
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
+const BASE_URL_C_SHARP = import.meta.env.VITE_API_URL_C_SHARP;
 
 console.log('adadasdsadadasdadasdadasdasda', BASE_URL_LOCAL);
 
@@ -1079,6 +1089,7 @@ export default {
                 receiverEmail: '' || '-',
                 receiverAddress: '',
                 note: '' || '-',
+                workDetail: '' || '-',
 
                 promotions: [], // เก็บรายการสินค้าที่เลือก
                 gifts: [], // เก็บรายการของแถม
@@ -1342,42 +1353,42 @@ export default {
                 //     return product.pro_goods_num !== '' && product.pro_goods_num !== null && product.pro_goods_num !== undefined;
                 // });
 
-                    const productsForApi = this.selectedProducts.map(product => {
-                        // ตรวจสอบ pro_quantity/pro_goods_num ว่าว่างหรือไม่
-                        const qty = (product.pro_goods_num === '' || product.pro_goods_num == null)
-                            ? 1
-                            : Number(product.pro_goods_num);
+                const productsForApi = this.selectedProducts.map(product => {
+                    // ตรวจสอบ pro_quantity/pro_goods_num ว่าว่างหรือไม่
+                    const qty = (product.pro_goods_num === '' || product.pro_goods_num == null)
+                        ? 1
+                        : Number(product.pro_goods_num);
 
-                        return {
-                            pro_activity_id: product.pro_activity_id || 0,
-                            pro_goods_id: product.pro_goods_id,
-                            pro_goods_price: parseFloat(product.pro_unit_price) || 0,
-                            pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
-                            pro_erp_title: product.pro_erp_title || '',
-                            pro_goods_num: qty,               // ใช้ qty ที่ตรวจสอบแล้ว
-                            pro_image: product.pro_images,
-                            pro_sn: product.pro_sn,
-                            pro_title: product.pro_title,
-                            pro_units: product.pro_units
-                        };
-                        });
+                    return {
+                        pro_activity_id: product.pro_activity_id || 0,
+                        pro_goods_id: product.pro_goods_id,
+                        pro_goods_price: parseFloat(product.pro_unit_price) || 0,
+                        pro_sku_price_id: product.pro_sku_price_id || product.pro_id || 0,
+                        pro_erp_title: product.pro_erp_title || '',
+                        pro_goods_num: qty,               // ใช้ qty ที่ตรวจสอบแล้ว
+                        pro_image: product.pro_images,
+                        pro_sn: product.pro_sn,
+                        pro_title: product.pro_title,
+                        pro_units: product.pro_units
+                    };
+                });
 
-                        // 2) กรองทิ้งรายการที่ qty <= 0 (ไม่ควรมี แต่ป้องกันไว้)
-                        const validProducts = productsForApi.filter(p => p.pro_goods_num > 0);
+                // 2) กรองทิ้งรายการที่ qty <= 0 (ไม่ควรมี แต่ป้องกันไว้)
+                const validProducts = productsForApi.filter(p => p.pro_goods_num > 0);
 
-                        if (validProducts.length === 0) {
-                        console.log('⛔ ไม่มีสินค้าที่มีจำนวนที่ถูกต้อง ไม่เรียก API');
-                        return;
-                        }
+                if (validProducts.length === 0) {
+                    console.log('⛔ ไม่มีสินค้าที่มีจำนวนที่ถูกต้อง ไม่เรียก API');
+                    return;
+                }
 
-                        // ถ้าไม่มีสินค้า valid เลย → ไม่ต้องเรียก API
-                        if (validProducts.length === 0) {
-                            console.log('⛔ ไม่มีสินค้าที่มีจำนวนที่ถูกต้อง ไม่เรียก API');
-                            return;
-                        }
+                // ถ้าไม่มีสินค้า valid เลย → ไม่ต้องเรียก API
+                if (validProducts.length === 0) {
+                    console.log('⛔ ไม่มีสินค้าที่มีจำนวนที่ถูกต้อง ไม่เรียก API');
+                    return;
+                }
 
-                     const payload = { products: validProducts };
-                    
+                const payload = { products: validProducts };
+
                 // สร้าง payload จาก selectedProducts ทั้งหมด
                 // const payload = {
                 //     products: validProducts.map(product => ({
@@ -1410,7 +1421,7 @@ export default {
 
                 if (response.data.code === 1) {
                     const data = response.data.data.products || [];
-                   
+
                     console.log('API response products:', data);
 
                     const datasumdiscount = response.data.data;
@@ -1528,7 +1539,7 @@ export default {
         // handleVatToggle() {
         //     this.formData.vatVisible = this.isVathidden;
         //     console.log(`✅ เอกสาร ${this.formData.documentNo} แสดงภาษี:`, this.formData.vatVisible);
-            
+
         //     // หากต้องการบันทึกไปที่ backend ทันที (เช่น API)
         //     // this.saveVatVisibilityToServer(this.formData.documentNo, this.formData.vatVisible);
         // },
@@ -2198,12 +2209,12 @@ export default {
 
 
                 try {
-                      console.log('Nooooooooooooooooooooo');
-                        if (product.pro_quantity == '' || product.pro_quantity == null) {
-                           return; // ถ้าเป็นค่าว่าง ไม่ต้องเรียก submittedProduct ทันที รอให้ผู้ใช้กรอกก่อน
-                        }else{
-                             await this.submittedProduct();
-                        }
+                    console.log('Nooooooooooooooooooooo');
+                    if (product.pro_quantity == '' || product.pro_quantity == null) {
+                        return; // ถ้าเป็นค่าว่าง ไม่ต้องเรียก submittedProduct ทันที รอให้ผู้ใช้กรอกก่อน
+                    } else {
+                        await this.submittedProduct();
+                    }
                     // await this.submittedProduct();
                 } catch (error) {
                     console.error('Error submitting product on blur:', error);
@@ -2250,7 +2261,7 @@ export default {
                 product.pro_quantity = 1;
             } else if (value > product.pro_stock) {
                 console.log('Check pro_stock: ');
-                product.pro_quantity =  product.pro_quantity || product.pro_stock;
+                product.pro_quantity = product.pro_quantity || product.pro_stock;
                 product.pro_goods_num = product.pro_quantity;
             } else {
                 console.log('Check else pro_goods_num: ');
@@ -2302,12 +2313,12 @@ export default {
 
                             console.log('Nooobbb');
 
-                           return; // ถ้าเป็นค่าว่าง ไม่ต้องเรียก submittedProduct ทันที รอให้ผู้ใช้กรอกก่อน
-                        }else if(product.pro_quantity != '' || product.pro_quantity != null || product.pro_goods_num != '' || product.pro_goods_num != null){
+                            return; // ถ้าเป็นค่าว่าง ไม่ต้องเรียก submittedProduct ทันที รอให้ผู้ใช้กรอกก่อน
+                        } else if (product.pro_quantity != '' || product.pro_quantity != null || product.pro_goods_num != '' || product.pro_goods_num != null) {
                             console.log('Yessssssssssssssssssss');
-                             await this.submittedProduct();
+                            await this.submittedProduct();
                         }
-                       
+
                     } catch (error) {
                         console.error('Error submitting product after blur timeout:', error);
                     }
@@ -3790,6 +3801,7 @@ export default {
                         receiverEmail: resData.data.order.receiver_email || '',
                         receiverAddress: resData.data.order.receiver_address || '',
                         note: resData.data.order.note || '',
+                        workDetail: resData.data.order.work_detail || '',
                         deliveryDate: resData.data.order.delivery_date || '',
                         trackingNo: resData.data.order.tracking_no || '',
                         deliveryType: resData.data.order.delivery_type || '',
@@ -3940,6 +3952,118 @@ export default {
                 const message = err.response?.data?.message || err.message || 'เกิดข้อผิดพลาดในการโหลดข้อมูลเอกสาร';
                 Swal.fire({ text: message, icon: 'error' });
                 this.isLoading = false;
+            }
+        },
+
+        async getAuthTokenAddress() {
+            // localStorage.removeItem("mac5_token");
+            const tokenData = JSON.parse(localStorage.getItem("token_userlogin")) || null;
+
+            // console.log("🔑 Check tokenData :", tokenData);
+
+            const oneHour = 60 * 60 * 1000; // 1 ชั่วโมงในหน่วยมิลลิวินาที
+            const now = Date.now();
+
+            if (tokenData && tokenData.token && now - tokenData.timestamp < oneHour) {
+                // console.log("🔑 ใช้ token เดิม:", tokenData.token);
+                return tokenData.token; // ✅ ใช้ token เดิม
+            }
+
+            console.log("🔑 Token ไม่พบหรือหมดอายุ กำลังขอใหม่...");
+
+            // 🛎️ แสดง loading เฉพาะตอนขอ token ใหม่
+            Swal.fire({
+                title: "กำลังดำเนินการ...",
+                text: "กำลังเพิ่มข้อมูล (ครั้งแรกจะใช้เวลาสักครู่)",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+
+            try {
+                const authResponse = await axios.post(
+                    `${BASE_URL_C_SHARP}/api/Users/Login`, //https://backend2.d-power.online:58915
+                    {
+                        username: "DPower1", // ใส่จริงตรงนี้
+                        password: "1234", // หรือใช้จาก .env ก็ได้
+                    },
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                console.log("authResponse 🔑 Token :", authResponse);
+
+                const token = authResponse.data.token;
+                if (!token) throw new Error("ไม่สามารถดึง token ได้");
+
+                // 📝 บันทึก token และ timestamp ลง localStorage
+                localStorage.setItem(
+                    "token_userlogin",
+                    JSON.stringify({
+                        token,
+                        timestamp: now,
+                    })
+                );
+
+                Swal.close(); // ✅ ปิด Swal เมื่อเรียบร้อย
+                return token;
+
+            } catch (err) {
+                Swal.fire({
+                    icon: "error",
+                    title: "ขอ Token ไม่สำเร็จ",
+                    text: "ไม่สามารถขอ token ได้ กรุณาลองใหม่อีกครั้ง",
+                });
+                console.error("❌ ดึง token ไม่สำเร็จ:", err);
+                throw err;
+            }
+        },
+
+
+
+        async loadCustomerAddresses() {
+            try {
+                const token = await this.getAuthTokenAddress(); // ดึง token
+
+                console.log("Check this.customerData:", this.customerData);
+                // console.log('Check this.customerDataRow:',this.customerDataRow);
+
+                const customerNo = this.customerData?.data2.customer_no || ""; // ดึงจาก localStorage หรือ prop
+                console.log("Check customerNo: ", customerNo);
+
+                const response = await axios.post(
+                    `${BASE_URL_C_SHARP}/api/AddressCustomers`, // `${BASE_URL_C_SHARP}/api/Users/Login`, //https://backend2.d-power.online:58915
+                    qs.stringify({ CustomerCode: customerNo }),
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                    }
+                );
+
+                console.log("Check response.data: ", response.data);
+
+                const addressList = response.data || [];
+
+                // ✅ ถ้ามี defaultAddress == 1 ให้เลือกอัตโนมัติ
+                const defaultAddr = addressList.find(addr => addr.defaultAddress === 1);
+                if (defaultAddr) {
+                    // this.selectedAddressId = defaultAddr.id;
+                    this.formData.receiverAddress = defaultAddr.address;
+                }
+
+            } catch (err) {
+                console.error("❌ โหลดข้อมูลที่อยู่ล้มเหลว:", err);
+                Swal.fire({
+                    icon: "error",
+                    title: "โหลดที่อยู่ไม่สำเร็จ",
+                    text: "ไม่สามารถโหลดข้อมูลที่อยู่ของลูกค้าได้",
+                });
             }
         },
 
@@ -5395,6 +5519,8 @@ export default {
     },
 
     mounted() {
+        this.loadCustomerAddresses();
+
         const urlParams = new URLSearchParams(window.location.search);
         const documentNo = urlParams.get('documentNo');
 
@@ -5405,6 +5531,7 @@ export default {
         }
 
         this.getProduct(1);
+        
 
         const today = new Date();
         const year = today.getFullYear(); // ปีคริสต์ศักราช

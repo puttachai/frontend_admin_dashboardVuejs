@@ -1498,6 +1498,8 @@ export default {
                             pro_activity_id: matchedItem.pro_activity_id,
                             pro_unit_price: matchedItem.pro_goods_price,
                             pro_goods_id: matchedItem.pro_goods_id,
+                            pro_unit: product.pro_unit || product.pro_units,
+                            pro_units: product.pro_units || product.pro_unit,
                             promotions: FinalPromotions,
                             gifts: FinalGifts
                         };
@@ -2166,7 +2168,7 @@ export default {
         async onQuantityBlur(product) {
 
             // ถ้าเป็นค่าว่าง ไม่ต้องเรียก submittedProduct ทันที รอให้ผู้ใช้กรอกก่อน
-            if (product.pro_quantity === '' || product.pro_quantity === null) {
+            if (product.pro_quantity === '' || product.pro_quantity === null || product.pro_quantity === 0) {
                 product.pro_quantity = 1;
                 product.pro_goods_num = 1;
                 // return;
@@ -2179,6 +2181,22 @@ export default {
                     }
                 }, 500); // รอ 200ms
             } else {
+
+                this.selectedProducts = this.selectedProducts.map(item => {
+                    if (
+                        item.pro_sku_price_id === product.pro_sku_price_id &&
+                        item.pro_activity_id === product.pro_activity_id
+                    ) {
+                        return {
+                            ...item,
+                            pro_goods_num: product.pro_quantity || 0,
+                            pro_quantity: product.pro_quantity || 0,
+                        };
+                    }
+                    return item; // คืนค่า item เดิมถ้าเงื่อนไขไม่ตรง
+                });
+
+
                 try {
                       console.log('Nooooooooooooooooooooo');
                         if (product.pro_quantity == '' || product.pro_quantity == null) {
@@ -2232,7 +2250,8 @@ export default {
                 product.pro_quantity = 1;
             } else if (value > product.pro_stock) {
                 console.log('Check pro_stock: ');
-                product.pro_quantity = product.pro_stock;
+                product.pro_quantity =  product.pro_quantity || product.pro_stock;
+                product.pro_goods_num = product.pro_quantity;
             } else {
                 console.log('Check else pro_goods_num: ');
                 product.pro_goods_num = value;
@@ -2263,8 +2282,8 @@ export default {
                     ) {
                         return {
                             ...item,
-                            pro_goods_num: product.pro_goods_num || 0,
-                            pro_quantity: product.pro_quantity || 0,
+                            pro_goods_num: product.pro_goods_num || product.pro_quantity || 0,
+                            pro_quantity: product.pro_quantity || product.pro_goods_num || 0,
                         };
                     }
                     return item; // คืนค่า item เดิมถ้าเงื่อนไขไม่ตรง
@@ -2292,7 +2311,7 @@ export default {
                     } catch (error) {
                         console.error('Error submitting product after blur timeout:', error);
                     }
-                }, 500); // รอ 200ms
+                }, 100); // รอ 200ms
 
                 // await this.submittedProduct();
             } catch (error) {
@@ -2751,7 +2770,7 @@ export default {
                 receiverPhone: 'เบอร์ผู้รับ',
                 // receiverEmail: 'อีเมลผู้รับ',
                 receiverAddress: 'ที่อยู่ผู้รับ',
-                deliveryType: 'ประเภทการจัดส่ง',
+                // deliveryType: 'ประเภทการจัดส่ง',
                 deliveryDate: 'วันที่จัดส่ง',
                 // trackingNo: 'เลขติดตาม',
                 // deliveryType: 'ประเภทการจัดส่ง'

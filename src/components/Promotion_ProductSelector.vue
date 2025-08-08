@@ -702,7 +702,7 @@ async function confirmSelection() {
   console.log('🎯 get_productOld (ก่อนเช็ค stock):', get_productOld_raw);
 
   // ✅ ตรวจสอบว่ามีสินค้าใดใน get_productOld_raw ที่ไม่มี stock
-  const missingStock = get_productOld_raw.some(x => x.pro_stock == null || x.pro_stock === undefined);
+  const missingStock = get_productOld_raw.some(x => x.pro_stock == null || x.pro_stock === undefined || x.pro_stock <= 0);
 
   if (missingStock) {
     console.warn('ขาด stock, เรียก API ดึง stock');

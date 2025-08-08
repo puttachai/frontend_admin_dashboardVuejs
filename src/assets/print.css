@@ -28,6 +28,9 @@
     border-bottom: none !important;
   }
 
+  .no-print-shadow {
+    box-shadow: none !important;
+  }
 
   .print-page {
     page-break-after: always;
@@ -35,6 +38,10 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
   }
   
   
@@ -52,6 +59,10 @@
     padding: 10mm !important;
     border-bottom: none !important; /* ซ่อน border-bottom */
     border: none !important; /* ซ่อน border-bottom */
+
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
   }
 
     .print-a4 {
@@ -91,7 +102,7 @@
     max-width: 800px;
     margin: 3rem auto;
     background: white;
-    /* box-shadow: 0 0 10px rgba(0,0,0,0.1); */
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
     
   }
 }

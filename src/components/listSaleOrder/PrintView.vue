@@ -1,5 +1,6 @@
 <template>
-  <div class="print-container bg-white shadow-lg rounded-xl p-10 font-sans text-gray-800 text-[15px]" ref="printArea">
+  <div class="print-container bg-white shadow-lg rounded-xl p-10 font-sans text-gray-800 text-[15px] no-print-shadow"
+    ref="printArea">
     <!-- class="page-section" -->
     <!-- ✅ Header (แสดงทุกหน้า) -->
     <!-- BUTTON -->
@@ -9,7 +10,7 @@
       </button>
     </div>
 
-    <div v-for="(chunk, pageIndex) in paginatedItems" :key="pageIndex" class="print-page"
+    <div v-for="(chunk, pageIndex) in paginatedItems" :key="pageIndex" class="print-page py-6 border-b border-gray-300"
       :class="{ 'print-page': pageIndex < paginatedItems.length - 1 }">
       <!-- HEADER -->
       <!-- ✅ Header (แสดงทุกหน้า) -->
@@ -70,13 +71,13 @@
             <template v-for="(item, index) in chunk" :key="index">
               <!-- สินค้าหลัก -->
               <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'" class="text-[10px] align-top">
-                <td class="border border-gray-300 px-2 py-1 text-center">{{ pageIndex * 10 + index + 1 }}</td>
+                <td class="border border-gray-300 px-2 py-1 text-center">{{ pageIndex * 16 + index + 1 }}</td>
                 <td class="border border-gray-300 px-2 py-1">{{ item.pro_sku_price_id }}</td>
                 <td class="border border-gray-300 px-2 py-1">{{ item.pro_erp_title }}</td>
                 <td class="border border-gray-300 px-2 py-1 text-right">{{ item.pro_goods_num }}</td>
                 <td class="border border-gray-300 px-2 py-1 text-center">{{ item.pro_unit || '-' }}</td>
                 <td class="border border-gray-300 px-2 py-1 text-right">{{ formatCurrency(item.pro_unit_price) }}</td>
-                <td class="border border-gray-300 px-2 py-1 text-right">{{ item.discount }}</td>
+                <td class="border border-gray-300 px-2 py-1 text-right">{{ item.discount || 0 }}</td>
                 <td class="border border-gray-300 px-2 py-1 text-right">{{ formatCurrency(item.pro_total_price) }}</td>
               </tr>
 
@@ -94,7 +95,8 @@
             </tr>
             <tr v-for="(gift, gIndex) in uniqueGifts" :key="'gift-unique-' + gIndex" v-if="isLastPage(pageIndex)"
               class="text-[11px] bg-yellow-50">
-              <td class="border border-gray-300 px-2 py-1 text-center">-</td>
+              <td class="border border-gray-300 px-2 py-1 text-center">{{pageIndex * 16 + gIndex + 1}}</td>
+              <!-- <td class="border border-gray-300 px-2 py-1 text-center">-</td> -->
               <td class="border border-gray-300 px-2 py-1">{{ gift.pro_sku_price_id || '-' }}</td>
               <td class="border border-gray-300 px-2 py-1">{{ gift.title }} - {{ gift.pro_goods_sku_text }}</td>
               <td class="border border-gray-300 px-2 py-1 text-right">{{ gift.pro_goods_num }}</td>
@@ -113,27 +115,98 @@
 
       <!-- SUMMARY + SIGNATURE เฉพาะหน้า "สุดท้าย"  text-[15px]-->
       <!-- ✅ Footer (แสดงทุกหน้า) -->
-      <div class="footer-section shrink-0">
+
+      <div v-if="isLastPage(pageIndex)" class="footer-section shrink-0">
+
+        <!-- <div class="mt-6 text-right space-y-1">
+        <div v-if="isVathidden" class="text-gray-700">
+          มูลค่ารวมก่อนภาษี:
+          <span class="ml-2 text-gray-700">
+            {{
+              netAmountBeforeVat.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            }}
+          </span>
+
+        </div>
+
+     
+        <div class="text-gray-700 flex items-center justify-end">
+          <input type="checkbox" v-model="isVathidden" id="vatCheckbox" :disabled="isReadOnly" class="mr-2" />
+          <label for="vatCheckbox">แสดงภาษีมูลค่าเพิ่ม (7%) และมูลค่าก่อนภาษี</label>
+        
+          <span v-if="isVathidden" class="ml-2 text-gray-700">
+            {{
+              formatCurrency.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            }}
+            บาท
+          </span>
+
+        </div>
+
+        <div v-if="!formData.deliveryFee === 0 " class="text-gray-700">
+                    ค่าจัดส่ง:
+                    <span class="ml-2 text-gray-700" >
+                       {{ formData.deliveryFee ? formData.deliveryFee.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }) : '0.00' }}
+                    </span>
+                </div>
+                <div v-if="!formData.totalDiscount === 0" class="text-gray-700">
+                    ส่วนลดท้ายบิล:
+                    <span class="ml-2 text-gray-700" >
+                       {{ formData.totalDiscount ? formData.totalDiscount.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }) : '0.00' }}
+                    </span>
+                </div>
+
+        <div class="text-xl font-bold text-purple-700 mt-2">
+          มูลค่ารวมสุทธิ:
+          <span class="ml-2 text-blue-600">
+            {{
+              formatCurrency.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            }}
+          </span>
+    
+        </div>
+      </div> -->
+
         <div class="text-right space-y-1">
-          <div>
-            <p>รวมเงิน: {{ formatCurrency(printData.order.price_before_tax) }} </p>
+          <div v-if="isVathidden">
+            <p>มูลค่ารวมก่อนภาษี: {{ formatCurrency(printData.order.price_before_tax) }} </p>
           </div>
-          <!-- <div><strong>รวมเงิน:</strong> {{ formatCurrency(totalAmount) }}</div> -->
-          <!-- <div><strong>ส่วนลด:</strong> {{ formatCurrency(discountTotal) }}</div> -->
-          <!-- <div><strong>รวมหลังหักส่วนลด:</strong> {{ formatCurrency(amountAfterDiscount) }}</div> -->
-          <div>
+          <div v-if="isVathidden">
             <p>ภาษีมูลค่าเพิ่ม (7%): {{ formatCurrency(printData.order.tax_value) }}</p>
           </div>
-          <!-- <div><strong>ภาษีมูลค่าเพิ่ม (7%):</strong> {{ formatCurrency(vatAmount) }}</div> -->
+          <!-- v-if="!printData.order.deliveryFee === 0" -->
           <div class="mt-2">
-            <!-- font-bold -->
+            <p>ค่าจัดส่ง:
+              {{ formatCurrency(printData.order.deliveryFee) }}</p>
+          </div>
+          <!-- v-if="!printData.order.deliveryFee === 0" -->
+          <div class="mt-2">
+            <p>ส่วนลดท้ายบิล:
+              {{ formatCurrency(printData.order.totalDiscount) }}</p>
+          </div>
+          <div class="mt-2">
             <p>จำนวนเงินทั้งสิ้น:
               {{ formatCurrency(printData.order.final_total_price) }}</p>
-            <!-- <strong>จำนวนเงินทั้งสิ้น:</strong> {{ formatCurrency(grandTotal) }} -->
           </div>
         </div>
+
         <!-- SIGNATURE -->
-        <div class="signature flex justify-between mt-6 mb-6 px-12 border-b border-gray-300 pt-4">
+        <div class="signature flex justify-between mt-6 mb-6 px-12  pt-4">
           <div class="text-center mb-4">
             <p>.............................................</p>
             <p class="mt-1">ผู้จัดทำ</p>
@@ -143,10 +216,23 @@
             <p class="mt-1">ผู้มีอำนาจลงนาม</p>
           </div>
         </div>
+        <!-- แสดงหมายเลขหน้า -->
+        <div>
+
+        </div>
+        <div class="text-xs text-right text-gray-500 mt-2">
+          หน้าเอกสารที่ {{ pageIndex + 1 }} จากทั้งหมด {{ paginatedItems.length }} หน้า
+        </div>
+
       </div>
 
+      <!-- ถ้าไม่ใช่หน้าสุดท้าย ให้แสดงหมายเลขหน้าเล็กๆ -->
+      <div v-else class="text-xs text-right text-gray-400 mt-2">
+        หน้าเอกสารที่ {{ pageIndex + 1 }} จากทั้งหมด {{ paginatedItems.length }} หน้า
+      </div>
 
     </div>
+
   </div>
 </template>
 
@@ -157,6 +243,12 @@ import Swal from "sweetalert2"; // ✅ อย่าลืม import
 
 const route = useRoute();
 const router = useRouter();
+
+
+const isVathidden = ref(false); // เริ่มต้นให้ไม่แสดงภาษี
+// const originalIsVathidden = ref(false); //
+
+const ITEMS_PER_PAGE = 16;
 
 // const isLastPage = (pageIndex) => pageIndex === paginatedItems.value.length - 1;
 const isLastPage = (index) => index === paginatedItems.value.length - 1;
@@ -196,6 +288,10 @@ onMounted(() => {
       return;
     }
 
+    isVathidden.value = !!Number(parsed.order.vatVisible);
+
+    // printData.value.order.vatVisible = parsed.order.vatVisible || false;
+
     Object.assign(printData.value, parsed);
     console.log("✅ Print Data:", printData.value);
   } else {
@@ -224,6 +320,30 @@ onMounted(() => {
 //   // window.print();
 // });
 
+const paginatedItems = computed(() => {
+  const products = printData.value?.productList || [];
+  const gifts = uniqueGifts.value || [];
+  const giftRows = gifts.length > 0 ? gifts.length + 1 : 0;
+  const chunks = [];
+
+  let i = 0;
+  while (i < products.length) {
+    chunks.push(products.slice(i, i + ITEMS_PER_PAGE));
+    i += ITEMS_PER_PAGE;
+  }
+
+  if (chunks.length > 0 && giftRows > 0) {
+    const lastChunk = chunks[chunks.length - 1];
+    if (lastChunk.length + giftRows > ITEMS_PER_PAGE) {
+      chunks.push([]);
+    }
+  } else if (gifts.length > 0) {
+    chunks.push([]);
+  }
+
+  return chunks;
+});
+
 const chunkArray = (array, size) => {
   const chunks = [];
   for (let i = 0; i < array.length; i += size) {
@@ -232,7 +352,7 @@ const chunkArray = (array, size) => {
   return chunks;
 };
 
-const paginatedItems = computed(() => chunkArray(printData.value?.productList, 16));
+// const paginatedItems = computed(() => chunkArray(printData.value?.productList, 16));
 
 
 const uniqueGifts = computed(() => {

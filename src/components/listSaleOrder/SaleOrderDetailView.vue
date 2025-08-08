@@ -47,7 +47,7 @@
             <span class="material-icons">add_task</span>
             <span>อนุมัติเอกสาร</span>
           </button> -->
-          
+
           <!-- ปุ่มพิมพ์เอกสาร พร้อม icon -->
           <button
             class="no-print bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md transition"
@@ -515,6 +515,7 @@
           <span class="ml-2 text-blue-600">{{ grandTotal }}</span>
         </div>
       </div> -->
+
       <div class="mt-6 text-right space-y-1">
         <!-- ซ่อนมูลค่ารวมก่อนภาษี เมื่อ isVatIncluded === true -->
         <div v-if="isVathidden" class="text-gray-700">
@@ -555,24 +556,24 @@
                     </span> -->
         </div>
 
-        <div v-if="!formData.deliveryFee === 0 " class="text-gray-700">
-                    ค่าจัดส่ง:
-                    <span class="ml-2 text-gray-700" >
-                       {{ formData.deliveryFee ? formData.deliveryFee.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }) : '0.00' }}
-                    </span>
-                </div>
-                <div v-if="!formData.totalDiscount === 0" class="text-gray-700">
-                    ส่วนลดท้ายบิล:
-                    <span class="ml-2 text-gray-700" >
-                       {{ formData.totalDiscount ? formData.totalDiscount.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }) : '0.00' }}
-                    </span>
-                </div>
+        <div v-if="!formData.deliveryFee === 0" class="text-gray-700">
+          ค่าจัดส่ง:
+          <span class="ml-2 text-gray-700">
+            {{ formData.deliveryFee ? formData.deliveryFee.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            }) : '0.00' }}
+          </span>
+        </div>
+        <div v-if="!formData.totalDiscount === 0" class="text-gray-700">
+          ส่วนลดท้ายบิล:
+          <span class="ml-2 text-gray-700">
+            {{ formData.totalDiscount ? formData.totalDiscount.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            }) : '0.00' }}
+          </span>
+        </div>
 
         <div class="text-xl font-bold text-purple-700 mt-2">
           มูลค่ารวมสุทธิ:
@@ -1247,7 +1248,7 @@ export default {
             final_total_price: resData.data.order.final_total_price || 0,
             documentNo: resData.data.order.document_no || "",
             vatVisible: resData.data.order.vat_visible || false,
-            
+
 
             //
             promotions: resData.data.promotions || [],
@@ -1553,12 +1554,12 @@ export default {
           console.log('API response datasumdiscount:', datasumdiscount);
 
           if (datasumdiscount.discount_month !== undefined || datasumdiscount.discount_day !== undefined) {
-              const discountMonth = Math.abs(Number(datasumdiscount.discount_month) || 0);
-              const discountDay = Math.abs(Number(datasumdiscount.discount_day) || 0);
-              this.formData.totalDiscount = discountMonth + discountDay;
-              console.log("🎯 รวมส่วนลดทั้งหมด:", this.formData.totalDiscount);
+            const discountMonth = Math.abs(Number(datasumdiscount.discount_month) || 0);
+            const discountDay = Math.abs(Number(datasumdiscount.discount_day) || 0);
+            this.formData.totalDiscount = discountMonth + discountDay;
+            console.log("🎯 รวมส่วนลดทั้งหมด:", this.formData.totalDiscount);
           } else {
-              console.warn("⚠️ ไม่พบ discount_day หรือ discount_month ใน datasumdiscount:", datasumdiscount);
+            console.warn("⚠️ ไม่พบ discount_day หรือ discount_month ใน datasumdiscount:", datasumdiscount);
           }
 
           // ✅ วงเล็บให้ถูกต้องเพื่อไม่ให้ logic ผิด
@@ -1616,6 +1617,8 @@ export default {
               activity_id: activityId,
               pro_activity_id: matchedItem.pro_activity_id,
               pro_unit_price: matchedItem.pro_goods_price,
+              pro_unit: product.pro_unit || product.pro_units,
+              pro_units: product.pro_units || product.pro_unit,
               promotions: FinalPromotions,
               gifts: FinalGifts
             };
@@ -1655,6 +1658,21 @@ export default {
           }
         }, 400); // รอ 200ms
       } else {
+
+        this.selectedProducts = this.selectedProducts.map(item => {
+          if (
+            item.pro_sku_price_id === product.pro_sku_price_id &&
+            item.pro_activity_id === product.pro_activity_id
+          ) {
+            return {
+              ...item,
+              pro_goods_num: product.pro_quantity || 0,
+              pro_quantity: product.pro_quantity || 0,
+            };
+          }
+          return item; // คืนค่า item เดิมถ้าเงื่อนไขไม่ตรง
+        });
+
         try {
           console.log('Nooooooooooooooooooooo');
           if (product.pro_quantity == '' || product.pro_quantity == null) {
@@ -1706,7 +1724,8 @@ export default {
         product.pro_quantity = 1;
       } else if (value > product.pro_stock) {
         console.log('Check pro_stock: ');
-        product.pro_quantity = product.pro_stock;
+        product.pro_quantity = product.pro_quantity || product.pro_stock;
+        product.pro_goods_num = product.pro_quantity
       } else {
         console.log('Check else pro_goods_num: ');
         product.pro_goods_num = value;
@@ -1737,7 +1756,8 @@ export default {
           ) {
             return {
               ...item,
-              pro_goods_num: product.pro_goods_num || 0,
+              pro_goods_num: product.pro_quantity || 0, 
+              // pro_goods_num: product.pro_goods_num || 0,
               pro_quantity: product.pro_quantity || 0,
             };
           }
@@ -1850,12 +1870,12 @@ export default {
       const datasumdiscount = payload.datasumdiscount || [];
 
       if (datasumdiscount.discount_month !== undefined || datasumdiscount.discount_day !== undefined) {
-          const discountMonth = Math.abs(Number(datasumdiscount.discount_month) || 0);
-          const discountDay = Math.abs(Number(datasumdiscount.discount_day) || 0);
-          this.formData.totalDiscount = discountMonth + discountDay;
-          console.log("🎯 รวมส่วนลดทั้งหมด:", this.formData.totalDiscount);
+        const discountMonth = Math.abs(Number(datasumdiscount.discount_month) || 0);
+        const discountDay = Math.abs(Number(datasumdiscount.discount_day) || 0);
+        this.formData.totalDiscount = discountMonth + discountDay;
+        console.log("🎯 รวมส่วนลดทั้งหมด:", this.formData.totalDiscount);
       } else {
-          console.warn("⚠️ ไม่พบ discount_day หรือ discount_month ใน datasumdiscount:", datasumdiscount);
+        console.warn("⚠️ ไม่พบ discount_day หรือ discount_month ใน datasumdiscount:", datasumdiscount);
       }
 
       console.log("✅ payload:", payload);
@@ -2154,12 +2174,12 @@ export default {
       const datasumdiscount = payload.datasumdiscount || [];
 
       if (datasumdiscount.discount_month !== undefined || datasumdiscount.discount_day !== undefined) {
-          const discountMonth = Math.abs(Number(datasumdiscount.discount_month) || 0);
-          const discountDay = Math.abs(Number(datasumdiscount.discount_day) || 0);
-          this.formData.totalDiscount = discountMonth + discountDay;
-          console.log("🎯 รวมส่วนลดทั้งหมด:", this.formData.totalDiscount);
+        const discountMonth = Math.abs(Number(datasumdiscount.discount_month) || 0);
+        const discountDay = Math.abs(Number(datasumdiscount.discount_day) || 0);
+        this.formData.totalDiscount = discountMonth + discountDay;
+        console.log("🎯 รวมส่วนลดทั้งหมด:", this.formData.totalDiscount);
       } else {
-          console.warn("⚠️ ไม่พบ discount_day หรือ discount_month ใน datasumdiscount:", datasumdiscount);
+        console.warn("⚠️ ไม่พบ discount_day หรือ discount_month ใน datasumdiscount:", datasumdiscount);
       }
 
       console.log("✅ payload:", payload);
@@ -2718,7 +2738,7 @@ export default {
 
         this.formData.final_total_price = parseFloat(this.grandTotal.toFixed(2));
         // this.formData.final_total_price = parseFloat(this.grandTotal);
-        
+
         this.formData.vatVisible = this.isVathidden ? 1 : 0;
 
         const payload = new FormData();
@@ -2859,7 +2879,7 @@ export default {
       const isProductChanged =
         JSON.stringify(this.selectedProducts) !== JSON.stringify(this.originalSelectedProducts);
       const isVatChanged = this.isVathidden !== this.originalIsVathidden;
-        return isFormChanged || isProductChanged || isVatChanged;
+      return isFormChanged || isProductChanged || isVatChanged;
     },
 
 

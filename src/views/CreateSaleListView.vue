@@ -2095,7 +2095,7 @@ export default {
                 // deliveryType: 'ประเภทการจัดส่ง',
                 deliveryDate: 'วันที่จัดส่ง',
                 // trackingNo: 'เลขติดตาม',
-                // deliveryType: 'ประเภทการจัดส่ง'
+                deliveryType: 'ประเภทการจัดส่ง'
             };
 
 
@@ -2108,9 +2108,14 @@ export default {
             //     }
             // }
 
+            
             for (const [field, label] of Object.entries(requiredFields)) {
                 const value = this.formData[field];
-                if (!value || (typeof value === 'string' && value.trim() === '')) {
+                // if (!value || (typeof value === 'string' && value.trim() === '')) {
+                //     this.errors[field] = `กรุณากรอก${label}`;
+                //     isValid = false;
+                // }
+                if (!value || value === '-' || (typeof value === 'string' && value.trim() === '')) {
                     this.errors[field] = `กรุณากรอก${label}`;
                     isValid = false;
                 }
@@ -2317,20 +2322,18 @@ export default {
                 }
             }
 
-            if (
+           if (
                 (
                     (!this.selectedAddress || Object.keys(this.selectedAddress).length === 0) &&
                     (!this.selectedAddressBase || Object.keys(this.selectedAddressBase).length === 0)
-                ) ||
-                Object.keys(this.formData.receiverAddress).length === 0
-                // addr === ''
+                ) &&
+                (!this.formData.receiverAddress || this.formData.receiverAddress.trim() === '')
             ) {
-                console.log('ข้อมูลบางรายการไม่ครบ กรุณาเลือกที่อยู่จัดส่ง');
                 Swal.fire({
                     icon: 'warning',
                     title: 'กรุณาเลือกที่อยู่จัดส่ง',
                 });
-                this.isLoading = false; // ปิด loading
+                this.isLoading = false;
                 return;
             }
 
@@ -2907,6 +2910,8 @@ export default {
                 if (defaultAddr) {
                     // this.selectedAddressId = defaultAddr.id;
                     this.formData.receiverAddress = defaultAddr.address;
+                    this.formData.address = defaultAddr.address;
+                    this.formData.receiverPhone = this.customerData?.data2.mobile || '-';
                 }
 
             } catch (err) {

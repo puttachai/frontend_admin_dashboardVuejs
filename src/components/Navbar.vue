@@ -113,7 +113,7 @@
                     </span>
                   </button>
                   <button
-                    :class="['flex-1 py-2 text-center font-medium text-sm', activeTab === 'new' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-blue-600']"
+                    :class="['flex-1 py-2 text-center font-medium text-sm pl-2', activeTab === 'new' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-blue-600']"
                     @click="activeTab = 'new'">
                     แจ้งเตือนรายการใหม่
                     <span v-if="orderStore.pendingCountMessage > 0"
@@ -127,9 +127,11 @@
                 <div class="flex-1 overflow-y-auto p-3">
                   <!-- Tab 1: ตรวจสอบสถานะอนุมัติ -->
                   <div v-if="activeTab === 'status'">
+
                     <input v-model="searchQuery" type="text" placeholder="ค้นหาสถานะอนุมัติ"
                       class="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300" />
-                    <ul>
+                    
+                      <ul>
                       <li v-for="order in paginatedOrders" :key="order.document_no"
                         class="flex items-center gap-2 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50"
                         @click="handleOrderClick(order.document_no)">
@@ -451,6 +453,33 @@ export default {
       image_path.value = localStorage.getItem('image_path') || ''
     }
 
+      // watch เฝ้าดู pendingCount และ pendingCountMessage
+  watch(
+    () => [orderStore.pendingCount, orderStore.pendingCountMessage],
+    ([pendingCount, pendingCountMessage]) => {
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
+
+      if (pendingCount > 0 && pendingCountMessage > 0) {
+        // ถ้ามีค่าทั้งคู่ สลับ showRed ทุก 800ms
+        intervalId = setInterval(() => {
+          showRed.value = !showRed.value
+        }, 2000)
+      } else {
+        // ถ้าไม่มีทั้งคู่ หรือมีแค่ค่าเดียว แสดง badge สีแดง (showRed = true)
+        showRed.value = true
+      }
+    },
+    { immediate: true }  // ให้ run ตอนเริ่มต้นด้วย
+  )
+
+  onBeforeUnmount(() => {
+    if (intervalId) clearInterval(intervalId)
+  })
+
+
     onMounted(async () => {
       orderStore.fetchPendingOrders()
       document.addEventListener('click', onClickOutside)
@@ -462,16 +491,16 @@ export default {
       }, 5000)
 
           // ถ้ามีทั้งสองค่า ให้สลับทุก 800ms
-        if (orderStore.pendingCount > 0 && orderStore.pendingCountMessage > 0) {
-          intervalId = setInterval(() => {
-            showRed.value = !showRed.value
-          }, 800)
-        } else {
-          showRed.value = true
-        }
+        // if (orderStore.pendingCount > 0 && orderStore.pendingCountMessage > 0) {
+        //   intervalId = setInterval(() => {
+        //     showRed.value = !showRed.value
+        //   }, 800)
+        // } else {
+        //   showRed.value = true
+        // }
 
       onBeforeUnmount(() => {
-        clearInterval(intervalId)
+        // clearInterval(intervalId)
         clearInterval(interval)
         document.removeEventListener('click', onClickOutside)
         eventBus.off('customerChanged', loadUserData)
@@ -546,7 +575,8 @@ export default {
       searchDocument,
       formatDate,
       handleOrderClick,
-      paginatedOrdersMessage
+      paginatedOrdersMessage,
+      showRed
     }
   }
 }

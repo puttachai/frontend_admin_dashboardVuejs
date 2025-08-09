@@ -24,32 +24,6 @@
     <!-- 🧾 Data Table -->
     <div class="overflow-x-auto border border-gray-200 rounded-xl shadow-inner bg-white/90">
       <table class="min-w-full text-sm text-gray-700">
-        <!-- <thead class="bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-600">
-                    <tr>
-                        <th class="text-left px-5 py-3 font-semibold">รหัส</th>
-                        <th class="text-left px-5 py-3 font-semibold">ร้านค้า</th>
-                        <th class="text-left px-5 py-3 font-semibold">
-                            <div class="flex items-center gap-2">
-                                <span class="material-icons text-sm text-gray-500">badge</span>
-                                SaleId
-                            </div>
-                        </th>
-                        <th class="px-5 py-3 text-center font-semibold">
-                            <div class="flex items-center justify-center gap-2">
-                                <input type="text" v-model="keyword_sale_no" placeholder="ค้นหา Sale"
-                                    @focus="dropdownOpenIndex = 'header'"
-                                    class="w-36 px-3 py-1.5 border border-gray-300 rounded-lg shadow-sm text-sm placeholder-gray-400 focus:ring-2 focus:ring-indigo-300 focus:outline-none" />
-                                <button @click="searchSaleId"
-                                    class="flex items-center gap-1 px-4 py-1.5 text-sm bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition">
-                                    <span class="material-icons text-base">search</span> ค้นหา
-                                </button>
-                            </div>
-                        </th>
-                        <th class="text-center px-5 py-3 font-semibold">
-                            <span class="material-icons text-sm text-gray-500">touch_app</span>
-                        </th>
-                    </tr>
-                </thead> -->
 
         <thead class="bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-600 text-center">
           <tr>
@@ -72,7 +46,7 @@
                   style="margin-top: 0 !important"
                 />
                 <button
-                  @click="searchSaleId"
+                  @click="searchSaleId(pageCurrent, pageSize)"
                   class="search flex items-center gap-1 px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition"
                 >
                   <span class="material-icons text-sm">search</span>
@@ -143,6 +117,7 @@
           v-model="pageCurrent"
           :pageSize.sync="pageSize"
           :total="total"
+          :pageSizeOptions="[5,10,15]"
           show-page-size
           :prev-button-props="{ content: '⏪' }"
           :next-button-props="{ content: '⏩' }"
@@ -307,12 +282,41 @@ export default {
       this.dropdownOpenIndex = null;
     },
 
-    onPageSizeChange(newSize) {
-      this.pageSize = newSize.pageSize;
-      this.pageCurrent = newSize.current; // รีเซ็ตกลับหน้าที่ 1
-      console.log("start newSize: ", newSize);
-      this.accountLoginSubmit();
+    // onPageSizeChange(newSize) {
+    //   this.pageSize = newSize.pageSize;
+    //   this.pageCurrent = newSize.current; // รีเซ็ตกลับหน้าที่ 1
+    //   console.log("start newSize: ", newSize);
+    //   this.accountLoginSubmit();
+    // },
+ 
+    onPageSizeChange(paginationInfo) {
+      // paginationInfo = { current: <เลขหน้า>, pageSize: <จำนวนแถว> }
+      this.pageCurrent = paginationInfo.current;
+      this.pageSize = paginationInfo.pageSize;
+
+      console.log("Pagination changed:", this.pageCurrent, this.pageSize);
+
+      if (this.keyword_sale_no.trim() !== "") {
+        this.searchSaleId(this.pageCurrent, this.pageSize);
+      } else {
+        this.accountLoginSubmit(this.pageCurrent, this.pageSize);
+      }
     },
+
+    // พอได้
+    // onPageSizeChange(newSize) {
+    //   this.pageSize = newSize.pageSize;
+    //   this.pageCurrent = newSize.current;
+    //   console.log("start newSize: ", newSize);
+
+    //   if (this.keyword_sale_no.trim() !== "") {
+    //     // กรณีค้นหา sale_no ให้ใช้ searchSaleId พร้อมส่ง pageCurrent ใหม่
+    //     this.searchSaleId(this.pageCurrent, this.pageSize);
+    //   } else {
+    //     // กรณีค้นหาธรรมดา
+    //     this.accountLoginSubmit(this.pageCurrent, this.pageSize);
+    //   }
+    // },
 
     rowClick(row, idx) {
       console.log(row.mobile);
@@ -339,155 +343,85 @@ export default {
       //     this.accountLoginSubmit()
       // }, 1000)
     },
-    async accountLoginSubmit() {
-      this.isLoading = true;
+   async accountLoginSubmit(page = 1, size = 15) {
+  this.isLoading = true;
 
-      try {
-        const response = await axios.post(
-          `${BASE_URL}/user/accountLogin4`,
-          {
-            account: this.account,
-            password: this.password,
-            // account: account,
-            // account: that.$Route.query.account,
-            // password: password,
-            customer: "",
-            version: "2.0.2",
-            pageCurrent: this.pageCurrent,
-            keyword: this.keyword,
-            pageSize: 15,
-            // mobile: mobile.value,
-            // password: password.value
-          },
-          {
-            // withCredentials: true,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        console.log("🔁 pageCurrent ส่งไป:", this.pageCurrent);
-        console.log("📦 response data___:", response.data.data.data.data2);
-        console.log("📦 response data:", response.data);
-
-        // console.log(response.data.data.data.data2);
-        const saleNos = response.data.data.data.data2.map((item) => item.sale_no);
-        console.log("🧾 รายการ sale_no ทั้งหมด:", saleNos);
-
-        if (response.data.code == 1) {
-          this.total = response.data.data.data.customer_count;
-          // this.dataselect = response.data.data.data.data2;
-          this.tableData = response.data.data.data.data2;
-          console.log("🧾 รายการ this.tableData ทั้งหมด:", this.tableData);
-
-          // this.pageSize = (this.total<this.pageSize) ?this.total:this.pageSize;
-          this.pageSize = this.total < this.pageSize ? this.total : parseInt(this.pageSize);
-
-          console.log(this.total + " " + parseInt(this.pageSize));
-
-          console.log("Log total: ", this.total);
-          console.log("Log this.tableData: ", this.tableData);
-
-          this.isLoading = false;
-
-          // return;
-        } else {
-          // error.value = response.data.message || 'failed'
-          console.warn("❌ ไม่สามารถโหลดข้อมูลได้", response.data.message);
-          // Swal.fire({
-          //     title: 'ล็อกอินไม่สำเร็จ',
-          //     text: error.value || 'โปรดลองใหม่ภายหลัง',
-          //     icon: 'error',
-          // });
-        }
-      } catch (error) {
-        console.error("❌ accountLoginSubmit error:", error);
-      } finally {
-        this.isLoading = false;
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/user/accountLogin4`,
+      {
+        account: this.account,
+        password: this.password,
+        customer: "",
+        version: "2.0.2",
+        pageCurrent: page,
+        keyword: this.keyword,
+        pageSize: size,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
-    },
+    );
 
-    async searchSaleId() {
-      clearTimeout(this.searchTimer);
+    if (response.data.code == 1) {
+      this.total = response.data.data.data.customer_count;
+      this.tableData = response.data.data.data.data2;
+      this.pageSize = this.total < size ? this.total : size;
+    } else {
+      console.warn("❌ ไม่สามารถโหลดข้อมูลได้", response.data.message);
+    }
+  } catch (error) {
+    console.error("❌ accountLoginSubmit error:", error);
+  } finally {
+    this.isLoading = false;
+  }
+},
 
-      console.log("adasddad: ");
+async searchSaleId(page = 1, size = 15) {
+  this.isLoading = true;
 
-      if (!this.keyword_sale_no.trim()) {
-        try {
-          const response = await axios.post(
-            `${BASE_URL}/user/accountLogin4`,
-            {
-              account: account,
-              password: password,
-              customer: "",
-              version: "2.0.2",
-              pageCurrent: this.pageCurrent,
-              keyword: this.keyword,
-            },
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+  try {
+    const keywordSale = this.keyword_sale_no.trim();
 
-          console.log("Log response.data.data: ", response.data.data);
+    let postData = {
+      account: this.account,
+      password: this.password,
+      customer: "",
+      version: "2.0.2",
+      pageCurrent: page,
+      pageSize: size,
+      keyword: this.keyword,
+    };
 
-          if (response.data.code === 1) {
-            this.total = response.data.data.data.customer_count;
-            this.dataselectSale_no = response.data.data.data2;
-            this.tableData = [...this.dataselectSale_no]; // เพื่อแสดงผลลัพธ์
-            console.log("Log searchSaleId total: ", this.total);
-            console.log("Log searchSaleId dataselectSale_no: ", this.dataselectSale_no);
+    if (keywordSale !== "") {
+      postData.keyword = this.keyword + "$_" + keywordSale + "_$";
+    }
 
-            // this.pageSize = (this.total<this.pageSize) ?this.total:this.pageSize;
-            this.pageSize = this.total < this.pageSize ? this.total : parseInt(this.pageSize);
-          } else {
-            console.warn("ไม่พบข้อมูล", response.data.message);
-            this.dataselectSale_no = [];
-            this.tableData = [];
-          }
-        } catch (err) {
-          console.error("searchSaleId Error:", err);
-        }
-      } else {
-        try {
-          const response = await axios.post(
-            `${BASE_URL}/user/accountLogin4`,
-            {
-              account: account,
-              password: password,
-              customer: "",
-              version: "2.0.2",
-              pageCurrent: this.pageCurrent,
-              keyword: this.keyword + "$_" + this.keyword_sale_no + "_$",
-            },
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+    const response = await axios.post(`${BASE_URL}/user/accountLogin4`, postData, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-          console.log("Log response.data.data: ", response.data.data);
-
-          if (response.data.code === 1) {
-            this.total = response.data.data.data.customer_count;
-            this.dataselectSale_no = response.data.data.data2;
-            this.tableData = [...this.dataselectSale_no]; // เพื่อแสดงผลลัพธ์
-            console.log("Log searchSaleId total: ", this.total);
-            console.log("Log searchSaleId dataselectSale_no: ", this.dataselectSale_no);
-          } else {
-            console.warn("ไม่พบข้อมูล", response.data.message);
-            this.dataselectSale_no = [];
-            this.tableData = [];
-          }
-        } catch (err) {
-          console.error("searchSaleId Error:", err);
-        }
-      }
-    },
+    if (response.data.code === 1) {
+      this.total = response.data.data.data.customer_count;
+      this.dataselectSale_no = response.data.data.data.data2 || response.data.data.data2; // ตรวจสอบ path ให้ถูกต้อง
+      this.tableData = [...this.dataselectSale_no];
+      this.pageSize = this.total < size ? this.total : size;
+    } else {
+      console.warn("ไม่พบข้อมูล", response.data.message);
+      this.dataselectSale_no = [];
+      this.tableData = [];
+      this.total = 0;
+    }
+  } catch (err) {
+    console.error("searchSaleId Error:", err);
+  } finally {
+    this.isLoading = false;
+  }
+},
 
     async accountLoginCustomerSubmit(row) {
       const response = await axios.post(

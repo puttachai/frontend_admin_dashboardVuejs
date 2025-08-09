@@ -31,43 +31,12 @@
         <div class="flex items-center space-x-4 relative">
 
           <!-- Notification Bell -->
-          <div class="relative cursor-pointer" ref="bellRef" aria-haspopup="true"
-            :aria-expanded="dropdownOpen.toString()">
-            <!-- <span class="material-icons text-white text-3xl select-none" @click="toggleDropdown">notifications</span>
-            <span v-if="orderStore.pendingCount > 0 || orderStore.pendingCountMessage > 0"
-              class="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse shadow-lg">
-              New
-            </span> -->
-             <span class="material-icons text-white text-3xl select-none" @click="toggleDropdown">notifications</span>
-            <!-- กรณีมีทั้งสองค่ามากกว่า 0 -->
-              <template v-if="orderStore.pendingCount > 0 && orderStore.pendingCountMessage > 0">
-                <span
-                  v-show="showRed"
-                  class="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse shadow-lg">
-                  {{ orderStore.pendingCount }}
-                </span>
-                <span
-                  v-show="!showRed"
-                  class="absolute -top-1 -right-1 bg-green-600 text-white text-[8px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse shadow-lg">
-                  {{ orderStore.pendingCountMessage }}
-                </span>
-              </template>
-
-              <!-- กรณีมีแค่ pendingCount -->
-              <span
-                v-else-if="orderStore.pendingCount > 0"
-                class="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse shadow-lg">
-                {{ orderStore.pendingCount }}
-              </span>
-
-              <!-- กรณีมีแค่ pendingCountMessage -->
-              <span
-                v-else-if="orderStore.pendingCountMessage > 0"
-                class="absolute -top-1 -right-1 bg-green-600 text-white text-[8px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse shadow-lg">
-                {{ orderStore.pendingCountMessage }}
-              </span>
-            <!-- {{ orderStore.pendingCount }} -->
-
+          <div class="relative cursor-pointer" ref="bellRef" aria-haspopup="true" :aria-expanded="dropdownOpen.toString()">
+            <span class="material-icons text-white text-3xl select-none" @click="toggleDropdown">notifications</span>
+            <span v-if="orderStore.pendingCount > 0"
+              class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse shadow-lg">
+              {{ orderStore.pendingCount }}
+            </span>
 
             <!-- :class="[
                   'absolute right-0 mt-3 w-[18rem] max-h-[20rem] bg-white rounded-lg shadow-lg z-50 flex flex-col',
@@ -75,25 +44,27 @@
                     // กำหนด width แบบ responsive
                     'w-full max-w-xs sm:w-96'
                   ]" -->
-            <!-- :class="[
+                  <!-- :class="[
                   'absolute right-0 mt-3 w-[24rem] max-h-[20rem] bg-white rounded-lg shadow-lg z-50 flex flex-col',
                   contact ? 'ring-1 ring-black ring-opacity-5 left-1' : 'ring-1',
                     // กำหนด width แบบ responsive
                     'w-full max-w-xs sm:w-96'
                   ]" > -->
             <!-- Dropdown Menu -->
-            <!--  class="absolute right-0 mt-3 w-80 max-h-[24rem] bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50 flex flex-col"> -->
+             <!--  class="absolute right-0 mt-3 w-80 max-h-[24rem] bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50 flex flex-col"> -->
             <transition name="fade" appear>
-              <div v-if="dropdownOpen" :class="[
-                'absolute right-0 mt-3 w-[18rem] max-h-[20rem] bg-white rounded-lg shadow-lg z-50 flex flex-col',
-                contact ? 'ring-1 ring-black ring-opacity-5 left-1' : 'ring-1',
-                // กำหนด width แบบ responsive
-                'w-full max-w-xs sm:w-96'
-              ]">
+              <div v-if="dropdownOpen"
+              
+                :class="[
+                  'absolute right-0 mt-3 w-[18rem] max-h-[20rem] bg-white rounded-lg shadow-lg z-50 flex flex-col',
+                  contact ? 'ring-1 ring-black ring-opacity-5 left-1' : 'ring-1',
+                    // กำหนด width แบบ responsive
+                    'w-full max-w-xs sm:w-96'
+                  ]" >
 
                 <!-- Tabs -->
                 <div class="flex border-b border-gray-200">
-                  <!-- <button
+                  <button
                     :class="['flex-1 py-2 text-center font-medium text-sm', activeTab === 'status' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-blue-600']"
                     @click="activeTab = 'status'">
                     ตรวจสอบสถานะอนุมัติ
@@ -102,24 +73,6 @@
                     :class="['flex-1 py-2 text-center font-medium text-sm', activeTab === 'new' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-blue-600']"
                     @click="activeTab = 'new'">
                     แจ้งเตือนรายการใหม่
-                  </button> -->
-                  <button
-                    :class="['flex-1 py-2 text-center font-medium text-sm', activeTab === 'status' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-blue-600']"
-                    @click="activeTab = 'status'">
-                    ตรวจสอบสถานะอนุมัติ
-                    <span v-if="orderStore.pendingCount > 0"
-                      class="ml-1 inline-block bg-red-600 text-white text-xs font-semibold rounded-full px-2 py-0.5 align-middle">
-                      {{ orderStore.pendingCount }}
-                    </span>
-                  </button>
-                  <button
-                    :class="['flex-1 py-2 text-center font-medium text-sm', activeTab === 'new' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-blue-600']"
-                    @click="activeTab = 'new'">
-                    แจ้งเตือนรายการใหม่
-                    <span v-if="orderStore.pendingCountMessage > 0"
-                      class="ml-1 inline-block bg-green-600 text-white text-xs font-semibold rounded-full px-2 py-0.5 align-middle">
-                      {{ orderStore.pendingCountMessage }}
-                    </span>
                   </button>
                 </div>
 
@@ -127,15 +80,20 @@
                 <div class="flex-1 overflow-y-auto p-3">
                   <!-- Tab 1: ตรวจสอบสถานะอนุมัติ -->
                   <div v-if="activeTab === 'status'">
-                    <input v-model="searchQuery" type="text" placeholder="ค้นหาสถานะอนุมัติ"
-                      class="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300" />
+                     <input
+                      v-model="searchQuery"
+                      type="text"
+                      placeholder="ค้นหาแจ้งเตือน"
+                      class="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300"
+                    />
                     <ul>
                       <li v-for="order in paginatedOrders" :key="order.document_no"
                         class="flex items-center gap-2 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50"
                         @click="handleOrderClick(order.document_no)">
-                        <span class="material-icons text-yellow-500 select-none"
-                          title="แจ้งเตือนรายการสถานะที่ยังไม่อนุมัติใหม่">notifications_active</span>
-                        <div class="flex-1 ">
+                        <span
+                          class="material-icons text-yellow-500 select-none"
+                          title="แจ้งเตือนรายการใหม่">notifications_active</span>
+                        <div class="flex-1 truncate">
                           <p class="font-medium text-sm truncate">{{ order.document_no }}</p>
                           <p class="text-xs text-gray-500 truncate">{{ order.status }}</p>
                         </div>
@@ -143,7 +101,7 @@
                       </li>
                     </ul>
                     <div v-if="paginatedOrders.length === 0" class="text-center text-gray-400 mt-4">
-                      ไม่มีรายการแจ้งเตือนสถานะยังไม่อนุมัติใหม่
+                      ไม่มีรายการแจ้งเตือนใหม่
                     </div>
 
                     <!-- Pagination -->
@@ -154,7 +112,7 @@
                       <button @click="nextPage" :disabled="currentPage === totalPages"
                         class="px-2 py-1 text-xs rounded border hover:bg-gray-100 disabled:opacity-50">ถัดไป</button>
                     </div>
-
+                    
                     <!-- <input
                       v-model="searchQuery"
                       @keyup.enter="searchDocument"
@@ -181,29 +139,26 @@
 
                   <!-- Tab 2: แจ้งเตือนรายการใหม่ -->
                   <div v-if="activeTab === 'new'">
-                    <input v-model="searchQuery" type="text" placeholder="ค้นหาแจ้งเตือน"
-                      class="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300" />
+                    <input
+                      v-model="searchQuery"
+                      type="text"
+                      placeholder="ค้นหาแจ้งเตือน"
+                      class="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300"
+                    />
                     <ul>
-                      <li v-for="order in paginatedOrdersMessage" :key="order.document_no"
-                        @click="handleOrderClick(order.document_no)" :class="[
-                          'flex items-center gap-2 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50',
-                          order.is_read === 1 ? 'opacity-50 cursor-default' : 'opacity-100'
-                        ]">
-                        <span class="material-icons text-yellow-500 select-none" title="แจ้งเตือนรายการใหม่">
-                          notifications_active
-                        </span>
-                        <div class="flex-1">
+                      <li v-for="order in  paginatedOrdersMessage" :key="order.document_no"
+                        class="flex items-center gap-2 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50"
+                        @click="handleOrderClick(order.document_no)">
+                        <span
+                          class="material-icons text-yellow-500 select-none"
+                          title="แจ้งเตือนรายการใหม่">notifications_active</span>
+                        <div class="flex-1 truncate">
                           <p class="font-medium text-sm truncate">{{ order.document_no }}</p>
-                          <p class="text-xs truncate text-gray-500">
-                            {{ order.is_read === 1 ? 'อ่านแล้ว' : 'ยังไม่อ่าน' }}
-                          </p>
+                          <p class="text-xs text-gray-500 truncate">{{ order.status }}</p>
                         </div>
-                        <span class="text-xs text-gray-400 whitespace-nowrap">
-                          {{ formatDate(order.created_at) }}
-                        </span>
+                        <span class="text-xs text-gray-400 whitespace-nowrap">{{ formatDate(order.created_at) }}</span>
                       </li>
                     </ul>
-
                     <div v-if="paginatedOrdersMessage.length === 0" class="text-center text-gray-400 mt-4">
                       ไม่มีรายการแจ้งเตือนใหม่
                     </div>
@@ -228,8 +183,7 @@
             <MenuButton
               class="flex items-center gap-2 rounded-full bg-gray-700 px-3 py-1 text-white hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
               <span class="sr-only">Open user menu</span>
-              <span class="truncate xs:text-xs sm:text-smls md:text-[14px] smls:max-w-[350px] sm:max-w-[230px]">{{
-                contact }} {{ account }}</span>
+              <span class="truncate xs:text-xs sm:text-smls md:text-[14px] smls:max-w-[350px] sm:max-w-[230px]">{{ contact }} {{ account }}</span>
               <template v-if="image_path">
                 <img class="w-8 h-8 rounded-full object-cover" :src="image_path" alt="User Avatar" />
               </template>
@@ -246,16 +200,14 @@
               <MenuItems
                 class="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                 <MenuItem v-slot="{ active }">
-                <a href="/about"
-                  :class="[active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700 cursor-pointer']">
-                  About
-                </a>
+                  <a href="/about" :class="[active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700 cursor-pointer']">
+                    About
+                  </a>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
-                <a href="#" @click="confirmLogoutEmployee"
-                  :class="[active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700 cursor-pointer']">
-                  Sign out
-                </a>
+                  <a href="#" @click="confirmLogoutEmployee" :class="[active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700 cursor-pointer']">
+                    Sign out
+                  </a>
                 </MenuItem>
               </MenuItems>
             </transition>
@@ -320,10 +272,6 @@ export default {
     const statusResult = ref(null)
     const errorStatus = ref(null)
 
-    const showRed = ref(true)
-    let intervalId = null
-
-
     // ฟังก์ชันค้นหา Document status (ตัวอย่างสมมติ)
     async function searchDocument() {
       if (!searchQuery.value.trim()) return
@@ -383,7 +331,7 @@ export default {
 
     // จำนวนหน้าทั้งหมด
     const totalPages = computed(() => Math.ceil(filteredOrders.value.length / itemsPerPage))
-
+    
     // totalPagesMessage สำหรับ Tab แจ้งเตือนรายการใหม่
     const totalPagesMessage = computed(() => Math.ceil(filteredOrdersMessage.value.length / itemsPerPage))
 
@@ -461,38 +409,12 @@ export default {
         orderStore.fetchPendingOrders()
       }, 5000)
 
-          // ถ้ามีทั้งสองค่า ให้สลับทุก 800ms
-        if (orderStore.pendingCount > 0 && orderStore.pendingCountMessage > 0) {
-          intervalId = setInterval(() => {
-            showRed.value = !showRed.value
-          }, 800)
-        } else {
-          showRed.value = true
-        }
-
       onBeforeUnmount(() => {
-        clearInterval(intervalId)
         clearInterval(interval)
         document.removeEventListener('click', onClickOutside)
         eventBus.off('customerChanged', loadUserData)
       })
     })
-
-    // onMounted(() => {
-    //     // ถ้ามีทั้งสองค่า ให้สลับทุก 800ms
-    //     if (orderStore.pendingCount > 0 && orderStore.pendingCountMessage > 0) {
-    //       intervalId = setInterval(() => {
-    //         showRed.value = !showRed.value
-    //       }, 800)
-    //     } else {
-    //       showRed.value = true
-    //     }
-    //   })
-
-    //   onBeforeUnmount(() => {
-    //     clearInterval(intervalId)
-    //   })
-
 
     // ฟังก์ชัน logout
     const confirmLogoutEmployee = async () => {

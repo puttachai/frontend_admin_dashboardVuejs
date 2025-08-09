@@ -125,10 +125,12 @@ function forceReload(event) {
     // เส้นทางปัจจุบัน + query string
     const currentFullPath = route.fullPath; // e.g. "/saleList?documentNo=H1-SO25680805-00006"
 
+    
+
     // ถ้าเรากำลังอยู่ที่ saleList?... แล้วกดไป createsalelist ให้รีโหลดทั้งหน้า
     if (
-        currentFullPath.startsWith('/saleList') &&
-        targetHref === '/createsalelist'
+        currentFullPath.startsWith('/saleList') ||  currentFullPath.startsWith('/createsalelist') &&
+        targetHref === '/createsalelist' 
     ) {
         event.preventDefault();               // ยกเลิกการทำงานของ router-link
         window.location.href = targetHref;    // บังคับให้โหลดใหม่ทั้งหน้า

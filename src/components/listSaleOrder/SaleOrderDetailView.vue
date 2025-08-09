@@ -914,6 +914,8 @@ export default {
   async mounted() {
     const docNo = this.$route.params.id;
 
+    console.log('Check mounted docNo:', docNo);
+
     this.documentNo_route_params = docNo;
     // ดึงค่าจาก URL param
     this.currentDocumentNo = `Sale Order: ${docNo}`;
@@ -945,10 +947,35 @@ export default {
   },
 
   watch: {
+    // watch พารามิเตอร์ใน route เมื่อเปลี่ยน documentNo ให้โหลดข้อมูลใหม่
+    '$route.params.id': {
+      immediate: false,
+      handler(newDocNo, oldDocNo) {
+        if (newDocNo !== oldDocNo) {
+          console.log('Route param changed:', newDocNo);
+          console.log('Route param changed Old:', oldDocNo);
+
+          this.documentNo_route_params = newDocNo;
+          this.currentDocumentNo = `Sale Order: ${newDocNo}`;
+
+          this.loadDocumentData(newDocNo);
+       
+        }
+      }
+    },
+
+    // ของเดิมของคุณ
     isVatIncluded(newVal) {
       this.formData.taxType = newVal ? "รวมภาษี" : "ไม่รวมภาษี";
-    },
+    }
   },
+
+  
+  // watch: {
+  //   isVatIncluded(newVal) {
+  //     this.formData.taxType = newVal ? "รวมภาษี" : "ไม่รวมภาษี";
+  //   },
+  // },
 
   computed: {
     totalAmountBeforeDiscount() {
@@ -3179,5 +3206,6 @@ export default {
       return payload;
     },
   },
+
 };
 </script>

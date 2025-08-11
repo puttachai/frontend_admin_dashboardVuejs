@@ -290,7 +290,6 @@
             <!-- :productList="Apipromotion" -->
             <PromotionSelector v-if="showPromotionSelector" @close="showPromotionSelector = false"
                 @select-promotion="SelectedPromotion" />
-                
 
             <!-- Popup ตัวที่สอง -->
             <Promotion_ProductSelector v-if="showPromotionProductSelector" :selectedPromotion="selectedPromotion"

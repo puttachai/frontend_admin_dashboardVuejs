@@ -481,7 +481,7 @@
           </div>
           <div>
             <label class="block font-medium mb-1 text-gray-700">ค่าจัดส่ง</label>
-            <input type="number" v-model="formData.deliveryFee" :readonly="isReadOnly"
+            <input type="number" :min="0" v-model="formData.deliveryFee" :readonly="isReadOnly"
               class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700" placeholder="ค่าจัดส่ง" />
           </div>
         </div>

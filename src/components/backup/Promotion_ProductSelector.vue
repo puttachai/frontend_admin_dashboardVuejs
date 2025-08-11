@@ -105,60 +105,46 @@
             </tr>
           </tbody>
 
-   <tbody v-if="!isLoading">
-  <tr v-for="(row, index) in groupedTableData" :key="index">
-    <!-- ถ้าเป็นหัวข้อโปรโมชั่น -->
-    <template v-if="row.isHeader">
-      <td colspan="11" class="px-2 py-3 bg-blue-100 text-start">
-        {{ row.promotionTitle }}
-        <!-- <button @click="handlePromotionSet(row.pro_activity_id)" class="ml-2 px-2 py-1 bg-green-500 text-white rounded">
-          Promotion Set
-        </button> -->
-        <button @click="handlePromotionSet(row.pro_activity_id)" 
-          class="ml-2 px-2 py-1 bg-green-500 text-white rounded flex items-center gap-2">
-          <span @click.stop="decrementPromotionSet(row.pro_activity_id)" class="cursor-pointer select-none">-</span>
-          <span>{{ totalFullByPromotion[row.pro_activity_id] || 0 }}</span>
-          <span @click.stop="handlePromotionSet(row.pro_activity_id)" class="cursor-pointer select-none">+</span>
-        </button>
+          <tbody v-if="!isLoading">
+            <tr v-for="item in paginatedPromotion" :key="item.id + '-' + item.activity_id">
+              <!-- <tr v-for="item in paginatedPromotion" :key="item.id"> -->
+              <td class="px-4 py-2 border text-center">
+                <input type="checkbox" v-model="selectedIds" :value="item.id"
+                  @change="handleCheckboxChange(item, $event)" />
+              </td>
+              <td class="px-4 py-4 border text-center">
+                <template v-if="item.image">
+                  <img :src="item.image || BASE_URL_IMAGE + item.image" alt="product"
+                    class="w-10 h-10 rounded-full mx-auto" />
+                </template>
+                <template v-else>
+                  <span class="material-icons text-gray-400 text-4xl">broken_image</span>
+                </template>
+              </td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.pro_erp_title || item.title }}
 
-      </td>
-    </template>
+                <div type="text" class="w-60 text-center">
 
-    <!-- ถ้าเป็นสินค้าปกติ -->
-    <template v-else>
-      <td class="px-4 py-2 border text-center">
-        <input type="checkbox" v-model="selectedIds" :value="row.id"
-          @change="handleCheckboxChange(row, $event)" />
-      </td>
-      <td class="px-4 py-4 border text-center">
-        <img :src="row.image || BASE_URL_IMAGE + row.image"
-             class="w-10 h-10 rounded-full mx-auto" />
-      </td>
-      <td class="px-4 py-2 border">{{ row.pro_erp_title || row.title }}</td>
-      <td class="px-4 py-2 border">{{ row.activity_code ?? 'ไม่มีข้อมูล' }}</td>
-      <td class="px-4 py-2 border">{{ row.goods_id }}</td>
-      <!-- <td class="px-4 py-2 border text-center">
-        <input type="number" class="w-16 px-2 py-1 border rounded text-center" placeholder="0"
-               v-model.number="row.amount" :min="0" :max="row.stock" />
-      </td> -->
-      <td class="px-4 text-gray-700 py-2 border text-center">
-        <!-- max item.stock -->
-        <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
-          v-model.number="row.amount" :min="0" :max="row.stock"
-          @keypress="onlyNumberInput($event)"
-          @blur="onAmountBlur(row)"
-          @input="validateAmount(item)"
-          placeholder="0" />
-      </td>
-      <td class="px-4 py-2 border">{{ row.stock }}</td>
-      <td class="px-4 py-2 border">{{ row.sn ?? '-' }}</td>
-      <td class="px-4 py-2 border">{{ row.goods_sku_text ?? '-' }}</td>
-      <td class="px-4 py-2 border">{{ row.price ?? '-' }}</td>
-      <td class="px-4 py-2 border">{{ row.units ?? '-' }}</td>
-    </template>
-  </tr>
-</tbody>
+                </div>
 
+              </td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.activity_code ?? 'ไม่มีข้อมูล' }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.goods_id }}</td>
+              <td class="px-4 text-gray-700 py-2 border text-center">
+                <!-- max item.stock -->
+                <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
+                  v-model.number="item.amount" :min="0" :max="item.stock"
+                  @keypress="onlyNumberInput($event)"
+                  @input="validateAmount(item)"
+                  placeholder="0" />
+              </td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.sn ?? '-' }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? '-' }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.price ?? '-' }}</td>
+              <td class="px-4 text-gray-700 py-2 border">{{ item.units ?? '-' }}</td>
+            </tr>
+          </tbody>
         </table>
       </div>
 
@@ -197,8 +183,6 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 // const isLoading = ref(true) // สำหรับ loading spinner
 const isLoading = ref(false); // หรือ true ถ้าต้องการให้เริ่มต้นแสดง
 // const isLoading = ref(false); // หรือ true ถ้าต้องการให้เริ่มต้นแสดง
-
-
 
 // const props = defineProps({
 //   promotionList: Array,
@@ -256,10 +240,6 @@ const Apipromotion = ref([]);
 const memberType = ref('');
 
 const amount = ref(0);
-
-// เก็บจำนวนสะสม full ของแต่ละ promotionId (ถ้ามีหลายโปร)
-const conditionPriceMap = ref({});
-const totalFullByPromotion = ref({});
 
 // const paginatedPromotion = computed(() => {
 //   return tableData.value;
@@ -355,211 +335,38 @@ function toggleSelectAll(event) {
 // }
 
 
+function handleCheckboxChange(item, event) {
+  if (event.target.checked) {
+    // ติ๊กเลือก
+     console.log(`✅ Selected item:`, item)
+    selectedIds.value.push(item.id)
 
-async function getPromotionProducts() {
-  isLoading.value = true;
-
-  const gettoken = localStorage.getItem('token');
-
-  const requests = props.selectedPromotion.map(async promo => {
-    const activity_id = promo.pro_m_id;
-
-    try {
-      const response = await axios.post(
-        // manual pageSize = 500
-        `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&pageSize=500&proid=&keywords=`,
-        {},
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            token: gettoken
-          }
-        }
-      );
-
-      const activityData = response.data.data;
-
-      console.log("✅ ดึงข้อมูลโปรโมชันทั้งหมด:", activityData);
-
-      const skuList = activityData.activity_sku_price || [];
-      // const conditionPriceList  = activityData.activity_sku_price.condition_price || [];
-
-        // รวม condition_price ของ sku ทั้งหมด
-  const allConditionPrices = skuList.flatMap(sku => sku.condition_price || []);
-
-       // เก็บ condition_price แยกตาม activity_id ไว้ใน map เพื่อเรียกใช้งานทีหลังได้
-      conditionPriceMap.value[activity_id] = allConditionPrices ;
-
-      return skuList.map(sku => ({
-        ...sku,
-        activity_id: activityData.id || 0, // 1167
-        pro_activity_id: activityData.id || 0, // 1167
-        goods_id: sku.goods_id, // 13872
-        pro_sku_price_id: sku.sku_price_id, // 50983
-        erp_title: sku.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP"
-        title: sku.title, // ชุดอะแดปเตอร์เซ็ต AG-201 (20W)
-        image: sku.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.
-        goods_price: sku.goods_price, // "215.00" 
-
-        activity_code: activityData.activity_code, // x
-        pro_m_code: activityData.activity_code, // x
-        pro_acm_id: activityData.id, // x
-        sn: sku.sn, // x
-        goods_sku_text: sku.goods_sku_text, // x
-        units: sku.units // x
-      }));
-    } catch (err) {
-      console.error(`❌ Error loading products for activity_id=${activity_id}`, err);
-      return []; // ถ้า error ให้ส่ง array ว่าง
+        // บังคับให้ค่าในตารางเปลี่ยนทันที
+        // 1) บังคับให้ amount = 1
+    if (!item.amount || item.amount === 0) {
+      item.amount = 1;
     }
-  });
-
-  // ส่งทุก request พร้อมกัน
-  const allResultsArrays = await Promise.all(requests);
-  const allResults = allResultsArrays.flat(); // รวมทุก array เข้าเป็น array เดียว
-
-  tableData.value = allResults;
-  promotionProducts.value = allResults;
-  total.value = allResults.length;
-
-  console.log("✅ ดึงข้อมูลสินค้าครบทั้งหมด:", allResults);
-  isLoading.value = false;
-}
-
-
-
-// สร้าง map pro_activity_id => promotionTitle จาก props.selectedPromotion
-const promotionTitleMap = computed(() => {
-  const map = {};
-  props.selectedPromotion.forEach(promo => {
-    map[promo.pro_m_id] = promo.pro_m_title || promo.title || "โปรโมชั่นไม่ระบุ";
-  });
-  return map;
-});
-
-const groupedTableData = computed(() => {
-  const groups = {};
-
-  tableData.value.forEach(item => {
-    const groupId = item.pro_activity_id;
-    if (!groups[groupId]) {
-      groups[groupId] = {
-        promotionTitle: promotionTitleMap.value[groupId] || "โปรโมชั่นไม่ระบุ",
-        pro_activity_id: groupId,
-        items: []
-      };
-    }
-    groups[groupId].items.push(item);
-  });
-
-  const result = [];
-  Object.values(groups).forEach(group => {
-    result.push({
-      isHeader: true,
-      promotionTitle: group.promotionTitle,
-      pro_activity_id: group.pro_activity_id
-    });
-    result.push(...group.items);
-  });
-
-  return result;
-});
-
-// function handlePromotionSet(activityId) {
-//   const conditionPrices = conditionPriceMap.value[activityId] || [];
-  
-//   // สมมติเอา full ของ item แรกมาใช้ (ปรับตามต้องการ)
-//   const fullStr = conditionPrices[0]?.full || "0";
-//   const fullNum = Number(fullStr);
-
-//   if (isNaN(fullNum)) {
-//     console.log("ค่า full ไม่ใช่ตัวเลข:", fullStr);
-//     return;
-//   }
-
-//   // เก็บจำนวนสะสมแบบเดิม
-//   const currentTotal = totalFullByPromotion.value[activityId] || 0;
-
-//   // บวกเพิ่ม
-//   const newTotal = currentTotal + fullNum;
-
-//   totalFullByPromotion.value[activityId] = newTotal;
-
-//   console.log(`Promotion ID: ${activityId} full สะสม = ${newTotal}`);
-
-//   // ตัวอย่าง: อัพเดตจำนวนสินค้าทั้งกลุ่มให้เท่ากับ newTotal
-//   tableData.value.forEach(item => {
-//     if (item.pro_activity_id === activityId) {
-//       if (item.stock > 0) {
-//         if (!selectedIds.value.includes(item.id)) selectedIds.value.push(item.id);
-//         item.amount = newTotal;
-//       }
-//     }
-//   });
-// }
-
-function handlePromotionSet(activityId) {
-  const conditionPrices = conditionPriceMap.value[activityId] || [];
-  const fullStr = conditionPrices[0]?.full || "0";
-  const fullNum = Number(fullStr);
-
-  if (isNaN(fullNum)) {
-    console.log("ค่า full ไม่ใช่ตัวเลข:", fullStr);
-    return;
-  }
-
-  // บวกเพิ่มทีละ 1 ชุด
-  const currentTotal = totalFullByPromotion.value[activityId] || 0;
-  const newTotal = currentTotal + fullNum;  // เพิ่มทีละ 1
-
-  totalFullByPromotion.value[activityId] = newTotal;
-
-  console.log(`Promotion ID: ${activityId} full สะสม = ${newTotal}`);
-
-  tableData.value.forEach(item => {
-    if (item.pro_activity_id === activityId) {
-      if (item.stock > 0) {
-        if (!selectedIds.value.includes(item.id)) selectedIds.value.push(item.id);
-        item.amount = newTotal;
-      }
-    }
-  });
-}
-
-
-
-// function handleCheckboxChange(item, event) {
-//   if (event.target.checked) {
-//     // ติ๊กเลือก
-//      console.log(`✅ Selected item:`, item)
-//     selectedIds.value.push(item.id)
-
-//         // บังคับให้ค่าในตารางเปลี่ยนทันที
-//         // 1) บังคับให้ amount = 1
-//     if (!item.amount || item.amount === 0) {
-//       item.amount = 1;
-//     }
     
-//     // เก็บ id
-//     if (!selectedIds.value.includes(item.id)) {
-//       selectedIds.value.push(item.id);
-//     }
 
-//      // เก็บ object ไว้ใน selectedProducts
-//     if (!selectedProducts.value.find(p => p.id === item.id)) {
-//       selectedProducts.value.push({ ...item})  
-//       // selectedProducts.value.push(item)    // เอา item ตรงๆ มาเก็บ ไม่ต้อง ...item
-//     }
+    // เก็บ id
+    if (!selectedIds.value.includes(item.id)) {
+      selectedIds.value.push(item.id);
+    }
 
-//   } else {
-//     // ยกเลิก
-//     console.log(`❌ Deselected item:`, item)
-//     item.amount = 0;
-//     selectedIds.value = selectedIds.value.filter(id => id !== item.id)
-//     selectedProducts.value = selectedProducts.value.filter(p => p.id !== item.id)
-//   }
-// }
+     // เก็บ object ไว้ใน selectedProducts
+    if (!selectedProducts.value.find(p => p.id === item.id)) {
+      selectedProducts.value.push({ ...item})  
+      // selectedProducts.value.push(item)    // เอา item ตรงๆ มาเก็บ ไม่ต้อง ...item
+    }
 
+  } else {
+    // ยกเลิก
+    console.log(`❌ Deselected item:`, item)
+    item.amount = 0;
+    selectedIds.value = selectedIds.value.filter(id => id !== item.id)
+    selectedProducts.value = selectedProducts.value.filter(p => p.id !== item.id)
+  }
+}
 
 
 // function handleCheckboxChange(item, event) {
@@ -585,79 +392,6 @@ function handlePromotionSet(activityId) {
 //     item.amount = 0;
 //   }
 // }
-
-function decrementPromotionSet(activityId) {
-  if (!totalFullByPromotion.value[activityId]) return;
-  let current = totalFullByPromotion.value[activityId];
-  if (current > 0) {
-    totalFullByPromotion.value[activityId] = current - 1;
-  }
-  // อัปเดต tableData ตามจำนวนใหม่ได้ถ้าต้องการ (คล้าย handlePromotionSet)
-  tableData.value.forEach(item => {
-    if (item.pro_activity_id === activityId) {
-      if (item.stock > 0) {
-        if (!selectedIds.value.includes(item.id)) selectedIds.value.push(item.id);
-        item.amount = totalFullByPromotion.value[activityId];
-      }
-    }
-  });
-}
-
-
-// เฝ้าดู tableData ทุกตัว amount ถ้า amount > 0 แต่ยังไม่ได้ติ๊ก checkbox ก็ให้ติ๊ก
-watch(tableData, (newTableData) => {
-  newTableData.forEach(item => {
-    if (item.amount > 0 && !selectedIds.value.includes(item.id)) {
-      selectedIds.value.push(item.id);
-      console.log(`🟢 Auto select item id=${item.id} because amount > 0`);
-    } else if (item.amount === 0 && selectedIds.value.includes(item.id)) {
-      // ถ้าลบจำนวน = 0 แล้วก็ยกเลิกติ๊ก checkbox
-      selectedIds.value = selectedIds.value.filter(id => id !== item.id);
-      console.log(`🔴 Auto deselect item id=${item.id} because amount = 0`);
-    }
-  });
-}, { deep: true });
-
-
-// ปรับฟังก์ชัน handleCheckboxChange
-function handleCheckboxChange(item, event) {
-  if (item.stock === 0) {
-    event.target.checked = false;
-    Swal.fire({
-      icon: 'warning',
-      title: 'รายการสินค้าหมด',
-      text: `ไม่สามารถเลือก "${item.erp_title}" ได้ เนื่องจากสินค้าหมด`,
-    });
-    return;
-  }
-
-  if (event.target.checked) {
-    if (!selectedIds.value.includes(item.id)) {
-      selectedIds.value.push(item.id);
-    }
-
-    if (!item.amount || item.amount === 0) {
-      item.amount = 1; // กำหนดจำนวนเป็น 1 ถ้ายังไม่กำหนด
-    }
-
-  } else {
-    selectedIds.value = selectedIds.value.filter(id => id !== item.id);
-    item.amount = 0;
-  }
-}
-
-
-function onAmountBlur(item) {
-  if (!item.amount || item.amount === 0 || item.amount === '') {
-    // ถ้า amount เป็น 0 หรือว่าง ให้เอา id ออกจาก selectedIds
-    selectedIds.value = selectedIds.value.filter(id => id !== item.id);
-  } else {
-    // ถ้า amount > 0 และยังไม่ได้เลือก checkbox ให้เพิ่ม id
-    if (!selectedIds.value.includes(item.id)) {
-      selectedIds.value.push(item.id);
-    }
-  }
-}
 
 
 function onlyNumberInput(event) {
@@ -900,68 +634,66 @@ async function SearchPromotionSubmit() {
 
 
 //page = 1
-// async function getPromotionProducts() {
-//   isLoading.value = true;
+async function getPromotionProducts() {
+  isLoading.value = true;
 
-//   const gettoken = localStorage.getItem('token');
+  const gettoken = localStorage.getItem('token');
 
-//   const requests = props.selectedPromotion.map(async promo => {
-//     const activity_id = promo.pro_m_id;
+  const requests = props.selectedPromotion.map(async promo => {
+    const activity_id = promo.pro_m_id;
 
-//     try {
-//       const response = await axios.post(
-//         // manual pageSize = 500
-//         `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&pageSize=500&proid=&keywords=`,
-//         {},
-//         {
-//           headers: {
-//             'Content-Type': 'application/json',
-//             token: gettoken
-//           }
-//         }
-//       );
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&proid=&keywords=`,
+        {},
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            token: gettoken
+          }
+        }
+      );
 
-//       const activityData = response.data.data;
+      const activityData = response.data.data;
 
-//       console.log("✅ ดึงข้อมูลโปรโมชันทั้งหมด:", activityData);
+      console.log("✅ ดึงข้อมูลโปรโมชันทั้งหมด:", activityData);
 
-//       const skuList = activityData.activity_sku_price || [];
+      const skuList = activityData.activity_sku_price || [];
 
-//       return skuList.map(sku => ({
-//         ...sku,
-//         activity_id: activityData.id || 0, // 1167
-//         pro_activity_id: activityData.id || 0, // 1167
-//         goods_id: sku.goods_id, // 13872
-//         pro_sku_price_id: sku.sku_price_id, // 50983
-//         erp_title: sku.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP"
-//         title: sku.title, // ชุดอะแดปเตอร์เซ็ต AG-201 (20W)
-//         image: sku.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.
-//         goods_price: sku.goods_price, // "215.00" 
+      return skuList.map(sku => ({
+        ...sku,
+        activity_id: activityData.id || 0, // 1167
+        goods_id: sku.goods_id, // 13872
+        pro_sku_price_id: sku.sku_price_id, // 50983
+        erp_title: sku.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP"
+        title: sku.title, // ชุดอะแดปเตอร์เซ็ต AG-201 (20W)
+        image: sku.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.
+        goods_price: sku.goods_price, // "215.00" 
 
-//         activity_code: activityData.activity_code, // x
-//         pro_m_code: activityData.activity_code, // x
-//         pro_acm_id: activityData.id, // x
-//         sn: sku.sn, // x
-//         goods_sku_text: sku.goods_sku_text, // x
-//         units: sku.units // x
-//       }));
-//     } catch (err) {
-//       console.error(`❌ Error loading products for activity_id=${activity_id}`, err);
-//       return []; // ถ้า error ให้ส่ง array ว่าง
-//     }
-//   });
+        activity_code: activityData.activity_code, // x
+        pro_m_code: activityData.activity_code, // x
+        pro_acm_id: activityData.id, // x
+        sn: sku.sn, // x
+        goods_sku_text: sku.goods_sku_text, // x
+        units: sku.units // x
+      }));
+    } catch (err) {
+      console.error(`❌ Error loading products for activity_id=${activity_id}`, err);
+      return []; // ถ้า error ให้ส่ง array ว่าง
+    }
+  });
 
-//   // ส่งทุก request พร้อมกัน
-//   const allResultsArrays = await Promise.all(requests);
-//   const allResults = allResultsArrays.flat(); // รวมทุก array เข้าเป็น array เดียว
+  // ส่งทุก request พร้อมกัน
+  const allResultsArrays = await Promise.all(requests);
+  const allResults = allResultsArrays.flat(); // รวมทุก array เข้าเป็น array เดียว
 
-//   tableData.value = allResults;
-//   promotionProducts.value = allResults;
-//   total.value = allResults.length;
+  tableData.value = allResults;
+  promotionProducts.value = allResults;
+  total.value = allResults.length;
 
-//   console.log("✅ ดึงข้อมูลสินค้าครบทั้งหมด:", allResults);
-//   isLoading.value = false;
-// }
+  console.log("✅ ดึงข้อมูลสินค้าครบทั้งหมด:", allResults);
+  isLoading.value = false;
+}
 
 
 async function confirmSelection() {

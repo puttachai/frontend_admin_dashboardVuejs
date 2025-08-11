@@ -2,18 +2,7 @@
 
     <div
         class="mainbox flex flex-col in-h-screen items-center gap-4 justify-center bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-        <!-- <div class="min-h-screen flex items-center gap-2 justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8"> -->
-        <!-- <div class="flex self-end">
-             self-end 
-            <router-link class="button" to="/createsalelist">
-                <span class="material-icons">shopping_bag</span>
-                <span class="text">Create Sale Order</span>
-            </router-link>
-            <button type="button" @click="saveDocument"
-                class="w-full bg-purple-700 text-white py-2 px-6 rounded-md hover:bg-purple-800 transition">บันทึก
-            </button>
-        </div> -->
-        <!-- กล่องรวม breadcrumb + action bar -->
+       
         <!-- กล่องรวม breadcrumb + action bar -->
         <div class="fixed top-16 left-16 right-0 bg-white rounded-lg p-4 shadow-lg z-50 responsive-action-bar">
 
@@ -69,9 +58,6 @@
             </div>
         </div>
 
-
-
-
         <!-- form รายการเอกสาร -->
         <div class="boxback w-full mt-20 gap-4 bg-white p-8 rounded-lg shadow-lg">
 
@@ -94,7 +80,6 @@
                         class="object-cover rounded-md border w-[100px] h-[100px]" />
                 </div> -->
 
-
                 <!-- แบบฟอร์มส่วนที่1  -->
                 <form class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -107,12 +92,7 @@
 
                     </div>
 
-                    <!-- <div>
-                        <label class="block text-sm font-medium text-gray-700">วันที่</label>
-                        <input type="date" v-model="formData.sellDate" disabled
-                            class="border mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" />
-                    </div> -->
-
+                   
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">วันที่</label>
                         <div class="relative">
@@ -127,8 +107,6 @@
                             </span>
                         </div>
                     </div>
-
-
 
 
                     <!-- เงื่อนไขแสดงเพิ่มเติม -->
@@ -526,15 +504,11 @@
                                 </td>
                             </tr>
 
-
                         </template> -->
-
 
                     </tbody>
                 </table>
             </div>
-
-
 
             <!-- ช่องทางจัดส่ง -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
@@ -588,26 +562,7 @@
             </div>
 
             <!-- รวม -->
-            <!-- รวม -->
-            <!-- <div class="mt-6 text-right space-y-1">
-                <div class="text-gray-700">มูลค่ารวมก่อนภาษี:
-                    <span class="ml-2 text-gray-700">{{ totalAmountBeforeDiscount.toFixed(2) }}</span>
-                </div>
-
-                <div class="text-gray-700 flex items-center justify-end">
-                    <input type="checkbox" v-model="isVatIncluded" id="vatCheckbox" :disabled="isReadOnly" class="mr-2" />
-                    <label for="vatCheckbox">ภาษีมูลค่าเพิ่ม (7%)</label>
-                    <span class="ml-2 text-gray-700">
-                        {{ isVatIncluded ? (totalAmountBeforeDiscount * 0.07).toFixed(2) : '0.00' }}
-                    </span>
-                </div>
-
-                <div class="text-xl font-bold text-purple-700 mt-2">
-                    มูลค่ารวมสุทธิ:
-                    <span class="ml-2 text-blue-600">{{ grandTotal }}</span>
-                </div>
-            </div> -->
-
+            
             <div class="mt-6 text-right space-y-1">
                 <!-- ซ่อนมูลค่ารวมก่อนภาษี เมื่อ isVatIncluded === true -->
                 <div v-if="isVathidden" class="text-gray-700">
@@ -673,18 +628,6 @@
                 </div>
             </div>
 
-
-            <!-- <div class="mt-6 text-right space-y-1">
-                <div class="text-gray-700">มูลค่ารวมก่อนภาษี: <span class="ml-2 text-gray-700">{{
-                    totalAmountBeforeDiscount.toFixed(2) }}</span></div>
-                <div class="text-gray-700">ภาษีมูลค่าเพิ่ม (7%): <span class="ml-2 text-gray-700">{{
-                    (totalAmountBeforeDiscount
-                        * 0.07).toFixed(2) }}</span>
-                </div>
-                <div class="text-xl font-bold text-purple-700 mt-2">
-                    มูลค่ารวมสุทธิ: <span class="ml-2 text-blue-600">{{ grandTotal }}</span>
-                </div>
-            </div> -->
         </div>
 
 
@@ -864,23 +807,6 @@
 
         </div>
 
-        <!-- <div class=" w-full mx-auto p-6 rounded-lg bg-white shadow-md space-y-8">
-            <div class="gap-4 grid grid-cols-1 md:grid-cols-2">
-                <button v-if="isReadOnly" @click="enableEditMode"
-                    class="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600">
-                    แก้ไข
-                </button>
-                <button v-if="!isReadOnly" @click="saveDocument"
-                    class="bg-purple-700 w-full text-white py-2 px-4 rounded-md hover:bg-purple-800">
-                    บันทึก
-                </button>
-                <button v-if="!isReadOnly && formData.documentNo" @click="updateDocument"
-                    class="bg-green-600 w-full text-white py-2 px-4 rounded-md hover:bg-green-700">
-                    บันทึกการแก้ไข
-                </button>
-
-            </div>
-        </div> -->
         <div class="w-full mx-auto p-6 rounded-lg bg-white shadow-md space-y-8">
 
             <div :class="[
@@ -2813,6 +2739,8 @@ export default {
         async getAuthTokenAddress() {
             // localStorage.removeItem("mac5_token");
             const tokenData = JSON.parse(localStorage.getItem("token_userlogin")) || null;
+
+            console.log('Check tokenData :', tokenData);
 
             // console.log("🔑 Check tokenData :", tokenData);
 

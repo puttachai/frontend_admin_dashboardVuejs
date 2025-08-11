@@ -336,28 +336,62 @@ function toggleSelectAll(event) {
 
 
 function handleCheckboxChange(item, event) {
-  if (item.stock === 0) {
-    event.target.checked = false; // ยกเลิกติ๊ก
-    Swal.fire({
-      icon: 'warning',
-      title: 'รายการสินค้าหมด',
-      text: `ไม่สามารถเลือก "${item.erp_title}" ได้ เนื่องจากสินค้าหมด`,
-    });
-    return;
-  }
-
   if (event.target.checked) {
+    // ติ๊กเลือก
+     console.log(`✅ Selected item:`, item)
+    selectedIds.value.push(item.id)
+
+        // บังคับให้ค่าในตารางเปลี่ยนทันที
+        // 1) บังคับให้ amount = 1
+    if (!item.amount || item.amount === 0) {
+      item.amount = 1;
+    }
+    
+
+    // เก็บ id
     if (!selectedIds.value.includes(item.id)) {
       selectedIds.value.push(item.id);
-      if (!item.amount || item.amount === 0) {
-        item.amount = 1; // เพิ่มจำนวนถ้ายังไม่กำหนด
-      }
     }
+
+     // เก็บ object ไว้ใน selectedProducts
+    if (!selectedProducts.value.find(p => p.id === item.id)) {
+      selectedProducts.value.push({ ...item})  
+      // selectedProducts.value.push(item)    // เอา item ตรงๆ มาเก็บ ไม่ต้อง ...item
+    }
+
   } else {
-    selectedIds.value = selectedIds.value.filter(id => id !== item.id);
+    // ยกเลิก
+    console.log(`❌ Deselected item:`, item)
     item.amount = 0;
+    selectedIds.value = selectedIds.value.filter(id => id !== item.id)
+    selectedProducts.value = selectedProducts.value.filter(p => p.id !== item.id)
   }
 }
+
+
+// function handleCheckboxChange(item, event) {
+//   if (item.stock === 0) {
+//     event.target.checked = false; // ยกเลิกติ๊ก
+//     Swal.fire({
+//       icon: 'warning',
+//       title: 'รายการสินค้าหมด',
+//       text: `ไม่สามารถเลือก "${item.erp_title}" ได้ เนื่องจากสินค้าหมด`,
+//     });
+//     return;
+//   }
+
+//   if (event.target.checked) {
+//     if (!selectedIds.value.includes(item.id)) {
+//       selectedIds.value.push(item.id);
+//       if (!item.amount || item.amount === 0) {
+//         item.amount = 1; // เพิ่มจำนวนถ้ายังไม่กำหนด
+//       }
+//     }
+//   } else {
+//     selectedIds.value = selectedIds.value.filter(id => id !== item.id);
+//     item.amount = 0;
+//   }
+// }
 
 
 function onlyNumberInput(event) {

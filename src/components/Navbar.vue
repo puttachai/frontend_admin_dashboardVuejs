@@ -85,7 +85,7 @@
             <!--  class="absolute right-0 mt-3 w-80 max-h-[24rem] bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50 flex flex-col"> -->
             <transition name="fade" appear>
               <div v-if="dropdownOpen" :class="[ //sm:w-96
-                'absolute right-0 mt-3 w-[18rem] max-h-[20rem] bg-white rounded-lg max-w-xs mdl:w-96 lg:w-96 shadow-lg z-50 flex flex-col',
+                'absolute right-0 mt-3 w-[18rem] max-h-[20rem] bg-white rounded-lg max-w-xs md:w-96 mdl:w-96 lg:w-96 xs:left-[-2rem] sm:left-[-2rem] smls:left-[-2rem] sml:left-[-2rem] md:left-[-2rem] mdl:left-[-2rem] lg:left-[-2rem] lgl:left-[-2rem] xl:left-[-2rem] shadow-lg z-50 flex flex-col',
                 contact ? 'ring-1 ring-black ring-opacity-5 left-1' : 'ring-1',
                 // กำหนด width แบบ responsive
                 'md:w-full'

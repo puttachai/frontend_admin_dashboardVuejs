@@ -3101,6 +3101,8 @@ export default {
         async addSelectedProductsWithmonth(payload) {
             console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
 
+            // this.selectedProducts = []; 
+            
             const items = payload.items || [];
             // const gifts = payload.gifts || [];
             const giftsDay = payload.gifts || [];
@@ -3420,6 +3422,10 @@ export default {
         async handleSelectedPromotionProducts(payload) {
             console.log('📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:', payload);
 
+              // 🔴 วิธีแก้ไข: เคลียร์ Array เก่าออกก่อนเสมอ
+            this.selectedProducts = []; 
+            // หรือใช้ this.selectedProducts.length = 0; ก็ได้
+            
             const items = payload.items || [];
             // const gifts = payload.gifts || [];
             const giftsDay = payload.gifts || [];

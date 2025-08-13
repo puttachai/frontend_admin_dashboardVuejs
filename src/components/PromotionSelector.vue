@@ -765,7 +765,14 @@ async function getPromotion(page = 1) {
       // isLoading.value = false;
 
     } else if (!gettoken) {
-      Swal.fire({ text: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล', icon: 'warning' });
+      // Swal.fire({ text: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล', icon: 'warning' });
+      Swal.fire({
+        text: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        router.push('/customer'); // ไปยังหน้าของ customer
+      });
       // selectcustomer.value = ; // ปิด popup เลือกร้านค้า
       isLoading.value = false;
       return;

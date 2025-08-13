@@ -379,10 +379,16 @@
                       @keypress="onlyNumberInput($event)" :disabled="isReadOnly"
                       class="w-full px-2 py-1 border rounded" />
                   </td>
-                  <td class="px-4 py-2 border">{{ product.pro_goods_price || product.pro_unit_price }}
+                  <td class="px-4 py-2 border">{{ Number(product.pro_goods_price || product.pro_unit_price).toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}}
                   </td>
                   <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
-                  <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString() || 0 }}
+                  <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}} 
                   </td>
                   <td class="px-4 py-2 border" :class="{
                     'text-red-500 cursor-pointer hover:text-red-700': !isReadOnly,
@@ -1564,7 +1570,7 @@ export default {
     async addSelectedProductsWithmonth(payload) {
       console.log("📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:", payload);
 
-      this.selectedProducts = []; //
+      // this.selectedProducts = []; //
 
       const items = payload.items || [];
       // const gifts = payload.gifts || [];

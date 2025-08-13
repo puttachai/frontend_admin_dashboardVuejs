@@ -102,8 +102,8 @@
                       <button @click="decrementPromotionSet(row.pro_activity_id)"
                         class="w-6 h-6 text-sm font-bold bg-green-600 hover:bg-green-700 rounded">-</button>
 
-                      <span class="px-2 text-sm font-medium">{{ clickCountByPromotion[row.pro_activity_id] || 0
-                        }}</span>
+                      <span class="px-1 text-sm font-medium">{{ clickCountByPromotion[row.pro_activity_id] || 0
+                        }} เซ็ต</span>
 
                       <button @click="handlePromotionSet(row.pro_activity_id)"
                         class="w-6 h-6 text-sm font-bold bg-green-600 hover:bg-green-700 rounded">+</button>

@@ -371,15 +371,17 @@
                                             class="w-full px-2 py-1 border rounded" />
                                     </td>
                                     <td class="px-4 py-2 border">{{ product.pro_goods_price || product.pro_unit_price ?
-                                        product.pro_goods_price
-                                        || product.pro_unit_price.toLocaleString(undefined, {
+                                       Number(product.pro_goods_price || product.pro_unit_price).toLocaleString(undefined, {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 2
                                         }) : '0.00' }}
                                     </td>
 
                                     <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
-                                    <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString() || 0 }}
+                                    <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString(undefined, {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}}
                                     </td>
                                     <td class="px-4 py-2 border" :class="{
                                         'text-red-500 cursor-pointer hover:text-red-700': !isReadOnly,

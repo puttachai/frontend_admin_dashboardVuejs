@@ -369,6 +369,11 @@ export default {
       this.total = response.data.data.data.customer_count;
       this.tableData = response.data.data.data.data2;
       this.pageSize = this.total < size ? this.total : size;
+
+      console.log("this.total",this.total)
+      console.log("this.tableData",this.tableData)
+      console.log("this.pageSize",this.pageSize)
+
     } else {
       console.warn("❌ ไม่สามารถโหลดข้อมูลได้", response.data.message);
     }

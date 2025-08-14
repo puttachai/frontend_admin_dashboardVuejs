@@ -560,37 +560,130 @@ const groupedTableData = computed(() => {
 });
 
 
+// function handlePromotionSet(activityId) {
+//   const conditionPrices = conditionPriceMap.value[activityId] || [];
+//   const fullStr = conditionPrices[0]?.full || "0";
+//   const fullNum = Number(fullStr);
+
+//   if (isNaN(fullNum)) {
+//     console.log("ค่า full ไม่ใช่ตัวเลข:", fullStr);
+//     return;
+//   }
+
+//   // 1) อัปเดตจำนวนครั้งที่กด
+//   clickCountByPromotion.value[activityId] =
+//     (clickCountByPromotion.value[activityId] || 0) + 1;
+
+//   // 2) อัปเดตยอดรวมเต็ม (fullNum * จำนวนครั้ง)
+//   totalFullByPromotion.value[activityId] =
+//     (totalFullByPromotion.value[activityId] || 0) + fullNum;
+
+//   console.log(`Promotion ${activityId} → Click count = ${clickCountByPromotion.value[activityId]}, Total full = ${totalFullByPromotion.value[activityId]}`);
+
+  
+//   // 3) อัปเดตจำนวนสินค้าในตาราง
+//   tableData.value.forEach(item => {
+//     if (item.pro_activity_id === activityId && item.stock > 0) {
+//       const oldItem = props.selectProducts_old.find(p =>
+//         p.pro_activity_id === item.pro_activity_id &&
+//         p.pro_sku_price_id === item.id
+//       );
+//       const oldAmount = oldItem ? Number(oldItem.pro_quantity || oldItem.pro_goods_num || 0) : 0;
+
+//       // คำนวณจำนวนที่จะใส่ใหม่
+//       const desiredAmount = totalFullByPromotion.value[activityId];
+//       const maxAllowAmount = Math.max(item.stock - oldAmount, 0);
+
+//       if (desiredAmount > maxAllowAmount) {
+//         Swal.fire({
+//           icon: 'warning',
+//           title: 'จำนวนสินค้าเกินสต๊อก',
+//           text: `คุณเลือกสินค้าเกินกว่าสต๊อกที่มีอยู่ (${desiredAmount}/${item.stock})`
+//         });
+//         item.amount = maxAllowAmount;
+//       } else {
+//         item.amount = desiredAmount;
+//       }
+
+//       if (!selectedIds.value.includes(item.id)) {
+//         selectedIds.value.push(item.id);
+//       }
+//     }
+//   });
+
+//   // 3) อัปเดตจำนวนสินค้าในตาราง
+//   // tableData.value.forEach(item => {
+//   //   if (item.pro_activity_id === activityId && item.stock > 0) {
+//   //     if (!selectedIds.value.includes(item.id)) selectedIds.value.push(item.id);
+//   //     item.amount = totalFullByPromotion.value[activityId];
+//   //   }
+//   // });
+
+// }
+
 function handlePromotionSet(activityId) {
   const conditionPrices = conditionPriceMap.value[activityId] || [];
   const fullStr = conditionPrices[0]?.full || "0";
   const fullNum = Number(fullStr);
 
-  if (isNaN(fullNum)) {
-    console.log("ค่า full ไม่ใช่ตัวเลข:", fullStr);
+  if (isNaN(fullNum) || fullNum <= 0) {
+    console.log("ค่า full ไม่ถูกต้อง:", fullStr);
     return;
   }
 
-  // 1) อัปเดตจำนวนครั้งที่กด
+  // คำนวณจำนวนสูงสุดที่สามารถเพิ่มได้จาก stock
+  let totalAvailableStock = 0;
+  tableData.value.forEach(item => {
+    if (item.pro_activity_id === activityId) {
+      const oldItem = props.selectProducts_old.find(p =>
+        p.pro_activity_id === item.pro_activity_id &&
+        p.pro_sku_price_id === item.id
+      );
+      const oldAmount = oldItem ? Number(oldItem.pro_quantity || oldItem.pro_goods_num || 0) : 0;
+      const currentAmount = Number(item.amount || 0);
+      const remainingStock = Math.max(item.stock - oldAmount, 0);
+      totalAvailableStock += remainingStock - currentAmount;
+    }
+  });
+
+  // ตรวจสอบว่ามี stock เหลือพอสำหรับ fullNum หรือไม่
+  if (totalAvailableStock < fullNum) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'สต๊อกสินค้าไม่เพียงพอ',
+      text: `ไม่สามารถเพิ่มเซ็ตได้อีก เพราะเกินจำนวนสต๊อกที่มีอยู่`
+    });
+    return; // ❌ หยุดการเพิ่ม set
+  }
+
+  // ✅ เพิ่มจำนวน set ได้
   clickCountByPromotion.value[activityId] =
     (clickCountByPromotion.value[activityId] || 0) + 1;
 
-  // 2) อัปเดตยอดรวมเต็ม (fullNum * จำนวนครั้ง)
   totalFullByPromotion.value[activityId] =
     (totalFullByPromotion.value[activityId] || 0) + fullNum;
 
   console.log(`Promotion ${activityId} → Click count = ${clickCountByPromotion.value[activityId]}, Total full = ${totalFullByPromotion.value[activityId]}`);
 
-  // 3) อัปเดตจำนวนสินค้าในตาราง
+  // 🔄 อัปเดตจำนวนสินค้าในตาราง
   tableData.value.forEach(item => {
     if (item.pro_activity_id === activityId && item.stock > 0) {
-      if (!selectedIds.value.includes(item.id)) selectedIds.value.push(item.id);
-      item.amount = totalFullByPromotion.value[activityId];
+      const oldItem = props.selectProducts_old.find(p =>
+        p.pro_activity_id === item.pro_activity_id &&
+        p.pro_sku_price_id === item.id
+      );
+      const oldAmount = oldItem ? Number(oldItem.pro_quantity || oldItem.pro_goods_num || 0) : 0;
+      const maxAllowAmount = Math.max(item.stock - oldAmount, 0);
+      const desiredAmount = totalFullByPromotion.value[activityId];
+
+      item.amount = desiredAmount > maxAllowAmount ? maxAllowAmount : desiredAmount;
+
+      if (!selectedIds.value.includes(item.id)) {
+        selectedIds.value.push(item.id);
+      }
     }
   });
-
 }
-
-
 
 function decrementPromotionSet(activityId) {
   const currentClick = clickCountByPromotion.value[activityId] || 0;
@@ -786,7 +879,6 @@ function validateAmount(item) {
 
 function searchPromotion_no() {
 
-  
 
   if(keyword_promotion_product_no.value.trim()){
 

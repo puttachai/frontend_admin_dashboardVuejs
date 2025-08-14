@@ -260,7 +260,8 @@ function onPaginationChange(pageInfo) {
     pageSize.value = pageInfo.pageSize;
   }
 
-  SearchProducstSubmit(); // โหลดสินค้าหน้าใหม่
+  SearchProducstSubmitFirst(); // โหลดสินค้าหน้าใหม่
+  // SearchProducstSubmit(); // โหลดสินค้าหน้าใหม่
   emit('page-change', pageInfo.current);  // ส่ง event ให้ parent โหลดหน้าข้อมูลใหม่
 }
 
@@ -543,7 +544,7 @@ async function SearchProducstSubmit() {
 
   if (!keyword.value.trim()) {
 
-    // pageCurrent.value = 1;
+    pageCurrent.value = 1;
 
     try {
 
@@ -661,6 +662,7 @@ async function SearchProducstSubmit() {
     try {
 
       // isLoading.value = true; // เริ่มโหลด
+      pageCurrent.value = 1;
 
       const raw = {
         // pageCurrent: pageCurrent.value,
@@ -720,6 +722,256 @@ async function SearchProducstSubmit() {
         dataselect.value = searchProducts;
         total.value = data.item_count || 0;
         pageCurrent.value = 1;
+
+        console.log("✅ ข้อมูล searchProducts:", searchProducts);
+
+        // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
+        isLoading.value = false; // โหลดเสร็จ
+
+      } else if (!gettoken) {
+
+        console.log('check log token: ', gettoken);
+
+        Swal.fire({
+          toast: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          router.push('/customer'); // ไปยังหน้าของ customer
+        });
+        // selectcustomer.value = ; // ปิด popup เลือกร้านค้า
+        isLoading.value = false;
+        return;
+
+      } else {
+        error.value = response.data.message || 'เกิดข้อผิดพลาด';
+        Swal.fire({
+          title: 'ค้นหาไม่สำเร็จ',
+          text: error.value,
+          icon: 'error'
+        });
+        // isLoading.value = false;
+      }
+    } catch (err) {
+      Swal.fire({
+        title: 'เกิดข้อผิดพลาด',
+        text: err.message || 'โปรดลองใหม่ภายหลัง',
+        icon: 'error'
+      });
+      // isLoading.value = false;
+    }
+  }
+}
+
+async function SearchProducstSubmitFirst() {
+
+  isLoading.value = true;
+
+  const gettoken = localStorage.getItem('token');
+  console.log("log value token:", gettoken);
+
+  const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+
+  const getLevel = getLevelSS?.data2?.level ?? 0;
+  console.log("Log getLevel: ", getLevel);
+
+  // แปลงค่า getLevel เป็นชื่อสมาชิก
+  // let memberType = '';
+  if (getLevel === 0) {
+    memberType.value = 'Member Nuser';
+  } else if (getLevel === 1) {
+    memberType.value = 'Member A';
+  } else if (getLevel === 7) {
+    memberType.value = 'Member B';
+  } else if (getLevel === 10) {
+    memberType.value = 'Member A+';
+  } else {
+    memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
+  }
+
+  console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
+
+  if (!keyword.value.trim()) {
+
+    // pageCurrent.value = 1;
+
+    try {
+
+      // isLoading.value = true; // เริ่มโหลด
+
+      const raw = {
+        // pageCurrent: pageCurrent.value,
+        // keywords: keyword.value,
+        // // keywords: keyword.value.trim(), // ตัด space หน้า-หลัง
+        // level: '10',
+        // pageSize: pageSize.value,
+        pageCurrent: pageCurrent.value,
+        pageSize: pageSize.value,
+        keywords: keyword.value,
+        level: getLevel
+      };
+
+      console.log('ส่งคำค้นหา:', raw);
+      console.log('ส่ง payload ค้นหา:', JSON.stringify(raw, null, 2));
+
+      const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      // console.log("API Response ทั้งหมด:", response.data);
+      // console.log("API Response ทั้งหมด:", response.data.data.data2);
+
+      const searchProducts = response.data.data.data2;
+
+      console.log("searchProducts:", searchProducts);
+
+
+      // const getData
+
+      if (response.data.code !== 1) {
+        console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+      }
+
+      if (response.data.code === 1) {
+        const data = response.data.data;
+        const searchProducts = data.data2 || [];
+
+        tableData.value = searchProducts;
+
+        // hydrate ค่าเดิมเข้า tableData
+        tableData.value.forEach(item => {
+          const old = selectedProducts.value.find(p => p.id === item.id);
+          if (old) {
+            item.amount = old.amount;
+            if (!selectedIds.value.includes(item.id)) {
+              selectedIds.value.push(item.id);
+            }
+          }
+        });
+        // console.log("tableData หลัง hydrate:", tableData.value);      
+        // หลัง tableData.value = searchProducts;
+        // tableData.value.forEach(item => {
+        //   const old = selectedProducts.value.find(p => p.id === item.id)
+        //   if (old) {
+        //     item.amount = old.amount
+        //     if (!selectedIds.value.includes(item.id)) {
+        //       selectedIds.value.push(item.id)
+        //     }
+        //   }
+        // })
+
+        // tableData.value = searchProducts.map(item => ({
+        //   ...item,
+        //   imageLoaded: false
+        // }));
+
+        dataselect.value = searchProducts;
+        total.value = data.item_count || 0;
+        // pageCurrent.value = 1;
+
+        console.log("✅ ข้อมูล searchProducts:", searchProducts);
+
+        // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
+        isLoading.value = false; // โหลดเสร็จ
+      } else if (!gettoken) {
+
+        console.log('check log token: ', gettoken);
+
+        Swal.fire({
+          toast: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          router.push('/customer'); // ไปยังหน้าของ customer
+        });
+        // selectcustomer.value = ; // ปิด popup เลือกร้านค้า
+        isLoading.value = false;
+        return;
+
+      } else {
+        error.value = response.data.message || 'เกิดข้อผิดพลาด';
+        Swal.fire({
+          title: 'ค้นหาไม่สำเร็จ',
+          text: error.value,
+          icon: 'error'
+        });
+        // isLoading.value = false;
+      }
+    } catch (err) {
+      Swal.fire({
+        title: 'เกิดข้อผิดพลาด',
+        text: err.message || 'โปรดลองใหม่ภายหลัง',
+        icon: 'error'
+      });
+      // isLoading.value = false;
+    }
+  } else {
+    try {
+
+      // isLoading.value = true; // เริ่มโหลด
+
+      const raw = {
+        // pageCurrent: pageCurrent.value,
+        // keywords: keyword.value,
+        // // keywords: keyword.value.trim(), // ตัด space หน้า-หลัง
+        // level: '10',
+        // pageSize: pageSize.value,
+        pageCurrent: pageCurrent.value,
+        pageSize: pageSize.value,
+        keywords: keyword.value,
+        level: getLevel
+      };
+
+      console.log('ส่งคำค้นหา:', raw);
+      console.log('ส่ง payload ค้นหา:', JSON.stringify(raw, null, 2));
+
+      const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      // console.log("API Response ทั้งหมด:", response.data);
+      // console.log("API Response ทั้งหมด:", response.data.data.data2);
+
+      const searchProducts = response.data.data.data2;
+
+      console.log("searchProducts:", searchProducts);
+
+
+      // const getData
+
+      if (response.data.code !== 1) {
+        console.error("massgae error:", response.data.msg);
+      }
+
+      if (response.data.code === 1) {
+        const data = response.data.data;
+        const searchProducts = data.data2 || [];
+
+        tableData.value = searchProducts;
+
+        // hydrate ค่าเดิมเข้า tableData
+        tableData.value.forEach(item => {
+          const old = selectedProducts.value.find(p => p.id === item.id);
+          if (old) {
+            item.amount = old.amount;
+            if (!selectedIds.value.includes(item.id)) {
+              selectedIds.value.push(item.id);
+            }
+          }
+        });
+
+        // tableData.value = searchProducts.map(item => ({
+        //   ...item,
+        //   imageLoaded: false
+        // }));
+
+        dataselect.value = searchProducts;
+        total.value = data.item_count || 0;
+        // pageCurrent.value = 1;
 
         console.log("✅ ข้อมูล searchProducts:", searchProducts);
 
@@ -1521,7 +1773,8 @@ function onInput() {
 }
 
 onMounted(() => {
-  SearchProducstSubmit(); // โหลดสินค้าทั้งหมดรอบแรก
+  SearchProducstSubmitFirst(); // โหลดสินค้าทั้งหมดรอบแรก
+  // SearchProducstSubmit(); // โหลดสินค้าทั้งหมดรอบแรก
 
   // if (props.selectProducts_old_month?.length) {
   //   selectedProducts.value = props.selectProducts_old_month.map(p => ({

@@ -1,37 +1,39 @@
 <template>
 
-<!-- กล่องรวม breadcrumb + action bar -->
-        <div class="fixed top-16 left-16 right-0 bg-white rounded-lg p-4 shadow-lg z-50 responsive-action-bar">
+  <!-- กล่องรวม breadcrumb + action bar -->
+  <div class="fixed top-16 left-16 right-0 bg-white rounded-lg p-4 shadow-lg z-50 responsive-action-bar">
 
-            <!-- Breadcrumb + ActionBar inline -->
-            <div class="flex flex-wrap md:flex-nowrap justify-between  items-center gap-4">
+    <!-- Breadcrumb + ActionBar inline -->
+    <div class="flex flex-wrap md:flex-nowrap justify-between  items-center gap-4">
 
-                <!-- Breadcrumb -->
-                <nav class="text-sm text-gray-600">
-                    <ul class="flex items-center space-x-1">
-                        <li>
-                            <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
-                            <span class="mx-1 text-gray-400">›</span>
-                        </li>
-                        <li>
-                            <router-link to="/createsalelist" @click.native="reloadPage"
-                                class="text-purple-600 font-medium hover:text-purple-800 transition">
-                                Create Sale List
-                            </router-link>
-                        </li>
-                    </ul>
-                </nav>
+      <!-- Breadcrumb -->
+      <nav class="text-sm text-gray-600">
+        <ul class="flex items-center space-x-1">
+          <li>
+            <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
+            <span class="mx-1 text-gray-400">›</span>
+          </li>
+          <li>
+            <router-link to="/saleorder" class="hover:text-purple-600 transition">Sale Order List</router-link>
+            <span class="mx-1 text-gray-400">›</span>
+          </li>
+          <li class="text-purple-600 font-medium">
+            {{ printData.order.documentNo || "Loading..." }}
+          </li>
+    
+        </ul>
+      </nav>
 
-                  <button @click="print" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md text-xs">
+      <button @click="print" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md text-xs">
         พิมพ์เอกสาร
       </button>
 
-            </div>
-        </div>
-  
+    </div>
+  </div>
+
   <div class="print-container bg-white shadow-lg rounded-xl p-10 font-sans text-gray-800 text-[15px] no-print-shadow"
     ref="printArea">
-    
+
     <!-- class="page-section" -->
     <!-- ✅ Header (แสดงทุกหน้า) -->
     <!-- BUTTON -->
@@ -108,7 +110,8 @@
               <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'" class="text-[10px] align-top">
                 <td class="border border-gray-300 px-2 py-1 text-center">{{ pageIndex * 16 + index + 1 }}</td>
                 <td class="border border-gray-300 px-2 py-1">{{ item.pro_sku_price_id }}</td>
-                <td class="border border-gray-300 px-2 py-1">{{ item.pro_erp_title }} - {{ item.pro_goods_sku_text }}</td>
+                <td class="border border-gray-300 px-2 py-1">{{ item.pro_erp_title }} - {{ item.pro_goods_sku_text }}
+                </td>
                 <!-- <td class="border border-gray-300 px-2 py-1">{{ item.pro_erp_title - item.pro_goods_sku_text}}</td> -->
                 <td class="border border-gray-300 px-2 py-1 text-right">{{ item.pro_goods_num }}</td>
                 <td class="border border-gray-300 px-2 py-1 text-center">{{ item.pro_unit || '-' }}</td>
@@ -131,7 +134,7 @@
             </tr>
             <tr v-for="(gift, gIndex) in uniqueGifts" :key="'gift-unique-' + gIndex" v-if="isLastPage(pageIndex)"
               class="text-[11px] bg-yellow-50">
-              <td class="border border-gray-300 px-2 py-1 text-center">{{pageIndex * 16 }}</td>
+              <td class="border border-gray-300 px-2 py-1 text-center">{{ gIndex + 1 }}</td>
               <!-- <td class="border border-gray-300 px-2 py-1 text-center">-</td> -->
               <td class="border border-gray-300 px-2 py-1">{{ gift.pro_sku_price_id || '-' }}</td>
               <td class="border border-gray-300 px-2 py-1">{{ gift.title }} - {{ gift.pro_goods_sku_text }}</td>
@@ -256,7 +259,7 @@
         <div>
 
         </div>
-        <div class="text-xs text-right text-gray-500 mt-2">
+        <div class="text-xs text-right text-gray-500 mt-2"> 
           หน้าเอกสารที่ {{ pageIndex + 1 }} จากทั้งหมด {{ paginatedItems.length }} หน้า
         </div>
 

@@ -1,6 +1,28 @@
 <template>
+  <!-- กล่องรวม breadcrumb + action bar -->
+  <div class="fixed top-16 left-16 right-0 bg-white rounded-lg p-4 shadow-lg z-50 responsive-action-bar">
+
+    <!-- Breadcrumb + ActionBar inline -->
+    <div class="flex flex-wrap md:flex-nowrap justify-between  items-center gap-4">
+
+      <!-- Breadcrumb -->
+      <nav class="text-sm text-gray-600">
+        <ul class="flex items-center space-x-1">
+          <li>
+            <span class="mx-1 text-gray-400">›</span>
+            <router-link to="/createsalelist" class="text-purple-600 hover:text-purple-700 transition">Create Sale Order</router-link>
+            <!-- <span class="mx-1 text-gray-400">›</span> -->
+          </li>
+          
+    
+        </ul>
+      </nav>
+
+    </div>
+  </div>
+
   <div
-    class="max-w-5xl mx-auto my-10 p-8 bg-white shadow-2xl rounded-3xl space-y-8 border border-gray-100"
+    class="max-w-5xl mx-auto my-10 mt-20 p-8 bg-white shadow-2xl rounded-3xl space-y-8 border border-gray-100"
     @contextmenu.prevent
   >
     <!-- 🔍 Search -->
@@ -12,7 +34,7 @@
         v-model="keyword"
         type="text"
         placeholder="ค้นหาด้วยเบอร์, ชื่อร้านค้า หรือรหัสร้านค้า..."
-        class="w-full text-sm bg-transparent ๅ outline-none placeholder-gray-400"
+        class="w-full text-sm bg-transparent outline-none placeholder-gray-400 mt-0"
         @input="onInput"
         confirm-type="search"
       />

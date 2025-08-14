@@ -93,8 +93,8 @@
             <tr v-for="item in paginatedProducts" :key="item.id">
               <td class="px-4 py-2 border text-center">
                 <!-- v-model="selectedIds" :value="item.id" -->
-                   <!-- <input type="checkbox" v-model="selectedIds" :value="item.id" -->
-                <input type="checkbox"  :checked="selectedIds.includes(item.id)"
+                <!-- <input type="checkbox" v-model="selectedIds" :value="item.id" -->
+                <input type="checkbox" :checked="selectedIds.includes(item.id)"
                   @change="handleCheckboxChange(item, $event)" />
               </td>
               <!-- @change="toggleSelectProduct(item.id, $event.target.checked)" , :checked="allSelectedIds.includes(item.id)"-->
@@ -110,7 +110,15 @@
 
               <td class="px-4 text-gray-700 py-2 border">{{ item.title + ' ' + item.goods_sku_text ?? '' }}</td>
               <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.erp_title }}</td> -->
-              <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? 'ไม่มีสี' }}</td>
+              <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ? item.goods_sku_text : 'ไม่มีสี' }}</td> -->
+              <td class="px-2 py-1 border">
+                <span :class="item.goods_sku_text
+                  ? 'border border-blue-500 px-1 py-1 rounded text-xs text-blue-600 font-semibold'
+                  : 'text-gray-500 italic'">
+                  {{ item.goods_sku_text || 'ไม่มีสี' }}
+                </span>
+              </td>
+              <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? 'ไม่มีสี' }}</td> -->
               <td class="px-4 text-gray-700 py-2 border">{{ item.sn }}</td>
               <!-- <td class="px-4 py-2 border">{{ item.promotion }}</td> -->
               <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.stock || 0 }}</td> -->
@@ -120,10 +128,8 @@
             </td> -->
               <td class="px-4 text-gray-700 py-2 border text-center">
                 <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
-                  v-model.number="item.amount" :min="0" :max="item.stock" 
-                  @keypress="onlyNumberInput($event)"
-                  @input="validateAmount(item)"
-                  placeholder="0" />
+                  v-model.number="item.amount" :min="0" :max="item.stock" @keypress="onlyNumberInput($event)"
+                  @input="validateAmount(item)" placeholder="0" />
               </td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.stock }}</td>
               <td class="px-4 text-gray-700 py-2 border">{{ item.units }}</td>
@@ -326,26 +332,40 @@ function toggleSelectAll(event) {
 
 // ใช้ได้ 100 %
 function handleCheckboxChange(item, event) {
+
+  // ถ้า stock = 0 ให้ยกเลิกการติ๊ก และไม่ทำอะไร
+  if (item.stock === 0) {
+    event.target.checked = false;
+    item.amount = 0; // ป้องกัน amount ถูกเพิ่ม
+    Swal.fire({
+      icon: 'warning',
+      title: 'รายการสินค้าหมด',
+      text: `ไม่สามารถเลือก "${item.erp_title}" ได้ เนื่องจากสินค้าหมด`,
+    });
+
+    return;
+  }
+
   if (event.target.checked) {
     // ติ๊กเลือก
-     console.log(`✅ Selected item:`, item)
+    console.log(`✅ Selected item:`, item)
     selectedIds.value.push(item.id)
 
-        // บังคับให้ค่าในตารางเปลี่ยนทันที
-        // 1) บังคับให้ amount = 1
+    // บังคับให้ค่าในตารางเปลี่ยนทันที
+    // 1) บังคับให้ amount = 1
     if (!item.amount || item.amount === 0) {
       item.amount = 1;
     }
-    
+
 
     // เก็บ id
     if (!selectedIds.value.includes(item.id)) {
       selectedIds.value.push(item.id);
     }
 
-     // เก็บ object ไว้ใน selectedProducts
+    // เก็บ object ไว้ใน selectedProducts
     if (!selectedProducts.value.find(p => p.id === item.id)) {
-      selectedProducts.value.push({ ...item})  
+      selectedProducts.value.push({ ...item })
       // selectedProducts.value.push(item)    // เอา item ตรงๆ มาเก็บ ไม่ต้อง ...item
     }
 
@@ -360,11 +380,11 @@ function handleCheckboxChange(item, event) {
 
 
 function onlyNumberInput(event) {
-    const key = event.key;
-    // อนุญาตเฉพาะตัวเลข 0-9 เท่านั้น
-    if (!/^\d$/.test(key)) {
+  const key = event.key;
+  // อนุญาตเฉพาะตัวเลข 0-9 เท่านั้น
+  if (!/^\d$/.test(key)) {
     event.preventDefault();
-    }
+  }
 }
 
 function validateAmount(item) {
@@ -386,7 +406,7 @@ function validateAmount(item) {
     selectedProducts.value = selectedProducts.value.filter(p => p.id !== item.id)
     console.log(`🗑️ Auto-unticked because amount=0:`, item)
   }
-    // 2) อัปเดต amount ใน selectedProducts ด้วย
+  // 2) อัปเดต amount ใน selectedProducts ด้วย
   const idx = selectedProducts.value.findIndex(p => p.id === item.id)
   if (idx !== -1) {
     selectedProducts.value[idx].amount = item.amount
@@ -400,7 +420,26 @@ const searchSku = async () => {
   isLoading.value = true;
   pageCurrent.value = 1;
 
+  const gettoken = localStorage.getItem('token');
+  console.log("gettoken:", gettoken);
+
   if (!keyword_sku_no.value.trim()) {
+
+    if (!gettoken) {
+      Swal.fire({
+        toast: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+        title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+        text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        router.push('/customer'); // ไปยังหน้าของ customer
+      });
+      // selectcustomer.value = ; // ปิด popup เลือกร้านค้า
+      isLoading.value = false;
+      return;
+    }
+
     try {
       const response = await axios.post(`${BASE_URL}/Goods2/product`, {
         version: '2.0.2',
@@ -419,7 +458,7 @@ const searchSku = async () => {
         tableData.value = [...dataselectsku_no.value];
         pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
       }
-       isLoading.value = false;
+      isLoading.value = false;
 
     } catch (err) {
       console.error("searchSku error:", err);
@@ -427,7 +466,22 @@ const searchSku = async () => {
   } else {
     try {
 
-       isLoading.value = true;
+      if (!gettoken) {
+        Swal.fire({
+          toast: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          router.push('/customer'); // ไปยังหน้าของ customer
+        });
+        // selectcustomer.value = ; // ปิด popup เลือกร้านค้า
+        isLoading.value = false;
+        return;
+      }
+
+      isLoading.value = true;
 
       const response = await axios.post(`${BASE_URL}/Goods2/product`, {
         version: '2.0.2',
@@ -489,7 +543,7 @@ async function SearchProducstSubmit() {
 
   if (!keyword.value.trim()) {
 
-      // pageCurrent.value = 1;
+    // pageCurrent.value = 1;
 
     try {
 
@@ -534,7 +588,7 @@ async function SearchProducstSubmit() {
 
         tableData.value = searchProducts;
 
-         // hydrate ค่าเดิมเข้า tableData
+        // hydrate ค่าเดิมเข้า tableData
         tableData.value.forEach(item => {
           const old = selectedProducts.value.find(p => p.id === item.id);
           if (old) {
@@ -563,17 +617,18 @@ async function SearchProducstSubmit() {
 
         dataselect.value = searchProducts;
         total.value = data.item_count || 0;
+        pageCurrent.value = 1;
 
         console.log("✅ ข้อมูล searchProducts:", searchProducts);
 
         // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
         isLoading.value = false; // โหลดเสร็จ
-      } else if (!gettoken){
+      } else if (!gettoken) {
 
         console.log('check log token: ', gettoken);
 
         Swal.fire({
-          toast:'❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          toast: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
           title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
           text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
           icon: 'warning',
@@ -646,16 +701,16 @@ async function SearchProducstSubmit() {
 
         tableData.value = searchProducts;
 
-           // hydrate ค่าเดิมเข้า tableData
-          tableData.value.forEach(item => {
-            const old = selectedProducts.value.find(p => p.id === item.id);
-            if (old) {
-              item.amount = old.amount;
-              if (!selectedIds.value.includes(item.id)) {
-                selectedIds.value.push(item.id);
-              }
+        // hydrate ค่าเดิมเข้า tableData
+        tableData.value.forEach(item => {
+          const old = selectedProducts.value.find(p => p.id === item.id);
+          if (old) {
+            item.amount = old.amount;
+            if (!selectedIds.value.includes(item.id)) {
+              selectedIds.value.push(item.id);
             }
-          });
+          }
+        });
 
         // tableData.value = searchProducts.map(item => ({
         //   ...item,
@@ -664,18 +719,19 @@ async function SearchProducstSubmit() {
 
         dataselect.value = searchProducts;
         total.value = data.item_count || 0;
+        pageCurrent.value = 1;
 
         console.log("✅ ข้อมูล searchProducts:", searchProducts);
 
         // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
         isLoading.value = false; // โหลดเสร็จ
 
-      } else if (!gettoken){
+      } else if (!gettoken) {
 
         console.log('check log token: ', gettoken);
 
         Swal.fire({
-          toast:'❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          toast: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
           title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
           text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
           icon: 'warning',
@@ -761,7 +817,7 @@ async function confirmSelection() {
     pro_units: p.units,
   }));
 
-   console.log('🎯🎯🎯 selectedProducts.value:', selectedProductsNew);
+  console.log('🎯🎯🎯 selectedProducts.value:', selectedProductsNew);
 
   // ใช้ได้
   // const selectedProducts = tableData.value
@@ -840,69 +896,69 @@ async function confirmSelection() {
   }
 
 
-  
-// // 🔁 รวมสินค้า "ธรรมดา" กับ "โปรโมชัน" ที่เป็นสินค้าเดียวกัน (pro_sku_price_id ตรงกัน)
-// const mergedProductsMap = new Map();
 
-// // const hasPromo = (data) =>
-// //   data.pro_activity_id !== undefined &&
-// //   data.pro_activity_id !== null &&
-// //   data.pro_activity_id !== 0 &&
-// //   data.pro_activity_id !== "0";
+  // // 🔁 รวมสินค้า "ธรรมดา" กับ "โปรโมชัน" ที่เป็นสินค้าเดียวกัน (pro_sku_price_id ตรงกัน)
+  // const mergedProductsMap = new Map();
 
-// // วน loop ทีละตัว
-// for (const item of sum_products) {
-//   const key = item.pro_sku_price_id;
+  // // const hasPromo = (data) =>
+  // //   data.pro_activity_id !== undefined &&
+  // //   data.pro_activity_id !== null &&
+  // //   data.pro_activity_id !== 0 &&
+  // //   data.pro_activity_id !== "0";
 
-//   // เช็คว่าเจอสินค้านี้แล้วหรือยัง (จากธรรมดาหรือโปรฯ ก่อนหน้า)
-//   if (!mergedProductsMap.has(key)) {
-//     mergedProductsMap.set(key, { ...item }); // ถ้ายังไม่มีก็ set ใหม่เลย
-//   } else {
-//     const existing = mergedProductsMap.get(key);
+  // // วน loop ทีละตัว
+  // for (const item of sum_products) {
+  //   const key = item.pro_sku_price_id;
 
-//     // ✅ เงื่อนไข: ถ้าอันหนึ่งเป็นสินค้าธรรมดา (ไม่มีโปร_activity_id) และอีกอันมี → ให้รวม
-//     if (
-//       (!existing.pro_activity_id && item.pro_activity_id) ||
-//       (existing.pro_activity_id && !item.pro_activity_id)
-//       // (hasPromo(existing) && !hasPromo(item)) ||
-//       // (!hasPromo(existing) && hasPromo(item))
-//     ) {
-//       // รวมจำนวน
-//       const totalQty =
-//         (Number(existing.pro_goods_num) || 0) +
-//         (Number(item.pro_goods_num) || 0);
+  //   // เช็คว่าเจอสินค้านี้แล้วหรือยัง (จากธรรมดาหรือโปรฯ ก่อนหน้า)
+  //   if (!mergedProductsMap.has(key)) {
+  //     mergedProductsMap.set(key, { ...item }); // ถ้ายังไม่มีก็ set ใหม่เลย
+  //   } else {
+  //     const existing = mergedProductsMap.get(key);
 
-//       // คัดลอกค่าโดยอิงจากตัวที่เป็นโปรโมชันไว้เป็นหลัก
-//       const promoData = existing.pro_activity_id ? existing : item;
-//       // const promoData = hasPromo(item) ? item : existing;
+  //     // ✅ เงื่อนไข: ถ้าอันหนึ่งเป็นสินค้าธรรมดา (ไม่มีโปร_activity_id) และอีกอันมี → ให้รวม
+  //     if (
+  //       (!existing.pro_activity_id && item.pro_activity_id) ||
+  //       (existing.pro_activity_id && !item.pro_activity_id)
+  //       // (hasPromo(existing) && !hasPromo(item)) ||
+  //       // (!hasPromo(existing) && hasPromo(item))
+  //     ) {
+  //       // รวมจำนวน
+  //       const totalQty =
+  //         (Number(existing.pro_goods_num) || 0) +
+  //         (Number(item.pro_goods_num) || 0);
 
-//       // ✅ บันทึกกลับโดยใช้ข้อมูลของโปรโมชัน พร้อมจำนวนรวม
-//       mergedProductsMap.set(key, {
-//         ...promoData,
-//         pro_goods_num: totalQty,
-//         pro_quantity: totalQty,
-//         last_quantity: Number(item.pro_goods_num || 0), // เก็บจำนวนของอันล่าสุด (ไว้เช็ค stock)
-//         st: true // ✔️ ให้เป็นสินค้าพร้อมโปร
-//       });
-//     } else {
-//       // ถ้าไม่เข้าเงื่อนไข (เป็นของประเภทเดียวกันทั้งคู่) ก็รวมจำนวนปกติ
-//       const totalQty =
-//         (Number(existing.pro_goods_num) || 0) +
-//         (Number(item.pro_goods_num) || 0);
+  //       // คัดลอกค่าโดยอิงจากตัวที่เป็นโปรโมชันไว้เป็นหลัก
+  //       const promoData = existing.pro_activity_id ? existing : item;
+  //       // const promoData = hasPromo(item) ? item : existing;
 
-//       mergedProductsMap.set(key, {
-//         ...existing,
-//         pro_goods_num: totalQty,
-//         pro_quantity: totalQty
-//       });
-//     }
-//   }
-// }
+  //       // ✅ บันทึกกลับโดยใช้ข้อมูลของโปรโมชัน พร้อมจำนวนรวม
+  //       mergedProductsMap.set(key, {
+  //         ...promoData,
+  //         pro_goods_num: totalQty,
+  //         pro_quantity: totalQty,
+  //         last_quantity: Number(item.pro_goods_num || 0), // เก็บจำนวนของอันล่าสุด (ไว้เช็ค stock)
+  //         st: true // ✔️ ให้เป็นสินค้าพร้อมโปร
+  //       });
+  //     } else {
+  //       // ถ้าไม่เข้าเงื่อนไข (เป็นของประเภทเดียวกันทั้งคู่) ก็รวมจำนวนปกติ
+  //       const totalQty =
+  //         (Number(existing.pro_goods_num) || 0) +
+  //         (Number(item.pro_goods_num) || 0);
 
-// // เปลี่ยนกลับเป็น array
-// const mergedProducts = Array.from(mergedProductsMap.values());
+  //       mergedProductsMap.set(key, {
+  //         ...existing,
+  //         pro_goods_num: totalQty,
+  //         pro_quantity: totalQty
+  //       });
+  //     }
+  //   }
+  // }
 
-// console.log('✅ 🔄 mergedProducts (หลังรวมสินค้าธรรมดา+โปร):', mergedProducts);
+  // // เปลี่ยนกลับเป็น array
+  // const mergedProducts = Array.from(mergedProductsMap.values());
+
+  // console.log('✅ 🔄 mergedProducts (หลังรวมสินค้าธรรมดา+โปร):', mergedProducts);
 
 
   ///////////////////////////////
@@ -999,7 +1055,7 @@ async function confirmSelection() {
 
   console.log('✅ Grouped  resultnewproduct:', newproduct);
   console.log('✅ Grouped  result groupedArray:', groupedLastQuantity);
- 
+
   // const selectedPromotionsInfo = props.selectedPromotion.map(p => ({
 
   //   pro_m_id: p.pro_m_id, //pro_m_id: 1176
@@ -1097,7 +1153,7 @@ async function SelectProductProMonth(newproduct) {
       console.log("✅ Promotions:", promotions);
 
       // ใช้ได้
-      console.log("🔁 Emit กลับไปหน้า parent:", { items, gifts, promotions, emitTitles , datasumdiscount });
+      console.log("🔁 Emit กลับไปหน้า parent:", { items, gifts, promotions, emitTitles, datasumdiscount });
       // console.log("🔁 Emit กลับไปหน้า parent:", { items, itemsMonth, giftsDay, giftsMonth, promotionsDay, promotionsMonth});
       // ส่งข้อมูลกลับไปยังหน้าหลัก
 
@@ -1134,24 +1190,24 @@ async function SelectProductProMonth(newproduct) {
       emit('close'); // 
 
       isLoading.value = false; // โหลดเสร็จ
-    } else if (!gettoken){
+    } else if (!gettoken) {
 
-        console.log('check log token: ', gettoken);
+      console.log('check log token: ', gettoken);
 
-        Swal.fire({
-          toast:'❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
-          title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
-          text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
-          icon: 'warning',
-          confirmButtonText: 'OK'
-        }).then(() => {
-          router.push('/customer'); // ไปยังหน้าของ customer
-        });
-        // selectcustomer.value = ; // ปิด popup เลือกร้านค้า
-        isLoading.value = false;
-        return;
+      Swal.fire({
+        toast: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+        title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+        text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        router.push('/customer'); // ไปยังหน้าของ customer
+      });
+      // selectcustomer.value = ; // ปิด popup เลือกร้านค้า
+      isLoading.value = false;
+      return;
 
-      } else {
+    } else {
       error.value = response.data.message || 'เกิดข้อผิดพลาด';
       Swal.fire({
         title: 'ค้นหาไม่สำเร็จ',
@@ -1706,7 +1762,7 @@ onMounted(() => {
  -->
 
 
- 
+
 <!-- 
 // เคยใช้ได้
 // function validateAmount(item) {
@@ -1894,5 +1950,3 @@ onMounted(() => {
 //   SelectProductProMonth(newproduct);
 
 // } -->
-
-

@@ -785,30 +785,78 @@ function validateAmount(item) {
 }
 
 function searchPromotion_no() {
-  const kw = keyword.value.trim().toLowerCase();
-  const promoNo = keyword_promotion_product_no.value.trim().toLowerCase();
 
-  // กรองข้อมูล promotionProducts ตามเงื่อนไข AND
-  const filtered = promotionProducts.value.filter(item => {
-    const title = item.title ? item.title.toLowerCase() : '';
-    const activityCode = item.activity_code ? item.activity_code.toLowerCase() : '';
+  
 
-    // ตรวจสอบว่า title ต้องมี keyword อยู่ (includes) แต่ activity_code ต้องตรงเป๊ะกับ promoNo
-    const matchKeyword = kw ? title.includes(kw) : true;
-    const matchPromoNo = promoNo ? activityCode === promoNo : true;
+  if(keyword_promotion_product_no.value.trim()){
 
-    return matchKeyword && matchPromoNo;
-  });
+     isLoading.value = true;
 
-  tableData.value = filtered;
+    const kw = keyword.value.trim().toLowerCase();
+    const promoNo = keyword_promotion_product_no.value.trim().toLowerCase();
 
-  // ถ้าต้องการโชว์ว่าเจอแค่รายการเดียวหรือไม่
-  if (filtered.length === 1) {
-    console.log('พบรายการที่ตรงกันอย่างแม่นยำ 1 รายการ:', filtered[0]);
-  } else if (filtered.length === 0) {
-    console.log('ไม่พบรายการที่ตรงกัน');
+    console.log('promotionProducts.value: ', promotionProducts.value)
+
+    console.log('keyword promoNo: ', promoNo)
+    console.log('tableData.value: ', tableData.value)
+
+    // กรองข้อมูล promotionProducts ตามเงื่อนไข AND
+    const filtered = promotionProducts.value.filter(item => {
+      const title = item.title ? item.title.toLowerCase() : '';
+      const erp_title = item.erp_title ? item.erp_title.toLowerCase() : '';
+      const activityCode = item.activity_code ? item.activity_code.toLowerCase() : '';
+      const sn = item.sn ? item.sn.toLowerCase() : '';
+      const goods_sku_text = item.goods_sku_text ? item.goods_sku_text.toLowerCase() : '';
+
+      console.log('title: ', title)
+
+      // ตรวจสอบว่า title ต้องมี keyword อยู่ (includes) แต่ activity_code ต้องตรงเป๊ะกับ promoNo
+      const matchKeyword = kw ? title.includes(kw) || erp_title.includes(kw) : true;
+      // const matchKeyword = kw ? erp_title.includes(kw) : true;
+      const matchPromoNo = promoNo ? title.includes(promoNo) || erp_title.includes(promoNo) || activityCode.includes(promoNo) || sn.includes(promoNo) || goods_sku_text.includes(promoNo): true;
+      // const matchPromoNo = promoNo ? activityCode === promoNo : true;
+
+      console.log('matchKeyword: ', matchKeyword)
+      console.log('matchPromoNo: ', matchPromoNo)
+
+      return matchKeyword && matchPromoNo;
+    });
+
+    console.log('filtered:',filtered);
+
+    tableData.value = filtered;
+    
+      dataselectpromotion_no.value = filtered;
+          tableData.value = [...filtered];
+          total.value = filtered.length;
+          pageSize.value = (total.value < pageSize.value)
+            ? total.value
+            : parseInt(pageSize.value);
+
+          pageCurrent.value = 1; // รีเซ็ตไปหน้าแรก
+
+    console.log('tableData.value:',tableData.value);
+
+     isLoading.value = false;
+    // ถ้าต้องการโชว์ว่าเจอแค่รายการเดียวหรือไม่
+    if (filtered.length === 1) {
+      console.log('พบรายการที่ตรงกันอย่างแม่นยำ 1 รายการ:', filtered[0]);
+    } else if (filtered.length === 0) {
+      console.log('ไม่พบรายการที่ตรงกัน');
+    } else {
+      console.log('พบหลายรายการ:', filtered.length);
+    }
   } else {
-    console.log('พบหลายรายการ:', filtered.length);
+     isLoading.value = true;
+
+    // กำหนด ให้ pageSize มีค่า default = 10 1 หน้า แล้วทำการเรียกฟังก์ชัน SearchPromotionSubmit 
+    // โดยมีเงื่อนไขว่า ถ้าค่าตัวของฟังก์ชัน searchPromotion_no ที่ keyword_promotion_no เป็นค่าว่าง ให้เข้าเงื่อนไขนี้ 
+    pageSize.value = 10;
+    
+    SearchPromotionSubmit();
+    
+    isLoading.value = false;
+
   }
 }
 
@@ -816,6 +864,8 @@ function searchPromotion_no() {
 
 async function SearchPromotionSubmit() {
   clearTimeout(searchTimer.value);
+
+  isLoading.value = true;
 
   const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
   const getLevel = getLevelSS?.data2?.level ?? 0;
@@ -859,12 +909,18 @@ async function SearchPromotionSubmit() {
         ? total.value
         : parseInt(pageSize.value);
 
+      pageCurrent.value = 1; // รีเซ็ตไปหน้าแรก
+
+      isLoading.value = false;
+
     } catch (err) {
       console.error("❌ SearchPromotionSubmit error:", err);
+       isLoading.value = false;
     }
 
   } else {
     try {
+       isLoading.value = true;
       const keywordToSearch = keyword.value.trim().toLowerCase();
 
       if (!promotionProducts.value || promotionProducts.value.length === 0) {
@@ -902,9 +958,13 @@ async function SearchPromotionSubmit() {
       tableData.value = filteredResults;
       dataselectpromotion_no.value = filteredResults;
       total.value = filteredResults.length;
+      pageCurrent.value = 1; // รีเซ็ตไปหน้าแรก
+
+       isLoading.value = false;
 
     } catch (err) {
       console.error("❌ SearchPromotionSubmit error:", err);
+       isLoading.value = false;
     }
   }
 }

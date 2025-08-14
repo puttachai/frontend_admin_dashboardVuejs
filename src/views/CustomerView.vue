@@ -110,18 +110,18 @@
       </table>
     </div>
 
-    <!-- 🔢 Pagination -->
+    <!-- 🔢 Pagination ,:pageSize.sync="pageSize" , @change="onPageSizeChange" -->
     <ConfigProvider :globalConfig="localeConfig">
       <div class="overflow-auto">
         <pagination
           v-model="pageCurrent"
-          :pageSize.sync="pageSize"
+          v-model:pageSize="pageSize"
           :total="total"
           :pageSizeOptions="[5,10,15]"
           show-page-size
           :prev-button-props="{ content: '⏪' }"
           :next-button-props="{ content: '⏩' }"
-          @change="onPageSizeChange"
+          @change="handlePaginationChange"
           class="mt-4"
         />
       </div>
@@ -194,6 +194,7 @@ export default {
       searchVal: "",
       tableData: [],
       // 每页数据量
+      defaultPageSize: 15, // << เพิ่มไว้เก็บค่า default
       pageSize: 15,
       pageNext: 15,
       // 当前页
@@ -289,19 +290,57 @@ export default {
     //   this.accountLoginSubmit();
     // },
  
-    onPageSizeChange(paginationInfo) {
-      // paginationInfo = { current: <เลขหน้า>, pageSize: <จำนวนแถว> }
-      this.pageCurrent = paginationInfo.current;
-      this.pageSize = paginationInfo.pageSize;
+    handlePaginationChange(info) {
+      // กันไม่ให้ pageSize กลายเป็น object
+      if (typeof info === 'object') {
+        if (info.pageSize && typeof info.pageSize === 'number') {
+          this.pageSize = info.pageSize;
+        }
+        if (info.current && typeof info.current === 'number') {
+          this.pageCurrent = info.current;
+        }
+      } else {
+        // fallback กันไว้
+        this.pageSize = Number(info) || this.defaultPageSize;
+      }
 
-      console.log("Pagination changed:", this.pageCurrent, this.pageSize);
-
+      // โหลดข้อมูลใหม่
       if (this.keyword_sale_no.trim() !== "") {
         this.searchSaleId(this.pageCurrent, this.pageSize);
       } else {
         this.accountLoginSubmit(this.pageCurrent, this.pageSize);
       }
     },
+
+
+      onPageSizeChange(newSize) {
+        // เวลาเปลี่ยน pageSize ให้ update ค่า default ด้วย
+        this.defaultPageSize = newSize;
+        this.pageSize = newSize;
+        this.pageCurrent = 1;
+        console.log("Pagination changed:", this.pageCurrent, this.pageSize);
+        // this.accountLoginSubmit();
+        if (this.keyword_sale_no.trim() !== "") {
+          this.searchSaleId(this.pageCurrent, this.pageSize);
+        } else {
+          this.accountLoginSubmit(this.pageCurrent, this.pageSize);
+        }
+
+      },
+
+    // onPageSizeChange(paginationInfo) {
+    //   // paginationInfo = { current: <เลขหน้า>, pageSize: <จำนวนแถว> }
+    //   this.pageCurrent = paginationInfo.current;
+    //   this.pageSize = paginationInfo.pageSize;
+
+    //   console.log("Pagination changed:", this.pageCurrent, this.pageSize);
+
+    //   if (this.keyword_sale_no.trim() !== "") {
+    //     this.searchSaleId(this.pageCurrent, this.pageSize);
+    //   } else {
+    //     this.accountLoginSubmit(this.pageCurrent, this.pageSize);
+    //   }
+    // },
 
     // พอได้
     // onPageSizeChange(newSize) {
@@ -344,45 +383,66 @@ export default {
       // }, 1000)
     },
    async accountLoginSubmit(page = 1, size = 15) {
-  this.isLoading = true;
+    this.isLoading = true;
 
-  try {
-    const response = await axios.post(
-      `${BASE_URL}/user/accountLogin4`,
-      {
-        account: this.account,
-        password: this.password,
-        customer: "",
-        version: "2.0.2",
-        pageCurrent: page,
-        keyword: this.keyword,
-        pageSize: size,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/user/accountLogin4`,
+        {
+          account: this.account,
+          password: this.password,
+          customer: "",
+          version: "2.0.2",
+          pageCurrent: this.pageCurrent,
+          // pageCurrent: page,
+          keyword: this.keyword,
+          // pageSize: size,
+          pageSize: this.pageSize,
         },
-      }
-    );
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    if (response.data.code == 1) {
-      this.total = response.data.data.data.customer_count;
-      this.tableData = response.data.data.data.data2;
-      this.pageSize = this.total < size ? this.total : size;
+      if (response.data.code == 1) {
+        this.total = response.data.data.data.customer_count;
+        this.tableData = response.data.data.data.data2;
+        // ✅ อย่าใช้ this.total หรือ 0 มา overwrite pageSize
+        
+        if (this.total === 0) {
+          // ✅ Reset pageSize ถ้าไม่เจอข้อมูล
+            this.pageSize = this.defaultPageSize; // reset กลับ default
+          // this.pageSize = this.defaultPageSize;
+        }
 
-      console.log("this.total",this.total)
-      console.log("this.tableData",this.tableData)
-      console.log("this.pageSize",this.pageSize)
+        console.log('this.pageSize: ',this.pageSize);
+        
+        // if (this.total < this.pageSize) {
+        //   this.pageSize = this.total; // กรณีรายการน้อยกว่าที่เลือกต่อหน้า
+        // }
 
-    } else {
-      console.warn("❌ ไม่สามารถโหลดข้อมูลได้", response.data.message);
+        // this.pageSize = this.total < this.pageSize ? this.total : this.pageSize;
+        // this.pageSize = this.total;
+        // this.pageSize = this.total < size ? this.total : size;
+
+        console.log("this.total",this.total)
+        console.log("this.tableData",this.tableData)
+        console.log("this.pageSize",this.pageSize)
+
+      } else {
+          console.warn("❌ ไม่สามารถโหลดข้อมูลได้", response.data.message);
+          this.total = 0;
+          this.tableData = [];
+          this.pageSize = this.defaultPageSize; // ✅ Reset กลับ
+      } 
+    } catch (error) {
+      console.error("❌ accountLoginSubmit error:", error);
+    } finally {
+      this.isLoading = false;
     }
-  } catch (error) {
-    console.error("❌ accountLoginSubmit error:", error);
-  } finally {
-    this.isLoading = false;
-  }
-},
+  },
 
 async searchSaleId(page = 1, size = 15) {
   this.isLoading = true;
@@ -395,8 +455,10 @@ async searchSaleId(page = 1, size = 15) {
       password: this.password,
       customer: "",
       version: "2.0.2",
-      pageCurrent: page,
-      pageSize: size,
+      // pageCurrent: page,
+      // pageSize: size,
+      pageCurrent: this.pageCurrent,
+      pageSize: this.pageSize,
       keyword: this.keyword,
     };
 
@@ -412,14 +474,31 @@ async searchSaleId(page = 1, size = 15) {
 
     if (response.data.code === 1) {
       this.total = response.data.data.data.customer_count;
-      this.dataselectSale_no = response.data.data.data.data2 || response.data.data.data2; // ตรวจสอบ path ให้ถูกต้อง
+      this.dataselectSale_no = response.data.data.data.data2 ; // ตรวจสอบ path ให้ถูกต้อง || response.data.data.data2
       this.tableData = [...this.dataselectSale_no];
-      this.pageSize = this.total < size ? this.total : size;
+     
+      if (this.total === 0) {
+          this.pageSize = this.defaultPageSize; // reset กลับ default
+          // this.pageSize = this.defaultPageSize; // ✅ Reset ถ้าไม่เจอ
+      }
+
+      console.log('this.pageSize: ',this.pageSize);
+
+      // if (this.total < this.pageSize) {
+      //   this.pageSize = this.total;
+      // }
+      
+      // this.pageSize = this.total < this.pageSize ? this.total : this.pageSize;
+      // this.pageSize = this.total;
+      // this.pageSize = this.total < size ? this.total : size;
     } else {
       console.warn("ไม่พบข้อมูล", response.data.message);
-      this.dataselectSale_no = [];
+      // this.dataselectSale_no = [];
+      // this.tableData = [];
+      // this.total = 0;
       this.tableData = [];
       this.total = 0;
+      this.pageSize = this.defaultPageSize; // ✅ Reset กลับ
     }
   } catch (err) {
     console.error("searchSaleId Error:", err);

@@ -179,6 +179,9 @@ import axios from 'axios';
 
 import Promotion_ProductSelector from './Promotion_ProductSelector.vue' // ✅ import ให้ถูก path
 
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -767,7 +770,9 @@ async function getPromotion(page = 1) {
     } else if (!gettoken) {
       // Swal.fire({ text: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล', icon: 'warning' });
       Swal.fire({
-        text: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+        toast:'❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+        title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+        text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
         icon: 'warning',
         confirmButtonText: 'OK'
       }).then(() => {

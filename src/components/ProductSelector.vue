@@ -174,6 +174,9 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import { quantity } from 'chartist';
 
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -394,6 +397,9 @@ function validateAmount(item) {
 const searchSku = async () => {
   clearTimeout(searchTimer.value);
 
+  isLoading.value = true;
+  pageCurrent.value = 1;
+
   if (!keyword_sku_no.value.trim()) {
     try {
       const response = await axios.post(`${BASE_URL}/Goods2/product`, {
@@ -413,11 +419,16 @@ const searchSku = async () => {
         tableData.value = [...dataselectsku_no.value];
         pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
       }
+       isLoading.value = false;
+
     } catch (err) {
       console.error("searchSku error:", err);
     }
   } else {
     try {
+
+       isLoading.value = true;
+
       const response = await axios.post(`${BASE_URL}/Goods2/product`, {
         version: '2.0.2',
         pageSize: pageSize.value,
@@ -436,8 +447,14 @@ const searchSku = async () => {
         dataselectsku_no.value = response.data.data.data2;
         tableData.value = [...dataselectsku_no.value];
       }
+
+      isLoading.value = false;
+
+
     } catch (err) {
       console.error("searchSku error:", err);
+      isLoading.value = false;
+
     }
   }
 };
@@ -445,6 +462,9 @@ const searchSku = async () => {
 async function SearchProducstSubmit() {
 
   isLoading.value = true;
+
+  const gettoken = localStorage.getItem('token');
+  console.log("log value token:", gettoken);
 
   const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
 
@@ -468,6 +488,9 @@ async function SearchProducstSubmit() {
   console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
 
   if (!keyword.value.trim()) {
+
+      // pageCurrent.value = 1;
+
     try {
 
       // isLoading.value = true; // เริ่มโหลด
@@ -545,6 +568,23 @@ async function SearchProducstSubmit() {
 
         // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
         isLoading.value = false; // โหลดเสร็จ
+      } else if (!gettoken){
+
+        console.log('check log token: ', gettoken);
+
+        Swal.fire({
+          toast:'❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          router.push('/customer'); // ไปยังหน้าของ customer
+        });
+        // selectcustomer.value = ; // ปิด popup เลือกร้านค้า
+        isLoading.value = false;
+        return;
+
       } else {
         error.value = response.data.message || 'เกิดข้อผิดพลาด';
         Swal.fire({
@@ -597,7 +637,7 @@ async function SearchProducstSubmit() {
       // const getData
 
       if (response.data.code !== 1) {
-        console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+        console.error("massgae error:", response.data.msg);
       }
 
       if (response.data.code === 1) {
@@ -629,6 +669,24 @@ async function SearchProducstSubmit() {
 
         // console.log('ข้อมูลที่ค้นเจอ:', data.data2);
         isLoading.value = false; // โหลดเสร็จ
+
+      } else if (!gettoken){
+
+        console.log('check log token: ', gettoken);
+
+        Swal.fire({
+          toast:'❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          router.push('/customer'); // ไปยังหน้าของ customer
+        });
+        // selectcustomer.value = ; // ปิด popup เลือกร้านค้า
+        isLoading.value = false;
+        return;
+
       } else {
         error.value = response.data.message || 'เกิดข้อผิดพลาด';
         Swal.fire({
@@ -995,7 +1053,8 @@ async function SelectProductProMonth(newproduct) {
     // const getData
 
     if (response.data.code !== 1) {
-      console.error("ค้นหาสินค้าไม่สำเร็จ:", response.data.msg);
+      // console.error("ค้นหาสินค้าไม่สำเร็จ:", response.data.msg);
+      console.error("massgae error:", response.data.msg);
     }
 
     if (response.data.code === 1) {
@@ -1075,7 +1134,24 @@ async function SelectProductProMonth(newproduct) {
       emit('close'); // 
 
       isLoading.value = false; // โหลดเสร็จ
-    } else {
+    } else if (!gettoken){
+
+        console.log('check log token: ', gettoken);
+
+        Swal.fire({
+          toast:'❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          title: '❌ กรุณาทำการเลือกร้านค้าของลูกค้าก่อนทำการเพิ่มข้อมูล',
+          text: 'ไปยังหน้าเลือกร้านค้าของลูกค้า ?',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          router.push('/customer'); // ไปยังหน้าของ customer
+        });
+        // selectcustomer.value = ; // ปิด popup เลือกร้านค้า
+        isLoading.value = false;
+        return;
+
+      } else {
       error.value = response.data.message || 'เกิดข้อผิดพลาด';
       Swal.fire({
         title: 'ค้นหาไม่สำเร็จ',

@@ -94,7 +94,8 @@
             </tr>
           </tbody>
 
-          <tbody v-if="paginatedPromotion.length === 0 && !isLoading">
+          <tbody v-if="noCustomerSelected.length === 0 && !isLoading">
+          <!-- <tbody v-if="paginatedPromotion.length === 0 && !isLoading"> -->
             <tr>
               <td colspan="10" class="py-10 text-center">
                 <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -103,6 +104,14 @@
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
                 <div class="mt-2 text-gray-500">โปรดทำการเลือก ร้านค้าของลูกค้าก่อนทำรายการ</div>
+              </td>
+            </tr>
+          </tbody>
+
+          <tbody v-else-if="paginatedPromotion.length === 0 && !isLoading">
+            <tr>
+              <td colspan="10" class="py-10 text-center text-gray-500">
+                ไม่พบข้อมูล
               </td>
             </tr>
           </tbody>
@@ -187,7 +196,7 @@ const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 const isLoading = ref(false) // สำหรับ loading spinner
-
+const noCustomerSelected = ref(false);
 // const props = defineProps({
 //   promotionList: Array,
 //   pageCurrent: Number,
@@ -627,10 +636,21 @@ function searchPromotion_no() {
 
 async function SearchPromotionSubmit() {
   clearTimeout(searchTimer.value);
+  isLoading.value = true; // ✅ เริ่มโหลด
 
   pageSize.value = 10;
 
   const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+
+    // ✅ เช็กว่ามีการเลือกร้านค้าหรือยัง
+  if (!getLevelSS?.data2) {
+    noCustomerSelected.value = true;
+    tableData.value = [];
+    isLoading.value = false; // ปิด loading
+    return; // ออกจากฟังก์ชันเลย
+  } else {
+    noCustomerSelected.value = false;
+  }
 
   const getLevel = getLevelSS?.data2?.level ?? 0;
   console.log("Log getLevel: ", getLevel);
@@ -696,21 +716,48 @@ async function SearchPromotionSubmit() {
         // ฟิลเตอร์โปรโมชั่นจาก keyword_promotion_no หรือ keyword ที่พิมพ์
         const keywordToSearch = keyword.value.trim().toLowerCase();
 
-        const filtered = rawData.filter((item) =>
-          item.title.toLowerCase().includes(keywordToSearch)
-        );
+        // const filtered = rawData.filter((item) =>
+        //   item.title.toLowerCase().includes(keywordToSearch)
+        // );
 
-        console.log("Filtered promotions:", filtered);
+        // console.log("Filtered promotions:", filtered);
 
-        dataselectpromotion_no.value = filtered;
-        tableData.value = [...filtered];
-        total.value = filtered.length;
-        pageSize.value = (total.value < pageSize.value)
-          ? total.value
-          : parseInt(pageSize.value);
+        // dataselectpromotion_no.value = filtered;
+        // tableData.value = [...filtered];
+        // total.value = filtered.length;
+        // pageSize.value = (total.value < pageSize.value)
+        //   ? total.value
+        //   : parseInt(pageSize.value);
 
-        pageCurrent.value = 1; // รีเซ็ตไปหน้าแรก
+        // pageCurrent.value = 1; // รีเซ็ตไปหน้าแรก
 
+        let filteredResults = [];
+          if (keywordToSearch === "") {
+            filteredResults = rawData;
+          } else {
+            filteredResults = rawData.filter((item) =>
+              item.title?.toLowerCase().includes(keywordToSearch) ||
+              item.erp_title?.toLowerCase().includes(keywordToSearch) ||
+              item.activity_code?.toLowerCase().includes(keywordToSearch) ||
+              item.activity_id?.toLowerCase().includes(keywordToSearch) ||
+              item.note?.toLowerCase().includes(keywordToSearch) ||
+              item.ML_Note?.toLowerCase().includes(keywordToSearch)
+            );
+          }
+
+          console.log("🔍 ผลลัพธ์ที่ค้นหาได้fffffffffff:", filteredResults);
+
+          tableData.value = filteredResults;
+          dataselectpromotion_no.value = filteredResults;
+          total.value = filteredResults.length;
+          pageCurrent.value = 1;
+
+          // ✅ ถ้าไม่พบข้อมูล
+          if (filteredResults.length === 0) {
+            console.log("ไม่พบข้อมูล");
+          }
+
+      
       }
 
       // if (response.data.code === 1) {
@@ -721,7 +768,11 @@ async function SearchPromotionSubmit() {
       // }
     } catch (err) {
       console.error("searchSku error:", err);
-    }
+    } finally {
+    // ✅ ปิด loading ไม่ว่าจะพบข้อมูลหรือไม่
+    isLoading.value = false;
+  }
+    
   } else {
     try {
 
@@ -794,7 +845,12 @@ async function SearchPromotionSubmit() {
         }
 
 
-        console.log("🔍 ผลลัพธ์ที่ค้นหาได้:", filteredResults);
+        console.log("🔍 ผลลัพธ์ที่ค้นหาได้ssssss:", filteredResults);
+
+         // ✅ ถ้าไม่พบข้อมูล
+          if (filteredResults.length === 0) {
+            console.log("ไม่พบข้อมูล");
+          }
 
         tableData.value = filteredResults;
         dataselectpromotion_no.value = filteredResults;
@@ -819,7 +875,10 @@ async function SearchPromotionSubmit() {
       // }
     } catch (err) {
       console.error("searchSku error:", err);
-    }
+    } finally {
+    // ✅ ปิด loading ไม่ว่าจะพบข้อมูลหรือไม่
+    isLoading.value = false;
+  }
     //satisfies
   }
 };

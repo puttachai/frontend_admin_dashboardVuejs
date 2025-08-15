@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[90]">
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99]">
     <div class="bg-white z-20 rounded-lg shadow-lg p-6 w-[90%] max-w-6xl max-h-[90vh] overflow-y-auto">
 
       <!-- Search Section -->
@@ -52,7 +52,7 @@
             <th class="px-4 py-2 border">พร้อมขาย</th>
             <th class="px-4 py-2 border">ราคาขาย</th> -->
               <th class="px-4 py-2 border">รูปภาพ</th>
-              <th class="px-4 py-2 border">ชื่อสินค้า</th>
+              <th class="px-4 py-2 border w-full min-w-[250px]">ชื่อสินค้า</th>
               <!-- <th class="px-4 py-2 border">สี</th> -->
               <th class="px-4 py-2  text-sm font-medium text-gray-600 relative">
                 <!-- Input ช่องค้นหา -->
@@ -76,7 +76,15 @@
             </tr>
           </thead>
 
-          <tbody v-if="isLoading">
+          
+          <tbody v-if="isnotData && isLoading">
+            <tr>
+              <td colspan="10" class="py-10 text-center text-gray-500">
+                ไม่พบข้อมูล
+              </td>
+            </tr>
+          </tbody>
+          <tbody v-else-if="isLoading">
             <tr>
               <td colspan="10" class="py-10 text-center">
                 <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -88,6 +96,7 @@
               </td>
             </tr>
           </tbody>
+
 
           <tbody v-if="!isLoading">
             <tr v-for="item in paginatedProducts" :key="item.id">
@@ -108,7 +117,8 @@
                 </template>
               </td>
 
-              <td class="px-4 text-gray-700 py-2 border">{{ item.title + ' ' + item.goods_sku_text ?? '' }}</td>
+              <td class="px-4  text-gray-700 py-2 border">{{  item.erp_title + ' ' + item.goods_sku_text ?? '' }}</td>
+              <!-- <td class="px-4 text-gray-700 py-2 border">{{  item.erp_title + ' ' + item.goods_sku_text ?? '' }}</td> -->
               <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.erp_title }}</td> -->
               <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ? item.goods_sku_text : 'ไม่มีสี' }}</td> -->
               <td class="px-2 py-1 border">
@@ -188,6 +198,7 @@ const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 const isLoading = ref(false) // สำหรับ loading spinner
+const isnotData = ref(false) // สำหรับ loading spinner
 
 const props = defineProps({
   productList: Array,
@@ -419,6 +430,7 @@ const searchSku = async () => {
   clearTimeout(searchTimer.value);
 
   isLoading.value = true;
+  isnotData.value = false;
   pageCurrent.value = 1;
 
   const gettoken = localStorage.getItem('token');
@@ -456,12 +468,14 @@ const searchSku = async () => {
       if (response.data.code === 1) {
         total.value = response.data.data.item_count;
         dataselectsku_no.value = response.data.data.data2;
+        
         tableData.value = [...dataselectsku_no.value];
         pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
       }
       isLoading.value = false;
+      isnotData.value = true;
 
-    } catch (err) {
+    } catch (err) {0
       console.error("searchSku error:", err);
     }
   } else {
@@ -580,7 +594,9 @@ async function SearchProducstSubmit() {
       // const getData
 
       if (response.data.code !== 1) {
-        console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+        isLoading.value = false;
+        console.log("if  isLoading.value = false;");
+        // console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
       }
 
       if (response.data.code === 1) {
@@ -694,13 +710,19 @@ async function SearchProducstSubmit() {
       // const getData
 
       if (response.data.code !== 1) {
-        console.error("massgae error:", response.data.msg);
+        // isLoading.value = false;
+        console.log("else  isLoading.value = false ssss;");
+        isnotData.value = true;
+   
+        total.value = [];
+        pageCurrent.value = 1;
+        // console.error("massgae error:", response.data.msg);
       }
 
       if (response.data.code === 1) {
         const data = response.data.data;
         const searchProducts = data.data2 || [];
-
+       
         tableData.value = searchProducts;
 
         // hydrate ค่าเดิมเข้า tableData
@@ -831,7 +853,9 @@ async function SearchProducstSubmitFirst() {
       // const getData
 
       if (response.data.code !== 1) {
+        // isLoading.value = false;
         console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+        // return;
       }
 
       if (response.data.code === 1) {

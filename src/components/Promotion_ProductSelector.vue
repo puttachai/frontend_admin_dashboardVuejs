@@ -53,7 +53,7 @@
                 <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected" />
               </th>
               <th class="px-4 py-2 border text-center">รูปภาพ</th>
-              <th class=" px-4 py-2 border w-[500px]">ชื่อสินค้า (ERP)</th> <!-- w-[300px]-->
+              <th class=" px-4 py-2 border min-w-[250px]">ชื่อสินค้า (ERP)</th> <!-- w-[300px]-->
               <th class="px-4 border min-w-[220px] text-left">
                 <div class="flex gap-1 items-stretch">
                   <input type="text" v-model="keyword_promotion_product_no" placeholder="ค้นหา โปรโมชั่น"
@@ -90,6 +90,22 @@
             </tr>
           </tbody>
 
+          <tbody v-if="noCustomerSelected && !isLoading">
+            <tr>
+              <td colspan="10" class="py-10 text-center text-gray-500">
+                โปรดทำการเลือก ร้านค้าของลูกค้าก่อนทำรายการ
+              </td>
+            </tr>
+          </tbody>
+
+          <tbody v-else-if="paginatedPromotion.length === 0 && !isLoading">
+            <tr>
+              <td colspan="10" class="py-10 text-center text-gray-500">
+                ไม่พบข้อมูล
+              </td>
+            </tr>
+          </tbody>
+
           <tbody v-if="!isLoading">
             <template v-for="(row, index) in pagedItemsWithHeaders"
               :key="row.isHeader ? 'header-' + row.pro_activity_id : row.id">
@@ -103,7 +119,7 @@
                         class="w-6 h-6 text-sm font-bold bg-green-600 hover:bg-green-700 rounded">-</button>
 
                       <span class="px-1 text-sm font-medium">{{ clickCountByPromotion[row.pro_activity_id] || 0
-                        }} เซ็ต</span>
+                      }} เซ็ต</span>
 
                       <button @click="handlePromotionSet(row.pro_activity_id)"
                         class="w-6 h-6 text-sm font-bold bg-green-600 hover:bg-green-700 rounded">+</button>
@@ -211,6 +227,7 @@ const getLevel = getLevelSS?.data2?.level ?? 0;
 const keyword = ref('')
 const searchTimer = ref(null)
 
+const noCustomerSelected = ref(false);
 const tableData = ref([])
 
 const total = ref(0)
@@ -461,7 +478,8 @@ async function getPromotionProducts() {
     try {
       const response = await axios.post(
         // manual pageSize = 500
-        `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&pageSize=100&proid=&keywords=`,
+        // `${BASE_URL}/goods2/activitybackend?activity_id=${activity_id}&page=1&pageSize=100&proid=&keywords=`,
+        `${BASE_URL}/goods2/activitybackendV2?activity_id=${activity_id}&page=1&pageSize=100&proid=&keywords=`,
         {},
         {
           headers: {
@@ -580,7 +598,7 @@ const groupedTableData = computed(() => {
 
 //   console.log(`Promotion ${activityId} → Click count = ${clickCountByPromotion.value[activityId]}, Total full = ${totalFullByPromotion.value[activityId]}`);
 
-  
+
 //   // 3) อัปเดตจำนวนสินค้าในตาราง
 //   tableData.value.forEach(item => {
 //     if (item.pro_activity_id === activityId && item.stock > 0) {
@@ -757,7 +775,7 @@ watch(tableData, (newTableData) => {
 // ปรับฟังก์ชัน handleCheckboxChange
 function handleCheckboxChange(item, event) {
 
-   // ถ้า stock = 0 ให้ยกเลิกการติ๊ก และไม่ทำอะไร
+  // ถ้า stock = 0 ให้ยกเลิกการติ๊ก และไม่ทำอะไร
   if (item.stock === 0) {
     event.target.checked = false;
     item.amount = 0; // ป้องกัน amount ถูกเพิ่ม
@@ -823,7 +841,7 @@ function onAmountBlur(item) {
       selectedIds.value.push(item.id);
     }
   }
-    // อัปเดต click count ของ promotion ตามจำนวนที่กรอก
+  // อัปเดต click count ของ promotion ตามจำนวนที่กรอก
   updateClickCountByPromotion(item.pro_activity_id);
 }
 
@@ -880,9 +898,9 @@ function validateAmount(item) {
 function searchPromotion_no() {
 
 
-  if(keyword_promotion_product_no.value.trim()){
+  if (keyword_promotion_product_no.value.trim()) {
 
-     isLoading.value = true;
+    isLoading.value = true;
 
     const kw = keyword.value.trim().toLowerCase();
     const promoNo = keyword_promotion_product_no.value.trim().toLowerCase();
@@ -905,7 +923,7 @@ function searchPromotion_no() {
       // ตรวจสอบว่า title ต้องมี keyword อยู่ (includes) แต่ activity_code ต้องตรงเป๊ะกับ promoNo
       const matchKeyword = kw ? title.includes(kw) || erp_title.includes(kw) : true;
       // const matchKeyword = kw ? erp_title.includes(kw) : true;
-      const matchPromoNo = promoNo ? title.includes(promoNo) || erp_title.includes(promoNo) || activityCode.includes(promoNo) || sn.includes(promoNo) || goods_sku_text.includes(promoNo): true;
+      const matchPromoNo = promoNo ? title.includes(promoNo) || erp_title.includes(promoNo) || activityCode.includes(promoNo) || sn.includes(promoNo) || goods_sku_text.includes(promoNo) : true;
       // const matchPromoNo = promoNo ? activityCode === promoNo : true;
 
       console.log('matchKeyword: ', matchKeyword)
@@ -914,22 +932,22 @@ function searchPromotion_no() {
       return matchKeyword && matchPromoNo;
     });
 
-    console.log('filtered:',filtered);
+    console.log('filtered:', filtered);
 
     tableData.value = filtered;
-    
-      dataselectpromotion_no.value = filtered;
-          tableData.value = [...filtered];
-          total.value = filtered.length;
-          pageSize.value = (total.value < pageSize.value)
-            ? total.value
-            : parseInt(pageSize.value);
 
-          pageCurrent.value = 1; // รีเซ็ตไปหน้าแรก
+    dataselectpromotion_no.value = filtered;
+    tableData.value = [...filtered];
+    total.value = filtered.length;
+    pageSize.value = (total.value < pageSize.value)
+      ? total.value
+      : parseInt(pageSize.value);
 
-    console.log('tableData.value:',tableData.value);
+    pageCurrent.value = 1; // รีเซ็ตไปหน้าแรก
 
-     isLoading.value = false;
+    console.log('tableData.value:', tableData.value);
+
+    isLoading.value = false;
     // ถ้าต้องการโชว์ว่าเจอแค่รายการเดียวหรือไม่
     if (filtered.length === 1) {
       console.log('พบรายการที่ตรงกันอย่างแม่นยำ 1 รายการ:', filtered[0]);
@@ -939,14 +957,14 @@ function searchPromotion_no() {
       console.log('พบหลายรายการ:', filtered.length);
     }
   } else {
-     isLoading.value = true;
+    isLoading.value = true;
 
     // กำหนด ให้ pageSize มีค่า default = 10 1 หน้า แล้วทำการเรียกฟังก์ชัน SearchPromotionSubmit 
     // โดยมีเงื่อนไขว่า ถ้าค่าตัวของฟังก์ชัน searchPromotion_no ที่ keyword_promotion_no เป็นค่าว่าง ให้เข้าเงื่อนไขนี้ 
     pageSize.value = 10;
-    
+
     SearchPromotionSubmit();
-    
+
     isLoading.value = false;
 
   }
@@ -961,6 +979,16 @@ async function SearchPromotionSubmit() {
 
   const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
   const getLevel = getLevelSS?.data2?.level ?? 0;
+
+  // ✅ เช็กว่ามีการเลือกร้านค้าหรือยัง
+  if (!getLevelSS?.data2) {
+    noCustomerSelected.value = true;
+    tableData.value = [];
+    isLoading.value = false; // ปิด loading
+    return; // ออกจากฟังก์ชันเลย
+  } else {
+    noCustomerSelected.value = false;
+  }
 
   if (getLevel === 0) {
     memberType.value = 'Member End User';
@@ -1007,12 +1035,15 @@ async function SearchPromotionSubmit() {
 
     } catch (err) {
       console.error("❌ SearchPromotionSubmit error:", err);
-       isLoading.value = false;
+      isLoading.value = false;
+    } finally {
+      // ✅ ปิด loading ไม่ว่าจะพบข้อมูลหรือไม่
+      isLoading.value = false;
     }
 
   } else {
     try {
-       isLoading.value = true;
+      isLoading.value = true;
       const keywordToSearch = keyword.value.trim().toLowerCase();
 
       if (!promotionProducts.value || promotionProducts.value.length === 0) {
@@ -1052,11 +1083,14 @@ async function SearchPromotionSubmit() {
       total.value = filteredResults.length;
       pageCurrent.value = 1; // รีเซ็ตไปหน้าแรก
 
-       isLoading.value = false;
+      isLoading.value = false;
 
     } catch (err) {
       console.error("❌ SearchPromotionSubmit error:", err);
-       isLoading.value = false;
+      isLoading.value = false;
+    } finally {
+      // ✅ ปิด loading ไม่ว่าจะพบข้อมูลหรือไม่
+      isLoading.value = false;
     }
   }
 }
@@ -2385,7 +2419,7 @@ onMounted(() => {
 
 
 
-  <!-- <tbody v-if="!isLoading">
+<!-- <tbody v-if="!isLoading">
     <tr v-for="(row, index) in groupedTableData" :key="index">
 
       <template v-if="row.isHeader">

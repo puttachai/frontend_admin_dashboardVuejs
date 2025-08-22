@@ -113,8 +113,8 @@
             class="hover:bg-indigo-50 cursor-pointer transition duration-150"
           >
             <td class="px-5 py-3">{{ item.customer_no }}</td>
-            <!-- <td class="px-5 py-3">{{ item.contact + item.nickname }}</td> -->
-            <td class="px-5 py-3">{{  formatContactNickname(item) }}</td>
+            <td class="px-5 py-3">{{ item.nickname }}</td>
+            <!-- <td class="px-5 py-3">{{  formatContactNickname(item) }}</td> -->
             <td class="px-5 py-3">{{ item.sale_no }}</td>
             <td class="px-5 py-3 text-gray-400 italic">–</td>
             <td class="px-5 py-3 text-center">
@@ -284,22 +284,22 @@ export default {
 
   methods: {
 
-    formatContactNickname(item) {
-      if (!item?.contact) return item?.nickname || '';
-      if (!item?.nickname) return item?.contact || '';
+    // formatContactNickname(item) {
+    //   if (!item?.contact) return item?.nickname || '';
+    //   if (!item?.nickname) return item?.contact || '';
 
-      // แปลงเป็น lower case เพื่อตรวจซ้ำแบบไม่สนตัวพิมพ์เล็ก/ใหญ่
-      const contactLower = item.contact.toLowerCase();
-      const nicknameLower = item.nickname.toLowerCase();
+    //   // แปลงเป็น lower case เพื่อตรวจซ้ำแบบไม่สนตัวพิมพ์เล็ก/ใหญ่
+    //   const contactLower = item.contact.toLowerCase();
+    //   const nicknameLower = item.nickname.toLowerCase();
 
-      // ถ้า nickname มีคำเดียวกับ contact → แสดง nickname อย่างเดียว
-      if (nicknameLower.includes(contactLower)) {
-        return item.nickname;
-      }
+    //   // ถ้า nickname มีคำเดียวกับ contact → แสดง nickname อย่างเดียว
+    //   if (nicknameLower.includes(contactLower)) {
+    //     return item.nickname;
+    //   }
 
-      // ถ้าไม่ซ้ำ → เอามาบวกกัน
-      return `${item.contact} ${item.nickname}`;
-    },
+    //   // ถ้าไม่ซ้ำ → เอามาบวกกัน
+    //   return `${item.contact} ${item.nickname}`;
+    // },
 
     toggleDropdown(index) {
       if (this.dropdownOpenIndex === index) {
@@ -428,7 +428,8 @@ export default {
 
     try {
       const response = await axios.post(
-        `${BASE_URL}/user/accountLogin4`,
+        `${BASE_URL}/user/accountLogin4V2`,
+        // `${BASE_URL}/user/accountLogin4`,
         {
           account: this.account,
           password: this.password,
@@ -504,10 +505,12 @@ async searchSaleId(page = 1, size = 15) {
     };
 
     if (keywordSale !== "") {
-      postData.keyword = this.keyword + "$_" + keywordSale + "_$";
+      postData.keyword =  keywordSale ;
+      // postData.keyword = this.keyword + "$_" + keywordSale + "_$";
     }
 
-    const response = await axios.post(`${BASE_URL}/user/accountLogin4`, postData, {
+    const response = await axios.post(`${BASE_URL}/user/accountLogin4V2`, postData, {
+    // const response = await axios.post(`${BASE_URL}/user/accountLogin4`, postData, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -550,7 +553,8 @@ async searchSaleId(page = 1, size = 15) {
 
     async accountLoginCustomerSubmit(row) {
       const response = await axios.post(
-        `${BASE_URL}/user/accountLogin4`,
+        `${BASE_URL}/user/accountLogin4V2`,
+        // `${BASE_URL}/user/accountLogin4`,
         {
           account: row.mobile,
           password: row.mobile,

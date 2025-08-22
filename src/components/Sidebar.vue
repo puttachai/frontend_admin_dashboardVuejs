@@ -3,7 +3,8 @@
     <aside :class="`${is_expanded && 'is-expanded'}`">
         <!-- Sidebar -->
         <div class="logo ">
-            <RouterLink to="/dashboard">
+            <!-- <RouterLink to="/dashboard"> -->
+            <RouterLink to="/createsalelist">
                 <div class="box-cursor ">
                     <img src="../assets/logo.svg" class="" alt="Vue">
                     <!-- <h5>Admin Dashboard</h5> -->

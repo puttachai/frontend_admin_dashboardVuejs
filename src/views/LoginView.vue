@@ -157,7 +157,9 @@ const handleLogin = async () => {
 
   try {
     console.log("Show BASE_URL try: ", BASE_URL);
+    // const response = await axios.post(`https://app.d-power.online/addons/shopro/user/accountLogin4`, {
     const response = await axios.post(`${BASE_URL}/user/accountLogin4`, {
+    // const response = await axios.post(`${BASE_URL}/user/accountLogin4`, {
       account: username.value,
       password: password.value,
       customer: '',
@@ -174,6 +176,29 @@ const handleLogin = async () => {
     console.log("Show response.data.data.data2: ", response.data.data.data2);
 
     if (response.data.code == 1) {
+
+      // ดึง array data2
+      const dataArr = response.data.data.data2;
+
+      // เช็คว่ามีข้อมูลหรือไม่
+      if (Array.isArray(dataArr) && dataArr.length > 0) {
+        // เอา row แรก
+        const firstRow = dataArr[0];  
+
+        // ดึงค่าแต่ละ field
+        const account = firstRow.account;
+        const nicknameAdmin = firstRow.nickname_admin;
+        const saleNo = firstRow.sale_no;
+
+        console.log("Account: ", account);
+        console.log("Nickname Admin: ", nicknameAdmin);
+        console.log("Sale No: ", saleNo);
+
+        // เก็บลง localStorage
+        localStorage.setItem("account", account);
+        localStorage.setItem("nickname_admin", nicknameAdmin);
+        localStorage.setItem("sale_no", saleNo);
+      }
 
       const userInfo = response.data.data.data.data2[0];
       const groupVal = userInfo.groups; // ตัวเลขเดี่ยว เช่น 10
@@ -195,6 +220,7 @@ const handleLogin = async () => {
       const isCrm = groupArr.includes(10);
 
       console.log("Show isCrm: ", isCrm);
+      console.log("Show isAdmin: ", isAdmin);
 
       if (isAdmin) localStorage.setItem("role_admin", "true");
       if (isFa) localStorage.setItem("role_fa", "true");
@@ -204,11 +230,16 @@ const handleLogin = async () => {
       const getrole_crm = localStorage.getItem('role_crm');
       console.log("Show getrole_crm: ", getrole_crm);
 
+      const getrole_fa = localStorage.getItem('role_fa');
+      console.log("Show getrole_fa: ", getrole_fa);
+      
       // บันทึกสถานะ login
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('customer_id', customer_id.value);  //23
       localStorage.setItem('customer_no', customer_no.value); //"AP00025202"
       localStorage.setItem('account', username.value);
+      // localStorage.setItem('nickname_admin', userInfo.nickname_admin);
+      // localStorage.setItem('sale_no', userInfo.sale_nos);
       localStorage.setItem('password', password.value);
       localStorage.setItem('token', response.data.data.token || '');
       localStorage.setItem('level', response.data.data.level || '');

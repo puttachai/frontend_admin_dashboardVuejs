@@ -9,7 +9,7 @@
         </button>
 
         <div class="Logomedia flex items-center relative">
-          <router-link to="/dashboard">
+          <router-link to="/createsalelist">
             <img class="h-8 w-auto" src="../assets/logo.svg" alt="My Project" />
           </router-link>
 
@@ -22,7 +22,8 @@
 
         <!-- Title (ตรงกลาง) -->
         <div v-if="!contact" class="boxTitel absolute left-1/2 transform -translate-x-1/2">
-          <router-link to="/dashboard">
+          <router-link to="/createsalelist">
+          <!-- <router-link to="/dashboard"> -->
             <h4 class="welcome font-semibold text-xl text-center">Welcome to the D-Power Sales Dashboard</h4>
           </router-link>
         </div>
@@ -84,11 +85,13 @@
             <!-- Dropdown Menu -->
             <!--  class="absolute right-0 mt-3 w-80 max-h-[24rem] bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50 flex flex-col"> -->
             <transition name="fade" appear>
+              
               <div v-if="dropdownOpen" :class="[ //sm:w-96
                 'absolute right-0 mt-3 w-[18rem] max-h-[20rem] bg-white rounded-lg max-w-xs md:w-96 mdl:w-96 lg:w-96 xs:left-[-2rem] sm:left-[-2rem] smls:left-[-2rem] sml:left-[-2rem] md:left-[-2rem] mdl:left-[-2rem] lg:left-[-2rem] lgl:left-[-2rem] xl:left-[-2rem] shadow-lg z-50 flex flex-col',
-                contact ? 'ring-1 ring-black ring-opacity-5 left-1' : 'ring-1',
+                contact ? 'ring-1 ring-black ring-opacity-5  ' : 'ring-1',
                 // กำหนด width แบบ responsive
-                'md:w-full'
+                'md:w-96 mdl:w-96 '
+                // 'md:w-full'
               ]">
 
                 <!-- Tabs -->
@@ -536,7 +539,7 @@ export default {
 
       if (result.isConfirmed) {
         try {
-          localStorage.clear()
+          localStorage.clear() //เครียร์ storage ทั้งหมด
           router.push('/')
         } catch (error) {
           console.error('Error Delete employees:', error)

@@ -86,12 +86,14 @@
           </button>
 
           <!-- ปุ่ม ยืนยันการบันทึก (lock) -->
-          <button v-if="canEdit && !isReadOnly && formData.documentNo && !isConfirmed" @click="confirmFinalSave"
+          <!-- <button v-if="canEdit && !isReadOnly && formData.documentNo && !isConfirmed" @click="confirmFinalSave"
             class="bg-red-600 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-red-700 transition">
-            ยืนยันการบันทึก (ไม่สามารถแก้ไขได้อีก)
+            ยืนยันการบันทึก (ไม่สามารถแก้ไขได้อีก) -->
+
             <!-- <span class="material-icons">lock</span>
             <span>ยืนยันการบันทึก (ไม่สามารถแก้ไขได้อีก)</span> -->
-          </button>
+            
+          <!-- </button> -->
         </div>
 
         <!-- <div class="flex flex-wrap justify-end gap-3 responsive-action-buttons md:gap-4 md:flex-nowrap"> -->
@@ -747,6 +749,8 @@ import "flatpickr/dist/flatpickr.css";
 // ✅ import Thai locale
 import { Thai } from "flatpickr/dist/l10n/th.js";
 import flatpickr from "flatpickr";
+
+import { sendToMacfive } from "@/services/macfiveService.js";
 
 // ✅ ตั้งค่าภาษาไทยให้กับ flatpickr
 flatpickr.localize(Thai);
@@ -2519,6 +2523,116 @@ export default {
         console.log("🔍 Response จาก API:", resData);
 
         if (resData.success) {
+          const order = resData.data.order;
+            const productList = resData.data.productList;
+            const promotions = resData.data.promotions;
+            const gifts = resData.data.gifts;
+            const deliveryAddress = resData.data.deliveryAddress;
+
+            console.log("📄 order data:", order);
+            console.log("🛒 productList:", productList);
+            console.log("🎁 promotions:", promotions);
+            console.log("🎁 gifts:", gifts);
+            console.log("🏠 deliveryAddress:", deliveryAddress);
+
+            // เติมข้อมูลลง formData
+            const formdataapi = {
+                ...this.formData,
+                listCode: order.list_code || '',
+                sellDate: order.sell_date || '',
+                reference: order.reference || '',
+                channel: order.channel || '',
+                taxType: order.tax_type || '',
+                fullName: order.full_name || '',
+                customerCode: order.customer_code || '',
+                phone: order.phone || '',
+                email: order.email || '',
+                address: order.address || '',
+                receiverName: order.receiver_name || '',
+                receiverPhone: order.receiver_phone || '',
+                receiverEmail: order.receiver_email || '',
+                receiverAddress: order.receiver_address || '',
+                note: order.note || '',
+                deliveryDate: order.delivery_date || '',
+                trackingNo: order.tracking_no || '',
+                deliveryType: order.delivery_type || '',
+                totalDiscount: order.total_discount || 0,
+                deliveryFee: order.delivery_fee || 0,
+                final_total_price: order.final_total_price || 0,
+                documentNo: order.document_no || '',
+                vatVisible: order.vat_visible || 'ไม่มีค่าDCM',
+                promotions: promotions || [],
+                gifts: gifts || []
+            };
+
+            this.isVathidden = !!Number(order.vat_visible);
+            this.originalIsVathidden = this.isVathidden;
+
+            // map products
+              const productListap = productList.map(product => {
+                console.log("🛠️ map product:", product); // 🔹 log แต่ละ product ก่อน map
+                return {
+                    item_id: product.id,
+                    pro_id: product.pro_sku_price_id,
+                    pro_sku_price_id: product.pro_sku_price_id,
+                    pro_erp_title: product.pro_name || product.pro_title || '',
+                    pro_title: product.pro_title || '',
+                    pro_quantity: product.qty || product.pro_goods_num || 0,
+                    pro_goods_num: product.qty || product.pro_goods_num || 0,
+                    pro_goods_id: product.pro_goods_id || 0,
+                    pro_unit_price: parseFloat(product.unit_price || 0),
+                    pro_discount: parseFloat(product.discount || 0),
+                    pro_total_price: parseFloat(product.total_price || 0),
+                    pro_images: product.pro_images || '',
+                    prosn: product.sn || product.pro_sn || '',
+                    pro_sn: product.sn || product.pro_sn || '',
+                    st: product.st || false,
+                    pro_stock: product.stock || 0,
+                    pro_unit: product.unit || '',
+                    activity_id: product.activity_id || 0,
+                    pro_activity_id: product.pro_activity_id || 0,
+                    pro_goods_sku_text: product.pro_goods_sku_text || '',
+                    promotions: product.promotions || [],
+                    gifts: product.gifts || []
+                };
+            });
+
+            console.log("📄 formdataapi final:", formdataapi);
+            console.log("🛒 productListap final:", productListap);
+
+                // ✅ เรียกส่งข้อมูลเข้า Macfive
+                try {
+                const macfiveRes = await sendToMacfive(
+                    formdataapi,
+                    productListap,
+                    // promotions,
+                    // gifts,
+                    deliveryAddress
+                );
+                console.log("✅ ส่งเข้า Macfive สำเร็จ:", macfiveRes);
+
+                if (macfiveRes.data?.Success) {
+                    Swal.fire({
+                    title: "ส่งเข้า Macfive สำเร็จ",
+                    // text: `เลขที่เอกสาร: ${macfiveRes.VoucherNo || "-"}`,
+                    icon: "success",
+                    });
+                } else {
+                    Swal.fire({
+                    title: "ไม่สามารถส่งเข้า Macfive ได้",
+                    text: macfiveRes.data?.Message || "กรุณาลองใหม่",
+                    icon: "error",
+                    });
+                }
+                } catch (err) {
+                    console.error("❌ Error ส่ง Macfive:", err);
+                    Swal.fire({
+                        title: "เกิดข้อผิดพลาด",
+                        text: err.message || "ไม่สามารถเชื่อมต่อ Macfive ได้",
+                        icon: "error",
+                    });
+                }
+          
           const newDocumentNo = resData.newDocumentNo; // ดึง `documentNo` ใหม่จาก API
           this.formData.documentNo = newDocumentNo; // อัปเดต `documentNo` ใน `formData`
 
@@ -2533,6 +2647,25 @@ export default {
         } else {
           Swal.fire({ text: resData.message, icon: "error" });
         }
+
+
+        // if (resData.success) {
+
+
+        //   const newDocumentNo = resData.newDocumentNo; // ดึง `documentNo` ใหม่จาก API
+        //   this.formData.documentNo = newDocumentNo; // อัปเดต `documentNo` ใน `formData`
+
+        //   // อัปเดต URL ไปยัง `saleList` พร้อม `documentNo` ใหม่
+        //   // this.$router.push(`/saleList?documentNo=${newDocumentNo}`);
+
+        //   // อัปเดต URL ไปยัง `saleList` พร้อม `documentNo` ใหม่ sale-order/:id sale-order/H1-SO25680726-00031
+        //   this.$router.push(`/sale-order/${newDocumentNo}`);
+
+        //   Swal.fire({ text: resData.message, icon: "success" });
+        //   this.isReadOnly = true; // ปิดการแก้ไขหลังบันทึกสำเร็จ
+        // } else {
+        //   Swal.fire({ text: resData.message, icon: "error" });
+        // }
 
         this.isLoading = false;
 
@@ -3158,6 +3291,7 @@ export default {
             ML_deldate: formatDate(now), // วันที่สร้าง
             ML_uprice: parseFloat(item.pro_unit_price), // ราคารวม
             ML_Note: "item",
+            // ML_Note: "item",
           })),
 
           // 2. 🎁 ของแถม

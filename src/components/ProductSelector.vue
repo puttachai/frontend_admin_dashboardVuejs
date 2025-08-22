@@ -117,7 +117,7 @@
                 </template>
               </td>
 
-              <td class="px-4  text-gray-700 py-2 border">{{  item.erp_title + ' ' + item.goods_sku_text ?? '' }}</td>
+              <td class="px-4  text-gray-700 py-2 border">{{  item.erp_title  }}</td> <!--+ ' ' + item.goods_sku_text ?? ''-->
               <!-- <td class="px-4 text-gray-700 py-2 border">{{  item.erp_title + ' ' + item.goods_sku_text ?? '' }}</td> -->
               <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.erp_title }}</td> -->
               <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ? item.goods_sku_text : 'ไม่มีสี' }}</td> -->
@@ -454,7 +454,8 @@ const searchSku = async () => {
     }
 
     try {
-      const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+      const response = await axios.post(`${BASE_URL}/Goods2/product2f`, {
         version: '2.0.2',
         pageSize: pageSize.value,
         pageCurrent: pageCurrent.value,
@@ -498,7 +499,8 @@ const searchSku = async () => {
 
       isLoading.value = true;
 
-      const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, {
+      const response = await axios.post(`${BASE_URL}/Goods2/product2f`, {
         version: '2.0.2',
         pageSize: pageSize.value,
         pageCurrent: pageCurrent.value,
@@ -579,7 +581,8 @@ async function SearchProducstSubmit() {
       console.log('ส่งคำค้นหา:', raw);
       console.log('ส่ง payload ค้นหา:', JSON.stringify(raw, null, 2));
 
-      const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+      const response = await axios.post(`${BASE_URL}/Goods2/product2f`, raw, {
         headers: { 'Content-Type': 'application/json' }
       });
 
@@ -695,7 +698,8 @@ async function SearchProducstSubmit() {
       console.log('ส่งคำค้นหา:', raw);
       console.log('ส่ง payload ค้นหา:', JSON.stringify(raw, null, 2));
 
-      const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+      const response = await axios.post(`${BASE_URL}/Goods2/product2f`, raw, {
         headers: { 'Content-Type': 'application/json' }
       });
 
@@ -838,7 +842,8 @@ async function SearchProducstSubmitFirst() {
       console.log('ส่งคำค้นหา:', raw);
       console.log('ส่ง payload ค้นหา:', JSON.stringify(raw, null, 2));
 
-      const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+      const response = await axios.post(`${BASE_URL}/Goods2/product2f`, raw, {
         headers: { 'Content-Type': 'application/json' }
       });
 
@@ -953,7 +958,8 @@ async function SearchProducstSubmitFirst() {
       console.log('ส่งคำค้นหา:', raw);
       console.log('ส่ง payload ค้นหา:', JSON.stringify(raw, null, 2));
 
-      const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+      // const response = await axios.post(`${BASE_URL}/Goods2/product`, raw, {
+      const response = await axios.post(`${BASE_URL}/Goods2/product2f`, raw, {
         headers: { 'Content-Type': 'application/json' }
       });
 

@@ -13,8 +13,8 @@
             <router-link to="/createsalelist" class="text-purple-600 hover:text-purple-700 transition">Create Sale Order</router-link>
             <!-- <span class="mx-1 text-gray-400">›</span> -->
           </li>
-          
-    
+
+
         </ul>
       </nav>
 
@@ -330,7 +330,7 @@ export default {
     //   console.log("start newSize: ", newSize);
     //   this.accountLoginSubmit();
     // },
- 
+
     handlePaginationChange(info) {
       // กันไม่ให้ pageSize กลายเป็น object
       if (typeof info === 'object') {
@@ -452,7 +452,7 @@ export default {
         this.total = response.data.data.data.customer_count;
         this.tableData = response.data.data.data.data2;
         // ✅ อย่าใช้ this.total หรือ 0 มา overwrite pageSize
-        
+
         if (this.total === 0) {
           // ✅ Reset pageSize ถ้าไม่เจอข้อมูล
             this.pageSize = this.defaultPageSize; // reset กลับ default
@@ -460,7 +460,7 @@ export default {
         }
 
         console.log('this.pageSize: ',this.pageSize);
-        
+
         // if (this.total < this.pageSize) {
         //   this.pageSize = this.total; // กรณีรายการน้อยกว่าที่เลือกต่อหน้า
         // }
@@ -478,7 +478,7 @@ export default {
           this.total = 0;
           this.tableData = [];
           this.pageSize = this.defaultPageSize; // ✅ Reset กลับ
-      } 
+      }
     } catch (error) {
       console.error("❌ accountLoginSubmit error:", error);
     } finally {
@@ -520,7 +520,7 @@ async searchSaleId(page = 1, size = 15) {
       this.total = response.data.data.data.customer_count;
       this.dataselectSale_no = response.data.data.data.data2 ; // ตรวจสอบ path ให้ถูกต้อง || response.data.data.data2
       this.tableData = [...this.dataselectSale_no];
-     
+
       if (this.total === 0) {
           this.pageSize = this.defaultPageSize; // reset กลับ default
           // this.pageSize = this.defaultPageSize; // ✅ Reset ถ้าไม่เจอ
@@ -531,7 +531,7 @@ async searchSaleId(page = 1, size = 15) {
       // if (this.total < this.pageSize) {
       //   this.pageSize = this.total;
       // }
-      
+
       // this.pageSize = this.total < this.pageSize ? this.total : this.pageSize;
       // this.pageSize = this.total;
       // this.pageSize = this.total < size ? this.total : size;
@@ -687,51 +687,51 @@ thead th {
 }
 </style>
 
-<!-- 
+<!--
 @media (max-width: 500px) {
     table {
       font-size: 12px; /* ลดขนาดตัวอักษร */
     }
-  
+
     table input,
     table button {
       font-size: 12px;
       padding: 4px 6px; /* ลด padding */
     }
-  
+
     table th,
     table td {
       padding: 6px !important; /* ลด padding ใน cell */
     }
-  
+
     .overflow-x-auto {
       font-size: 12px;
       overflow-x: auto; /* อนุญาตให้เลื่อนในแนวนอน */
     }
-  
+
     .w-36 {
       width: 100% !important; /* ให้ input search ขยายเต็มความกว้าง */
     }
-  
+
     .text-sm {
       font-size: 12px !important;
     }
-  
+
     .text-base {
       font-size: 14px !important;
     }
-  
+
     .material-icons {
       font-size: 16px !important;
     }
-  
+
     /* บังคับตารางให้ไม่เกินกล่อง */
     table {
       width: 100%;
       table-layout: fixed;
       word-break: break-word;
     } -->
-<!-- 
+<!--
 
 /* บังคับให้ตารางเลื่อนแนวนอน */
 .overflow-x-auto {
@@ -771,7 +771,7 @@ table {
     //         password: password,
     //         customer: '',
     //         version: '2.0.2',
-    //         // pageCurrent: 1, // 
+    //         // pageCurrent: 1, //
     //         // pageSize: 99999, //
     //         pageCurrent: this.pageCurrent,
     //         keyword: this.keyword_sale_no,
@@ -807,7 +807,7 @@ table {
 
     // }, -->
 
-<!-- 
+<!--
 // async fetchAllSales(keyword) {
     //     const allData = [];
     //     let currentPage = 1;

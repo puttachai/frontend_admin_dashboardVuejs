@@ -371,10 +371,6 @@ export default {
     const account = ref('')
     const contact = ref('')
 
-    const account_user = ref('')
-    const saleNo = ref('')  // สร้างตัวแปรใหม่
-    const nicknameAdmin = ref('') // สร้างตัวแปรใหม่
-
     const image_path = ref('')
     const { t, locale } = useI18n()
 

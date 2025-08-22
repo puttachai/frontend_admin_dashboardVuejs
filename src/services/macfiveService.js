@@ -99,11 +99,38 @@ export function buildMacfivePayload(formdataapi, productListap, deliveryAddress)
   // 🧩 รวม promotions และ gifts จาก products
   const productPromotions = productListap.flatMap((item) => item.promotions || []);
   console.log('🧩 Check productPromotions: ', productPromotions);
+
   const productGifts = productListap.flatMap((item) => item.gifts || []);
   console.log('🧩 Check productGifts: ', productGifts);
 
+    
+
+    formdataapi.promotions = formdataapi.promotions.map(promo => {
+
+      return {
+          ...promo,
+          pro_sn: promo.pro_sn || promo.prosn || 'noting',
+      };
+
+    });
+
+    console.log('🧩 Check formdataapi.promotions: ', formdataapi.promotions);
+
+    formdataapi.gifts = formdataapi.gifts.map(gift => {
+
+      return {
+          ...gift,
+          pro_sn: gift.pro_sn || gift.prosn || 'noting',
+      };
+
+    });
+
+    console.log('🧩 Check formdataapi.gifts: ', formdataapi.gifts);
+
   let allPromotions = [...(formdataapi.promotions || []), ...productPromotions];
   let allGifts = [...(formdataapi.gifts || []), ...productGifts]; // , ...(gifts || [])
+
+
 
   // 🎯 filter ของซ้ำ
   allPromotions = allPromotions.filter(
@@ -114,6 +141,9 @@ export function buildMacfivePayload(formdataapi, productListap, deliveryAddress)
     (gift, index, self) =>
       index === self.findIndex((g) => g.pro_sn === gift.pro_sn && g.pro_activity_id === gift.pro_activity_id)
   );
+
+   console.log('🧩 Check allPromotions: ', allPromotions);
+   console.log('🧩 Check productGifts: ', allGifts);
 
   const filteredPromotions = allPromotions.filter((promo) => promo.pro_sn !== "P02-ZZ-9999");
 

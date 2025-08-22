@@ -134,7 +134,33 @@
                     <input v-model="searchQuery" type="text" placeholder="ค้นหาสถานะอนุมัติ"
                       class="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300" />
                     
-                      <ul>
+                    <ul>
+                      <li v-for="order in paginatedOrders" :key="order.document_no"
+                          class="flex flex-col gap-1 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50"
+                          @click="handleOrderClick(order.document_no)">
+                          
+                          <div class="flex items-center gap-2">
+                            <span class="material-icons text-yellow-500 select-none" title="แจ้งเตือนรายการ">notifications_active</span>
+                            <div class="flex-1 max-w-full">
+                              <!-- แสดง document_no -->
+                              <p class="font-medium text-sm break-all">{{ order.document_no }}</p>
+                              <!-- <p class="font-medium text-sm truncate">{{ order.document_no }}</p> -->
+                              <!-- แสดง account, saleNo, nicknameAdmin -->
+                              <p class="text-xs text-gray-500 break-words">
+                              <!-- <p class="text-xs text-gray-500 truncate"> -->
+                                Account: {{ order.account_user }} | Sale No: {{ order.sale_no }} | Admin: {{ order.nickname_admin }}
+                              </p>
+                              <span class="text-xs text-gray-400 whitespace-nowrap">{{ formatDate(order.created_at) }}</span>
+                            </div>
+                            
+                          </div>
+                          
+                          <!-- สถานะ order -->
+                          <p class="text-xs text-gray-500 mt-1">{{ order.status }}</p>
+                      </li>
+                    </ul>
+
+                      <!-- <ul>
                       <li v-for="order in paginatedOrders" :key="order.document_no"
                         class="flex items-center gap-2 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50"
                         @click="handleOrderClick(order.document_no)">
@@ -146,7 +172,7 @@
                         </div>
                         <span class="text-xs text-gray-400 whitespace-nowrap">{{ formatDate(order.created_at) }}</span>
                       </li>
-                    </ul>
+                    </ul> -->
                     <div v-if="paginatedOrders.length === 0" class="text-center text-gray-400 mt-4">
                       ไม่มีรายการแจ้งเตือนสถานะยังไม่อนุมัติใหม่
                     </div>
@@ -188,7 +214,7 @@
                   <div v-if="activeTab === 'new'">
                     <input v-model="searchQuery" type="text" placeholder="ค้นหาแจ้งเตือน"
                       class="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300" />
-                    <ul>
+                    <!-- <ul>
                       <li v-for="order in paginatedOrdersMessage" :key="order.document_no"
                         @click="handleOrderClick(order.document_no)" :class="[
                           'flex items-center gap-2 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50',
@@ -206,6 +232,38 @@
                         <span class="text-xs text-gray-400 whitespace-nowrap">
                           {{ formatDate(order.created_at) }}
                         </span>
+                      </li>
+                    </ul> -->
+
+                    <ul>
+                      <li v-for="order in paginatedOrdersMessage" :key="order.document_no"
+                        @click="handleOrderClick(order.document_no)" :class="[
+                          'flex items-center gap-2 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50',
+                          order.is_read === 1 ? 'opacity-50 cursor-default' : 'opacity-100'
+                        ]">
+                          
+                          <div class="flex items-center gap-2">
+                            <span class="material-icons text-yellow-500 select-none" title="แจ้งเตือนรายการใหม่">notifications_active</span>
+                            <div class="flex-1 max-w-full">
+                              <!-- แสดง document_no -->
+                               <p class="font-medium text-sm truncate">{{ order.document_no }}</p>
+                               <p class="text-xs truncate text-gray-500">
+                                {{ order.is_read === 1 ? 'อ่านแล้ว' : 'ยังไม่อ่าน' }}
+                              </p>
+                              <!-- แสดง account, saleNo, nicknameAdmin -->
+                              <p class="text-xs text-gray-500 break-words">
+                              <!-- <p class="text-xs text-gray-500 truncate"> -->
+                                Account: {{ order.account_user }} | Sale No: {{ order.sale_no }} | Admin: {{ order.nickname_admin }}
+                              </p>
+                              <span class="text-xs text-gray-400 whitespace-nowrap">{{ formatDate(order.created_at) }}</span>
+                              <!-- สถานะ order -->
+                              <p class="text-xs text-gray-500 mt-1">{{ order.status }}</p>
+                            </div>
+                            
+                          </div>
+                          
+                          <!-- สถานะ order -->
+                          <!-- <p class="text-xs text-gray-500 mt-1">{{ order.status }}</p> -->
                       </li>
                     </ul>
 
@@ -312,6 +370,11 @@ export default {
     const router = useRouter()
     const account = ref('')
     const contact = ref('')
+
+    const account_user = ref('')
+    const saleNo = ref('')  // สร้างตัวแปรใหม่
+    const nicknameAdmin = ref('') // สร้างตัวแปรใหม่
+
     const image_path = ref('')
     const { t, locale } = useI18n()
 

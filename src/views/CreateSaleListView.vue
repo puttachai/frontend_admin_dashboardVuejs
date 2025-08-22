@@ -994,6 +994,10 @@ export default {
 
             formData: {
 
+                account: '',
+                nickname_admin: '',
+                sale_no: '',
+
                 vatVisible: false, // ตัวนี้ไว้เก็บสถานะว่าติ๊กไว้หรือไม่
 
                 listCode: '',
@@ -2236,8 +2240,25 @@ export default {
             this.formData.final_total_price = parseFloat(this.grandTotal.toFixed(2));
             // this.formData.final_total_price = parseFloat(this.grandTotal);
 
+             // ดึงค่าจาก localStorage
+            const account = localStorage.getItem("account") || "";
+            const nicknameAdmin = localStorage.getItem("nickname_admin") || "";
+            const saleNo = localStorage.getItem("sale_no") || "";
+
+            // เพิ่มเข้า formData
+            this.formData.account = account;
+            this.formData.nickname_admin = nicknameAdmin;
+            this.formData.sale_no = saleNo;
+
+            console.log("📝 Save with account/nickname/sale:", {
+                account,
+                nicknameAdmin,
+                saleNo
+            });
+
             const payload = new FormData();
 
+        
             // for (const key in this.formData) {
             //     if (key === 'productList') {
             //         // แปลง array เป็น JSON string แล้วแนบ

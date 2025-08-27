@@ -1,3 +1,5 @@
+<!-- eslint-disable vue/multi-word-component-names -->
+<!-- eslint-disable vue/no-deprecated-v-on-native-modifier -->
 <template>
     <!-- <aside :class="{ 'is-expanded': is_expanded }"> -->
     <aside :class="`${is_expanded && 'is-expanded'}`">
@@ -36,7 +38,7 @@
                 <span class="text">รายการใบสั่งขาย</span>
                 <!-- <span class="text">List Sale Order</span> -->
             </router-link>
-            
+
             <!-- <router-link class="button" to="/">
                 <span class="material-icons">home</span>
                 <span class="text">home</span>
@@ -44,7 +46,7 @@
             <!-- <router-link class="button" to="/dashboard">
                 <span class="material-icons">space_dashboard</span>
                 <span class="text">แดชบอร์ด</span>
-                
+
             </router-link> -->
             <!-- <span class="text">Dashboard</span> -->
             <!-- register -->
@@ -58,15 +60,15 @@
                 <span class="text">รายชื่อผู้ใช้และพนักงาน</span>
                 <!-- <span class="text">List User Employee</span> -->
             </router-link>
-           
+
 
             <!-- <span class="text">Create a sales list</span> -->
             <!-- <router-link class="button" to="/createsalelist">
                 <span class="material-icons">assignment_add</span>
-                <span class="text">สร้างรายการขาย</span>    
+                <span class="text">สร้างรายการขาย</span>
             </router-link> -->
-            
-            
+
+
 
             <!-- <router-link class="button" to="/createsalelist" @click.native="forceReload">
                 <span class="material-icons">assignment_add</span>
@@ -107,6 +109,7 @@
 import { ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
+// eslint-disable-next-line no-unused-vars
 const router = useRouter();
 const route = useRoute();
 
@@ -126,12 +129,12 @@ function forceReload(event) {
     // เส้นทางปัจจุบัน + query string
     const currentFullPath = route.fullPath; // e.g. "/saleList?documentNo=H1-SO25680805-00006"
 
-    
+
 
     // ถ้าเรากำลังอยู่ที่ saleList?... แล้วกดไป createsalelist ให้รีโหลดทั้งหน้า
     if (
         currentFullPath.startsWith('/saleList') ||  currentFullPath.startsWith('/createsalelist') &&
-        targetHref === '/createsalelist' 
+        targetHref === '/createsalelist'
     ) {
         event.preventDefault();               // ยกเลิกการทำงานของ router-link
         window.location.href = targetHref;    // บังคับให้โหลดใหม่ทั้งหน้า
@@ -301,7 +304,7 @@ aside {
     }
 
     &.is-expanded {
-        // ขนาดที่ set ไว้ใน main 
+        // ขนาดที่ set ไว้ใน main
         width: 240px;
         // width: var(--sidebar-width);
 

@@ -341,7 +341,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, reactive } from "vue";
+import { ref, onMounted, computed, watch} from "vue";
+// , reactive
 import axios from "axios";
 // import { logActivity } from '@/services/activityLogger.js'
 import Swal from "sweetalert2";
@@ -384,7 +385,7 @@ const isFa = computed(() => localStorage.getItem("role_fa") === "true");
 const isCrm = computed(() => localStorage.getItem("role_crm") === "true");
 
 const canApprove = computed(() => isFa.value || isAdmin.value);
-const canEdit = computed(() => isCrm.value || isAdmin.value);
+// const canEdit = computed(() => isCrm.value || isAdmin.value);
 
 const statusPriority = {
   เขียว: 1,
@@ -698,7 +699,7 @@ async function fetchPage(page = 1) {
         total_paid: item.final_total_price,
         status: item.status,
         created_at: item.created_at,
-        employee_name: item.employee_name, // 
+        employee_name: item.employee_name, //
         employee_phone: item.employee_phone, // ถ้าจะใช้
         extra_details: item.extra_list || [],
       }));
@@ -895,10 +896,10 @@ async function TypeCustomers() {
       });
 
       // บันทึกเข้า localStorage
-      localStorage.setItem("deBlimit_all", JSON.stringify(allLimits));
+      // localStorage.setItem("deBlimit_all", JSON.stringify(allLimits));
 
-      const storedLimits = JSON.parse(localStorage.getItem("deBlimit_all") || "[]");
-      console.log("💾 deBlimit ที่บันทึกไว้:", storedLimits);
+      // const storedLimits = JSON.parse(localStorage.getItem("deBlimit_all") || "[]");
+      // console.log("💾 deBlimit ที่บันทึกไว้:", storedLimits);
 
       console.table(
         data.map((item) => ({
@@ -953,7 +954,8 @@ saleOrders.value.forEach((o) => {
   }
 });
 
-watch(searchQuery, (newVal) => {
+watch(searchQuery, () => {
+  // newVal
   currentPage.value = 1;
   fetchPage(1);
 });
@@ -1054,7 +1056,7 @@ function goToPage(page) {
 
       // }) -->
 
-<!-- 
+<!--
  // const res = await axios.post(
     //   `${VITE_API_URL_C_SHARP}/api/TypeCustomers`, payload, {
     //   headers: {
@@ -1087,10 +1089,10 @@ function goToPage(page) {
     //   saleOrders.value = res.data.map(item => ({
 
     //     // Header
-    //     sale_no: item.customerDocument, //customerDocument 
+    //     sale_no: item.customerDocument, //customerDocument
     //     customer_code: item.deBcode, // C04366
     //     shop_name: item.deBcontactT, // "คุณนรินทร์ โชยชัยสุนทร"
-    //     deBcreditTerm: item.deBcreditTerm, // เครดิตจำนวนวันลูกค้า 
+    //     deBcreditTerm: item.deBcreditTerm, // เครดิตจำนวนวันลูกค้า
     //     deBlimit: item.deBlimit, //วงเกินต้องไม่เกินที่กำหนด
     //     deBsalesP: item.deBsalesP // เพิ่มอีก colum รหัส sale
     //     total_paid: item.final_total_price,
@@ -1102,13 +1104,13 @@ function goToPage(page) {
     //     extra_details: res.data.map(item => ({
     //       dueDate: item.dueDate, // กำหนดชำระ
     //       overdueDays: item.overdueDays,  //จำนวนวันที่ค้าง
-    //       status2: item.status2, // สถานะลูกหนี้ 
+    //       status2: item.status2, // สถานะลูกหนี้
     //       inInvAmount: item.inInvAmount, //ค้างชำระที่ยังไม่จ่าย
     //     }))
 
     //   })) -->
 
-<!-- 
+<!--
 // filter ตามคำค้นหา
 // const filteredOrders = computed(() => {
 //   if (!searchQuery.value.trim()) return saleOrders.value
@@ -1117,7 +1119,7 @@ function goToPage(page) {
 //   return saleOrders.value.filter(order =>
 //     order.sale_no?.toLowerCase().includes(keyword) ||
 //     order.customer_code?.toLowerCase().includes(keyword) ||
-//     order.shop_name?.toLowerCase().includes(keyword) || 
+//     order.shop_name?.toLowerCase().includes(keyword) ||
 //     order.mobile?.toLowerCase().includes(keyword)
 //   )
 // }) -->
@@ -1131,7 +1133,7 @@ function goToPage(page) {
 //   )
 // }) -->
 
-<!-- 
+<!--
 // onMounted(async () => {
 //   try {
 

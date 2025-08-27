@@ -206,9 +206,9 @@ const noCustomerSelected = ref(false);
 
 const emit = defineEmits(['close', 'select-promotion', 'page-change'])
 
-const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+// const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
 
-const getLevel = getLevelSS?.data2?.level ?? 0;
+// const getLevel = getLevelSS?.data2?.level ?? 0;
 
 const showPromotionProductSelector = ref(false)
 const selectedPromotion = ref([])
@@ -224,8 +224,9 @@ const pageCurrent = ref(1)
 const pageSize = ref(10)
 
 const selectedIds = ref([])
+// eslint-disable-next-line no-unused-vars
 const dataselect = ref([])
-const error = ref('')
+// const error = ref('')
 
 // const keyword_sku_no = ref('');
 // const dataselectsku_no = ref([]);
@@ -347,13 +348,14 @@ function searchPromotion_no() {
     const filtered = tableData.value.filter(item => {
       const title = item.title ? item.title.toLowerCase() : '';
       const titledetail = item.title ? item.titledetail.toLowerCase() : '';
-      // const erp_title = item.erp_title ? item.erp_title.toLowerCase() : ''; // || erp_title.includes(promoNo) 
+      // const erp_title = item.erp_title ? item.erp_title.toLowerCase() : ''; // || erp_title.includes(promoNo)
       const activityCode = item.activity_code ? item.activity_code.toLowerCase() : '';
 
-      console.log('title: ', title)
+      console.log('title: ', title);
 
       // ตรวจสอบว่า title ต้องมี keyword อยู่ (includes) แต่ activity_code ต้องตรงเป๊ะกับ promoNo
-      const matchKeyword = kw ? title.includes(kw) || erp_title.includes(kw) || titledetail.includes(kw) : true;
+      // erp_title.includes(kw) ||
+      const matchKeyword = kw ? title.includes(kw) ||  titledetail.includes(kw) : true;
       // const matchKeyword = kw ? erp_title.includes(kw) : true;
       const matchPromoNo = promoNo ? title.includes(promoNo) || activityCode.includes(promoNo) || titledetail.includes(promoNo) : true;
       // const matchPromoNo = promoNo ? activityCode === promoNo : true;
@@ -396,10 +398,10 @@ function searchPromotion_no() {
 
     console.log('Check isLoading.value: ',isLoading.value)
 
-    // กำหนด ให้ pageSize มีค่า default = 10 1 หน้า แล้วทำการเรียกฟังก์ชัน SearchPromotionSubmit 
-    // โดยมีเงื่อนไขว่า ถ้าค่าตัวของฟังก์ชัน searchPromotion_no ที่ keyword_promotion_no เป็นค่าว่าง ให้เข้าเงื่อนไขนี้ 
+    // กำหนด ให้ pageSize มีค่า default = 10 1 หน้า แล้วทำการเรียกฟังก์ชัน SearchPromotionSubmit
+    // โดยมีเงื่อนไขว่า ถ้าค่าตัวของฟังก์ชัน searchPromotion_no ที่ keyword_promotion_no เป็นค่าว่าง ให้เข้าเงื่อนไขนี้
     pageSize.value = 10;
-    
+
     SearchPromotionSubmit();
     isLoading.value = false;
   }
@@ -437,7 +439,7 @@ function searchPromotion_no() {
 //           // keywords: keyword.value,
 //           keywords: keyword_promotion_no.value,
 //           level: getLevel
-//         }, //  body 
+//         }, //  body
 //         {
 //           params: {
 //             "from": "specialprice"
@@ -537,7 +539,7 @@ function searchPromotion_no() {
 //           // keywords: keyword.value,
 //           keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
 //           level: getLevel
-//         }, //  body 
+//         }, //  body
 //         {
 //           params: {
 //             "from": "specialprice"
@@ -687,7 +689,7 @@ async function SearchPromotionSubmit() {
           // keywords: keyword.value,
           keywords: keyword.value,
           level: getLevel
-        }, //  body 
+        }, //  body
         {
           params: {
             "from": "specialprice"
@@ -757,7 +759,7 @@ async function SearchPromotionSubmit() {
             console.log("ไม่พบข้อมูล");
           }
 
-      
+
       }
 
       // if (response.data.code === 1) {
@@ -772,7 +774,7 @@ async function SearchPromotionSubmit() {
     // ✅ ปิด loading ไม่ว่าจะพบข้อมูลหรือไม่
     isLoading.value = false;
   }
-    
+
   } else {
     try {
 
@@ -789,7 +791,7 @@ async function SearchPromotionSubmit() {
           // keywords: keyword.value,
           keywords: keyword.value + '$_' + keyword_promotion_no.value + '_$',
           level: getLevel
-        }, //  body 
+        }, //  body
         {
           params: {
             "from": "specialprice"
@@ -830,6 +832,7 @@ async function SearchPromotionSubmit() {
 
         if (keywordToSearch === "") {
           // ✅ ถ้าไม่มี keyword ให้แสดงผลทั้งหมด และ pageSize เป็น 10
+          // eslint-disable-next-line no-undef
           filteredResults = promotionProducts.value;
           pageSize.value = 10;
         } else {
@@ -897,7 +900,7 @@ async function getPromotion(page = 1) {
       // ?from=specialprice
       const response = await axios.post(
         `${BASE_URL}/goods2/activityList2`,
-        {}, //  body 
+        {}, //  body
         {
           params: {
             "from": "specialprice"
@@ -986,6 +989,7 @@ onMounted(async () => {
 });
 
 // เมื่อกดปุ่มเลือกโปรโมชั่น
+// eslint-disable-next-line no-unused-vars
 function openProductSelector(promotionList) {
   selectedPromotion.value = promotionList
   showPromotionProductSelector.value = true
@@ -1001,7 +1005,7 @@ function handleSelectedProducts(products) {
 </script>
 
 
-<!-- 
+<!--
 //SearchPromotionSubmit
 // async function SearchPromotionSubmit() {
 
@@ -1037,7 +1041,7 @@ function handleSelectedProducts(products) {
 //       {
 //         keywords: keyword.value,
 //         level: getLevel
-//       }, //  body 
+//       }, //  body
 //       {
 //         params: {
 //           "from": "specialprice"
@@ -1104,7 +1108,7 @@ function handleSelectedProducts(products) {
 // } -->
 
 
-<!-- 
+<!--
 
 // const selectedPromotion = props.productList
 // const promotions = tableData.value
@@ -1199,7 +1203,7 @@ function handleSelectedProducts(products) {
   //   clearTimeout(this.searchTimer)
   //   // ตั้ง timeout ใหม่ รอ 500ms ถ้าไม่มีการพิมพ์เพิ่มถึงค่อยเรียก
   //   SearchPromotionSubmit()
-  
+
   // } -->
 
 

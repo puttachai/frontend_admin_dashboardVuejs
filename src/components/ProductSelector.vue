@@ -76,7 +76,7 @@
             </tr>
           </thead>
 
-          
+
           <tbody v-if="isnotData && isLoading">
             <tr>
               <td colspan="10" class="py-10 text-center text-gray-500">
@@ -188,7 +188,7 @@ import { Pagination, ConfigProvider } from 'tdesign-vue-next'
 import enConfig from 'tdesign-vue-next/es/locale/en_US'
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import { quantity } from 'chartist';
+// import { quantity } from 'chartist';
 
 import { useRouter } from 'vue-router'
 
@@ -228,15 +228,18 @@ const searchTimer = ref(null)
 
 const tableData = ref([])
 
+// eslint-disable-next-line vue/no-dupe-keys
 const total = ref(0)
+// eslint-disable-next-line vue/no-dupe-keys
 const pageCurrent = ref(1)
+// eslint-disable-next-line vue/no-dupe-keys
 const pageSize = ref(10)
 
 const selectedIds = ref([])
-const allSelectedIds = ref([]); // ✅ เก็บ ID ของสินค้าทุกหน้าที่ถูกเลือก
+// const allSelectedIds = ref([]); // ✅ เก็บ ID ของสินค้าทุกหน้าที่ถูกเลือก
 
 const selectedProducts = ref([]); // ✅ เก็บสินค้าที่เลือกข้ามหน้า
-const showProductSelector = ref(false);
+// const showProductSelector = ref(false);
 
 const dataselect = ref([])
 const error = ref('')
@@ -469,7 +472,7 @@ const searchSku = async () => {
       if (response.data.code === 1) {
         total.value = response.data.data.item_count;
         dataselectsku_no.value = response.data.data.data2;
-        
+
         tableData.value = [...dataselectsku_no.value];
         pageSize.value = (total.value < pageSize.value) ? total.value : parseInt(pageSize.value);
       }
@@ -618,7 +621,7 @@ async function SearchProducstSubmit() {
             }
           }
         });
-        // console.log("tableData หลัง hydrate:", tableData.value);      
+        // console.log("tableData หลัง hydrate:", tableData.value);
         // หลัง tableData.value = searchProducts;
         // tableData.value.forEach(item => {
         //   const old = selectedProducts.value.find(p => p.id === item.id)
@@ -717,7 +720,7 @@ async function SearchProducstSubmit() {
         // isLoading.value = false;
         console.log("else  isLoading.value = false ssss;");
         isnotData.value = true;
-   
+
         total.value = [];
         pageCurrent.value = 1;
         // console.error("massgae error:", response.data.msg);
@@ -726,7 +729,7 @@ async function SearchProducstSubmit() {
       if (response.data.code === 1) {
         const data = response.data.data;
         const searchProducts = data.data2 || [];
-       
+
         tableData.value = searchProducts;
 
         // hydrate ค่าเดิมเข้า tableData
@@ -879,7 +882,7 @@ async function SearchProducstSubmitFirst() {
             }
           }
         });
-        // console.log("tableData หลัง hydrate:", tableData.value);      
+        // console.log("tableData หลัง hydrate:", tableData.value);
         // หลัง tableData.value = searchProducts;
         // tableData.value.forEach(item => {
         //   const old = selectedProducts.value.find(p => p.id === item.id)
@@ -1108,23 +1111,23 @@ async function confirmSelection() {
   //   .map(p => ({
 
   //     // return {
-  //     pro_activity_id: p.activity_id ?? 0, // 1167 
+  //     pro_activity_id: p.activity_id ?? 0, // 1167
   //     // pro_id: p.activity_id, // 1167
-  //     pro_goods_id: p.goods_id, // 13872 
-  //     pro_goods_price: p.price || p.goods_price, // "215.00" 
-  //     pro_sku_price_id: p.id, //sku_price_id // 50983  
-  //     pro_goods_num: p.amount || 0, // 1 
+  //     pro_goods_id: p.goods_id, // 13872
+  //     pro_goods_price: p.price || p.goods_price, // "215.00"
+  //     pro_sku_price_id: p.id, //sku_price_id // 50983
+  //     pro_goods_num: p.amount || 0, // 1
   //     stock: p.stock || 0,
-  //     // pro_quantity: p.quantity || 0, // 1 
-  //     pro_image: p.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.jpg   
-  //     pro_erp_title: p.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP" 
+  //     // pro_quantity: p.quantity || 0, // 1
+  //     pro_image: p.image, // /uploads/20240201/eaf550db288e6e947c8b3e70753f6a28.jpg
+  //     pro_erp_title: p.erp_title, // "ADAPTER SET AG-201 FOR TYPE C TO LIGHTNING PD 20W BLUE DP"
 
   //     pro_title: p.title, // "ชุดอะแดปเตอร์เซ็ต AG-201 (20W)"
   //     pro_code: p.activity_code || 0, // x
-  //     pro_m_code: p.pro_m_code || 0, // x 
-  //     // pro_goods_sku_text: p.goods_sku_text, // 
-  //     pro_sn: p.sn, //"2010102DP0057" 
-  //     pro_units: p.units, // "PCS" 
+  //     pro_m_code: p.pro_m_code || 0, // x
+  //     // pro_goods_sku_text: p.goods_sku_text, //
+  //     pro_sn: p.sn, //"2010102DP0057"
+  //     pro_units: p.units, // "PCS"
 
   //   }));
 
@@ -1469,7 +1472,7 @@ async function SelectProductProMonth(newproduct) {
         datasumdiscount
       });
 
-      emit('close'); // 
+      emit('close'); //
 
       isLoading.value = false; // โหลดเสร็จ
     } else if (!gettoken) {
@@ -1552,7 +1555,7 @@ async function submittedProduct_Stock(payload) {
       console.log("Check Value data:", data);
 
       // ใช้ได้
-      // แยกข้อมูลออกเป็น 3 ก้อน //  ,  
+      // แยกข้อมูลออกเป็น 3 ก้อน //  ,
       const items = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'item' || item?.ML_Note === 'itemmonth');
       const gifts = data.filter(item => item.pro_goods_id !== 0 && item?.ML_Note === 'zengsopng_day' || item?.ML_Note === 'zengsopng_month');
       const promotions = data.filter(item => item.pro_activity_id !== 0 && item?.ML_Note === 'promotion_day' || item?.ML_Note === 'promotion_month');
@@ -1595,8 +1598,8 @@ async function submittedProduct_Stock(payload) {
         const activityId = item.st === false ? false : item.pro_activity_id;
         const matchedTitle = emitTitles.find(emit => emit.pro_goods_id == item.pro_goods_id && emit.pro_sku_price_id == item.pro_sku_price_id) || {};
 
-        const filteredGifts = gifts.filter(gift => gift.pro_activity_id !== item.pro_activity_id ? item.pro_activity_id : gift.pro_activity_id);
-        const filteredPromotions = promotions.filter(promo => promo.pro_activity_id !== item.pro_activity_id ? item.pro_activity_id : promo.pro_activity_id)
+        // const filteredGifts = gifts.filter(gift => gift.pro_activity_id !== item.pro_activity_id ? item.pro_activity_id : gift.pro_activity_id);
+        // const filteredPromotions = promotions.filter(promo => promo.pro_activity_id !== item.pro_activity_id ? item.pro_activity_id : promo.pro_activity_id)
 
         const fullActivityGifts = gifts.filter(gift => gift.pro_activity_id === item.pro_activity_id && gift.st === item.st);
         const fullActivityPromotions = promotions.filter(promo => promo.pro_activity_id === item.pro_activity_id && promo.st === item.st)
@@ -1623,13 +1626,13 @@ async function submittedProduct_Stock(payload) {
 
 
         const FinalGifts_Not_activuty = fullActivityGifts.filter(
-          // gift => gift.pro_activity_id === item.pro_activity_id 
+          // gift => gift.pro_activity_id === item.pro_activity_id
           gift => gift.pro_activity_id === item.pro_activity_id && Boolean(gift.st) === Boolean(item.st)
           // gift => gift.pro_activity_id === promotionActivityId && gift.pro_sku_price_id == item.pro_sku_price_id
         );
 
         const FinalPromotions_Not_activuty = fullActivityPromotions.filter(
-          // promo => promo.pro_activity_id === item.pro_activity_id 
+          // promo => promo.pro_activity_id === item.pro_activity_id
           promo => promo.pro_activity_id === item.pro_activity_id || promo.st !== item.st
         );
         // หา item ที่ pro_sn เดียวกันแต่ activity ต่างกัน
@@ -1650,7 +1653,7 @@ async function submittedProduct_Stock(payload) {
           sp.st !== item.st
         );
 
-        //หา item ที่ activity_id เดียวกันและ st เหมือนกัน 
+        //หา item ที่ activity_id เดียวกันและ st เหมือนกัน
         const alreadyExists = tableData.value.find(sp =>
           sp.pro_id === item.pro_sku_price_id &&
           sp.activity_id === activityId &&
@@ -1734,7 +1737,7 @@ async function submittedProduct_Stock(payload) {
               activity_id: activityId,
               pro_quantity: item.pro_goods_num,
               pro_goods_num: item.pro_goods_num,
-              gifts: FinalGifts, //fullActivityGifts || 
+              gifts: FinalGifts, //fullActivityGifts ||
               promotions: FinalPromotions, //
               // เพิ่มค่าอื่น ๆ ที่จำเป็น
             });
@@ -1808,7 +1811,7 @@ onMounted(() => {
 
   // if (props.selectProducts_old_month?.length) {
   //   selectedProducts.value = props.selectProducts_old_month.map(p => ({
-  //     // ต้อง map ให้มีฟิลด์ id, amount, stock, units, price, erp_title, etc  
+  //     // ต้อง map ให้มีฟิลด์ id, amount, stock, units, price, erp_title, etc
   //     id: p.pro_sku_price_id,
   //     amount: p.pro_goods_num,
   //     stock: p.pro_stock,
@@ -1891,7 +1894,7 @@ onMounted(() => {
   //   clearTimeout(this.searchTimer)
   //   // ตั้ง timeout ใหม่ รอ 500ms ถ้าไม่มีการพิมพ์เพิ่มถึงค่อยเรียก
   //   SearchProducstSubmit()
-  
+
   // } -->
 
 
@@ -2046,7 +2049,7 @@ onMounted(() => {
 
 
 
-<!-- 
+<!--
 // เคยใช้ได้
 // function validateAmount(item) {
 //   if (item.amount < 0) {

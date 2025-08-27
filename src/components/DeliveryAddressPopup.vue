@@ -60,8 +60,8 @@ import Swal from 'sweetalert2';
 import qs from 'qs'; // อย่าลืม import
 // import.meta.env.VITE_DELIVERY_ADDRESS
 
-const BASE_URL_DELIVERY_ADDRESS = import.meta.env.VITE_DELIVERY_ADDRESS;
-const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
+// const BASE_URL_DELIVERY_ADDRESS = import.meta.env.VITE_DELIVERY_ADDRESS;
+// const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 
 const BASE_URL_AUTH = import.meta.env.VITE_API_URL_AUTH;
 
@@ -218,7 +218,7 @@ export default {
             // console.log('📌📌 log address_ids: ', account_id);
             const existingAddressId = this.existingAddress?.id; // || account_id
             // const addressId = this.existingAddress?.id || localStorage.getItem('address_id');
-            const isManualInput = this.form.detail && !existingAddressId;
+            // const isManualInput = this.form.detail && !existingAddressId;
 
 
             const province = this.provinces.find(p => p.id === this.form.province_id)?.name_th || '';
@@ -280,7 +280,7 @@ export default {
 
                     //     // ✅ ก้อนข้อมูลที่อยู่สำหรับ Mac Five
                     //     const addressBulidMacFive = {
-                    //         DC_code: res.data.data.customer_code, //'DEL-REST-01', // AP 
+                    //         DC_code: res.data.data.customer_code, //'DEL-REST-01', // AP
                     //         DC_id: res.data.data.id,  //'0001', // ID ของที่อยู่ ใน table delivery_address
                     //         DC_add1: res.data.data.address_line1,
                     //         DC_add2: res.data.data.address_line2, //เขต
@@ -309,7 +309,7 @@ export default {
                     //     const token = await this.getAuthToken();
                         // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
 
-                        //Api Mac 5 
+                        //Api Mac 5
                         try {
                             // const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
                             //     headers: {
@@ -330,16 +330,16 @@ export default {
                         }
                     // }
                 } catch (error) {
-                    console.error('❌ ส่งไม่สำเร็จ:', err);
+                    console.error('❌ ส่งไม่สำเร็จ:', error);
                     alert('เกิดข้อผิดพลาดในการส่งข้อมูล');
                 }
 
 
             } else {
 
-                // INSERT ใหม่ 
+                // INSERT ใหม่
                 const addressData = {
-                    DC_code: getCustomer_no, //'DEL-REST-01', // AP 
+                    DC_code: getCustomer_no, //'DEL-REST-01', // AP
                     DC_id: getCustomer_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
                     DC_add1: this.form.detail,
                     DC_add2: `แขวง ${subDistrict} ${district}`, //เขต
@@ -384,7 +384,7 @@ export default {
 
                     //     // ก้อนข้อมูลที่อยู่สำหรับส่งไปยัง Mac 5
                     //     const addressBulidMacFive = {
-                    //         DC_code: getCustomer_no, //'DEL-REST-01', // AP 
+                    //         DC_code: getCustomer_no, //'DEL-REST-01', // AP
                     //         DC_id: getaddress_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
                     //         DC_add1: this.form.detail,
                     //         DC_add2: `แขวง ${subDistrict} ${district}`, //เขต
@@ -407,7 +407,7 @@ export default {
 
                     //     // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
 
-                    //     //Api Mac 5 
+                    //     //Api Mac 5
                     //     try {
                     //         const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
                     //             headers: {
@@ -439,6 +439,7 @@ export default {
 
                     return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
 
+                    // eslint-disable-next-line no-unreachable
                     localStorage.setItem('deliveryAddress', JSON.stringify(addressData));
                     this.$emit('submitted', addressData);
                     this.$emit('close');
@@ -480,7 +481,7 @@ export default {
 <style scoped></style>
 
 
-<!-- 
+<!--
 // const account_id = localStorage.getItem('account');
 // console.log('📌📌 log address_ids: ', account_id);
 const existingAddressId = this.existingAddress?.id; // || account_id
@@ -547,7 +548,7 @@ if (addressId) {
 
             // ✅ ก้อนข้อมูลที่อยู่สำหรับ Mac Five
             const addressBulidMacFive = {
-                DC_code: res.data.data.customer_code, //'DEL-REST-01', // AP 
+                DC_code: res.data.data.customer_code, //'DEL-REST-01', // AP
                 DC_id: res.data.data.id,  //'0001', // ID ของที่อยู่ ใน table delivery_address
                 DC_add1: res.data.data.address_line1,
                 DC_add2: res.data.data.address_line2, //เขต
@@ -576,7 +577,7 @@ if (addressId) {
             const token = await this.getAuthToken();
             // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
 
-            //Api Mac 5 
+            //Api Mac 5
             try {
                 const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
                     headers: {
@@ -604,9 +605,9 @@ if (addressId) {
 
 } else {
 
-    // INSERT ใหม่ 
+    // INSERT ใหม่
     const addressData = {
-        DC_code: getCustomer_no, //'DEL-REST-01', // AP 
+        DC_code: getCustomer_no, //'DEL-REST-01', // AP
         DC_id: getCustomer_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
         DC_add1: this.form.detail,
         DC_add2: `แขวง ${subDistrict} ${district}`, //เขต
@@ -651,7 +652,7 @@ if (addressId) {
 
             // ก้อนข้อมูลที่อยู่สำหรับส่งไปยัง Mac 5
             const addressBulidMacFive = {
-                DC_code: getCustomer_no, //'DEL-REST-01', // AP 
+                DC_code: getCustomer_no, //'DEL-REST-01', // AP
                 DC_id: getaddress_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
                 DC_add1: this.form.detail,
                 DC_add2: `แขวง ${subDistrict} ${district}`, //เขต
@@ -674,7 +675,7 @@ if (addressId) {
 
             // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
 
-            //Api Mac 5 
+            //Api Mac 5
             try {
                 const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, formEncodedData, {
                     headers: {
@@ -717,7 +718,7 @@ if (addressId) {
 
 
 
-<!-- 
+<!--
 
 //     async submitAddress() {
 //         const addressData = {
@@ -747,7 +748,7 @@ if (addressId) {
 -->
 
 
-<!-- 
+<!--
   import provinces from '@/assets/thailand/api_province.json'
 import amphures from '@/assets/thailand/api_amphure.json'
 import tambons from '@/assets/thailand/api_tambon.json'
@@ -763,14 +764,14 @@ const filteredTambons = computed(() =>
 ) -->
 
 
-<!-- 
+<!--
 // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
 
 // const getaddress_id = JSON.parse(localStorage.getItem('address_id')) || null;
 // console.log('📦 getaddress_id:', getaddress_id);
 
 // const addressBulidMacFive = {
-//     DC_code: getCustomer_no, //'DEL-REST-01', // AP 
+//     DC_code: getCustomer_no, //'DEL-REST-01', // AP
 //     DC_id: getCustomer_id, //'0001', // ID ของที่อยู่ ใน table delivery_address
 //     DC_add1: this.form.detail,
 //     DC_add2: `แขวง ${subDistrict} เขต ${district}`,
@@ -783,7 +784,7 @@ const filteredTambons = computed(() =>
 
 // return; // สำหรับทดสอบไม่ให้ส่งข้อมูลจริง
 
-// //Api Mac 5 
+// //Api Mac 5
 // try {
 //     const response = await axios.post(`${BASE_URL_DELIVERY_ADDRESS}`, addressBulidMacFive);
 //     console.log('📦 ส่งสำเร็จ:', response.data);

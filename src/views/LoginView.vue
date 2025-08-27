@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center relative overflow-hidden font-sans">
     <div class="absolute right-4 top-4 text-white rotate-90 tracking-widest font-semibold text-sm">
-      DESIGN D POWER 
+      DESIGN D POWER
     </div>
 
     <div class="max-w-7xl w-full mx-auto flex flex-col md:flex-row items-center justify-between p-8 gap-10">
@@ -9,7 +9,7 @@
       <div class="text-white max-w-lg space-y-6 animate-fade-in">
         <h1 class="text-4xl md:text-5xl font-extrabold leading-tight">D-Power IT Technology</h1>
         <p class="text-sm md:text-base">
-          บริษัทผู้ผลิตและจัดจำหน่ายสินค้าไอที อิเล็กทรอนิกส์ และ Gadget 
+          บริษัทผู้ผลิตและจัดจำหน่ายสินค้าไอที อิเล็กทรอนิกส์ และ Gadget
           และขอต้อนรับสู่ระบบ Dashboard เพื่อจัดการข้อมูลและสร้างรายการขาย.
         </p>
 
@@ -35,7 +35,7 @@
         </div>
 
         <form @submit.prevent="handleLogin" class="space-y-5">
-            
+
           <div class="relative">
             <input
               type="text"
@@ -117,7 +117,7 @@ console.log("Show BASE_URL: ", BASE_URL);
 
 const username = ref('')
 const password = ref('')
-const customer = ref('')
+// const customer = ref('')
 
 const showMore = ref(false)
 
@@ -183,7 +183,7 @@ const handleLogin = async () => {
       // เช็คว่ามีข้อมูลหรือไม่
       if (Array.isArray(dataArr) && dataArr.length > 0) {
         // เอา row แรก
-        const firstRow = dataArr[0];  
+        const firstRow = dataArr[0];
 
         // ดึงค่าแต่ละ field
         const account = firstRow.account;
@@ -232,7 +232,7 @@ const handleLogin = async () => {
 
       const getrole_fa = localStorage.getItem('role_fa');
       console.log("Show getrole_fa: ", getrole_fa);
-      
+
       // บันทึกสถานะ login
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('customer_id', customer_id.value);  //23

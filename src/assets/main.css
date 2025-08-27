@@ -18,7 +18,8 @@
   --primary: #4ade80;
   --primary-alt: #22c55e;
   --grey: #64748b;
-  --dark: #1e1e1e;
+  /* --dark: #1e1e1e; */
+  --dark: #1F2937;
   --dark-alt: #334155;
   --light: #f1f1f1;
   --sidebar-width: 300px;
@@ -54,4 +55,4 @@ a:hover {
     grid-template-columns: 1fr 1fr;
     padding: 0 2rem;
   } */
-}  
+}

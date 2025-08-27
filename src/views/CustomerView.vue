@@ -165,21 +165,23 @@ import { useRouter } from "vue-router";
 import { Pagination, ConfigProvider } from "tdesign-vue-next";
 import enConfig from "tdesign-vue-next/es/locale/en_US";
 import { eventBus } from "@/utils/eventBus";
-
+import Swal from 'sweetalert2';
 // import { logActivity } from '@/services/activityLogger.js'
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 console.log("Show BASE_URL: ", BASE_URL);
 
+// eslint-disable-next-line no-unused-vars
 const error = ref("");
-let timer = null;
-let arr = [];
+// let timer = null;
+// let arr = [];
 
 // const account = localStorage.getItem('account')
 // const password = localStorage.getItem('password')
 // console.log("Log Value: ", account);
 // console.log("Log Value: ", password);
 
+// eslint-disable-next-line no-unused-vars
 const router = useRouter();
 //  import {
 //   mapMutations,
@@ -269,7 +271,8 @@ export default {
 
   // },
   watch: {
-    keyword(newVal) {
+    keyword() {
+      // newVal
       this.accountLoginSubmit();
     },
   },
@@ -398,7 +401,8 @@ export default {
     //   }
     // },
 
-    rowClick(row, idx) {
+    rowClick(row) {
+      // idx
       console.log(row.mobile);
 
       this.accountLoginCustomerSubmit(row);
@@ -407,7 +411,8 @@ export default {
       // uni.navigateTo({ url: /pages/detail/detail?id=${row.id} });
     },
 
-    onSaleSelected(index) {
+    onSaleSelected() {
+      // index
       // กรอง dataselect ให้เหลือเฉพาะ Sale ที่ถูกเลือกไว้ใน selectedSales
       this.tableData = this.dataselect.filter((item) => this.selectedSales.includes(item.sale_no));
     },
@@ -423,7 +428,8 @@ export default {
       //     this.accountLoginSubmit()
       // }, 1000)
     },
-   async accountLoginSubmit(page = 1, size = 15) {
+   async accountLoginSubmit() {
+    // page = 1, size = 15
     this.isLoading = true;
 
     try {
@@ -486,7 +492,8 @@ export default {
     }
   },
 
-async searchSaleId(page = 1, size = 15) {
+async searchSaleId() {
+  // page = 1, size = 15
   this.isLoading = true;
 
   try {
@@ -601,7 +608,20 @@ async searchSaleId(page = 1, size = 15) {
         this.$router.push("/createsalelist");
         // this.$router.push("/dashboard");
       } else {
-        error.value = response.data.message || "failed";
+         // Login ไม่สำเร็จ → แจ้งเตือนเฉพาะ
+      const customerNo = row.customer_no || "-L"; // ถ้าไม่มี customer_no ใช้ -L
+      const message = `รายการที่เลือกนั้น ไม่ได้ใช้งาน โดย รหัส ${customerNo}`;
+
+      // ถ้าใช้ SweetAlert2
+      Swal.fire({
+        title: "ไม่สามารถใช้งานได้",
+        text: message,
+        icon: "error",
+      });
+
+      // หรือถ้าไม่ใช้ Swal → ใช้ alert
+      // alert(message);
+        // error.value = response.data.message || "failed";
         // Swal.fire({
         //     title: 'ล็อกอินไม่สำเร็จ',
         //     text: error.value || 'โปรดลองใหม่ภายหลัง',

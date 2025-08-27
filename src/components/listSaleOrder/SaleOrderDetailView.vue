@@ -92,7 +92,7 @@
 
             <!-- <span class="material-icons">lock</span>
             <span>ยืนยันการบันทึก (ไม่สามารถแก้ไขได้อีก)</span> -->
-            
+
           <!-- </button> -->
         </div>
 
@@ -390,7 +390,7 @@
                   <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString(undefined, {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 2
-                                        })}} 
+                                        })}}
                   </td>
                   <td class="px-4 py-2 border" :class="{
                     'text-red-500 cursor-pointer hover:text-red-700': !isReadOnly,
@@ -540,7 +540,7 @@
             }}
             บาท
           </span>
-          
+
         </div>
 
         <div v-if="!formData.deliveryFee === 0" class="text-gray-700">
@@ -572,7 +572,7 @@
               })
             }}
           </span>
-          
+
         </div>
       </div>
     </div>
@@ -852,7 +852,7 @@ export default {
         listCode: "",
         sellDate: "",
         order_Id: "",
-       
+
         sellDate: new Date(), // ✅ ใช้ Date object ตรง ๆ
         deliveryDate: new Date(), // ✅ ใช้ Date object ตรง ๆ
         // expireDate: '',
@@ -969,7 +969,7 @@ export default {
           this.currentDocumentNo = `Sale Order: ${newDocNo}`;
 
           this.loadDocumentData(newDocNo);
-       
+
         }
       }
     },
@@ -980,7 +980,7 @@ export default {
     }
   },
 
-  
+
   // watch: {
   //   isVatIncluded(newVal) {
   //     this.formData.taxType = newVal ? "รวมภาษี" : "ไม่รวมภาษี";
@@ -1037,7 +1037,7 @@ export default {
         return this.totalAmountBeforeDiscount * 0.07;
       }
     },
-   
+
     isCreatePage() {
       return this.$route.path === "/createsalelist";
     },
@@ -1072,7 +1072,7 @@ export default {
   methods: {
 
     async goToPrint() {
-     
+
       console.log("📄 ข้อมูลเอกสารที่โหลด:", this.formData);
 
       const printPayload = {
@@ -1092,7 +1092,7 @@ export default {
 
       // 3. เปิดแท็บใหม่ไปที่ /print-order
       const printUrl = `${window.location.origin}/print-order/${this.formData.order_Id}`;
-      // const printUrl = `${window.location.origin}/print-order/${orderId}` 
+      // const printUrl = `${window.location.origin}/print-order/${orderId}`
       window.open(printUrl, '_blank') // เปิดแท็บใหม่
       // window.open('/print-order', '_blank');
     },
@@ -1250,7 +1250,7 @@ export default {
         if (!token) {
 
           console.error('Token not found in localStorage');
-          
+
           Swal.fire({
             title: "กรุณาเลือกร้านค้าของลูกค้า",
             text: "กรุณาเลือกข้อมูลลูกค้าก่อนทำการแก้ไขข้อมูล",
@@ -1262,7 +1262,7 @@ export default {
           });
 
           return;
-        }     
+        }
 
         console.log('Check: this.selectedProducts', this.selectedProducts);
 
@@ -1471,7 +1471,7 @@ export default {
           console.error('Error submitting product on blur:', error);
         }
       }
-      
+
     },
 
     async onQuantityChange(event, product) {
@@ -1532,7 +1532,7 @@ export default {
           ) {
             return {
               ...item,
-              pro_goods_num: product.pro_quantity || 0, 
+              pro_goods_num: product.pro_quantity || 0,
               // pro_goods_num: product.pro_goods_num || 0,
               pro_quantity: product.pro_quantity || 0,
             };
@@ -1880,7 +1880,7 @@ export default {
     async handleSelectedPromotionProducts(payload) {
       console.log("📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:", payload);
 
-      this.selectedProducts = []; 
+      this.selectedProducts = [];
 
       const items = payload.items || [];
       // const gifts = payload.gifts || [];
@@ -2632,7 +2632,7 @@ export default {
                         icon: "error",
                     });
                 }
-          
+
           const newDocumentNo = resData.newDocumentNo; // ดึง `documentNo` ใหม่จาก API
           this.formData.documentNo = newDocumentNo; // อัปเดต `documentNo` ใน `formData`
 

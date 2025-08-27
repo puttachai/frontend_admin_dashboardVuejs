@@ -1,4 +1,5 @@
 <script setup>
+// eslint-disable-next-line no-unused-vars
 import { RouterLink, RouterView } from 'vue-router'
 import { useRoute } from 'vue-router'
 // import HelloWorld from './components/HelloWorld.vue'

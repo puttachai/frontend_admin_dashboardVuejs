@@ -1,5 +1,7 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <Disclosure as="nav" class="bg-gray-800 fixed top-0 left-0 w-full z-[60]" v-slot="{ open }">
+  <Disclosure as="nav" class="bg-gray-800 fixed top-0 left-0 w-full z-[60]" >
+    <!-- v-slot="{ open }" -->
     <div class="mx-auto max-w-7xl px-2 smls:px-6 lg:px-8">
       <div class="relative flex h-16 items-center justify-between">
 
@@ -21,7 +23,7 @@
         </div>
 
         <!-- Title (ตรงกลาง) -->
-        <div v-if="!contact" class="boxTitel absolute left-1/2 transform -translate-x-1/2">
+        <div v-if="!contact && !nickname" class="boxTitel absolute left-1/2 transform -translate-x-1/2">
           <router-link to="/createsalelist">
           <!-- <router-link to="/dashboard"> -->
             <h4 class="welcome font-semibold text-xl text-center">Welcome to the D-Power Sales Dashboard</h4>
@@ -85,14 +87,14 @@
             <!-- Dropdown Menu -->
             <!--  class="absolute right-0 mt-3 w-80 max-h-[24rem] bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50 flex flex-col"> -->
             <transition name="fade" appear>
-              
-              <div v-if="dropdownOpen" :class="[ //sm:w-96
-                'absolute right-0 mt-3 w-[18rem] max-h-[20rem] bg-white rounded-lg max-w-xs md:w-96 mdl:w-96 lg:w-96 xs:left-[-2rem] sm:left-[-2rem] smls:left-[-2rem] sml:left-[-2rem] md:left-[-2rem] mdl:left-[-2rem] lg:left-[-2rem] lgl:left-[-2rem] xl:left-[-2rem] shadow-lg z-50 flex flex-col',
-                contact ? 'ring-1 ring-black ring-opacity-5  ' : 'ring-1',
-                // กำหนด width แบบ responsive
-                'md:w-96 mdl:w-96 '
-                // 'md:w-full'
-              ]">
+
+              <div
+                v-if="dropdownOpen"
+                :class="[
+                  'absolute mt-3 w-[18rem] max-h-[20rem] bg-white rounded-lg max-w-xs z-50 flex flex-col',
+                  nickname ? 'left-0 ring-1 ring-black ring-opacity-5' : 'right-0 right-adjust ring-1 ring-black ring-opacity-5',
+                  'md:w-96 mdl:w-96'
+                ]">
 
                 <!-- Tabs -->
                 <div class="flex border-b border-gray-200">
@@ -133,12 +135,12 @@
 
                     <input v-model="searchQuery" type="text" placeholder="ค้นหาสถานะอนุมัติ"
                       class="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300" />
-                    
+
                     <ul>
                       <li v-for="order in paginatedOrders" :key="order.document_no"
                           class="flex flex-col gap-1 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50"
                           @click="handleOrderClick(order.document_no)">
-                          
+
                           <div class="flex items-center gap-2">
                             <span class="material-icons text-yellow-500 select-none" title="แจ้งเตือนรายการ">notifications_active</span>
                             <div class="flex-1 max-w-full">
@@ -151,12 +153,13 @@
                                 Account: {{ order.account_user }} | Sale No: {{ order.sale_no }} | Admin: {{ order.nickname_admin }}
                               </p>
                               <span class="text-xs text-gray-400 whitespace-nowrap">{{ formatDate(order.created_at) }}</span>
+                              <p class="text-xs text-gray-500 mt-1">{{ order.status }}</p>
                             </div>
-                            
+
                           </div>
-                          
+
                           <!-- สถานะ order -->
-                          <p class="text-xs text-gray-500 mt-1">{{ order.status }}</p>
+                          <!-- <p class="text-xs text-gray-500 mt-1">{{ order.status }}</p> -->
                       </li>
                     </ul>
 
@@ -241,15 +244,13 @@
                           'flex items-center gap-2 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50',
                           order.is_read === 1 ? 'opacity-50 cursor-default' : 'opacity-100'
                         ]">
-                          
+
                           <div class="flex items-center gap-2">
                             <span class="material-icons text-yellow-500 select-none" title="แจ้งเตือนรายการใหม่">notifications_active</span>
                             <div class="flex-1 max-w-full">
                               <!-- แสดง document_no -->
                                <p class="font-medium text-sm truncate">{{ order.document_no }}</p>
-                               <p class="text-xs truncate text-gray-500">
-                                {{ order.is_read === 1 ? 'อ่านแล้ว' : 'ยังไม่อ่าน' }}
-                              </p>
+
                               <!-- แสดง account, saleNo, nicknameAdmin -->
                               <p class="text-xs text-gray-500 break-words">
                               <!-- <p class="text-xs text-gray-500 truncate"> -->
@@ -257,11 +258,14 @@
                               </p>
                               <span class="text-xs text-gray-400 whitespace-nowrap">{{ formatDate(order.created_at) }}</span>
                               <!-- สถานะ order -->
-                              <p class="text-xs text-gray-500 mt-1">{{ order.status }}</p>
+                              <!-- <p class="text-xs text-gray-500 mt-1">{{ order.status }}</p> -->
+                               <p class="text-xs truncate text-gray-500">
+                                {{ order.is_read === 1 ? 'อ่านแล้ว' : 'ยังไม่อ่าน' }}
+                              </p>
                             </div>
-                            
+
                           </div>
-                          
+
                           <!-- สถานะ order -->
                           <!-- <p class="text-xs text-gray-500 mt-1">{{ order.status }}</p> -->
                       </li>
@@ -292,7 +296,8 @@
               class="flex items-center gap-2 rounded-full bg-gray-700 px-3 py-1 text-white hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-white">
               <span class="sr-only">Open user menu</span>
               <span class="truncate xs:text-xs sm:text-smls md:text-[14px] smls:max-w-[350px] sm:max-w-[230px]">{{
-                contact }} {{ account }}</span>
+                nickname }} {{ account }}</span>
+                <!-- {{ contact }} {{ account }} -->
               <template v-if="image_path">
                 <img class="w-8 h-8 rounded-full object-cover" :src="image_path" alt="User Avatar" />
               </template>
@@ -338,7 +343,8 @@
 
 <script>
 import Swal from 'sweetalert2'
-import { ref, onMounted, onBeforeUnmount, nextTick, watch, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
+//  nextTick,
 import { useRouter } from 'vue-router'
 import { eventBus } from '@/utils/eventBus'
 import { useI18n } from 'vue-i18n'
@@ -358,6 +364,7 @@ export default {
   components: {
     Disclosure,
     DisclosurePanel,
+    // eslint-disable-next-line vue/no-reserved-component-names
     Menu,
     MenuButton,
     MenuItem,
@@ -370,6 +377,7 @@ export default {
     const router = useRouter()
     const account = ref('')
     const contact = ref('')
+    const nickname = ref('')
 
     const image_path = ref('')
     const { t, locale } = useI18n()
@@ -405,7 +413,8 @@ export default {
           errorStatus.value = data.message || 'ไม่พบข้อมูลสถานะ'
         }
       } catch (e) {
-        errorStatus.value = 'เกิดข้อผิดพลาดในการค้นหา'
+        errorStatus.value = e.message;
+        // errorStatus.value = 'เกิดข้อผิดพลาดในการค้นหา'
       } finally {
         loadingStatus.value = false
       }
@@ -508,9 +517,10 @@ export default {
     const loadUserData = () => {
       account.value = localStorage.getItem('account') || ''
       try {
-        contact.value = JSON.parse(localStorage.getItem('selectDataCustomer'))?.data2.contact || ''
+        nickname.value = JSON.parse(localStorage.getItem('selectDataCustomer'))?.data2.nickname || ''
+        // contact.value = JSON.parse(localStorage.getItem('selectDataCustomer'))?.data2.contact || ''
       } catch {
-        contact.value = ''
+        nickname.value = ''
       }
       image_path.value = localStorage.getItem('image_path') || ''
     }
@@ -612,6 +622,7 @@ export default {
     return {
       account,
       contact,
+      nickname,
       image_path,
       confirmLogoutEmployee,
       t,
@@ -802,9 +813,17 @@ body>.skiptranslate {
     display: none !important;
   }
 }
+
+@media (max-width: 460px) {
+  .right-adjust {
+    right: -7.5rem !important;
+  }
+}
+
+
 </style>
 
-<!-- 
+<!--
 /* .Logomedia {
   position: relative;
 }
@@ -819,7 +838,7 @@ body>.skiptranslate {
     position: absolute;
     top: 0;
     left: 0;
-    opacity: 0.7; 
+    opacity: 0.7;
     transform: scale(0.9);
     z-index: 2;
   }

@@ -122,6 +122,7 @@ Chart.register(ChartDataLabels);
 const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 
   export default {
+    // eslint-disable-next-line vue/multi-word-component-names
     name: 'Dashboard',
     data() {
     return {
@@ -198,6 +199,7 @@ const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
             },
             datalabels: {   // plugin สำหรับแสดงตัวเลขบนแต่ละชิ้นส่วนของ Pie chart
               color: '#000',
+              // eslint-disable-next-line no-unused-vars
               formatter: (value, ctx) => {
                 return value; // แสดงตัวเลขจำนวนคนบน chart
               },
@@ -218,7 +220,7 @@ const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
     console.error('Error fetching departments:', err);
   });
     },
-    
+
     fetchSalaryData() {
       fetch(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/get_top_salary.php`)
         .then(res => res.json())

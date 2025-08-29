@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-gray-50 text-center py-8 border-t rounded-lg border-gray-200">
+  <footer class="bg-gray-50 text-center py-8 px-1 border-t rounded-lg border-gray-200">
     <p class="text-gray-600 text-sm">
       © Copyright 2025 | D-Power | All Rights Reserved | Designed & Developed by D-Power | Powered by
       <a href="https://vuejs.org/" target="_blank" class="text-blue-600 hover:underline">

@@ -23,12 +23,12 @@
         </div>
 
         <!-- Title (ตรงกลาง) -->
-        <div v-if="!contact && !nickname" class="boxTitel absolute left-1/2 transform -translate-x-1/2">
-          <router-link to="/createsalelist">
+        <!-- <div v-if="!contact && !nickname" class="boxTitel absolute left-1/2 transform -translate-x-1/2"> -->
           <!-- <router-link to="/dashboard"> -->
+          <!-- <router-link to="/createsalelist">
             <h4 class="welcome font-semibold text-xl text-center">Welcome to the D-Power Sales Dashboard</h4>
           </router-link>
-        </div>
+        </div> -->
 
         <!-- ไอคอนแจ้งเตือนและเมนูผู้ใช้ -->
         <div class="flex items-center space-x-4 relative">

@@ -270,7 +270,8 @@ const handleLogin = async () => {
       if (isCrm || isProduct || isFa || isAdmin) {
         router.push("/customer");
       } else {
-        router.push("/dashboard");
+        router.push("/customer");
+        // router.push("/dashboard");
       }
     }
 

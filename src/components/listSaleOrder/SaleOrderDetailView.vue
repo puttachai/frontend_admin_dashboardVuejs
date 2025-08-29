@@ -1,113 +1,82 @@
 <template>
   <div
     class="mainbox flex flex-col in-h-screen items-center gap-4 justify-center bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-    <!-- กล่องรวม breadcrumb + action bar -->
-    <div class="fixed top-16 left-16 right-0 bg-white rounded-lg p-4 shadow-lg z-50 responsive-action-bar">
-      <!-- Breadcrumb + ActionBar inline -->
-      <div class="flex flex-wrap md:flex-nowrap justify-between items-center gap-4">
-        <!-- Breadcrumb -->
-        <nav class="text-sm text-gray-600">
-          <ul class="flex items-center space-x-1">
-            <li>
-              <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
-              <span class="mx-1 text-gray-400">›</span>
-            </li>
-            <li>
-              <router-link to="/saleorder" class="hover:text-purple-600 transition">Sale Order List</router-link>
-              <span class="mx-1 text-gray-400">›</span>
-            </li>
-            <li class="text-purple-600 font-medium">
-              {{ currentDocumentNo || "Loading..." }}
-            </li>
-          </ul>
-        </nav>
 
-        <!-- Action Bar -->
-        <div class="flex flex-wrap justify-end gap-3 responsive-action-buttons md:gap-4 md:flex-nowrap">
-          <!-- ✅ ถ้าอนุมัติแล้ว -->
-          <div v-if="approvedVoucherNo === 'ตรวจสอบเรียบร้อย'"
-            class="flex items-center gap-2 bg-green-500 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg disabled:bg-white disabled:text-red-600 disabled:border disabled:border-green-500 disabled:cursor-not-allowed">
-            <!-- เอกสาร: {{ documentNo_route_params }} ได้รับการอนุมัติแล้ว -->
-            <span class="material-icons">add_task</span>
-            <span> เอกสาร: {{ documentNo_route_params }} ได้รับการอนุมัติแล้ว </span>
-          </div>
+    <!-- responsive-action-bar -->
+   <!-- responsive-action-bar -->
+<div
+  class="fixed top-16 left-0 right-0 md:left-16 bg-white rounded-lg p-2 md:p-4 shadow-lg z-40 transition-all duration-300"
+  :class="collapsed ? 'h-12 overflow-hidden' : 'h-auto xs:p-1'"
+>
+  <div class="flex justify-between items-center">
+    <!-- Breadcrumb text-xs -->
+    <nav class="md:text-sm xs:text-[12px] text-gray-600 flex-1">
+      <ul class="flex items-center space-x-1 xs:space-x-0.5">
+        <li>
+          <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
+        </li>
+        <span class="mx-1 text-gray-400 xs:mx-0.5">›</span>
+        <li>
+          <router-link to="/saleorder" class="hover:text-purple-600 transition">Sale Order List</router-link>
+        </li>
+        <span class="mx-1 text-gray-400 xs:mx-0.5">›</span>
+        <li class="text-purple-600 font-medium">
+          {{ currentDocumentNo || "Loading..." }}
+        </li>
+      </ul>
+    </nav>
 
+    <!-- Toggle Button -->
+    <button @click="collapsed = !collapsed"
+            class="ml-4 text-gray-500 hover:text-gray-700 transition xs:ml-2">
+      <span class="material-icons">
+        {{ collapsed ? 'keyboard_arrow_down' : 'keyboard_arrow_up' }}
+      </span>
+    </button>
+  </div>
 
-
-          <!-- ✅ ถ้ายังไม่อนุมัติ -->
-          <button v-else-if="canApprove && isReadOnly" @click="saveDocument"
-            class="flex items-center gap-2 bg-green-500 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg">
-            <span class="material-icons">add_task</span>
-            <span>อนุมัติเอกสาร</span>
-          </button>
-
-          <!--  v-else-if="canApprove && isReadOnly" @click="saveDocument" -->
-          <!-- <button
-            class="flex items-center gap-2 bg-green-500 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg">
-            <span class="material-icons">add_task</span>
-            <span>อนุมัติเอกสาร</span>
-          </button> -->
-
-          <!-- ปุ่มพิมพ์เอกสาร พร้อม icon -->
-          <button
-            class="no-print bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md transition"
-            @click="goToPrint">
-            <div class="flex items-center justify-center gap-2">
-              <span class="material-icons">print</span>
-              <span>พิมพ์เอกสาร</span>
-            </div>
-          </button>
-
-          <!-- <button class="no-print" @click="goToPrint">พิมพ์เอกสาร</button> -->
-
-          <!-- <div v-if="approvedVoucherNo" class="text-green-600 font-semibold mt-2">
-            ✅ เอกสารนี้ได้รับการอนุมัติแล้ว: {{ approvedVoucherNo }}
-          </div> -->
-
-          <!-- ปุ่ม แก้ไข (edit) -->
-          <button v-if="canEdit && isReadOnly && approvedVoucherNo !== 'ตรวจสอบเรียบร้อย'" @click="enableEditMode"
-            class="bg-yellow-500 items-center text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-yellow-600 transition">
-            <div class="flex items-center justify-center gap-2">
-              <span class="material-icons">edit</span>
-              <span>แก้ไข</span>
-            </div>
-          </button>
-
-          <!-- ปุ่ม บันทึกการแก้ไข (save edits) -->
-          <button v-if="canEdit && !isReadOnly && formData.documentNo" @click="updateDocument"
-            class="bg-green-600 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition shadow hover:shadow-lg">
-            <!-- บันทึกการแก้ไข -->
-            <div class="flex items-center justify-center gap-2">
-              <!-- <span class="material-icons">save</span> -->
-              <span>บันทึกการแก้ไข</span>
-            </div>
-            <!-- <span class="material-icons">save</span>
-            <span>บันทึกการแก้ไข</span> -->
-          </button>
-
-          <!-- ปุ่ม ยืนยันการบันทึก (lock) -->
-          <!-- <button v-if="canEdit && !isReadOnly && formData.documentNo && !isConfirmed" @click="confirmFinalSave"
-            class="bg-red-600 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-red-700 transition">
-            ยืนยันการบันทึก (ไม่สามารถแก้ไขได้อีก) -->
-
-            <!-- <span class="material-icons">lock</span>
-            <span>ยืนยันการบันทึก (ไม่สามารถแก้ไขได้อีก)</span> -->
-
-          <!-- </button> -->
-        </div>
-
-        <!-- <div class="flex flex-wrap justify-end gap-3 responsive-action-buttons md:gap-4 md:flex-nowrap"> -->
-
-        <!-- ปุ่ม บันทึก -->
-        <!-- <button v-if="!isReadOnly && isCreatePage" @click="saveDocument" -->
-        <!-- <button @click="saveDocument"
-            class="flex items-center gap-2 bg-green-500 text-white py-2 px-4 md:px-6 text-sm md:text-base rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg">
-            <span class="material-icons">add_task</span>
-            <span>อนุมัติเอกสาร</span>
-          </button>
-        </div> -->
+  <!-- Action Buttons -->
+  <transition name="fade-slide">
+    <div v-show="!collapsed" class="mt-2 flex flex-wrap justify-end gap-2 md:gap-4 xs:gap-1">
+      <!-- Approved -->
+      <div v-if="approvedVoucherNo === 'ตรวจสอบเรียบร้อย'"
+           class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-green-500 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm xs:text-[10px] rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg">
+        <span class="material-icons text-[14px] xs:text-[22px]">add_task</span>
+        <span>เอกสาร: {{ documentNo_route_params }} ได้รับการอนุมัติแล้ว</span>
       </div>
+
+      <!-- Approve button -->
+      <button v-else-if="canApprove && isReadOnly" @click="saveDocument"
+              class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-green-500 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm xs:text-[10px] rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg">
+        <span class="material-icons text-[14px] xs:text-[22px]">add_task</span>
+        <span>อนุมัติเอกสาร</span>
+      </button>
+
+      <!-- Print button -->
+      <button @click="goToPrint"
+              class="no-print bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm xs:text-[15px] rounded-md transition">
+        <div class="flex items-center justify-center gap-1 md:gap-2 xs:gap-0.5">
+          <span class="material-icons text-[14px] xs:text-[22px]">print</span>
+          <span>พิมพ์เอกสาร</span>
+        </div>
+      </button>
+
+      <!-- Edit button -->
+      <button v-if="canEdit && isReadOnly && approvedVoucherNo !== 'ตรวจสอบเรียบร้อย'" @click="enableEditMode"
+              class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-yellow-500 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm sm:text-[15px] rounded-md hover:bg-yellow-600 transition">
+        <span class="material-icons text-[14px] xs:text-[22px]">edit</span>
+        <span>แก้ไข</span>
+      </button>
+
+      <!-- Save Edits -->
+      <button v-if="canEdit && !isReadOnly && formData.documentNo" @click="updateDocument"
+              class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-green-600 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm sm:text-[10px] rounded-md hover:bg-green-700 transition shadow hover:shadow-lg">
+        <span>บันทึกการแก้ไข</span>
+      </button>
     </div>
+  </transition>
+</div>
+
 
     <!-- form รายการเอกสาร -->
     <div class="boxback w-full mt-20 gap-4 bg-white p-8 rounded-lg shadow-lg">
@@ -263,37 +232,77 @@
     <!-- หน้าสินค้า -->
     <div class="w-full mx-auto p-6 bg-white rounded-lg shadow-md">
       <!-- Header -->
-      <div class="flex justify-between items-center mb-4">
-        <!-- ส่วนซ้าย ไอคอนและสินค้า -->
-        <div class="flex items-center gap-2">
-          <span class="material-icons text-purple-600">assignment_add</span>
-          <h2 class="text-xl font-semibold text-gray-700">สินค้า</h2>
-        </div>
+            <div class="flex justify-between items-center mb-4">
+                <!-- ส่วนซ้าย ไอคอนและสินค้า -->
+                <div class="flex items-center gap-2">
+                    <span class="material-icons text-purple-600">assignment_add</span>
+                    <h2 class="text-xl font-semibold text-gray-700">สินค้า</h2>
+                </div>
 
-        <!-- ส่วนขวา: ปุ่มต่าง ๆ -->
-        <div class="hidden mdl:flex gap-2">
-          <!-- <button @click="addProductRow" :disabled="isReadOnly"
+                <!-- ส่วนขวา: ปุ่มต่าง ๆ -->
+                <div class="hidden mdl:flex gap-2">
+                    <!-- <button @click="addProductRow" :disabled="isReadOnly"
                         class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                         + เพิ่มแถวสินค้า
                     </button> -->
-          <button @click="showProductSelector = true" :disabled="isReadOnly"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            เลือกสินค้า
-          </button>
-          <button @click="showPromotionSelector = true" :disabled="isReadOnly"
-            class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700">
-            เลือกโปรโมชั่น
-          </button>
-          <button @click="removeAllProducts" :disabled="isReadOnly"
-            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-            ลบสินค้าที่เลือกทั้งหมด
-          </button>
-        </div>
+                    <button @click="showServiecsSelector = true" :disabled="isReadOnly"
+                        class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+                        ค่าบริการอื่นๆ
+                    </button>
+                    <button @click="showProductSelector = true" :disabled="isReadOnly"
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        เลือกสินค้า
+                    </button>
+                    <button @click="showPromotionSelector = true" :disabled="isReadOnly"
+                        class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700">
+                        เลือกโปรโมชั่น
+                    </button>
+                    <button @click="removeAllProducts" :disabled="isReadOnly"
+                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                        ลบสินค้าที่เลือกทั้งหมด
+                    </button>
+                </div>
 
-        <!-- Dropdown สำหรับหน้าจอเล็ก -->
-      </div>
+                <!-- Dropdown สำหรับหน้าจอเล็ก -->
+                <div class="mdl:hidden relative">
+                    <button @click="toggleDropdown"
+                        class="relative bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 font-medium px-4 py-2 rounded-lg shadow-sm hover:from-purple-200 hover:to-purple-300 transition duration-300 ease-in-out flex items-center gap-2">
+                        <span class="material-icons transform transition-transform duration-300"
+                            :class="{ 'rotate-180': isDropdownOpen }">
+                            expand_more
+                        </span>
+                        <span>ตัวเลือกสินค้า</span>
+                    </button>
+                    <div v-show="isDropdownOpen" class="absolute right-0 mt-2 bg-white border rounded shadow-lg w-48">
+                        <!-- <button @click="addProductRow" :disabled="isReadOnly"
+                            class="block w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-100">
+                            + เพิ่มแถวสินค้า
+                        </button> -->
+                        <button @click="showServiecsSelector = true" :disabled="isReadOnly"
+                            class="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-100">
+                            ค่าบริการอื่นๆ
+                        </button>
+                        <button @click="showProductSelector = true" :disabled="isReadOnly"
+                            class="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-100">
+                            เลือกสินค้า
+                        </button>
+                        <button @click="showPromotionSelector = true" :disabled="isReadOnly"
+                            class="block w-full text-left px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-100">
+                            เลือกโปรโมชั่น
+                        </button>
+                        <button @click="removeAllProducts" :disabled="isReadOnly"
+                            class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100">
+                            ลบสินค้าที่เลือกทั้งหมด
+                        </button>
+                    </div>
+                </div>
+            </div>
 
       <!-- Popup Component -->
+
+      <ServiecsSelector v-if="showServiecsSelector" :productList="Apiproducts" @close="showServiecsSelector = false"
+        :selectedServices="selectedServices" @select-services="handleSelectedServices" />
+
       <ProductSelector v-if="showProductSelector" :productList="Apiproducts" @close="showProductSelector = false"
         :selectProducts_old_month="selectedProducts" @selectProductsWithMonth="addSelectedProductsWithmonth" />
       <!-- <ProductSelector v-if="showProductSelector" :productList="Apiproducts" @close="showProductSelector = false" //
@@ -458,6 +467,48 @@
               </tr>
             </template>
 
+               <!-- row แสดง services -->
+                  <tr v-if="selectedServices.length > 0" class="bg-green-50 hover:bg-green-100 transition-colors duration-300">
+                    <td colspan="9" class="px-6 py-4 border rounded-md">
+                      <div class="flex items-center space-x-2 text-green-800 font-medium">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor"
+                            stroke-width="2" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 0 0118 0z"/>
+                        </svg>
+                        <span>ค่าบริการอื่นๆ</span>
+                      </div>
+
+                      <ul class="list-inside ml-6 mt-2 text-sm text-gray-700">
+                        <li v-for="(service, serviceIndex) in selectedServices" :key="service.id"
+                            class="flex justify-between items-center py-1 border-b">
+
+                          <!-- ข้อมูล service -->
+                          <div>
+                            <span class="font-semibold">{{ service.service_code }}</span> - {{ service.service_name }}
+                            (จำนวน: {{ service.qty }})
+                          </div>
+
+                          <!-- ราคาแก้ไขได้ -->
+                          <div class="flex items-center space-x-2">
+                            <input type="text"
+                                  :value="formatPrice(service.price)"
+                                  @input="onPriceInput($event, service)"
+                                  class="w-32 px-2 py-1 border rounded text-right" />
+                            <span class="text-gray-600">฿</span>
+
+                            <!-- ปุ่มลบ -->
+                            <button @click="!isReadOnly && removeService(serviceIndex)"
+                                    class="ml-2 text-red-500 hover:text-red-700 font-bold">
+                              ลบ
+                            </button>
+                          </div>
+                        </li>
+                      </ul>
+                    </td>
+                  </tr>
+
+
           </tbody>
         </table>
       </div>
@@ -471,11 +522,9 @@
           </label>
           <select v-model="formData.deliveryType" placeholder="ช่องทางจัดส่ง" :disabled="isReadOnly"
             style="margin: 0.4rem" class="w-full border px-3 py-2 rounded text-gray-700">
-            <option value="">เลือกช่องทางจัดส่ง</option>
-            <option>ไปรษณีย์</option>
-            <!-- <option>ไปรษณีย์</option> -->
-            <option>แมสเซนเจอร์</option>
-            <option>ขนส่งเอกชน</option>
+            <option>เลือกช่องทางจัดส่ง</option>
+            <option>ไปรษณีย์ไทย</option>
+            <option>Flash Express</option>
           </select>
           <p v-if="this.formTouched && errors.deliveryType" class="text-red-500 text-sm mt-1">
             {{ errors.deliveryType }}
@@ -639,7 +688,7 @@
 
             <div class="flex justify-end gap-4 mt-4">
               <!-- ปุ่ม popup ด้านล่างขวา -->
-              <div class="bottom-6 right-6 z-50 justify-self-end">
+              <div class="bottom-6 right-6 z-50 justify-self-end sm:text-xs">
                 <button @click="showAddressPopupBase = true" :disabled="isReadOnly"
                   class="bg-green-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-green-700 transition">
                   + เลือกที่อยู่ / จัดส่ง เดิมที่มีอยู่
@@ -647,7 +696,7 @@
               </div>
 
               <!-- ปุ่ม popup ด้านล่างขวา -->
-              <div class="bottom-6 right-6 z-50 justify-self-end">
+              <div class="bottom-6 right-6 z-50 justify-self-end sm:text-xs">
                 <button @click="showAddressPopup = true" :disabled="isReadOnly"
                   class="bg-purple-600 text-white item-end px-6 py-3 rounded-lg shadow-lg hover:bg-purple-700 transition">
                   + เพิ่มที่อยู่ / จัดส่ง ใหม่
@@ -733,11 +782,13 @@
 </template>
 
 <script>
+// eslint-disable-next-line no-unused-vars
 import { ref, onMounted, watch } from "vue";
 import axios from "axios";
 import Swal from "sweetalert2";
 import ProductSelector from "@/components/ProductSelector.vue";
 import PromotionSelector from "@/components/PromotionSelector.vue";
+import ServiecsSelector from '@/components/ServiecsSelector.vue';
 import Promotion_ProductSelector from "@/components/Promotion_ProductSelector.vue";
 import DeliveryAddressPopup from "@/components/DeliveryAddressPopup.vue";
 import DeliveryAddressPopupBase from '@/components/DeliveryAddressPopupBase.vue'
@@ -762,11 +813,13 @@ console.log("BASE_URL_LOCAL:", BASE_URL_LOCAL);
 
 const BASE_URL_MAC_FIVEL = import.meta.env.VITE_API_URL_MAC_FIVE;
 const BASE_URL_AUTH = import.meta.env.VITE_API_URL_AUTH;
+// eslint-disable-next-line no-unused-vars
 const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 
 export default {
   // name: 'SignupForm',
   components: {
+    ServiecsSelector,
     ProductSelector,
     PromotionSelector,
     Promotion_ProductSelector,
@@ -777,6 +830,10 @@ export default {
   },
   data() {
     return {
+
+      showActions: false,
+      collapsed: false, // default: แสดงรายละเอียด
+
       approvedVoucherNo: "", // สำหรับเก็บเลขที่เอกสารที่อนุมัติแล้ว
 
       currentDocumentNo: "", // แสดง document_no ใน breadcrumb
@@ -798,6 +855,8 @@ export default {
       //  เก็บข้อมูลที่อยู่ที่เลือกจาก popup
       selectedAddress: [],
       selectedAddressBase: [],
+
+      selectedServices: [],
 
       // … existing data …
       isReadOnly: true, // ใช้ควบคุมสถานะ readonly
@@ -822,6 +881,8 @@ export default {
       },
 
       showMore: false, // ค่าเริ่มต้น
+
+      showServiecsSelector: false,
 
       showProductSelector: false,
       showPromotionSelector: false,
@@ -914,6 +975,7 @@ export default {
       //form ที่โหลดมาตั้งต้นเพื่อเปรียบเทียบค่าว่ามีการเปลี่ยนแปลงก่อนอัปเดทไหม
       originalFormData: {},
       originalSelectedProducts: [],
+      originalSelectedServices: [],
 
       selectedProducts: [], // ค่าเริ่มต้นเป็น array ว่าง
 
@@ -1071,6 +1133,31 @@ export default {
 
   methods: {
 
+    // ฟอร์แมตราคาพร้อมคอมม่าและทศนิยม 2 ตำแหน่ง
+        formatPrice(value) {
+          if (!value || isNaN(value)) return "0.00";
+          return Number(value).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        },
+
+        // แปลง input กลับเป็นตัวเลข และไม่อนุญาตตัวอักษร, ค่าต่ำกว่า 1
+        onPriceInput(event, service) {
+          let value = event.target.value.replace(/,/g, ''); // ลบ comma ออกก่อน
+          value = parseFloat(value);
+          if (isNaN(value) || value < 1) value = 1;
+          service.price = value;
+          event.target.value = this.formatPrice(service.price); // แสดงฟอร์แมต
+        },
+
+    handleResize() {
+      // ปิด toggle บนมือถือเวลาเลื่อนเป็น desktop
+      if (window.innerWidth >= 768) {
+        this.showActions = true;
+      }
+    },
+
     async goToPrint() {
 
       console.log("📄 ข้อมูลเอกสารที่โหลด:", this.formData);
@@ -1205,16 +1292,39 @@ export default {
             return productObj;
           });
 
+           this.selectedServices = resData.data.services.map(service => {
+
+                console.log("🛠️ กำลัง map service:", service); //  log ตรงนี้เช็กแต่ละตัว
+
+                const serviceObj = {
+                    id: service.id,
+                    order_id: service.order_id,
+                    price: service.price,
+                    // pro_id: service.pro_id,
+                    qty: service.qty,
+                    service_code: service.service_code,
+                    service_name: service.service_name,
+
+                };
+
+                console.log("🛠️ serviceObj:", serviceObj);
+                return serviceObj;
+
+            });
+
+
           // ✅ เพิ่มข้อมูลที่อยู่จัดส่งลงใน data
           this.deliveryAddress = resData.data.deliveryAddress || {};
 
           console.log("📄 ข้อมูลเอกสารที่โหลด:", this.formData);
           console.log("🛒 รายการสินค้า:", this.selectedProducts);
           console.log("🛒 ข้อมูลที่อยู่จัดส่ง:", this.deliveryAddress);
+          console.log("🛠️ รายการ service:", this.selectedServices);
 
           // ยังไม่ใช้
           this.originalFormData = JSON.parse(JSON.stringify(this.formData)); // deep copy
           this.originalSelectedProducts = JSON.parse(JSON.stringify(this.selectedProducts));
+          this.originalSelectedServices = JSON.parse(JSON.stringify(this.selectedServices));
 
           this.isLoading = false;
         } else {
@@ -1570,6 +1680,12 @@ export default {
       }
     },
 
+    handleSelectedServices(services) {
+      // console.log('Check services : ', services);
+      this.selectedServices = services;
+      console.log("เลือกค่าบริการ:", this.selectedServices);
+    },
+
     //
     async addSelectedProductsWithmonth(payload) {
       console.log("📦 payload ที่ได้รับ ที่ได้รับจาก Promotion_ProductSelector:", payload);
@@ -1605,11 +1721,13 @@ export default {
         const matchedTitle =
           emitTitles.find((emit) => emit.pro_goods_id == item.pro_goods_id) || {};
 
+        // eslint-disable-next-line no-unused-vars
         const filteredGifts = giftsDay.filter((gift) =>
           gift.pro_activity_id !== item.pro_activity_id
             ? item.pro_activity_id
             : gift.pro_activity_id
         );
+        // eslint-disable-next-line no-unused-vars
         const filteredPromotions = promotions.filter((promo) =>
           promo.pro_activity_id !== item.pro_activity_id
             ? item.pro_activity_id
@@ -1915,11 +2033,13 @@ export default {
               emit.pro_sku_price_id == item.pro_sku_price_id
           ) || {};
 
+        // eslint-disable-next-line no-unused-vars
         const filteredGifts = giftsDay.filter((gift) =>
           gift.pro_activity_id !== item.pro_activity_id
             ? item.pro_activity_id
             : gift.pro_activity_id
         );
+        // eslint-disable-next-line no-unused-vars
         const filteredPromotions = promotions.filter((promo) =>
           promo.pro_activity_id !== item.pro_activity_id
             ? item.pro_activity_id
@@ -2060,6 +2180,7 @@ export default {
           // if (similarItem || alreadyExists) return 'ACTIVITY_NOT_LOOP';
           // if (similarItem) return "SIMILAR_SN_DIFFERENT_ACTIVITY";
 
+          // eslint-disable-next-line no-unreachable
           return "NEW";
         })();
 
@@ -2468,6 +2589,11 @@ export default {
           }
         }
 
+         // เพิ่ม Services ลง payload
+        if (this.selectedServices && this.selectedServices.length > 0) {
+            payload.append('services', JSON.stringify(this.selectedServices));
+        }
+
         // if (!this.formData.receiverName) {
         //   Swal.fire({
         //     icon: "warning",
@@ -2684,8 +2810,9 @@ export default {
       const isFormChanged = JSON.stringify(this.formData) !== JSON.stringify(this.originalFormData);
       const isProductChanged =
         JSON.stringify(this.selectedProducts) !== JSON.stringify(this.originalSelectedProducts);
+          const isServiceChanged = JSON.stringify(this.selectedServices) !== JSON.stringify(this.originalSelectedServices);
       const isVatChanged = this.isVathidden !== this.originalIsVathidden;
-      return isFormChanged || isProductChanged || isVatChanged;
+      return isFormChanged || isProductChanged || isVatChanged || isServiceChanged;
     },
 
 
@@ -2816,6 +2943,25 @@ export default {
 
       // 📌 ใส่ไว้ใน saveDocument()
       // await this.saveDocument(addressData);
+    },
+
+    removeService(index) {
+      Swal.fire({
+            title: 'ยืนยันการลบ?',
+            text: 'คุณต้องการลบค่าบริการนี้ออกจากรายการใช่หรือไม่?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'ใช่, ลบเลย!',
+            cancelButtonText: 'ยกเลิก'
+        }).then((result) => {
+            if (result.isConfirmed) {
+
+                  this.selectedServices.splice(index, 1);
+
+                Swal.fire('ลบแล้ว!', 'ค่าบริการถูกลบออกจากรายการ.', 'success');
+            }
+        });
+
     },
 
     removeProduct(index, activityId) {
@@ -2969,6 +3115,11 @@ export default {
       return totalprice;
     },
 
+    // ปุ่ม dropdown สำหรับมือถือ
+    toggleDropdown() {
+        this.isDropdownOpen = !this.isDropdownOpen;
+    },
+
     toggleShowMoreData() {
       this.showMoreData = !this.showMoreData;
       console.log("😵‍💫😵‍💫 showMoreData:", this.showMoreData);
@@ -3118,6 +3269,7 @@ export default {
             })
 
             // location.reload();
+            // eslint-disable-next-line no-undef
             const message = err.response?.data?.message || err.message || "เกิดข้อผิดพลาด";
             console.error("เกิดข้อผิดพลาด", message);
           }
@@ -3346,10 +3498,37 @@ export default {
         ],
       };
 
+      // eslint-disable-next-line no-unreachable, no-undef
       console.log("📦 Macfive Payload:\n", JSON.stringify(payload, null, 2));
+      // eslint-disable-next-line no-undef
       return payload;
     },
   },
 
 };
 </script>
+
+
+
+<style scoped>
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+.fade-slide-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+.fade-slide-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+</style>

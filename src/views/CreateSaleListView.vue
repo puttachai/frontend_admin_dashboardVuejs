@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-unused-vars -->
 <!-- eslint-disable vue/no-deprecated-v-on-native-modifier -->
 <template>
 
@@ -14,7 +15,8 @@
                 <nav class="text-sm text-gray-600">
                     <ul class="flex items-center space-x-1">
                         <li>
-                            <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
+                            <router-link to="/createsalelist" class="hover:text-purple-600 transition">Home</router-link>
+                            <!-- <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link> -->
                             <span class="mx-1 text-gray-400">›</span>
                         </li>
                         <li>
@@ -233,6 +235,10 @@
                         class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                         + เพิ่มแถวสินค้า
                     </button> -->
+                    <button @click="showServiecsSelector = true" :disabled="isReadOnly"
+                        class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        ค่าบริการอื่นๆ
+                    </button>
                     <button @click="showProductSelector = true" :disabled="isReadOnly"
                         class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                         เลือกสินค้า
@@ -262,6 +268,10 @@
                             class="block w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-100">
                             + เพิ่มแถวสินค้า
                         </button> -->
+                        <button @click="showServiecsSelector = true" :disabled="isReadOnly"
+                            class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            ค่าบริการอื่นๆ
+                        </button>
                         <button @click="showProductSelector = true" :disabled="isReadOnly"
                             class="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-100">
                             เลือกสินค้า
@@ -279,6 +289,9 @@
             </div>
 
             <!-- Popup Component -->
+            <ServiecsSelector v-if="showServiecsSelector" :productList="Apiproducts" @close="showServiecsSelector = false"
+                :selectedServices="selectedServices" @select-services="handleSelectedServices" />
+
             <ProductSelector v-if="showProductSelector" :productList="Apiproducts" @close="showProductSelector = false"
                 :selectProducts_old_month="selectedProducts" @selectProductsWithMonth="addSelectedProductsWithmonth" />
             <!-- <ProductSelector v-if="showProductSelector" :productList="Apiproducts" @close="showProductSelector = false"
@@ -452,6 +465,47 @@
                                 </td>
                             </tr>
                         </template>
+
+                          <!-- row แสดง services -->
+                        <tr v-if="selectedServices.length > 0" class="bg-green-50 hover:bg-green-100 transition-colors duration-300">
+                          <td colspan="9" class="px-6 py-4 border rounded-md">
+                            <div class="flex items-center space-x-2 text-green-800 font-medium">
+                              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor"
+                                  stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 0 0118 0z"/>
+                              </svg>
+                              <span>ค่าบริการอื่นๆ</span>
+                            </div>
+
+                            <ul class="list-inside ml-6 mt-2 text-sm text-gray-700">
+                              <li v-for="(service, serviceIndex) in selectedServices" :key="service.id"
+                                  class="flex justify-between items-center py-1 border-b">
+
+                                <!-- ข้อมูล service -->
+                                <div>
+                                  <span class="font-semibold">{{ service.service_code }}</span> - {{ service.service_name }}
+                                  (จำนวน: {{ service.qty }})
+                                </div>
+
+                                <!-- ราคาแก้ไขได้ -->
+                                <div class="flex items-center space-x-2">
+                                  <input type="text"
+                                        :value="formatPrice(service.price)"
+                                        @input="onPriceInput($event, service)"
+                                        class="w-32 px-2 py-1 border rounded text-right" />
+                                  <span class="text-gray-600">฿</span>
+
+                                  <!-- ปุ่มลบ -->
+                                  <button @click="!isReadOnly && removeService(serviceIndex)"
+                                          class="ml-2 text-red-500 hover:text-red-700 font-bold">
+                                    ลบ
+                                  </button>
+                                </div>
+                              </li>
+                            </ul>
+                          </td>
+                        </tr>
 
 
                         <!-- <template v-for="(group, activityId) in groupByActivityIdmonth(selectedProducts)"
@@ -699,7 +753,7 @@
 
                         <div class="flex justify-end gap-4 mt-4">
                             <!-- ปุ่ม popup ด้านล่างขวา -->
-                          <div class="bottom-6 right-6 z-50 justify-self-end">
+                          <div class="bottom-6 right-6 z-20 justify-self-end">
                               <button
                                   @click="showAddressPopupBase = true"
                                   :disabled="isReadOnly"
@@ -710,7 +764,7 @@
                           </div>
 
                           <!-- ปุ่ม popup ด้านล่างขวา -->
-                          <div class="bottom-6 right-6 z-50 justify-self-end">
+                          <div class="bottom-6 right-6 z-20 justify-self-end">
                               <button
                                   @click="showAddressPopup = true"
                                   :disabled="isReadOnly"
@@ -883,13 +937,17 @@
 import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import ServiecsSelector from '../components/ServiecsSelector.vue';
 import ProductSelector from '../components/ProductSelector.vue';
 import PromotionSelector from '../components/PromotionSelector.vue';
 import Promotion_ProductSelector from '../components/Promotion_ProductSelector.vue';
 import DeliveryAddressPopup from '@/components/DeliveryAddressPopup.vue'
 import DeliveryAddressPopupBase from '@/components/DeliveryAddressPopupBase.vue'
 
+// eslint-disable-next-line no-unused-vars
 import { sendToMacfive } from "@/services/macfiveService.js";
+
+
 
 // import { logActivity } from '@/services/activityLogger.js'
 
@@ -913,8 +971,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 const BASE_URL_C_SHARP = import.meta.env.VITE_API_URL_C_SHARP;
 
-console.log('adadasdsadadasdadasdadasdasda', BASE_URL_LOCAL);
-
+// console.log('adadasdsadadasdadasdadasdasda', BASE_URL_LOCAL);
 
 const BASE_URL_AUTH = import.meta.env.VITE_API_URL_AUTH;
 
@@ -931,6 +988,7 @@ const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 export default {
     name: 'SignupForm',
     components: {
+        ServiecsSelector,
         ProductSelector,
         PromotionSelector,
         Promotion_ProductSelector,
@@ -981,12 +1039,16 @@ export default {
 
             showMore: false, // ค่าเริ่มต้น
 
+            showServiecsSelector: false,
+
             showProductSelector: false,
             showPromotionSelector: false,
             showProductSelectoronly: false,
 
             showPromotionProductSelector: false,
             selectedPromotion: [],
+
+            selectedServices: [],
 
             showConfirmEditPopup: false,
             popupFormData: [],
@@ -1097,6 +1159,7 @@ export default {
             //form ที่โหลดมาตั้งต้นเพื่อเปรียบเทียบค่าว่ามีการเปลี่ยนแปลงก่อนอัปเดทไหม
             originalFormData: {},
             originalSelectedProducts: [],
+            originalSelectedServices: [],
 
             selectedProducts: [], // ค่าเริ่มต้นเป็น array ว่าง
 
@@ -1258,7 +1321,23 @@ export default {
     },
 
     methods: {
+        // ฟอร์แมตราคาพร้อมคอมม่าและทศนิยม 2 ตำแหน่ง
+        formatPrice(value) {
+          if (!value || isNaN(value)) return "0.00";
+          return Number(value).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        },
 
+        // แปลง input กลับเป็นตัวเลข และไม่อนุญาตตัวอักษร, ค่าต่ำกว่า 1
+        onPriceInput(event, service) {
+          let value = event.target.value.replace(/,/g, ''); // ลบ comma ออกก่อน
+          value = parseFloat(value);
+          if (isNaN(value) || value < 1) value = 1;
+          service.price = value;
+          event.target.value = this.formatPrice(service.price); // แสดงฟอร์แมต
+        },
 
         async submittedProduct() {
 
@@ -1955,6 +2034,26 @@ export default {
 
         },
 
+        removeService(index) {
+
+          Swal.fire({
+                title: 'ยืนยันการลบ?',
+                text: 'คุณต้องการลบค่าบริการนี้ออกจากรายการใช่หรือไม่?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ใช่, ลบเลย!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                     this.selectedServices.splice(index, 1);
+
+                    Swal.fire('ลบแล้ว!', 'ค่าบริการถูกลบออกจากรายการ.', 'success');
+                }
+            });
+
+        },
+
         updateDeliveryDate(newDate) {
             this.formData.deliveryDate = newDate;
             this.formData.sellDate = newDate; // ❌ อัปเดต sellDate ด้วย
@@ -2289,7 +2388,6 @@ export default {
 
             const payload = new FormData();
 
-
             // for (const key in this.formData) {
             //     if (key === 'productList') {
             //         // แปลง array เป็น JSON string แล้วแนบ
@@ -2306,6 +2404,12 @@ export default {
                     payload.append(key, this.formData[key]);
                 }
             }
+
+            // เพิ่ม Services ลง payload
+            if (this.selectedServices && this.selectedServices.length > 0) {
+                payload.append('services', JSON.stringify(this.selectedServices));
+            }
+
 
            if (
                 (
@@ -2734,6 +2838,11 @@ export default {
                     }
                 }
 
+                // เพิ่ม Services ลง payload
+                if (this.selectedServices && this.selectedServices.length > 0) {
+                    payload.append('services', JSON.stringify(this.selectedServices));
+                }
+
                 if (!this.formData.receiverName) {
                     Swal.fire({
                         icon: 'warning',
@@ -2922,8 +3031,9 @@ export default {
         isDataChanged() {
             const isFormChanged = JSON.stringify(this.formData) !== JSON.stringify(this.originalFormData);
             const isProductChanged = JSON.stringify(this.selectedProducts) !== JSON.stringify(this.originalSelectedProducts);
+            const isServiceChanged = JSON.stringify(this.selectedServices) !== JSON.stringify(this.originalSelectedServices);
             const isVatChanged = this.isVathidden !== this.originalIsVathidden;
-            return isFormChanged || isProductChanged || isVatChanged;
+            return isFormChanged || isProductChanged || isVatChanged || isServiceChanged;
         },
 
 
@@ -2989,7 +3099,7 @@ export default {
 
                     this.selectedProducts = resData.data.productList.map(product => {
 
-                        console.log("🛠️ กำลัง map product:", product); // 👈 log ตรงนี้เช็กแต่ละตัว
+                        console.log("🛒 กำลัง map product:", product); // log ตรงนี้เช็กแต่ละตัว
 
                         const productObj = {
                             item_id: product.id,
@@ -3032,11 +3142,33 @@ export default {
 
                     });
 
+                    this.selectedServices = resData.data.services.map(service => {
+
+                        console.log("🛠️ กำลัง map service:", service); //  log ตรงนี้เช็กแต่ละตัว
+
+                        const serviceObj = {
+                            id: service.id,
+                            order_id: service.order_id,
+                            price: service.price,
+                            // pro_id: service.pro_id,
+                            qty: service.qty,
+                            service_code: service.service_code,
+                            service_name: service.service_name,
+
+                        };
+
+                        console.log("🛠️ serviceObj:", serviceObj);
+                        return serviceObj;
+
+                    });
+
                     console.log("📄 ข้อมูลเอกสารที่โหลด:", this.formData);
-                    console.log("🛒 รายการสินค้า:", this.selectedProducts)
+                    console.log("🛒 รายการสินค้า:", this.selectedProducts);
+                    console.log("🛠️ รายการ service:", this.selectedServices);
 
                     this.originalFormData = JSON.parse(JSON.stringify(this.formData)); // deep copy
                     this.originalSelectedProducts = JSON.parse(JSON.stringify(this.selectedProducts));
+                    this.originalSelectedServices = JSON.parse(JSON.stringify(this.selectedServices));
 
 
                     this.isLoading = false;
@@ -3410,6 +3542,12 @@ export default {
             setTimeout(() => {
                 this.showPromotionSelector = true
             }, 100)
+        },
+
+        handleSelectedServices(services) {
+          // console.log('Check services : ', services);
+          this.selectedServices = services;
+          console.log("เลือกค่าบริการ:", this.selectedServices);
         },
 
         // //handleSelectedProducts
@@ -4213,6 +4351,7 @@ export default {
                 pro_goods_sku_text: '',
             });
         },
+
         openSelectorForRow(index) {
             this.editIndex = index;
             this.showProductSelectoronly = true;

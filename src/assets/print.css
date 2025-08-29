@@ -3,7 +3,7 @@
 @page {
   size: A4;
   margin: 10mm;
-  
+
 }
 
 
@@ -11,7 +11,15 @@
   /* ซ่อนทุก element */
   body * {
     visibility: hidden !important;
-    
+
+  }
+
+    .signature {
+    /* display: none !important; */
+    /* border-b border-gray-300 pt-4 */
+    border-bottom: none !important;
+    padding-top: 5rem;
+
   }
 
   /* table,
@@ -34,7 +42,7 @@
 
   .print-page {
     page-break-after: always;
-    min-height: 255mm; 
+    min-height: 255mm;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -43,8 +51,8 @@
     border: none !important;
     background: white !important;
   }
-  
-  
+
+
   /* ยกเว้นเฉพาะเลย์เอาต์ของเรา */
   .print-container,
   .print-container * {
@@ -87,11 +95,12 @@
   .no-print {
     display: none !important;
   }
- 
+
   .signature {
     /* display: none !important; */
     /* border-b border-gray-300 pt-4 */
     border-bottom: none !important;
+
   }
 
 }
@@ -103,6 +112,6 @@
     margin: 3rem auto;
     background: white;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    
+
   }
 }

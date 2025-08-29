@@ -1,41 +1,81 @@
+<!-- eslint-disable vue/no-use-v-if-with-v-for -->
 <template>
 
   <!-- กล่องรวม breadcrumb + action bar -->
-  <div class="fixed top-16 left-16 right-0 bg-white rounded-lg p-4 shadow-lg z-50 responsive-action-bar">
-
-    <!-- Breadcrumb + ActionBar inline -->
-    <div class="flex flex-wrap md:flex-nowrap justify-between  items-center gap-4">
-
-      <!-- Breadcrumb -->
-      <nav class="text-sm text-gray-600">
-        <ul class="flex items-center space-x-1">
-          <li>
-            <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
-            <span class="mx-1 text-gray-400">›</span>
-          </li>
-          <li>
-            <router-link to="/saleorder" class="hover:text-purple-600 transition">Sale Order List</router-link>
-            <span class="mx-1 text-gray-400">›</span>
-          </li>
-          <li class="text-purple-600 font-medium">
-            {{ printData.order.documentNo || "Loading..." }}
-          </li>
-    
-        </ul>
-      </nav>
-
-      <button @click="print" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md text-xs">
-        พิมพ์เอกสาร
-      </button>
-
-    </div>
+  <!-- Breadcrumb (ฐาน) -->
+  <div
+    class="fixed top-16 left-0 right-0 md:left-16 bg-white rounded-lg p-2 md:p-4 shadow-lg z-40 transition-all duration-300"
+  >
+    <nav class="text-[11px] sm:text-xs md:text-sm text-gray-600 font-medium">
+      <ul class="flex items-center flex-wrap space-x-1">
+        <li>
+          <router-link
+            to="/dashboard"
+            class="hover:text-purple-600 transition"
+          >
+            Home
+          </router-link>
+          <span class="mx-1 text-gray-400">›</span>
+        </li>
+        <li>
+          <router-link
+            to="/saleorder"
+            class="hover:text-purple-600 transition"
+          >
+            Sale Order List
+          </router-link>
+          <span class="mx-1 text-gray-400">›</span>
+        </li>
+        <li
+          class="text-purple-600 font-semibold truncate max-w-[120px] sm:max-w-[180px] md:max-w-none"
+        >
+          {{ printData.order.documentNo || "Loading..." }}
+        </li>
+      </ul>
+    </nav>
   </div>
+
+  <!-- ปุ่ม Toggle -->
+  <div class="fixed top-12 right-4 z-50">
+    <button
+      @click="toggleBar"
+      class="bg-gray-200 hover:bg-gray-300 rounded-full p-2 shadow-md transition"
+      aria-label="Toggle Action Bar"
+    >
+      <span
+        class="material-icons text-gray-700 transition-transform duration-300"
+        :class="isVisible ? 'rotate-0' : 'rotate-180'"
+      >
+        expand_less
+      </span>
+    </button>
+  </div>
+
+  <!-- Action Bar (ซ่อน/แสดงได้) -->
+  <transition name="slide-fade">
+    <div
+      v-show="isVisible"
+      class="fixed top-24 right-4 justify-center bg-white rounded-xl p-2 md:p-3 shadow-lg z-40 border border-gray-100 transition-all duration-300"
+    >
+      <!-- กล่องที่ต้องการให้ปุ่มอยู่ตรงกลาง -->
+<div class="flex justify-center mt-4">
+  <button
+    @click="print"
+    class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-1.5 px-4 rounded-lg text-[11px] md:text-xs shadow-sm transition"
+  >
+    <span class="material-icons text-sm">print</span>
+    พิมพ์เอกสาร
+  </button>
+</div>
+    </div>
+  </transition>
+
 
   <div class="print-container bg-white shadow-lg rounded-xl p-10 font-sans text-gray-800 text-[15px] no-print-shadow"
     ref="printArea">
 
     <!-- class="page-section" -->
-    <!-- ✅ Header (แสดงทุกหน้า) -->
+    <!--  Header (แสดงทุกหน้า) -->
     <!-- BUTTON -->
     <div class="no-print text-end mb-8">
       <button @click="print" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-md text-xs">
@@ -46,7 +86,7 @@
     <div v-for="(chunk, pageIndex) in paginatedItems" :key="pageIndex" class="print-page py-6 border-b border-gray-300"
       :class="{ 'print-page': pageIndex < paginatedItems.length - 1 }">
       <!-- HEADER -->
-      <!-- ✅ Header (แสดงทุกหน้า) -->
+      <!--  Header (แสดงทุกหน้า) -->
       <div class="header-section shrink-0">
 
         <!-- LOGO + COMPANY INFO -->
@@ -57,7 +97,7 @@
             <p>เลขที่ 11 ซอยราษฎร์พัฒนา 16 แขวงราษฎร์พัฒนา</p>
             <p>เขตสะพานสูง กรุงเทพมหานคร 10240</p>
             <p>โทร. 02 084 9977</p>
-            <p>เลขประจำตัวผู้เสียภาษี: 00000000000</p>
+            <p>เลขประจำตัวผู้เสียภาษี: 0105559169551</p>
           </div>
         </div>
       </div>
@@ -90,7 +130,8 @@
         </div>
 
         <!-- PRODUCT TABLE -->
-        <table class="w-full border border-gray-300 text-xs">
+          <div class="overflow-x-auto">
+        <table class="w-full border border-gray-300 text-xs min-w-[600px]">
           <thead class="bg-gray-100 text-[10px] font-semibold">
             <tr>
               <th class="border border-gray-300 px-2 py-2 text-center">ลำดับ</th>
@@ -150,76 +191,13 @@
 
 
         </table>
+        </div>
       </div>
 
       <!-- SUMMARY + SIGNATURE เฉพาะหน้า "สุดท้าย"  text-[15px]-->
       <!-- ✅ Footer (แสดงทุกหน้า) -->
 
       <div v-if="isLastPage(pageIndex)" class="footer-section shrink-0">
-
-        <!-- <div class="mt-6 text-right space-y-1">
-        <div v-if="isVathidden" class="text-gray-700">
-          มูลค่ารวมก่อนภาษี:
-          <span class="ml-2 text-gray-700">
-            {{
-              netAmountBeforeVat.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })
-            }}
-          </span>
-
-        </div>
-
-     
-        <div class="text-gray-700 flex items-center justify-end">
-          <input type="checkbox" v-model="isVathidden" id="vatCheckbox" :disabled="isReadOnly" class="mr-2" />
-          <label for="vatCheckbox">แสดงภาษีมูลค่าเพิ่ม (7%) และมูลค่าก่อนภาษี</label>
-        
-          <span v-if="isVathidden" class="ml-2 text-gray-700">
-            {{
-              formatCurrency.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })
-            }}
-            บาท
-          </span>
-
-        </div>
-
-        <div v-if="!formData.deliveryFee === 0 " class="text-gray-700">
-                    ค่าจัดส่ง:
-                    <span class="ml-2 text-gray-700" >
-                       {{ formData.deliveryFee ? formData.deliveryFee.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }) : '0.00' }}
-                    </span>
-                </div>
-                <div v-if="!formData.totalDiscount === 0" class="text-gray-700">
-                    ส่วนลดท้ายบิล:
-                    <span class="ml-2 text-gray-700" >
-                       {{ formData.totalDiscount ? formData.totalDiscount.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }) : '0.00' }}
-                    </span>
-                </div>
-
-        <div class="text-xl font-bold text-purple-700 mt-2">
-          มูลค่ารวมสุทธิ:
-          <span class="ml-2 text-blue-600">
-            {{
-              formatCurrency.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })
-            }}
-          </span>
-    
-        </div>
-      </div> -->
 
         <div class="text-right space-y-1">
           <div v-if="isVathidden">
@@ -244,8 +222,9 @@
           </div>
         </div>
 
-        <!-- SIGNATURE -->
-        <div class="signature flex justify-between mt-6 mb-6 px-12  pt-4">
+        <!-- SIGNATURE sm:py-6  -->
+        <div class="signature flex justify-between ">
+        <!-- <div class="signature flex justify-between mt-6 mb-6 px-12 pt-4"> -->
           <div class="text-center mb-4">
             <p>.............................................</p>
             <p class="mt-1">ผู้จัดทำ</p>
@@ -259,7 +238,7 @@
         <div>
 
         </div>
-        <div class="text-xs text-right text-gray-500 mt-2"> 
+        <div class="text-xs text-right text-gray-500 mt-2">
           หน้าเอกสารที่ {{ pageIndex + 1 }} จากทั้งหมด {{ paginatedItems.length }} หน้า
         </div>
 
@@ -277,16 +256,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import Swal from "sweetalert2"; // ✅ อย่าลืม import
 
 const route = useRoute();
 const router = useRouter();
 
-
+const isVisible = ref(true); // เริ่มต้นให้แสดง action bar
 const isVathidden = ref(false); // เริ่มต้นให้ไม่แสดงภาษี
 // const originalIsVathidden = ref(false); //
+
+const isWideScreen = ref(window.innerWidth > 450);
 
 const ITEMS_PER_PAGE = 16;
 
@@ -360,6 +341,23 @@ onMounted(() => {
 //   // window.print();
 // });
 
+
+const toggleBar = () => {
+  isVisible.value = !isVisible.value;
+};
+
+const handleResize = () => {
+  isWideScreen.value = window.innerWidth > 450;
+};
+
+onMounted(() => {
+  window.addEventListener("resize", handleResize);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
+});
+
 const paginatedItems = computed(() => {
   const products = printData.value?.productList || [];
   const gifts = uniqueGifts.value || [];
@@ -384,6 +382,7 @@ const paginatedItems = computed(() => {
   return chunks;
 });
 
+// eslint-disable-next-line no-unused-vars
 const chunkArray = (array, size) => {
   const chunks = [];
   for (let i = 0; i < array.length; i += size) {
@@ -442,260 +441,85 @@ const formatCurrency = (num) =>
 </script>
 
 
-<!-- 
 
-
-// function groupByActivityId(products) {
-//   return products.reduce((acc, item) => {
-//     const promoId = item.promotions?.[0]?.pro_activity_id ?? null;
-//     const promoSt = item.promotions?.[0]?.st ?? null;
-
-//     let key, title;
-//     if (promoId !== null) {
-//       key = `promo-${promoId}-st${promoSt}`;
-//       title = promoSt
-//         ? `🔥 โปรโมชั่นรายวัน ${promoId}`
-//         : `🎯 โปรโมชั่นรายเดือน ${promoId}`;
-//     } else {
-//       const pid = Number(item.pro_activity_id);
-//       const st = item.st ? 1 : 0;
-//       key = pid === 0
-//         ? `monthly-st${st}`
-//         : `invalid-activity`;
-//       title = pid === 0
-//         ? '🎯 โปรโมชั่นรายเดือน'
-//         : '⚠️ โปรไม่เข้าเงื่อนไข';
-//     }
-
-//     if (!acc[key]) {
-//       acc[key] = {
-//         title,
-//         items: [],
-//         promotions: [],
-//         gifts: []
-//       };
-//     }
-
-//     acc[key].items.push(item);
-//     if (item.promotions) acc[key].promotions.push(...item.promotions);
-//     if (item.gifts) acc[key].gifts.push(...item.gifts);
-
-//     return acc;
-//   }, {});
-// }
-
-// const groupedProducts = computed(() => groupByActivityId(printData.value.productList));
-
-// // แยกสินค้าโปรรายเดือนและรายวัน
-// const monthlyProducts = computed(() => {
-//   return printData.value.productList.filter(
-//     (item) => item.pro_activity_id === 0 && item.st === 0
-//   );
-// });
-
-// const dailyProducts = computed(() => {
-//   return printData.value.productList.filter(
-//     (item) => !(item.pro_activity_id === 0 && item.st === 0)
-//   );
-// });
-
-// // แบ่งหน้าละ 10 รายการ (หรือปรับได้)
-// function paginate(items, perPage = 10) {
-//   const pages = [];
-//   for (let i = 0; i < items.length; i += perPage) {
-//     pages.push(items.slice(i, i + perPage));
-//   }
-//   return pages;
-// }
-
-// const monthlyPages = computed(() => paginate(monthlyProducts.value));
-// const dailyPages = computed(() => paginate(dailyProducts.value));
-
-
-// const paginatedItems = computed(() => chunkArray(orderItems.value, 10));
-
-const print = () => window.print();
-
-const formatCurrency = (num) =>
-  new Intl.NumberFormat("th-TH", {
-    style: "currency",
-    currency: "THB",
-  }).format(num);
-</script>
- -->
-
-
-<!-- <tbody>
-            <!-- v-for="(item, index) in printData.productList" -->
-<!--
-            <tr
-              v-for="(item, index) in chunk"
-              :key="index"
-              :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
-              class="text-[11px] align-top"
-            >
-              <!-- <td class="border border-gray-300 px-2 py-1 text-center">{{ index + 1 }}</td> 
-              <td class="border border-gray-300 px-2 py-1 text-center">{{ pageIndex * 10 + index + 1 }}</td>
-              <td class="border border-gray-300 px-2 py-1">{{ item.pro_sku_price_id }}</td>
-              <td class="border border-gray-300 px-2 py-1">{{ item.pro_erp_title }}</td>
-              <td class="border border-gray-300 px-2 py-1 text-right">{{ item.pro_goods_num }}</td>
-              <td class="border border-gray-300 px-2 py-1 text-center">
-                {{ item.pro_unit || "-" }}
-              </td>
-              <td class="border border-gray-300 px-2 py-1 text-right">
-                {{ formatCurrency(item.pro_unit_price) }}
-              </td>
-              <td class="border border-gray-300 px-2 py-1 text-right">{{ item.pro_discount }}</td>
-              <td class="border border-gray-300 px-2 py-1 text-right">
-                {{ formatCurrency(item.pro_total_price) }}
-              </td>
-            </tr>
-          </tbody> -->
-
-<!-- const orderItems = ref([
-  {
-    code: "IC-0001",
-    name: "คอมพิวเตอร์ SAMSUNG",
-    qty: 10,
-    unit: "เครื่อง",
-    unitPrice: 15000,
-    discount: "3%",
-    total: 145500,
-  },
-  {
-    code: "IC-0002",
-    name: "คอมพิวเตอร์",
-    qty: 10,
-    unit: "เครื่อง",
-    unitPrice: 12000,
-    discount: "0%",
-    total: 120000,
-  },
-  {
-    code: "IC-0003",
-    name: "คีย์บอร์ด",
-    qty: 10,
-    unit: "อัน",
-    unitPrice: 3000,
-    discount: "0%",
-    total: 30000,
-  },
-  {
-    code: "IC-0004",
-    name: "เครื่อง SCAN",
-    qty: 10,
-    unit: "ตัว",
-    unitPrice: 3000,
-    discount: "0%",
-    total: 30000,
-  },
-  {
-    code: "IC-0001",
-    name: "คอมพิวเตอร์ SAMSUNG",
-    qty: 10,
-    unit: "เครื่อง",
-    unitPrice: 15000,
-    discount: "3%",
-    total: 145500,
-  },
-  {
-    code: "IC-0002",
-    name: "คอมพิวเตอร์",
-    qty: 10,
-    unit: "เครื่อง",
-    unitPrice: 12000,
-    discount: "0%",
-    total: 120000,
-  },
-  {
-    code: "IC-0003",
-    name: "คีย์บอร์ด",
-    qty: 10,
-    unit: "อัน",
-    unitPrice: 3000,
-    discount: "0%",
-    total: 30000,
-  },
-  {
-    code: "IC-0004",
-    name: "เครื่อง SCAN",
-    qty: 10,
-    unit: "ตัว",
-    unitPrice: 3000,
-    discount: "0%",
-    total: 30000,
-  },
-  {
-    code: "IC-0001",
-    name: "คอมพิวเตอร์ SAMSUNG",
-    qty: 10,
-    unit: "เครื่อง",
-    unitPrice: 15000,
-    discount: "3%",
-    total: 145500,
-  },
-  {
-    code: "IC-0002",
-    name: "คอมพิวเตอร์",
-    qty: 10,
-    unit: "เครื่อง",
-    unitPrice: 12000,
-    discount: "0%",
-    total: 120000,
-  },
-  {
-    code: "IC-0003",
-    name: "คีย์บอร์ด",
-    qty: 10,
-    unit: "อัน",
-    unitPrice: 3000,
-    discount: "0%",
-    total: 30000,
-  },
-  {
-    code: "IC-0004",
-    name: "เครื่อง SCAN",
-    qty: 10,
-    unit: "ตัว",
-    unitPrice: 3000,
-    discount: "0%",
-    total: 30000,
-  },
-]); -->
-<!-- <style scoped>
-@page {
-  size: A4;
-  margin: 10mm;
+<style scoped>
+/* Animation Slide + Fade */
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
 }
-
-@media print {
-  .page-section {
-    margin-bottom: 2rem;
-  }
-
-  .print-page {
-    page-break-after: always;
-  }
-  body * {
-    visibility: hidden !important;
-    height: 0 !important;
-    overflow: hidden !important;
-  }
-  .print-container,
-  .print-container * {
-    visibility: visible !important;
-    height: auto !important;
-    overflow: visible !important;
-  }
-  .print-container {
-    position: absolute !important;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 10mm;
-  }
-  .no-print {
-    display: none !important;
-  }
+.slide-fade-leave-active {
+  transition: all 0.3s ease-in;
 }
-</style> -->
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>
+
+
+
+
+        <!-- <div class="mt-6 text-right space-y-1">
+        <div v-if="isVathidden" class="text-gray-700">
+          มูลค่ารวมก่อนภาษี:
+          <span class="ml-2 text-gray-700">
+            {{
+              netAmountBeforeVat.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            }}
+          </span>
+
+        </div>
+
+
+        <div class="text-gray-700 flex items-center justify-end">
+          <input type="checkbox" v-model="isVathidden" id="vatCheckbox" :disabled="isReadOnly" class="mr-2" />
+          <label for="vatCheckbox">แสดงภาษีมูลค่าเพิ่ม (7%) และมูลค่าก่อนภาษี</label>
+
+          <span v-if="isVathidden" class="ml-2 text-gray-700">
+            {{
+              formatCurrency.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            }}
+            บาท
+          </span>
+
+        </div>
+
+        <div v-if="!formData.deliveryFee === 0 " class="text-gray-700">
+                    ค่าจัดส่ง:
+                    <span class="ml-2 text-gray-700" >
+                       {{ formData.deliveryFee ? formData.deliveryFee.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }) : '0.00' }}
+                    </span>
+                </div>
+                <div v-if="!formData.totalDiscount === 0" class="text-gray-700">
+                    ส่วนลดท้ายบิล:
+                    <span class="ml-2 text-gray-700" >
+                       {{ formData.totalDiscount ? formData.totalDiscount.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }) : '0.00' }}
+                    </span>
+                </div>
+
+        <div class="text-xl font-bold text-purple-700 mt-2">
+          มูลค่ารวมสุทธิ:
+          <span class="ml-2 text-blue-600">
+            {{
+              formatCurrency.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            }}
+          </span>
+
+        </div>
+      </div> -->

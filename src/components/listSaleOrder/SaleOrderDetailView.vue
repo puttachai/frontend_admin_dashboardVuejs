@@ -3,79 +3,77 @@
     class="mainbox flex flex-col in-h-screen items-center gap-4 justify-center bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
 
     <!-- responsive-action-bar -->
-   <!-- responsive-action-bar -->
-<div
-  class="fixed top-16 left-0 right-0 md:left-16 bg-white rounded-lg p-2 md:p-4 shadow-lg z-40 transition-all duration-300"
-  :class="collapsed ? 'h-12 overflow-hidden' : 'h-auto xs:p-1'"
->
-  <div class="flex justify-between items-center">
-    <!-- Breadcrumb text-xs -->
-    <nav class="md:text-sm xs:text-[12px] text-gray-600 flex-1">
-      <ul class="flex items-center space-x-1 xs:space-x-0.5">
-        <li>
-          <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
-        </li>
-        <span class="mx-1 text-gray-400 xs:mx-0.5">›</span>
-        <li>
-          <router-link to="/saleorder" class="hover:text-purple-600 transition">Sale Order List</router-link>
-        </li>
-        <span class="mx-1 text-gray-400 xs:mx-0.5">›</span>
-        <li class="text-purple-600 font-medium">
-          {{ currentDocumentNo || "Loading..." }}
-        </li>
-      </ul>
-    </nav>
+    <!-- responsive-action-bar -->
+    <div
+      class="fixed top-16 left-0 right-0 md:left-16 bg-white rounded-lg p-2 md:p-4 shadow-lg z-40 transition-all duration-300"
+      :class="collapsed ? 'h-12 overflow-hidden' : 'h-auto xs:p-1'">
+      <div class="flex justify-between items-center">
+        <!-- Breadcrumb text-xs -->
+        <nav class="md:text-sm xs:text-[12px] text-gray-600 flex-1">
+          <ul class="flex items-center space-x-1 xs:space-x-0.5">
+            <li>
+              <router-link to="/dashboard" class="hover:text-purple-600 transition">Home</router-link>
+            </li>
+            <span class="mx-1 text-gray-400 xs:mx-0.5">›</span>
+            <li>
+              <router-link to="/saleorder" class="hover:text-purple-600 transition">Sale Order List</router-link>
+            </li>
+            <span class="mx-1 text-gray-400 xs:mx-0.5">›</span>
+            <li class="text-purple-600 font-medium">
+              {{ currentDocumentNo || "Loading..." }}
+            </li>
+          </ul>
+        </nav>
 
-    <!-- Toggle Button -->
-    <button @click="collapsed = !collapsed"
-            class="ml-4 text-gray-500 hover:text-gray-700 transition xs:ml-2">
-      <span class="material-icons">
-        {{ collapsed ? 'keyboard_arrow_down' : 'keyboard_arrow_up' }}
-      </span>
-    </button>
-  </div>
-
-  <!-- Action Buttons -->
-  <transition name="fade-slide">
-    <div v-show="!collapsed" class="mt-2 flex flex-wrap justify-end gap-2 md:gap-4 xs:gap-1">
-      <!-- Approved -->
-      <div v-if="approvedVoucherNo === 'ตรวจสอบเรียบร้อย'"
-           class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-green-500 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm xs:text-[10px] rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg">
-        <span class="material-icons text-[14px] xs:text-[22px]">add_task</span>
-        <span>เอกสาร: {{ documentNo_route_params }} ได้รับการอนุมัติแล้ว</span>
+        <!-- Toggle Button -->
+        <button @click="collapsed = !collapsed" class="ml-4 text-gray-500 hover:text-gray-700 transition xs:ml-2">
+          <span class="material-icons">
+            {{ collapsed ? 'keyboard_arrow_down' : 'keyboard_arrow_up' }}
+          </span>
+        </button>
       </div>
 
-      <!-- Approve button -->
-      <button v-else-if="canApprove && isReadOnly" @click="saveDocument"
-              class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-green-500 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm xs:text-[10px] rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg">
-        <span class="material-icons text-[14px] xs:text-[22px]">add_task</span>
-        <span>อนุมัติเอกสาร</span>
-      </button>
+      <!-- Action Buttons -->
+      <transition name="fade-slide">
+        <div v-show="!collapsed" class="mt-2 flex flex-wrap justify-end gap-2 md:gap-4 xs:gap-1">
+          <!-- Approved -->
+          <div v-if="approvedVoucherNo === 'ตรวจสอบเรียบร้อย'"
+            class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-green-500 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm xs:text-[10px] rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg">
+            <span class="material-icons text-[14px] xs:text-[22px]">add_task</span>
+            <span>เอกสาร: {{ documentNo_route_params }} ได้รับการอนุมัติแล้ว</span>
+          </div>
 
-      <!-- Print button -->
-      <button @click="goToPrint"
-              class="no-print bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm xs:text-[15px] rounded-md transition">
-        <div class="flex items-center justify-center gap-1 md:gap-2 xs:gap-0.5">
-          <span class="material-icons text-[14px] xs:text-[22px]">print</span>
-          <span>พิมพ์เอกสาร</span>
+          <!-- Approve button -->
+          <button v-else-if="canApprove && isReadOnly" @click="saveDocument"
+            class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-green-500 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm xs:text-[10px] rounded-md hover:bg-green-700 transition duration-300 shadow hover:shadow-lg">
+            <span class="material-icons text-[14px] xs:text-[22px]">add_task</span>
+            <span>อนุมัติเอกสาร</span>
+          </button>
+
+          <!-- Print button -->
+          <button @click="goToPrint"
+            class="no-print bg-blue-600 hover:bg-blue-700 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm xs:text-[15px] rounded-md transition">
+            <div class="flex items-center justify-center gap-1 md:gap-2 xs:gap-0.5">
+              <span class="material-icons text-[14px] xs:text-[22px]">print</span>
+              <span>พิมพ์เอกสาร</span>
+            </div>
+          </button>
+
+          <!-- Edit button -->
+          <button v-if="canEdit && isReadOnly && approvedVoucherNo !== 'ตรวจสอบเรียบร้อย'" @click="enableEditMode"
+            class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-yellow-500 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm sm:text-[15px] rounded-md hover:bg-yellow-600 transition">
+            <span class="material-icons text-[14px] xs:text-[22px]">edit</span>
+            <span>แก้ไข</span>
+          </button>
+
+          <!-- Save Edits -->
+          <button v-if="canEdit && !isReadOnly && formData.documentNo" @click="updateDocument"
+            class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-green-600 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm sm:text-[10px] rounded-md hover:bg-green-700 transition shadow hover:shadow-lg">
+            <span>บันทึกการแก้ไข</span>
+          </button>
         </div>
-      </button>
-
-      <!-- Edit button -->
-      <button v-if="canEdit && isReadOnly && approvedVoucherNo !== 'ตรวจสอบเรียบร้อย'" @click="enableEditMode"
-              class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-yellow-500 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm sm:text-[15px] rounded-md hover:bg-yellow-600 transition">
-        <span class="material-icons text-[14px] xs:text-[22px]">edit</span>
-        <span>แก้ไข</span>
-      </button>
-
-      <!-- Save Edits -->
-      <button v-if="canEdit && !isReadOnly && formData.documentNo" @click="updateDocument"
-              class="flex items-center gap-1 md:gap-2 xs:gap-0.5 bg-green-600 text-white py-1 px-2 md:py-2 md:px-4 xs:py-0.5 xs:px-1 text-xs md:text-sm sm:text-[10px] rounded-md hover:bg-green-700 transition shadow hover:shadow-lg">
-        <span>บันทึกการแก้ไข</span>
-      </button>
+      </transition>
     </div>
-  </transition>
-</div>
 
 
     <!-- form รายการเอกสาร -->
@@ -232,71 +230,71 @@
     <!-- หน้าสินค้า -->
     <div class="w-full mx-auto p-6 bg-white rounded-lg shadow-md">
       <!-- Header -->
-            <div class="flex justify-between items-center mb-4">
-                <!-- ส่วนซ้าย ไอคอนและสินค้า -->
-                <div class="flex items-center gap-2">
-                    <span class="material-icons text-purple-600">assignment_add</span>
-                    <h2 class="text-xl font-semibold text-gray-700">สินค้า</h2>
-                </div>
+      <div class="flex justify-between items-center mb-4">
+        <!-- ส่วนซ้าย ไอคอนและสินค้า -->
+        <div class="flex items-center gap-2">
+          <span class="material-icons text-purple-600">assignment_add</span>
+          <h2 class="text-xl font-semibold text-gray-700">สินค้า</h2>
+        </div>
 
-                <!-- ส่วนขวา: ปุ่มต่าง ๆ -->
-                <div class="hidden mdl:flex gap-2">
-                    <!-- <button @click="addProductRow" :disabled="isReadOnly"
+        <!-- ส่วนขวา: ปุ่มต่าง ๆ -->
+        <div class="hidden mdl:flex gap-2">
+          <!-- <button @click="addProductRow" :disabled="isReadOnly"
                         class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                         + เพิ่มแถวสินค้า
                     </button> -->
-                    <button @click="showServiecsSelector = true" :disabled="isReadOnly"
-                        class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
-                        ค่าบริการอื่นๆ
-                    </button>
-                    <button @click="showProductSelector = true" :disabled="isReadOnly"
-                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        เลือกสินค้า
-                    </button>
-                    <button @click="showPromotionSelector = true" :disabled="isReadOnly"
-                        class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700">
-                        เลือกโปรโมชั่น
-                    </button>
-                    <button @click="removeAllProducts" :disabled="isReadOnly"
-                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-                        ลบสินค้าที่เลือกทั้งหมด
-                    </button>
-                </div>
+          <button @click="showServiecsSelector = true" :disabled="isReadOnly"
+            class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
+            ค่าบริการอื่นๆ
+          </button>
+          <button @click="showProductSelector = true" :disabled="isReadOnly"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            เลือกสินค้า
+          </button>
+          <button @click="showPromotionSelector = true" :disabled="isReadOnly"
+            class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700">
+            เลือกโปรโมชั่น
+          </button>
+          <button @click="removeAllProducts" :disabled="isReadOnly"
+            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+            ลบสินค้าที่เลือกทั้งหมด
+          </button>
+        </div>
 
-                <!-- Dropdown สำหรับหน้าจอเล็ก -->
-                <div class="mdl:hidden relative">
-                    <button @click="toggleDropdown"
-                        class="relative bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 font-medium px-4 py-2 rounded-lg shadow-sm hover:from-purple-200 hover:to-purple-300 transition duration-300 ease-in-out flex items-center gap-2">
-                        <span class="material-icons transform transition-transform duration-300"
-                            :class="{ 'rotate-180': isDropdownOpen }">
-                            expand_more
-                        </span>
-                        <span>ตัวเลือกสินค้า</span>
-                    </button>
-                    <div v-show="isDropdownOpen" class="absolute right-0 mt-2 bg-white border rounded shadow-lg w-48">
-                        <!-- <button @click="addProductRow" :disabled="isReadOnly"
+        <!-- Dropdown สำหรับหน้าจอเล็ก -->
+        <div class="mdl:hidden relative">
+          <button @click="toggleDropdown"
+            class="relative bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 font-medium px-4 py-2 rounded-lg shadow-sm hover:from-purple-200 hover:to-purple-300 transition duration-300 ease-in-out flex items-center gap-2">
+            <span class="material-icons transform transition-transform duration-300"
+              :class="{ 'rotate-180': isDropdownOpen }">
+              expand_more
+            </span>
+            <span>ตัวเลือกสินค้า</span>
+          </button>
+          <div v-show="isDropdownOpen" class="absolute right-0 mt-2 bg-white border rounded shadow-lg w-48">
+            <!-- <button @click="addProductRow" :disabled="isReadOnly"
                             class="block w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-100">
                             + เพิ่มแถวสินค้า
                         </button> -->
-                        <button @click="showServiecsSelector = true" :disabled="isReadOnly"
-                            class="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-100">
-                            ค่าบริการอื่นๆ
-                        </button>
-                        <button @click="showProductSelector = true" :disabled="isReadOnly"
-                            class="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-100">
-                            เลือกสินค้า
-                        </button>
-                        <button @click="showPromotionSelector = true" :disabled="isReadOnly"
-                            class="block w-full text-left px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-100">
-                            เลือกโปรโมชั่น
-                        </button>
-                        <button @click="removeAllProducts" :disabled="isReadOnly"
-                            class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100">
-                            ลบสินค้าที่เลือกทั้งหมด
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <button @click="showServiecsSelector = true" :disabled="isReadOnly"
+              class="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-100">
+              ค่าบริการอื่นๆ
+            </button>
+            <button @click="showProductSelector = true" :disabled="isReadOnly"
+              class="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-100">
+              เลือกสินค้า
+            </button>
+            <button @click="showPromotionSelector = true" :disabled="isReadOnly"
+              class="block w-full text-left px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-100">
+              เลือกโปรโมชั่น
+            </button>
+            <button @click="removeAllProducts" :disabled="isReadOnly"
+              class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100">
+              ลบสินค้าที่เลือกทั้งหมด
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- Popup Component -->
 
@@ -390,16 +388,17 @@
                       @keypress="onlyNumberInput($event)" :disabled="isReadOnly"
                       class="w-full px-2 py-1 border rounded" />
                   </td>
-                  <td class="px-4 py-2 border">{{ Number(product.pro_goods_price || product.pro_unit_price).toLocaleString(undefined, {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2
-                                        })}}
+                  <td class="px-4 py-2 border">{{ Number(product.pro_goods_price ||
+                    product.pro_unit_price).toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) }}
                   </td>
                   <td class="px-4 py-2 border">{{ product.discount || 0 }}</td>
                   <td class="px-4 py-2 border">{{ Number(totalprice(product)).toLocaleString(undefined, {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2
-                                        })}}
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }) }}
                   </td>
                   <td class="px-4 py-2 border" :class="{
                     'text-red-500 cursor-pointer hover:text-red-700': !isReadOnly,
@@ -467,46 +466,45 @@
               </tr>
             </template>
 
-               <!-- row แสดง services -->
-                  <tr v-if="selectedServices.length > 0" class="bg-green-50 hover:bg-green-100 transition-colors duration-300">
-                    <td colspan="9" class="px-6 py-4 border rounded-md">
-                      <div class="flex items-center space-x-2 text-green-800 font-medium">
-                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor"
-                            stroke-width="2" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 0 0118 0z"/>
-                        </svg>
-                        <span>ค่าบริการอื่นๆ</span>
-                      </div>
+            <!-- row แสดง services -->
+            <tr v-if="selectedServices.length > 0"
+              class="bg-green-50 hover:bg-green-100 transition-colors duration-300">
+              <td colspan="9" class="px-6 py-4 border rounded-md">
+                <div class="flex items-center space-x-2 text-green-800 font-medium">
+                  <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" stroke-width="2"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M13 16h-1v-4h-1m2-4h.01M21 12a9 9 0 11-18 0 9 0 0118 0z" />
+                  </svg>
+                  <span>ค่าบริการอื่นๆ</span>
+                </div>
 
-                      <ul class="list-inside ml-6 mt-2 text-sm text-gray-700">
-                        <li v-for="(service, serviceIndex) in selectedServices" :key="service.id"
-                            class="flex justify-between items-center py-1 border-b">
+                <ul class="list-inside ml-6 mt-2 text-sm text-gray-700">
+                  <li v-for="(service, serviceIndex) in selectedServices" :key="service.id"
+                    class="flex justify-between items-center py-1 border-b">
 
-                          <!-- ข้อมูล service -->
-                          <div>
-                            <span class="font-semibold">{{ service.service_code }}</span> - {{ service.service_name }}
-                            (จำนวน: {{ service.qty }})
-                          </div>
+                    <!-- ข้อมูล service -->
+                    <div>
+                      <span class="font-semibold">{{ service.service_code }}</span> - {{ service.service_name }}
+                      (จำนวน: {{ service.qty }})
+                    </div>
 
-                          <!-- ราคาแก้ไขได้ -->
-                          <div class="flex items-center space-x-2">
-                            <input type="text"
-                                  :value="formatPrice(service.price)"
-                                  @input="onPriceInput($event, service)"
-                                  class="w-32 px-2 py-1 border rounded text-right" />
-                            <span class="text-gray-600">฿</span>
+                    <!-- ราคาแก้ไขได้ -->
+                    <div class="flex items-center space-x-2">
+                      <input type="text" :value="service.price" @input="onPriceInput($event, service)"
+                        @blur="onPriceBlur($event, service)" class="w-32 px-2 py-1 border rounded text-right" />
+                      <span class="text-gray-600">฿</span>
 
-                            <!-- ปุ่มลบ -->
-                            <button @click="!isReadOnly && removeService(serviceIndex)"
-                                    class="ml-2 text-red-500 hover:text-red-700 font-bold">
-                              ลบ
-                            </button>
-                          </div>
-                        </li>
-                      </ul>
-                    </td>
-                  </tr>
+                      <!-- ปุ่มลบ -->
+                      <button @click="!isReadOnly && removeService(serviceIndex)"
+                        class="ml-2 text-red-500 hover:text-red-700 font-bold">
+                        ลบ
+                      </button>
+                    </div>
+                  </li>
+                </ul>
+              </td>
+            </tr>
 
 
           </tbody>
@@ -537,9 +535,9 @@
               class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700" placeholder="จำนวนเงิน หรือ %" />
           </div>
           <div>
-            <label class="block font-medium mb-1 text-gray-700">ค่าจัดส่ง</label>
-            <input type="number" :min="0" v-model="formData.deliveryFee" :readonly="isReadOnly"
-              class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700" placeholder="ค่าจัดส่ง" />
+            <label class="block font-medium mb-1 text-gray-700">ค่าบริการทั้งหมด</label>
+            <input type="number" :min="0" v-model="formData.servicesTotal" :readonly="isReadOnly"
+              class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700" placeholder="ค่าบริการทั้งหมด" />
           </div>
         </div>
       </div>
@@ -553,9 +551,9 @@
 
       <!-- รายละเอียดคำสั่งงาน -->
       <div class="mt-4">
-          <label class="block font-medium mb-1 text-gray-700">รายละเอียดคำสั่งงาน</label>
-          <textarea rows="3" v-model="formData.workDetail" :readonly="isReadOnly"
-              class="w-full border px-3 py-2 rounded text-gray-700"></textarea>
+        <label class="block font-medium mb-1 text-gray-700">รายละเอียดคำสั่งงาน</label>
+        <textarea rows="3" v-model="formData.workDetail" :readonly="isReadOnly"
+          class="w-full border px-3 py-2 rounded text-gray-700"></textarea>
       </div>
 
       <div class="mt-6 text-right space-y-1">
@@ -592,10 +590,10 @@
 
         </div>
 
-        <div v-if="!formData.deliveryFee === 0" class="text-gray-700">
-          ค่าจัดส่ง:
+        <div v-if="!formData.servicesTotal === 0" class="text-gray-700">
+          ค่าบริการทั้งหมด:
           <span class="ml-2 text-gray-700">
-            {{ formData.deliveryFee ? formData.deliveryFee.toLocaleString(undefined, {
+            {{ formData.servicesTotal ? formData.servicesTotal.toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2
             }) : '0.00' }}
@@ -943,7 +941,7 @@ export default {
         deliveryType: "",
         totalDiscount: "" || 0,
 
-        deliveryFee: "",
+        servicesTotal: "",
 
         documentNo: "",
 
@@ -1051,16 +1049,30 @@ export default {
 
   computed: {
     totalAmountBeforeDiscount() {
-      const subtotal = this.selectedProducts.reduce((sum, product) => {
+      const subtotalProducts = this.selectedProducts.reduce((sum, product) => {
+        // const subtotal = this.selectedProducts.reduce((sum, product) => {
         const qty = product.pro_quantity || 0;
         const price = product.pro_unit_price || 0;
         const discount = product.discount || 0;
         return sum + (qty * price - discount);
       }, 0);
-      const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
+
+      // รวมราคาจาก selectedServices
+      const subtotalServices = this.selectedServices.reduce((sum, service) => {
+        const qty = service.qty || 1; // กำหนด default 1 ถ้าไม่มี qty
+        const price = service.price || 0;
+        return sum + (qty * price);
+      }, 0);
+
+      console.log('asdasdasdasd',subtotalServices);
+      const subtotal = subtotalProducts + subtotalServices;
+
+      const servicesTotal = parseFloat(this.formData.servicesTotal) || 0;
+      console.log('Check servicesTotal',servicesTotal);
       // const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
       const totalDiscount = Math.abs(parseFloat(this.formData.totalDiscount || 0)) || 0;
-      const total = subtotal + deliveryFee - totalDiscount;
+      // + servicesTotal
+      const total = subtotal - totalDiscount;
       return total < 0 ? 0 : total;
     },
 
@@ -1134,22 +1146,52 @@ export default {
   methods: {
 
     // ฟอร์แมตราคาพร้อมคอมม่าและทศนิยม 2 ตำแหน่ง
-        formatPrice(value) {
-          if (!value || isNaN(value)) return "0.00";
-          return Number(value).toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          });
-        },
+      formatPrice(value) {
+        if (value === "" || value == null || isNaN(value)) return "";
+        return Number(value).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      },
 
-        // แปลง input กลับเป็นตัวเลข และไม่อนุญาตตัวอักษร, ค่าต่ำกว่า 1
-        onPriceInput(event, service) {
-          let value = event.target.value.replace(/,/g, ''); // ลบ comma ออกก่อน
-          value = parseFloat(value);
-          if (isNaN(value) || value < 1) value = 1;
-          service.price = value;
-          event.target.value = this.formatPrice(service.price); // แสดงฟอร์แมต
-        },
+      // เวลาพิมพ์ (input event)
+      onPriceInput(event, service) {
+        let raw = event.target.value.replace(/,/g, "");   // ลบ comma ออก
+        raw = raw.replace(/[^0-9.]/g, "");                // กรองให้เหลือแต่ตัวเลขกับทศนิยม
+
+        // กัน user พิมพ์ . ซ้ำหลายครั้ง เช่น 12.3.4
+        let parts = raw.split(".");
+        if (parts.length > 2) {
+          raw = parts[0] + "." + parts.slice(1).join("");
+        }
+
+        // แค่ update ค่าใน input ไปก่อน แต่ยังไม่บังคับ format
+        event.target.value = raw;
+
+        // ถ้าว่าง → เก็บเป็น "" แทนที่จะเป็น NaN
+        if (raw === "") {
+          service.price = "";
+        } else {
+          service.price = parseFloat(raw);
+        }
+      },
+
+      // เวลาหลุด focus (blur event)
+      onPriceBlur(event, service) {
+        let value = parseFloat(service.price);
+
+        // ถ้าว่าง หรือ NaN → ให้เป็น 1
+        if (service.price === "" || isNaN(value) || value < 1) {
+          value = 1;
+        }
+
+        // เก็บเป็น number จริง ๆ
+        service.price = value;
+
+        // แสดงใน input เป็น format สวย ๆ
+        event.target.value = this.formatPrice(value);
+      },
+
 
     handleResize() {
       // ปิด toggle บนมือถือเวลาเลื่อนเป็น desktop
@@ -1166,6 +1208,7 @@ export default {
         order: this.formData,
         productList: this.selectedProducts,
         deliveryAddress: this.deliveryAddress,
+        Services: this.selectedServices,
       };
 
       // 2. เก็บข้อมูลลง sessionStorage
@@ -1230,7 +1273,8 @@ export default {
             trackingNo: resData.data.order.tracking_no || "",
             deliveryType: resData.data.order.delivery_type || "",
             totalDiscount: resData.data.order.total_discount || 0,
-            deliveryFee: resData.data.order.delivery_fee || 0,
+            servicesTotal: resData.data.order.services_total || 0,
+            // servicesTotal: resData.data.order.delivery_fee || 0,
             tax_value: resData.data.order.tax_value || 0,
             price_before_tax: resData.data.order.price_before_tax || 0,
             final_total_price: resData.data.order.final_total_price || 0,
@@ -1292,25 +1336,28 @@ export default {
             return productObj;
           });
 
-           this.selectedServices = resData.data.services.map(service => {
+          this.selectedServices = resData.data.services.map(service => {
 
-                console.log("🛠️ กำลัง map service:", service); //  log ตรงนี้เช็กแต่ละตัว
+            console.log("🛠️ กำลัง map service:", service); //  log ตรงนี้เช็กแต่ละตัว
 
-                const serviceObj = {
-                    id: service.id,
-                    order_id: service.order_id,
-                    price: service.price,
-                    // pro_id: service.pro_id,
-                    qty: service.qty,
-                    service_code: service.service_code,
-                    service_name: service.service_name,
+            const serviceObj = {
+              id: service.id,
+              order_id: service.order_id,
+              price: service.price,
+              // pro_id: service.pro_id,
+              qty: service.qty,
+              service_code: service.service_code,
+              service_name: service.service_name,
+              service_code2: service.service_code2,
+              service_unit: service.service_unit,
+              service_psi: service.service_psi
 
-                };
+            };
 
-                console.log("🛠️ serviceObj:", serviceObj);
-                return serviceObj;
+            console.log("🛠️ serviceObj:", serviceObj);
+            return serviceObj;
 
-            });
+          });
 
 
           // ✅ เพิ่มข้อมูลที่อยู่จัดส่งลงใน data
@@ -1680,10 +1727,22 @@ export default {
       }
     },
 
+    // handleSelectedServices(services) {
+    //   // console.log('Check services : ', services);
+    //   this.selectedServices = services;
+    //   console.log("เลือกค่าบริการ:", this.selectedServices);
+    // },
+
     handleSelectedServices(services) {
       // console.log('Check services : ', services);
-      this.selectedServices = services;
+      const servicests = services.map(s => JSON.parse(JSON.stringify(s)));
+      this.selectedServices = servicests;
+      // รวมราคาทุก service
+      this.formData.service_price = servicests.reduce((sum, s) => sum + parseFloat(s.price || 0), 0);
+
+      console.log("ค่าบริการ:", this.service_price);
       console.log("เลือกค่าบริการ:", this.selectedServices);
+      console.log("servicests:", servicests);
     },
 
     //
@@ -2589,9 +2648,9 @@ export default {
           }
         }
 
-         // เพิ่ม Services ลง payload
+        // เพิ่ม Services ลง payload
         if (this.selectedServices && this.selectedServices.length > 0) {
-            payload.append('services', JSON.stringify(this.selectedServices));
+          payload.append('services', JSON.stringify(this.selectedServices));
         }
 
         // if (!this.formData.receiverName) {
@@ -2650,114 +2709,140 @@ export default {
 
         if (resData.success) {
           const order = resData.data.order;
-            const productList = resData.data.productList;
-            const promotions = resData.data.promotions;
-            const gifts = resData.data.gifts;
-            const deliveryAddress = resData.data.deliveryAddress;
+          const productList = resData.data.productList;
+          const promotions = resData.data.promotions;
+          const gifts = resData.data.gifts;
+          const deliveryAddress = resData.data.deliveryAddress;
 
-            console.log("📄 order data:", order);
-            console.log("🛒 productList:", productList);
-            console.log("🎁 promotions:", promotions);
-            console.log("🎁 gifts:", gifts);
-            console.log("🏠 deliveryAddress:", deliveryAddress);
+          console.log("📄 order data:", order);
+          console.log("🛒 productList:", productList);
+          console.log("🎁 promotions:", promotions);
+          console.log("🎁 gifts:", gifts);
+          console.log("🏠 deliveryAddress:", deliveryAddress);
 
-            // เติมข้อมูลลง formData
-            const formdataapi = {
-                ...this.formData,
-                listCode: order.list_code || '',
-                sellDate: order.sell_date || '',
-                reference: order.reference || '',
-                channel: order.channel || '',
-                taxType: order.tax_type || '',
-                fullName: order.full_name || '',
-                customerCode: order.customer_code || '',
-                phone: order.phone || '',
-                email: order.email || '',
-                address: order.address || '',
-                receiverName: order.receiver_name || '',
-                receiverPhone: order.receiver_phone || '',
-                receiverEmail: order.receiver_email || '',
-                receiverAddress: order.receiver_address || '',
-                note: order.note || '',
-                deliveryDate: order.delivery_date || '',
-                trackingNo: order.tracking_no || '',
-                deliveryType: order.delivery_type || '',
-                totalDiscount: order.total_discount || 0,
-                deliveryFee: order.delivery_fee || 0,
-                final_total_price: order.final_total_price || 0,
-                documentNo: order.document_no || '',
-                vatVisible: order.vat_visible || 'ไม่มีค่าDCM',
-                promotions: promotions || [],
-                gifts: gifts || []
+          // เติมข้อมูลลง formData
+          const formdataapi = {
+            ...this.formData,
+            listCode: order.list_code || '',
+            sellDate: order.sell_date || '',
+            reference: order.reference || '',
+            channel: order.channel || '',
+            taxType: order.tax_type || '',
+            fullName: order.full_name || '',
+            customerCode: order.customer_code || '',
+            phone: order.phone || '',
+            email: order.email || '',
+            address: order.address || '',
+            receiverName: order.receiver_name || '',
+            receiverPhone: order.receiver_phone || '',
+            receiverEmail: order.receiver_email || '',
+            receiverAddress: order.receiver_address || '',
+            note: order.note || '',
+            deliveryDate: order.delivery_date || '',
+            trackingNo: order.tracking_no || '',
+            deliveryType: order.delivery_type || '',
+            totalDiscount: order.total_discount || 0,
+            servicesTotal: order.services_total || 0,
+            // servicesTotal: order.delivery_fee || 0,
+            final_total_price: order.final_total_price || 0,
+            documentNo: order.document_no || '',
+            vatVisible: order.vat_visible || 'ไม่มีค่าDCM',
+            promotions: promotions || [],
+            gifts: gifts || []
+          };
+
+          this.isVathidden = !!Number(order.vat_visible);
+          this.originalIsVathidden = this.isVathidden;
+
+          // map products
+          const productListap = productList.map(product => {
+            console.log("🛠️ map product:", product); // 🔹 log แต่ละ product ก่อน map
+            return {
+              item_id: product.id,
+              pro_id: product.pro_sku_price_id,
+              pro_sku_price_id: product.pro_sku_price_id,
+              pro_erp_title: product.pro_name || product.pro_title || '',
+              pro_title: product.pro_title || '',
+              pro_quantity: product.qty || product.pro_goods_num || 0,
+              pro_goods_num: product.qty || product.pro_goods_num || 0,
+              pro_goods_id: product.pro_goods_id || 0,
+              pro_unit_price: parseFloat(product.unit_price || 0),
+              pro_discount: parseFloat(product.discount || 0),
+              pro_total_price: parseFloat(product.total_price || 0),
+              pro_images: product.pro_images || '',
+              prosn: product.sn || product.pro_sn || '',
+              pro_sn: product.sn || product.pro_sn || '',
+              st: product.st || false,
+              pro_stock: product.stock || 0,
+              pro_unit: product.unit || '',
+              activity_id: product.activity_id || 0,
+              pro_activity_id: product.pro_activity_id || 0,
+              pro_goods_sku_text: product.pro_goods_sku_text || '',
+              promotions: product.promotions || [],
+              gifts: product.gifts || []
+            };
+          });
+
+          const servicesPull = resData.data.services.map(service => {
+
+            console.log("🛠️ กำลัง map service:", service); //  log ตรงนี้เช็กแต่ละตัว
+
+            const serviceObj = {
+              id: service.id,
+              order_id: service.order_id,
+              price: service.price,
+              // pro_id: service.pro_id,
+              qty: service.qty,
+              service_code: service.service_code,
+              service_name: service.service_name,
+              service_code2: service.service_code2,
+              service_unit: service.service_unit,
+              service_psi: service.service_psi
+
             };
 
-            this.isVathidden = !!Number(order.vat_visible);
-            this.originalIsVathidden = this.isVathidden;
+            console.log("🛠️ serviceObj:", serviceObj);
+            return serviceObj;
 
-            // map products
-              const productListap = productList.map(product => {
-                console.log("🛠️ map product:", product); // 🔹 log แต่ละ product ก่อน map
-                return {
-                    item_id: product.id,
-                    pro_id: product.pro_sku_price_id,
-                    pro_sku_price_id: product.pro_sku_price_id,
-                    pro_erp_title: product.pro_name || product.pro_title || '',
-                    pro_title: product.pro_title || '',
-                    pro_quantity: product.qty || product.pro_goods_num || 0,
-                    pro_goods_num: product.qty || product.pro_goods_num || 0,
-                    pro_goods_id: product.pro_goods_id || 0,
-                    pro_unit_price: parseFloat(product.unit_price || 0),
-                    pro_discount: parseFloat(product.discount || 0),
-                    pro_total_price: parseFloat(product.total_price || 0),
-                    pro_images: product.pro_images || '',
-                    prosn: product.sn || product.pro_sn || '',
-                    pro_sn: product.sn || product.pro_sn || '',
-                    st: product.st || false,
-                    pro_stock: product.stock || 0,
-                    pro_unit: product.unit || '',
-                    activity_id: product.activity_id || 0,
-                    pro_activity_id: product.pro_activity_id || 0,
-                    pro_goods_sku_text: product.pro_goods_sku_text || '',
-                    promotions: product.promotions || [],
-                    gifts: product.gifts || []
-                };
+          });
+
+          console.log("📄 formdataapi final:", formdataapi);
+          console.log("🛒 productListap final:", productListap);
+          console.log("🛠️ servicesPull final:", servicesPull);
+
+          // ✅ เรียกส่งข้อมูลเข้า Macfive
+          try {
+            const macfiveRes = await sendToMacfive(
+              formdataapi,
+              productListap,
+              servicesPull,
+              // promotions,
+              // gifts,
+              deliveryAddress
+            );
+            console.log("✅ ส่งเข้า Macfive สำเร็จ:", macfiveRes);
+
+            if (macfiveRes.data?.Success) {
+              Swal.fire({
+                title: "ส่งเข้า Macfive สำเร็จ",
+                // text: `เลขที่เอกสาร: ${macfiveRes.VoucherNo || "-"}`,
+                icon: "success",
+              });
+            } else {
+              Swal.fire({
+                title: "ไม่สามารถส่งเข้า Macfive ได้",
+                text: macfiveRes.data?.Message || "กรุณาลองใหม่",
+                icon: "error",
+              });
+            }
+          } catch (err) {
+            console.error("❌ Error ส่ง Macfive:", err);
+            Swal.fire({
+              title: "เกิดข้อผิดพลาด",
+              text: err.message || "ไม่สามารถเชื่อมต่อ Macfive ได้",
+              icon: "error",
             });
-
-            console.log("📄 formdataapi final:", formdataapi);
-            console.log("🛒 productListap final:", productListap);
-
-                // ✅ เรียกส่งข้อมูลเข้า Macfive
-                try {
-                const macfiveRes = await sendToMacfive(
-                    formdataapi,
-                    productListap,
-                    // promotions,
-                    // gifts,
-                    deliveryAddress
-                );
-                console.log("✅ ส่งเข้า Macfive สำเร็จ:", macfiveRes);
-
-                if (macfiveRes.data?.Success) {
-                    Swal.fire({
-                    title: "ส่งเข้า Macfive สำเร็จ",
-                    // text: `เลขที่เอกสาร: ${macfiveRes.VoucherNo || "-"}`,
-                    icon: "success",
-                    });
-                } else {
-                    Swal.fire({
-                    title: "ไม่สามารถส่งเข้า Macfive ได้",
-                    text: macfiveRes.data?.Message || "กรุณาลองใหม่",
-                    icon: "error",
-                    });
-                }
-                } catch (err) {
-                    console.error("❌ Error ส่ง Macfive:", err);
-                    Swal.fire({
-                        title: "เกิดข้อผิดพลาด",
-                        text: err.message || "ไม่สามารถเชื่อมต่อ Macfive ได้",
-                        icon: "error",
-                    });
-                }
+          }
 
           const newDocumentNo = resData.newDocumentNo; // ดึง `documentNo` ใหม่จาก API
           this.formData.documentNo = newDocumentNo; // อัปเดต `documentNo` ใน `formData`
@@ -2774,9 +2859,7 @@ export default {
           Swal.fire({ text: resData.message, icon: "error" });
         }
 
-
         // if (resData.success) {
-
 
         //   const newDocumentNo = resData.newDocumentNo; // ดึง `documentNo` ใหม่จาก API
         //   this.formData.documentNo = newDocumentNo; // อัปเดต `documentNo` ใน `formData`
@@ -2810,12 +2893,10 @@ export default {
       const isFormChanged = JSON.stringify(this.formData) !== JSON.stringify(this.originalFormData);
       const isProductChanged =
         JSON.stringify(this.selectedProducts) !== JSON.stringify(this.originalSelectedProducts);
-          const isServiceChanged = JSON.stringify(this.selectedServices) !== JSON.stringify(this.originalSelectedServices);
+      const isServiceChanged = JSON.stringify(this.selectedServices) !== JSON.stringify(this.originalSelectedServices);
       const isVatChanged = this.isVathidden !== this.originalIsVathidden;
       return isFormChanged || isProductChanged || isVatChanged || isServiceChanged;
     },
-
-
 
     extractPromotionsAndGifts() {
       const grouped = this.groupByActivityId(this.selectedProducts);
@@ -2947,20 +3028,20 @@ export default {
 
     removeService(index) {
       Swal.fire({
-            title: 'ยืนยันการลบ?',
-            text: 'คุณต้องการลบค่าบริการนี้ออกจากรายการใช่หรือไม่?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'ใช่, ลบเลย!',
-            cancelButtonText: 'ยกเลิก'
-        }).then((result) => {
-            if (result.isConfirmed) {
+        title: 'ยืนยันการลบ?',
+        text: 'คุณต้องการลบค่าบริการนี้ออกจากรายการใช่หรือไม่?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'ใช่, ลบเลย!',
+        cancelButtonText: 'ยกเลิก'
+      }).then((result) => {
+        if (result.isConfirmed) {
 
-                  this.selectedServices.splice(index, 1);
+          this.selectedServices.splice(index, 1);
 
-                Swal.fire('ลบแล้ว!', 'ค่าบริการถูกลบออกจากรายการ.', 'success');
-            }
-        });
+          Swal.fire('ลบแล้ว!', 'ค่าบริการถูกลบออกจากรายการ.', 'success');
+        }
+      });
 
     },
 
@@ -3117,7 +3198,7 @@ export default {
 
     // ปุ่ม dropdown สำหรับมือถือ
     toggleDropdown() {
-        this.isDropdownOpen = !this.isDropdownOpen;
+      this.isDropdownOpen = !this.isDropdownOpen;
     },
 
     toggleShowMoreData() {
@@ -3515,18 +3596,22 @@ export default {
 .fade-slide-leave-active {
   transition: all 0.3s ease;
 }
+
 .fade-slide-enter-from {
   opacity: 0;
   transform: translateY(-5px);
 }
+
 .fade-slide-enter-to {
   opacity: 1;
   transform: translateY(0);
 }
+
 .fade-slide-leave-from {
   opacity: 1;
   transform: translateY(0);
 }
+
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-5px);

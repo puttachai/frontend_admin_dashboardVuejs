@@ -1,3 +1,4 @@
+/* eslint-disable no-unreachable */
 // macfiveService.js
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -52,7 +53,7 @@ export async function getAuthToken() {
   }
 }
 
-export async function sendToMacfive(formdataapi, productListap, deliveryAddress) {
+export async function sendToMacfive(formdataapi, productListap, servicesPull, deliveryAddress) {
 // export async function sendToMacfive(formData, selectedProducts, deliveryAddress) {
   const token = await getAuthToken();
 
@@ -61,7 +62,7 @@ export async function sendToMacfive(formdataapi, productListap, deliveryAddress)
   // const formatDateTime = (d) => d.toISOString().slice(0, 19).replace("T", " ");
 
   // สร้าง payload ตาม buildMacfivePayload ของคุณ
-  const payload = buildMacfivePayload(formdataapi, productListap, deliveryAddress);
+  const payload = buildMacfivePayload(formdataapi, productListap, servicesPull, deliveryAddress);
   // const payload = { /* copy payload logic ของคุณมาที่นี่ */ };
 
   console.log("📦 Payload Macfive:", payload);
@@ -85,7 +86,7 @@ export async function sendToMacfive(formdataapi, productListap, deliveryAddress)
   }
 }
 
-export function buildMacfivePayload(formdataapi, productListap, deliveryAddress) {
+export function buildMacfivePayload(formdataapi, productListap, servicesPull, deliveryAddress) {
   const now = new Date();
   const formatDate = (d) => d.toISOString().slice(0, 10);
   const formatDateTime = (d) => d.toISOString().slice(0, 19).replace("T", " ");
@@ -94,6 +95,7 @@ export function buildMacfivePayload(formdataapi, productListap, deliveryAddress)
   const sale_no = localStorage.getItem("account") || "";
 
   console.log('🧩 Check productListap: ', productListap);
+  console.log('🧩 Check servicesPull: ', servicesPull);
   console.log('🧩 Check deliveryAddress: ', deliveryAddress);
 
   // 🧩 รวม promotions และ gifts จาก products
@@ -103,7 +105,7 @@ export function buildMacfivePayload(formdataapi, productListap, deliveryAddress)
   const productGifts = productListap.flatMap((item) => item.gifts || []);
   console.log('🧩 Check productGifts: ', productGifts);
 
-    
+
 
     formdataapi.promotions = formdataapi.promotions.map(promo => {
 
@@ -150,7 +152,8 @@ export function buildMacfivePayload(formdataapi, productListap, deliveryAddress)
   const countProducts = productListap.length;
   const countGifts = allGifts.length;
   const countPromotions = filteredPromotions.length;
-  const totalItems = countProducts + countGifts + countPromotions;
+  const countservices = servicesPull.length;
+  const totalItems = countProducts + countGifts + countPromotions + countservices;
 
   const discountMacfive = formdataapi.totalDiscount;
   const discT1CF = (discountMacfive * 100) / formdataapi.final_total_price;
@@ -213,15 +216,15 @@ export function buildMacfivePayload(formdataapi, productListap, deliveryAddress)
         ML_sto: "MAIN",
         ML_item: index + 1,
         ML_quan: parseFloat(item.pro_quantity),
-        ML_cog: parseFloat(item.pro_total_price || 0),
-        ML_netL: parseFloat(item.pro_total_price || 0),
+        ML_cog: parseFloat(item.pro_total_price || 0).toFixed(2),
+        ML_netL: parseFloat(item.pro_total_price || 0).toFixed(2),
         ML_cut: 1,
         ML_unit: item.pro_unit || "PCS",
         ML_des: item.pro_erp_title + '' + (item.pro_goods_sku_text || ""),
         ML_addcost: 0,
         ML_discL: 0,
         ML_deldate: formatDate(now),
-        ML_uprice: parseFloat(item.pro_unit_price),
+        ML_uprice: parseFloat(item.pro_unit_price).toFixed(2),
         ML_Note: "item",
       })),
       // 🎁 gifts
@@ -267,6 +270,29 @@ export function buildMacfivePayload(formdataapi, productListap, deliveryAddress)
         ML_deldate: formatDate(now),
         ML_uprice: 0,
         ML_Note: promo.ML_Note || "promotion",
+      })),
+
+      // 🛠️ services
+      ...servicesPull.map((service, index) => ({
+        ML_date: formatDateTime(now),
+        ML_type: "PS", // STKpsi
+        ML_vnumber: docNo,
+        ML_per: sale_no || "DP001",
+        ML_supcus: formdataapi.customerCode,
+        ML_stk: service.service_code || "N/A", // STKcode || STKcode2 // service_code
+        ML_sto: "MAIN",
+        ML_item: productListap.length + allGifts.length + filteredPromotions.length + index + 1,
+        ML_quan: service.qty || 0, // qty
+        ML_cog: parseFloat(service.price).toFixed(2),
+        ML_netL: parseFloat(service.price).toFixed(2),
+        ML_cut: 0,
+        ML_unit: service.service_unit || "PCS", // STKuname1
+        ML_des: service.service_name, // STKdescT1
+        ML_addcost: 0,
+        ML_discL: 0,
+        ML_deldate: formatDate(now),
+        ML_uprice: parseFloat(service.price).toFixed(2),
+        ML_Note:"Services", // service.ML_Note ||
       })),
     ],
   };

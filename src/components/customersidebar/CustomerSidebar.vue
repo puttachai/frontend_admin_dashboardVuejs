@@ -65,9 +65,12 @@
 </template>
 
 <script setup>
+// eslint-disable-next-line no-unused-vars
 import { ref, watch, computed } from 'vue';
 import axios from 'axios';
 import { debounce } from 'lodash-es'; // ถ้า lodash-es ไม่พร้อมใช้ ให้เขียน debounce เล็กๆ เอง
+
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 const props = defineProps({
   show: { type: Boolean, required: true },
@@ -80,6 +83,7 @@ const loading = ref(false);
 
 // ฟังก์ชัน fetch แบบแยก
 const doFetch = async (keyword) => {
+  loading.value = true;
   try {
     loading.value = true;
     const payload = {
@@ -93,7 +97,7 @@ const doFetch = async (keyword) => {
     };
 
     const res = await axios.post(
-      'https://tgsc.qifudaren.net/addons/shopro/user/accountLogin4',
+      `${BASE_URL}/user/accountLogin4V2`,
       payload,
       {
         headers: { 'Content-Type': 'application/json' },
@@ -101,9 +105,12 @@ const doFetch = async (keyword) => {
     );
 
     customers.value = res.data?.data?.data2 || [];
+
+    loading.value = false;
   } catch (err) {
     console.error('error loading customers:', err);
     customers.value = [];
+    loading.value = false;
   } finally {
     loading.value = false;
   }

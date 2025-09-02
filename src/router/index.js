@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { createRouter, createWebHistory } from "vue-router";
 // import HomeView from '../views/HomeView.vue'
 import DashboardView from "../views/DashboardView.vue";
@@ -38,6 +39,7 @@ console.log("Check getCustomer_id: ", getCustomer_id);
 const customerData = JSON.parse(getCustomer_id);
 
 if (Array.isArray(getCustomer_id)) {
+
   customerData.array.forEach(item, (index) => {
     console.log(`🟢 Row ${index + 1}`, item);
     // เช่น เข้าถึงฟิลด์ชื่อ

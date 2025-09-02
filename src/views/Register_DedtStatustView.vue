@@ -65,7 +65,7 @@
                 <div class="md:col-span-2 mb-2 pb-2">
                     <label class="block text-sm font-medium text-gray-700">Upload Image</label>
                     <input type="file" accept="image/*" @change="handleImageUpload" class="mt-1 block w-full cursor-pointer rounded-md border text-sm text-gray-500 file:mr-4 file:mb-4
-                file:cursor-pointer file:rounded-md file:border-0 file:text-sm file:font-semibold 
+                file:cursor-pointer file:rounded-md file:border-0 file:text-sm file:font-semibold
                 file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100" />
                 </div>
 
@@ -85,7 +85,7 @@
                     </div>
                 </div>
 
-                
+
 
                 <!-- Sidebar ลูกค้า -->
                 <!-- <CustomerSidebar
@@ -239,6 +239,7 @@ const selectedCustomer = ref(null);
 const showCustomerSidebar = ref(false);
 
 
+// eslint-disable-next-line no-unused-vars
 const openCustomerSidebar = () => showCustomerSidebar.value = true;
 const handleCustomerSelected = (cust) => {
     selectedCustomer.value = cust;

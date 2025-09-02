@@ -236,7 +236,7 @@
                         + เพิ่มแถวสินค้า
                     </button> -->
                     <button @click="showServiecsSelector = true" :disabled="isReadOnly"
-                        class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
                         ค่าบริการอื่นๆ
                     </button>
                     <button @click="showProductSelector = true" :disabled="isReadOnly"
@@ -269,7 +269,7 @@
                             + เพิ่มแถวสินค้า
                         </button> -->
                         <button @click="showServiecsSelector = true" :disabled="isReadOnly"
-                            class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            class="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-100">
                             ค่าบริการอื่นๆ
                         </button>
                         <button @click="showProductSelector = true" :disabled="isReadOnly"
@@ -489,19 +489,24 @@
                                 </div>
 
                                 <!-- ราคาแก้ไขได้ -->
-                                <div class="flex items-center space-x-2">
-                                  <input type="text"
-                                        :value="formatPrice(service.price)"
-                                        @input="onPriceInput($event, service)"
-                                        class="w-32 px-2 py-1 border rounded text-right" />
-                                  <span class="text-gray-600">฿</span>
+                              <div class="flex items-center space-x-2">
+                                <input
+                                  type="text"
+                                  v-model="service.priceInput"
+                                  @input="onPriceInput(service)"
+                                  @blur="onPriceBlur(service)"
+                                  class="w-32 px-2 py-1 border rounded text-right"
+                                />
+                                <span class="text-gray-600">฿</span>
 
-                                  <!-- ปุ่มลบ -->
-                                  <button @click="!isReadOnly && removeService(serviceIndex)"
-                                          class="ml-2 text-red-500 hover:text-red-700 font-bold">
-                                    ลบ
-                                  </button>
-                                </div>
+                                <button
+                                  @click="!isReadOnly && removeService(serviceIndex)"
+                                  class="ml-2 text-red-500 hover:text-red-700 font-bold"
+                                >
+                                  ลบ
+                                </button>
+                              </div>
+
                               </li>
                             </ul>
                           </td>
@@ -597,10 +602,10 @@
                             placeholder="จำนวนเงิน หรือ %" />
                     </div>
                     <div>
-                        <label class="block font-medium mb-1 text-gray-700">ค่าจัดส่ง</label>
-                        <input type="number" :min="0" v-model="formData.deliveryFee" :readonly="isReadOnly"
+                        <label class="block font-medium mb-1 text-gray-700">ค่าบริการทั้งหมด</label>
+                        <input type="number" :min="0" v-model="formData.servicesTotal" disabled :readonly="isReadOnly"
                             class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700"
-                            placeholder="ค่าจัดส่ง" />
+                            placeholder="ค่าบริการทั้งหมด" />
 
                     </div>
                 </div>
@@ -655,15 +660,24 @@
                     </span> -->
                 </div>
 
-                <div v-if="!formData.deliveryFee == 0" class="text-gray-700">
-                    ค่าจัดส่ง:
+                <div v-if="!formData.servicesTotal == 0" class="text-gray-700">
+                    ค่าบริการทั้งหมด:
                     <span class="ml-2 text-gray-700">
-                        {{ formData.deliveryFee ? formData.deliveryFee.toLocaleString(undefined, {
+                        {{ formData.servicesTotal ? formData.servicesTotal.toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
                         }) : '0.00' }}
                     </span>
                 </div>
+                <!-- <div v-if="!formData.service_price == 0" class="text-gray-700">
+                    ค่าบริการอื่นๆ:
+                    <span class="ml-2 text-gray-700">
+                        {{ formData.service_price ? formData.service_price.toLocaleString(undefined, {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }) : '0.00' }}
+                    </span>
+                </div> -->
                 <div v-if="!formData.totalDiscount == 0" class="text-gray-700">
                     ส่วนลดท้ายบิล:
                     <span class="ml-2 text-gray-700">
@@ -944,7 +958,7 @@ import Promotion_ProductSelector from '../components/Promotion_ProductSelector.v
 import DeliveryAddressPopup from '@/components/DeliveryAddressPopup.vue'
 import DeliveryAddressPopupBase from '@/components/DeliveryAddressPopupBase.vue'
 
-// eslint-disable-next-line no-unused-vars
+
 import { sendToMacfive } from "@/services/macfiveService.js";
 
 
@@ -1117,13 +1131,15 @@ export default {
                 trackingNo: '' || '-',
                 deliveryType: '',
 
+                service_price : '' || 0,
+
                 // oxlint-disable-next-line no-constant-binary-expression
                 totalDiscount: '' || 0,
                 // oxlint-disable-next-line no-constant-binary-expression
                 sumProMonth: '' || 0, // เพิ่มเพื่อเก็บ sum_pro_month
 
                 // oxlint-disable-next-line no-constant-binary-expression
-                deliveryFee: '' || 0,
+                servicesTotal: '' || 0,
 
                 documentNo: '',
 
@@ -1155,6 +1171,9 @@ export default {
                 warehouseCode: 'H1',
                 docType: 'SO',
             },
+
+            originalPrice: [],
+            priceInput :[],
 
             //form ที่โหลดมาตั้งต้นเพื่อเปรียบเทียบค่าว่ามีการเปลี่ยนแปลงก่อนอัปเดทไหม
             originalFormData: {},
@@ -1208,16 +1227,29 @@ export default {
     computed: {
 
         totalAmountBeforeDiscount() {
-            const subtotal = this.selectedProducts.reduce((sum, product) => {
+            const subtotalProducts  = this.selectedProducts.reduce((sum, product) => {
+            // const subtotal = this.selectedProducts.reduce((sum, product) => {
                 const qty = product.pro_quantity || 0;
                 const price = product.pro_unit_price || 0;
                 const discount = product.discount || 0;
                 return sum + (qty * price - discount);
             }, 0);
-            const deliveryFee = parseFloat(this.formData.deliveryFee || 0) || 0;
+
+            // รวมราคาจาก selectedServices
+            const subtotalServices = this.selectedServices.reduce((sum, service) => {
+                const qty = service.qty || 1; // กำหนด default 1 ถ้าไม่มี qty
+                const price = service.price || 0;
+                return sum + (qty * price);
+            }, 0);
+
+            const subtotal = subtotalProducts + subtotalServices;
+
+            const servicesTotal = parseFloat(this.formData.servicesTotal || 0).toFixed(2) || 0;
+            console.log('Check servicesTotal',servicesTotal);
             // const totalDiscount = parseFloat(this.formData.totalDiscount || 0) || 0;
             const totalDiscount = Math.abs(parseFloat(this.formData.totalDiscount || 0)) || 0;
-            const total = subtotal + deliveryFee - totalDiscount;
+            // + servicesTotal
+            const total = subtotal - totalDiscount;
             return total < 0 ? 0 : total;
         },
 
@@ -1267,11 +1299,11 @@ export default {
         //         return sum + (qty * price - discount);
         //     }, 0);
 
-        //     const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
+        //     const servicesTotal = parseFloat(this.formData.servicesTotal) || 0;
         //     const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
 
         //     // ✅ ราคาสุทธิรวม VAT
-        //     const totalWithVat = subtotal + deliveryFee - totalDiscount;
+        //     const totalWithVat = subtotal + servicesTotal - totalDiscount;
 
         //     if (this.isVatIncluded) {
         //         // ✅ ราคาก่อน VAT
@@ -1297,9 +1329,9 @@ export default {
         //         return sum + (qty * price - discount);
         //     }, 0);
 
-        //     const deliveryFee = parseFloat(this.formData.deliveryFee) || 0;
+        //     const servicesTotal = parseFloat(this.formData.servicesTotal) || 0;
         //     const totalDiscount = parseFloat(this.formData.totalDiscount) || 0;
-        //     const total = subtotal + deliveryFee - totalDiscount;
+        //     const total = subtotal + servicesTotal - totalDiscount;
         //     return total < 0 ? 0 : total;
         // },
 
@@ -1321,23 +1353,94 @@ export default {
     },
 
     methods: {
-        // ฟอร์แมตราคาพร้อมคอมม่าและทศนิยม 2 ตำแหน่ง
-        formatPrice(value) {
-          if (!value || isNaN(value)) return "0.00";
-          return Number(value).toLocaleString(undefined, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          });
+      // ฟอร์แมตราคาพร้อมคอมม่าและทศนิยม 2 ตำแหน่ง
+      // formatPrice(value) {
+      //   if (!value || isNaN(value)) return "0.00";
+      //   return Number(value).toLocaleString(undefined, {
+      //     minimumFractionDigits: 2,
+      //     maximumFractionDigits: 2
+      //   });
+      // },
+
+      formatPrice(value) {
+        if (value === null || value === undefined || value === '') return '';
+        return Number(value).toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      },
+
+
+      // แปลง input กลับเป็นตัวเลข และไม่อนุญาตตัวอักษร, ค่าต่ำกว่า 1
+      // onPriceInput(event, service) {
+      //   // ใช้ this เพื่อเรียก method formatPrice
+      //   let inputValue = event.target.value.replace(/,/g, ''); // ลบ comma ออกก่อน
+      //   inputValue = parseFloat(inputValue);
+
+      //   if (isNaN(inputValue) || inputValue < 1) inputValue = 1;
+
+      //   // อัปเดตค่าใน service
+      //   service.price = inputValue;
+
+      //   this.formData.service_price = service.price
+
+      //   // ฟอร์แมตราคาและแสดงใน input
+      //   event.target.value = this.formatPrice(service.price);
+      // },
+
+       onPriceInput(service) {
+          // ลบตัวอักษรที่ไม่ใช่ตัวเลขและจุดทศนิยม
+          service.priceInput = service.priceInput.replace(/[^0-9.]/g, '');
+
+          // ถ้ามีจุดมากกว่า 1 ให้เก็บเฉพาะจุดแรก
+          const parts = service.priceInput.split('.');
+          if (parts.length > 2) {
+            service.priceInput = parts[0] + '.' + parts.slice(1).join('');
+          }
+
+          // อัปเดต service.price ชั่วคราว
+          const parsed = parseFloat(service.priceInput);
+          service.price = isNaN(parsed) ? 0 : parsed;
         },
 
-        // แปลง input กลับเป็นตัวเลข และไม่อนุญาตตัวอักษร, ค่าต่ำกว่า 1
-        onPriceInput(event, service) {
-          let value = event.target.value.replace(/,/g, ''); // ลบ comma ออกก่อน
-          value = parseFloat(value);
-          if (isNaN(value) || value < 1) value = 1;
-          service.price = value;
-          event.target.value = this.formatPrice(service.price); // แสดงฟอร์แมต
-        },
+          // onPriceBlur(service) {
+          //   // ถ้าเป็นค่าว่าง ให้รีเซ็ตกลับราคาตาม handleSelectedServices
+          //   if (service.price === '' || service.price === null) {
+          //     // หา service เดิมจาก selectedServices
+          //     const original = this.selectedServices.find(s => s.id === service.id);
+          //     if (original) {
+          //       service.price = original.price;
+          //     }
+          //   }
+          // },
+
+           onPriceBlur(service) {
+              if (!service.priceInput || service.priceInput === '') {
+                // ถ้าว่าง ให้ reset เป็น originalPrice
+                service.price = service.originalPrice;
+              } else {
+                // แปลงเป็น number และฟอร์แมต
+                const parsed = parseFloat(service.priceInput.replace(/,/g, ''));
+                service.price = isNaN(parsed) ? service.originalPrice : parsed;
+              }
+
+              // ฟอร์แมต priceInput ใหม่
+              service.priceInput = this.formatPrice(service.price);
+
+              // อัปเดตราคารวม
+              // const total = this.selectedServices.reduce((sum, s) => sum + (Number(s.price) || 0), 0);
+              // this.formData.service_price = Number(total.toFixed(2));
+
+                // อัปเดตราคารวม
+              this.updateTotalPrice();
+
+            },
+
+            updateTotalPrice() {
+                const total = this.selectedServices.reduce((sum, s) => sum + (Number(s.price) || 0), 0);
+                this.formData.service_price = Number(total.toFixed(2));
+                this.formData.servicesTotal = Number(total.toFixed(2));       // สำหรับ input "ค่าจัดส่ง"
+            },
 
         async submittedProduct() {
 
@@ -2023,7 +2126,7 @@ export default {
 
             if (this.customerData?.data2) {
                 this.formData.fullName = this.customerData.data2.nickname || this.customerData.data2.contact || '';
-                this.formData.receiverName = this.customerData.data2.nickname | this.customerData.data2.contact || '';
+                this.formData.receiverName = this.customerData.data2.nickname || this.customerData.data2.contact || '';
                 this.formData.customerCode = this.customerData.data2.customer_no || '';
                 this.formData.phone = this.customerData.data2.mobile || '';
             } else {
@@ -2046,7 +2149,9 @@ export default {
             }).then((result) => {
                 if (result.isConfirmed) {
 
-                     this.selectedServices.splice(index, 1);
+                    this.selectedServices.splice(index, 1);
+                      // อัปเดตราคารวมทั้งหมด
+                    this.updateTotalPrice();
 
                     Swal.fire('ลบแล้ว!', 'ค่าบริการถูกลบออกจากรายการ.', 'success');
                 }
@@ -2477,7 +2582,8 @@ export default {
                                 trackingNo: order.tracking_no || '',
                                 deliveryType: order.delivery_type || '',
                                 totalDiscount: order.total_discount || 0,
-                                deliveryFee: order.delivery_fee || 0,
+                                servicesTotal: order.services_total || 0,
+                                // servicesTotal: order.delivery_fee || 0,
                                 final_total_price: order.final_total_price || 0,
                                 documentNo: order.document_no || '',
                                 vatVisible: order.vat_visible || 'ไม่มีค่าDCM',
@@ -2517,14 +2623,40 @@ export default {
                                 };
                             });
 
+                            const servicesPull = resData.data.services.map(service => {
+
+                                console.log("🛠️ กำลัง map service:", service); //  log ตรงนี้เช็กแต่ละตัว
+
+                                const serviceObj = {
+                                    id: service.id,
+                                    order_id: service.order_id,
+                                    price: service.price,
+                                    // pro_id: service.pro_id,
+                                    qty: service.qty,
+                                    service_code: service.service_code,
+                                    service_name: service.service_name,
+                                    service_code2: service.service_code2,
+                                    service_unit: service.service_unit,
+                                    service_psi: service.service_psi
+
+                                };
+
+                                console.log("🛠️ serviceObj:", serviceObj);
+                                return serviceObj;
+
+                            });
+
+
                             console.log("📄 formdataapi final:", formdataapi);
                             console.log("🛒 productListap final:", productListap);
+                            console.log("🛠️ getServices final:", servicesPull);
 
                                 // ✅ เรียกส่งข้อมูลเข้า Macfive
                                 try {
                                 const macfiveRes = await sendToMacfive(
                                     formdataapi,
                                     productListap,
+                                    servicesPull,
                                     // promotions,
                                     // gifts,
                                     deliveryAddress
@@ -2568,8 +2700,10 @@ export default {
                             this.isReadOnly = true;
                             this.isLoading = false;
                 } else {
-                    Swal.fire({ text: 'asdadas', icon: 'error' });
-                    console.log('resData', resData);
+                  const message = response?.data?.message || message || 'Unknown error';
+                  Swal.fire({ text: message, icon: 'error' });
+                    // Swal.fire({ text: 'asdadas', icon: 'error' });
+                    console.log('resData else saveDocument', resData);
                     this.isLoading = false;
                 }
                 // if (resData.success) {
@@ -2907,7 +3041,8 @@ export default {
                                 trackingNo: order.tracking_no || '',
                                 deliveryType: order.delivery_type || '',
                                 totalDiscount: order.total_discount || 0,
-                                deliveryFee: order.delivery_fee || 0,
+                                servicesTotal: order.services_total || 0,
+                                // servicesTotal: order.delivery_fee || 0,
                                 final_total_price: order.final_total_price || 0,
                                 documentNo: order.document_no || '',
                                 vatVisible: order.vat_visible || 'ไม่มีค่าDCM',
@@ -2947,14 +3082,39 @@ export default {
                                 };
                             });
 
+                            const servicesPull = resData.data.services.map(service => {
+
+                                console.log("🛠️ กำลัง map service:", service); //  log ตรงนี้เช็กแต่ละตัว
+
+                                const serviceObj = {
+                                    id: service.id,
+                                    order_id: service.order_id,
+                                    price: service.price,
+                                    // pro_id: service.pro_id,
+                                    qty: service.qty,
+                                    service_code: service.service_code,
+                                    service_name: service.service_name,
+                                    service_code2: service.service_code2,
+                                    service_unit: service.service_unit,
+                                    service_psi: service.service_psi
+
+                                };
+
+                                console.log("🛠️ serviceObj:", serviceObj);
+                                return serviceObj;
+
+                            });
+
                             console.log("📄 formdataapi final:", formdataapi);
                             console.log("🛒 productListap final:", productListap);
+                            console.log("🛠️ servicesPull final:", servicesPull);
 
                                 // ✅ เรียกส่งข้อมูลเข้า Macfive
                                 try {
                                 const macfiveRes = await sendToMacfive(
                                     formdataapi,
                                     productListap,
+                                    servicesPull,
                                     // promotions,
                                     // gifts,
                                     deliveryAddress
@@ -3073,7 +3233,8 @@ export default {
                         trackingNo: resData.data.order.tracking_no || '',
                         deliveryType: resData.data.order.delivery_type || '',
                         totalDiscount: resData.data.order.total_discount || 0,
-                        deliveryFee: resData.data.order.delivery_fee || 0,
+                        servicesTotal: resData.data.order.services_total || 0,
+                        // servicesTotal: resData.data.order.delivery_fee || 0,
                         final_total_price: resData.data.order.final_total_price || 0,
                         documentNo: resData.data.order.document_no || '',
                         vatVisible: resData.data.order.vat_visible || 'ไม่มีค่าDCM',
@@ -3146,16 +3307,28 @@ export default {
 
                         console.log("🛠️ กำลัง map service:", service); //  log ตรงนี้เช็กแต่ละตัว
 
+                        const parsedPrice = parseFloat(service.price) || 0;
+
                         const serviceObj = {
-                            id: service.id,
-                            order_id: service.order_id,
-                            price: service.price,
-                            // pro_id: service.pro_id,
-                            qty: service.qty,
-                            service_code: service.service_code,
-                            service_name: service.service_name,
+                            ...service,
+                            price: parsedPrice,                 // ตัวเลขจริง
+                            priceInput: parsedPrice.toString(), // สำหรับ v-model input
+                            originalPrice: parsedPrice          // เก็บราคาต้นฉบับจาก DB
 
                         };
+                        // const serviceObj = {
+                        //     id: service.id,
+                        //     order_id: service.order_id,
+                        //     price: service.price,
+                        //     // pro_id: service.pro_id,
+                        //     qty: service.qty,
+                        //     service_code: service.service_code,
+                        //     service_name: service.service_name,
+                        //     service_code2: service.service_code2,
+                        //     service_unit: service.service_unit,
+                        //     service_psi: service.service_psi,
+
+                        // };
 
                         console.log("🛠️ serviceObj:", serviceObj);
                         return serviceObj;
@@ -3165,6 +3338,8 @@ export default {
                     console.log("📄 ข้อมูลเอกสารที่โหลด:", this.formData);
                     console.log("🛒 รายการสินค้า:", this.selectedProducts);
                     console.log("🛠️ รายการ service:", this.selectedServices);
+
+                    this.handleSelectedServices(this.selectedServices);
 
                     this.originalFormData = JSON.parse(JSON.stringify(this.formData)); // deep copy
                     this.originalSelectedProducts = JSON.parse(JSON.stringify(this.selectedProducts));
@@ -3545,9 +3720,22 @@ export default {
         },
 
         handleSelectedServices(services) {
-          // console.log('Check services : ', services);
-          this.selectedServices = services;
+                // console.log('Check services : ', services);
+          this.selectedServices = services.map(s => ({
+            ...s,
+            originalPrice: Number(s.price).toFixed(2) || 0,  // เก็บราคาต้นฉบับ
+            priceInput: Number(s.price)?.toFixed(2) || '', // ใช้ v-model สำหรับ input
+          }));
+
+          // รวมราคาทุก service
+          // const total = this.selectedServices.reduce((sum, s) => sum + (Number(s.price) || 0), 0)
+          // this.formData.service_price = Number(total);
+
+          this.updateTotalPrice();
+
+          console.log("ค่าบริการ:", this.service_price);
           console.log("เลือกค่าบริการ:", this.selectedServices);
+          // console.log("servicests:", servicests);
         },
 
         // //handleSelectedProducts

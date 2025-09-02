@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-unused-vars -->
 <!-- eslint-disable vue/no-use-v-if-with-v-for -->
 <template>
 
@@ -166,6 +167,29 @@
 
 
             </template>
+
+             <!-- แทรก Services แบบเหมือน Gifts -->
+              <template v-if="isLastPage(pageIndex) && printData.Services && printData.Services.length > 0">
+                <tr>
+                  <td colspan="8"
+                      class="border border-gray-300 bg-green-100 text-left px-2 py-1 font-semibold text-[12px]">
+                    💰 ค่าบริการอื่นๆ
+                  </td>
+                </tr>
+                <tr v-for="(service, sIndex) in printData.Services" :key="'service-' + sIndex"
+                    class="text-[11px] bg-green-50">
+                  <td class="border border-gray-300 px-2 py-1 text-center">{{ sIndex + 1 }}</td>
+                  <td class="border border-gray-300 px-2 py-1">{{ service.service_code || '-' }}</td>
+                  <td class="border border-gray-300 px-2 py-1">{{ service.service_name }}</td>
+                  <td class="border border-gray-300 px-2 py-1 text-right">{{ service.qty }}</td>
+                  <td class="border border-gray-300 px-2 py-1 text-center">PCS</td>
+                  <td class="border border-gray-300 px-2 py-1 text-right">{{ formatCurrency(service.price) }}</td>
+                  <td class="border border-gray-300 px-2 py-1 text-right">-</td>
+                  <td class="border border-gray-300 px-2 py-1 text-right">{{ formatCurrency(service.price * service.qty) }}</td>
+                </tr>
+              </template>
+
+
             <!-- ✅ เฉพาะหน้าสุดท้าย -->
             <tr v-if="isLastPage(pageIndex) && uniqueGifts.length > 0">
               <td colspan="8"
@@ -208,8 +232,8 @@
           </div>
           <!-- v-if="!printData.order.deliveryFee === 0" -->
           <div class="mt-2">
-            <p>ค่าจัดส่ง:
-              {{ formatCurrency(printData.order.deliveryFee) }}</p>
+            <p>ค่าบริการอื่นๆ:
+              {{ formatCurrency(printData.order.servicesTotal) }}</p>
           </div>
           <!-- v-if="!printData.order.deliveryFee === 0" -->
           <div class="mt-2">
@@ -278,6 +302,7 @@ const printData = ref({
   order: {},
   productList: [],
   deliveryAddress: {},
+  Services: []
   // … คุณจะมีฟิลด์อะไรบ้างก็เพิ่มเข้าไปตาม API
 });
 
@@ -296,7 +321,8 @@ onMounted(() => {
       !parsed ||
       !parsed.order ||
       !parsed.productList ||
-      parsed.productList.length === 0
+      parsed.productList.length === 0 ||
+      !parsed.Services
     ) {
       Swal.fire({
         icon: "error",

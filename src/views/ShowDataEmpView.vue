@@ -2,7 +2,7 @@
     <div class="p-6 min-w-full">
         <h1 class="text-2xl font-bold mb-4">รายชื่อพนักงาน</h1>
 
-        <router-link class="button" to="/register">
+        <router-link class="button" to="/registerdedtStatust">
             <button class="mb-4 px-4 py-2 bg-purple-700 text-white rounded hover:bg-purple-800">
                 เพิ่มพนักงาน
             </button>
@@ -163,71 +163,3 @@ const confirmDeleteEmployee = async (employee) => {
 }
 
 </script>
-
-
-
-<!-- 
- <div class="overflow-x-auto">
-            <table class="min-w-full bg-white border border-gray-200 shadow-md rounded">
-                <thead class="bg-gray-100 text-gray-700 text-sm">
-                    <tr>
-                        <th class="px-4 py-2 border">รูปโปรไฟล์</th>
-                        <th class="px-4 py-2 border">ชื่อพนักงาน</th>
-                        <th class="px-4 py-2 border">อีเมล</th>
-                        <th class="px-4 py-2 border">โทรศัพท์</th>
-                        <th class="px-4 py-2 border">ที่อยู่</th>
-                        <th class="px-4 py-2 border">ตำแหน่ง</th>
-                        <th class="px-4 py-2 border">ดูแลเร่งรัดหนี้สิน</th>
-                        <th class="px-4 py-2 border">เงินเดือน</th>
-                        <th class="px-4 py-2 border">สถานะ</th>
-                        <th class="px-4 py-2 border">เริ่มงาน</th>
-                        <th class="px-4 py-2 border">การจัดการ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="employee in employees" :key="employee.id" class="text-sm text-center">
-                        <td class="px-4 py-4 border text-center">
-                            <template v-if="employee.image_path">
-                                <img 
-                                :src="employee.image_path" 
-                                alt="profile"
-                                class="w-10 h-10 rounded-full mx-auto"
-                                >
-                            </template>
-                            <template v-else>
-                                <span class="material-icons text-gray-400 text-4xl">account_circle</span> 
-                            </template>
-                        </td>
-                        <td class="px-4 py-2 border">{{ employee.full_name }}</td>
-                        <td class="px-4 py-2 border">{{ employee.email }}</td>
-                        <td class="px-4 py-2 border">{{ employee.telephone }}</td>
-                        <td class="px-4 py-2 border">{{ employee.address }}</td>
-                        <td class="px-4 py-2 border">{{ employee.department }}</td>
-                        <td class="px-4 py-2 border">{{ employee.customer_no || 'ยังไม่มีข้อมูล' }}</td>
-                        <td class="px-4 py-2 border">{{ employee.salary }}</td>
-                        <td class="px-4 py-2 border">{{ employee.status }}</td>
-                        <td class="px-4 py-2 border">{{ employee.start_work }}</td>
-                        <td class="px-4 py-2 border">
-                            <div class="flex space-x-2 justify-center">
-                                <button
-                                @click="openEditPopup(employee)"
-                                    class="bg-yellow-400 hover:bg-yellow-500 px-4 py-2 rounded text-white w-24">แก้ไข</button>
-                                <button
-                                @click="confirmDeleteEmployee(employee)"
-                                    class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-white w-24">ลบ</button>
-                            </div>
-                        </td>
-
-                    </tr>
-                </tbody>
-                <!-- <tbody> -->
-                <!-- ข้อมูลจะถูก map จาก backend -->
-                <!-- โครงสร้างข้อมูล -->
-                <!--
-            <tr v-for="employee in employees" :key="employee.id">
-              <td class="px-4 py-2 border">...</td>
-            </tr>
-            -->
-                <!-- </tbody> -->
-            <!-- </table>
-        </div> --> 

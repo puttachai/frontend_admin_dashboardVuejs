@@ -1,87 +1,91 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[99]">
-    <div class="bg-white z-20 rounded-lg shadow-lg p-4 w-[90%] max-w-4xl max-h-[90vh] overflow-y-auto">
+  <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[99]">
+    <div class="bg-white z-20 rounded-xl shadow-2xl p-6 w-[90%] max-w-5xl max-h-[90vh] overflow-y-auto transition-all duration-300">
 
       <!-- Header -->
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold text-gray-700">เลือกค่าบริการอื่นๆ</h2>
-        <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 text-3xl">&times;</button>
+      <div class="flex justify-between items-center mb-6 border-b pb-3">
+        <h2 class="text-2xl font-bold text-gray-700 tracking-wide">✨ เลือกค่าบริการอื่นๆ</h2>
+        <button @click="$emit('close')" class="text-red-500 hover:text-gray-700 text-4xl transition-transform duration-200 transform hover:rotate-90">&times;</button>
       </div>
 
       <!-- Search -->
-      <div class="flex items-center space-x-3 mb-3">
-        <span class="material-icons text-gray-600">search</span>
+      <div class="flex items-center space-x-3 mb-4">
+        <span class="material-icons text-gray-600 text-2xl">search</span>
         <input
           v-model="keyword"
           @input="filterServices"
-          class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+          class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:shadow-lg transition-all duration-300 placeholder-gray-400"
           placeholder="ค้นหาชื่อบริการ หรือ รหัสบริการ..."
         />
       </div>
 
       <!-- Table -->
       <div class="overflow-x-auto">
-        <table class="min-w-full border text-sm">
-          <thead class="bg-gray-100 text-gray-700">
+        <table class="min-w-full border text-sm rounded-lg table-auto">
+          <thead class="bg-gradient-to-r from-blue-100 to-blue-50 text-blue-700 font-bold uppercase tracking-wide">
             <tr>
-              <th class="px-4 py-2 border text-center">
-                <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected" />
+              <th class="px-5 py-3 border text-center">
+                <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected" class="accent-blue-500 w-5 h-5" />
               </th>
-              <th class="px-4 py-2 border">รหัสบริการ</th>
-              <th class="px-4 py-2 border">ชื่อค่าบริการ</th>
-              <th class="px-4 py-2 border">จำนวน</th>
-              <th class="px-4 py-2 border">ราคา</th>
+              <th class="px-5 py-3 border">รหัสบริการ</th>
+              <th class="px-5 py-3 border">ชื่อค่าบริการ</th>
+              <th class="px-5 py-3 border">จำนวน</th>
+              <th class="px-5 py-3 border">ราคา</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in filteredServices" :key="item.id">
+            <tr
+              v-for="item in filteredServices"
+              :key="item.id"
+              class="transition-all duration-200 hover:bg-blue-50 hover:shadow-md cursor-pointer"
+              :class="{'shadow-inner': item.price > 0, 'bg-gray-50': selectedIds.includes(item.id)}"
+            >
+            <!-- bg-green-50 | ^ -->
               <td class="px-4 py-2 border text-center">
-                <input type="checkbox" v-model="selectedIds" :value="item.id" />
+                <input type="checkbox" v-model="selectedIds" :value="item.id" class="accent-green-500 w-5 h-5" />
               </td>
-              <td class="px-4 py-2 border">{{ item.service_code }}</td>
-              <!-- <td class="px-4 py-2 border">{{ item.code }}</td> -->
-              <td class="px-4 py-2 border">{{ item.service_name }}</td>
-              <td class="px-4 py-2 border text-center">{{ item.qty }}</td>
+              <td class="px-4 py-2 border font-medium text-gray-700">{{ item.service_code }}</td>
+              <td class="px-4 py-2 border text-gray-600">{{ item.service_name }}</td>
+              <td class="px-4 py-2 border text-center font-semibold">{{ item.qty }}</td>
               <td class="px-4 py-2 border text-center">
                 <input
-                  type="number"
-                  v-model.number="item.price"
-                  class="w-24 border rounded px-2 py-1 text-right"
+                  type="text"
+                  v-model="displayValues[item.id]"
+                  class="w-28 border rounded-xl px-3 py-1 text-right font-medium focus:ring-2 focus:ring-green-400 focus:shadow-md transition-all duration-300"
+                  :class="{' text-green-800': item.price > 0, 'bg-yellow-50': selectedIds.includes(item.id)}"
+                  @input="onPriceInput($event, item)"
+                  @blur="onPriceBlur(item)"
                 />
               </td>
             </tr>
             <tr v-if="filteredServices.length === 0">
-              <td colspan="5" class="text-center py-4 text-gray-500">ไม่พบข้อมูล</td>
+              <td colspan="5" class="text-center py-4 text-gray-500 italic">ไม่พบข้อมูล</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <!-- Confirm -->
-      <div class="text-right mt-4">
+      <div class="text-right mt-6">
         <button
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+          class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
           @click="confirmSelection">
-          ตกลง
+         ตกลง
         </button>
       </div>
     </div>
   </div>
 </template>
 
+
+
 <script setup>
 
 import axios from "axios"
-import { ref, computed, onMounted } from "vue" //, watch
+import { ref, computed, onMounted, reactive } from "vue" //, watch
 import Swal from "sweetalert2"
 
 const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
-
-// defineProps({
-//   show: Boolean,
-//   // selectedServices: { type: Array, default: () => [] } // รับค่าเก่าจาก parent
-//   selectedServices: Array
-// })
 
 // ประกาศ props ที่รับมาจาก Parent
 const props = defineProps({
@@ -102,13 +106,11 @@ const selectedIds = ref([])
 
 const services = ref([])
 
-// mock data
-// const services = ref([
-//   { id: 1, code: "S001", name: "ค่าบริการติดตั้ง", qty: 1, price: 500 },
-//   { id: 2, code: "S002", name: "ค่าบริการขนส่ง", qty: 1, price: 300 },
-//   { id: 3, code: "S003", name: "ค่าบริการซ่อมบำรุง", qty: 1, price: 800 },
-//   { id: 4, code: "S004", name: "ค่าทำความสะอาด", qty: 1, price: 200 },
-// ])
+// เก็บค่าที่แสดงผลแยกจากค่าจริง
+const displayValues = reactive({})
+
+// เก็บค่า default price จาก API
+const defaultPrices = reactive({})
 
 const filteredServices = ref([...services.value])
 
@@ -127,20 +129,29 @@ const fetchServicesFromApi = async () => {
     // services.value = res.data
     services.value = res.data.data;
     filteredServices.value = services.value
+
+     // map ค่า price จาก DB ไปใส่ displayValues
+    // services.value.forEach(s => {
+    //   displayValues[s.id] = s.price ? formatPrice(s.price) : ""
+    // })
+
+    // ตอน fetchServicesFromApi map ค่า price จาก DB ไปใส่ displayValues
+    services.value.forEach(s => {
+      // แปลง price เป็น number และเก็บ default
+      const priceNum = s.price !== null && s.price !== undefined ? Number(s.price) : 0
+      s.price = priceNum
+      displayValues[s.id] = formatPrice(priceNum)
+      defaultPrices[s.id] = priceNum
+    })
+
   } catch (err) {
     console.error("Error fetching services:", err)
   }
 }
 
-// const filterServices = () => {
-//   const key = keyword.value.toLowerCase()
-//   filteredServices.value = services.value.filter(
-//     s => s.name.toLowerCase().includes(key) || s.code.toLowerCase().includes(key)
-//   )
-// }
 
 const filterServices = () => {
-  const key = keyword.value.toLowerCase()
+  const key = keyword.value.trim().toLowerCase()
   filteredServices.value = services.value.filter(
     s => s.service_name.toLowerCase().includes(key) || s.service_code.toLowerCase().includes(key)
   )
@@ -161,8 +172,10 @@ const confirmSelection = () => {
 
   // ตรวจสอบซ้ำกับ selectedServices เก่า
   const duplicates = newSelected.filter(s =>
-    props.selectedServices.some(old => old.id === s.id)
+    props.selectedServices.some(old => old.service_code === s.service_code)
   )
+
+  // console.log(duplicates);
 
   if (duplicates.length > 0) {
     const names = duplicates.map(d => d.name).join(", ")
@@ -189,36 +202,67 @@ const confirmSelection = () => {
   emit("close")
 }
 
+// const onPriceInput = (id) => {
+//   if (!selectedIds.value.includes(id)) {
+//     selectedIds.value.push(id)
+//   }
+// }
+
+
+// ฟอร์แมตราคา
+function formatPrice(value) {
+  if (value === null || value === undefined || isNaN(value)) return ""
+  return Number(value).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
+
+// input event → ให้ลบได้อิสระ
+function onPriceInput(event, service) {
+  const raw = event.target.value.replace(/,/g, "") // เอาคอมม่าออก
+  const num = parseFloat(raw).toFixed(2);
+
+  if (isNaN(num)) {
+    service.price = null // เก็บเป็น null
+    displayValues[service.id] = "" // แสดงว่าง
+  } else {
+    service.price = num // เก็บค่าจริง
+    displayValues[service.id] = raw // แสดงตามที่พิมพ์
+  }
+
+   // ✅ Auto check ถ้ากรอกเลข
+  if (service.price > 0 && !selectedIds.value.includes(service.id)) {
+    selectedIds.value.push(service.id)
+  }
+}
+
+// blur event → ฟอร์แมต
+function onPriceBlur(service) {
+    const val = parseFloat(displayValues[service.id].replace(/,/g, ""))
+
+    if (isNaN(val)) {
+      // ถ้าไม่ใช่ number → reset เป็น default
+      service.price = defaultPrices[service.id]
+      displayValues[service.id] = formatPrice(defaultPrices[service.id])
+    } else {
+      // ถ้าใช่ number → format และเก็บเป็น number
+      service.price = Number(val.toFixed(2))
+      displayValues[service.id] = formatPrice(service.price)
+    }
+
+  // if (service.price != null) {
+  //   displayValues[service.id] = formatPrice(service.price)
+  // }
+}
 
 
 // นำ selectedServices ที่ส่งมาจาก parent มากำหนด selectedIds
 onMounted(() => {
   // ถ้าอยากใช้ API จริงก็ uncomment
   fetchServicesFromApi();
-  // console.log('Check filteredServices: ');
-  // filteredServices.value = services.value
-  // console.log('Check filteredServices: ', filteredServices.value);
   selectedIds.value = props.selectedServices.map(s => s.id)
 
 })
-
-// // ตรวจสอบการเลือกซ้ำ
-// watch(selectedIds, (newVal, oldVal) => {
-//   if (oldVal.length < newVal.length) {
-//     // เลือกเพิ่ม
-//     const addedId = newVal.find(id => !oldVal.includes(id))
-//     const duplicate = props.selectedServices.find(s => s.id === addedId)
-//     if (duplicate) {
-//       // แจ้งเตือนถ้าเลือกซ้ำ
-//       Swal.fire({
-//         icon: "warning",
-//         title: "แจ้งเตือน",
-//         text: `คุณได้เลือกบริการ ${duplicate.name} ไปแล้ว`,
-//       })
-//       // เอา id ออกจาก selectedIds เพื่อไม่ให้ซ้ำ
-//       selectedIds.value = oldVal
-//     }
-//   }
-// })
 
 </script>

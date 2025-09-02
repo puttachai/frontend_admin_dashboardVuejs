@@ -123,13 +123,27 @@
               </td>
 
               <td class="px-4 py-4 border text-center">
+                <template v-if="item.image && !item.isImage404">
+                  <img
+                    :src="BASE_URL_IMAGE + item.image"
+                    alt="products"
+                    class="w-10 h-10 rounded-full mx-auto"
+                   @error="onImageError"
+                  >
+                </template>
+                <template v-else>
+                  <span class="material-icons text-gray-400 text-4xl">broken_image</span>
+                </template>
+              </td>
+
+              <!-- <td class="px-4 py-4 border text-center">
                 <template v-if="item.image">
                   <img :src="BASE_URL_IMAGE + item.image" alt="products" class="w-10 h-10 rounded-full mx-auto">
                 </template>
                 <template v-else>
                   <span class="material-icons text-gray-400 text-4xl">broken_image</span>
                 </template>
-              </td>
+              </td> -->
 
               <td class="px-4 text-gray-700 py-2 border">{{ item.title }}</td>
 
@@ -634,6 +648,11 @@ function searchPromotion_no() {
 //   }
 // };
 
+
+  // ฟังก์ชันสำหรับ handle รูป error
+const onImageError = (event) => {
+  event.target.src = '../src/assets/logos/logo.png' // ใส่ path รูป default ของคุณ
+}
 
 
 async function SearchPromotionSubmit() {

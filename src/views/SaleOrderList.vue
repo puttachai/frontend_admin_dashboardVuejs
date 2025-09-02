@@ -419,9 +419,9 @@ onMounted(() => {
   showAnimatedButton.value = true;
 
   // ซ่อนปุ่มหลังจาก 10 วินาที
-  setTimeout(() => {
-    showAnimatedButton.value = false;
-  }, 10000);
+  // setTimeout(() => {
+  //   showAnimatedButton.value = false;
+  // }, 10000);
 });
 
 function scrollToRight() {

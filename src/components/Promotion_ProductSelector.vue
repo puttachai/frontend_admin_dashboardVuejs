@@ -56,7 +56,7 @@
               <th class=" px-4 py-2 border min-w-[250px]">ชื่อสินค้า (ERP)</th> <!-- w-[300px]-->
               <th class="px-4 border min-w-[220px] text-left">
                 <div class="flex gap-1 items-stretch">
-                  <input type="text" v-model="keyword_promotion_product_no" placeholder="ค้นหา โปรโมชั่น"
+                  <input type="text" v-model="keyword_promotion_product_no" placeholder="ค้นหา สินค้าโปรโมชั่น"
                     @focus="dropdownOpenIndex = 'header'" style="margin-top: 0 !important;"
                     class="flex-1 border border-gray-300 rounded-md focus:outline-none " />
                   <!--px-3 py-1.5 h-full h-full -->

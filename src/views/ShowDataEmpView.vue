@@ -2,11 +2,29 @@
     <div class="p-6 min-w-full">
         <h1 class="text-2xl font-bold mb-4">รายชื่อพนักงาน</h1>
 
-        <router-link class="button" to="/registerdedtStatust">
-            <button class="mb-4 px-4 py-2 bg-purple-700 text-white rounded hover:bg-purple-800">
-                เพิ่มพนักงาน
+         <div class="text-sm text-gray-500 mb-2">
+                จำนวนพนักงานทั้งหมด: {{ employees.length }} คน
+         </div>
+
+        <div class="flex items-center justify-center mb-4 space-x-4">
+          <!-- ปุ่มเพิ่มพนักงาน -->
+          <router-link class="button" to="/registerdedtStatust">
+            <button class="px-4 py-2 bg-purple-700 text-white rounded hover:bg-purple-800">
+              เพิ่มพนักงาน
             </button>
-        </router-link>
+          </router-link>
+
+          <!-- ช่องค้นหา -->
+          <div class="flex-1 pb-1.5">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="🔍 ค้นหา ชื่อ / อีเมล / เบอร์โทร / แผนก"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+          </div>
+        </div>
+
 
 
         <div class="overflow-x-auto">
@@ -20,14 +38,15 @@
                         <th class="px-2 py-1 border whitespace-nowrap">ที่อยู่</th>
                         <th class="px-2 py-1 border whitespace-nowrap">ตำแหน่ง</th>
                         <th class="px-2 py-1 border whitespace-nowrap">รหัสลูกค้า</th>
-                        <th class="px-2 py-1 border whitespace-nowrap">เงินเดือน</th>
+                        <!-- <th class="px-2 py-1 border whitespace-nowrap">เงินเดือน</th> -->
                         <th class="px-2 py-1 border whitespace-nowrap">สถานะ</th>
-                        <th class="px-2 py-1 border whitespace-nowrap">เริ่มงาน</th>
+                        <!-- <th class="px-2 py-1 border whitespace-nowrap">เริ่มงาน</th> -->
                         <th class="px-2 py-1 border whitespace-nowrap">การจัดการ</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="employee in employees" :key="employee.id" class="text-center hover:bg-gray-50">
+                  <!-- employees -->
+                    <tr v-for="employee in filteredEmployees" :key="employee.id" class="text-center hover:bg-gray-50">
                         <td class="px-2 py-1 border">
                             <template v-if="employee.image_path">
                                 <img :src="employee.image_path" alt="profile" class="w-8 h-8 rounded-full mx-auto" />
@@ -42,9 +61,9 @@
                         <td class="px-2 py-1 border">{{ employee.address }}</td>
                         <td class="px-2 py-1 border whitespace-nowrap">{{ employee.department }}</td>
                         <td class="px-2 py-1 border whitespace-nowrap">{{ employee.customer_no || 'ไม่มีข้อมูล' }}</td>
-                        <td class="px-2 py-1 border whitespace-nowrap">{{ employee.salary }}</td>
+                        <!-- <td class="px-2 py-1 border whitespace-nowrap">{{ employee.salary }}</td> -->
                         <td class="px-2 py-1 border whitespace-nowrap">{{ employee.status }}</td>
-                        <td class="px-2 py-1 border whitespace-nowrap">{{ employee.start_work }}</td>
+                        <!-- <td class="px-2 py-1 border whitespace-nowrap">{{ employee.start_work }}</td> -->
                         <td class="px-2 py-1 border">
                             <div class="flex flex-col space-y-1 items-center">
                                 <button @click="openEditPopup(employee)"
@@ -58,6 +77,14 @@
                             </div>
                         </td>
                     </tr>
+
+                    <!-- ถ้าไม่มีข้อมูล -->
+                    <tr v-if="filteredEmployees.length === 0">
+                      <td colspan="11" class="text-center py-6 text-gray-500">
+                        ไม่มีข้อมูล
+                      </td>
+                    </tr>
+
                 </tbody>
             </table>
         </div>
@@ -70,7 +97,7 @@
 <script setup>
 // ยังไม่ใส่ logic ดึงข้อมูล เพราะจะใช้ PHP เป็นตัวกลาง
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed  } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import EditPopup from '@/components/EditPopup.vue';
@@ -78,6 +105,8 @@ import EditPopup from '@/components/EditPopup.vue';
 const employees = ref([]);
 const showPopup = ref(false);
 const selectedEmployee = ref(null);
+
+const searchQuery = ref(""); // ตัวแปรช่องค้นหา
 
 const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 // const BASE_URL_LOCAL = import.meta.env.VITE_API_URL;
@@ -120,6 +149,31 @@ const updateEmployeeInList = async () => {
     employees.value = res.data;
     showPopup.value = false;
 };
+
+
+// ✅ Filter employees ตาม searchQuery
+const filteredEmployees = computed(() => {
+  const raw = searchQuery.value.trim().toLowerCase();
+  if (!raw) return employees.value;
+
+  return employees.value.filter((emp) => {
+    const fullName = emp.full_name?.toLowerCase().trim() || "";
+    const email = emp.email?.toLowerCase().trim() || "";
+    const telephone = emp.telephone?.toLowerCase().trim() || "";
+    const department = emp.department?.toLowerCase().trim() || "";
+    const address = emp.address?.toLowerCase().trim() || "";
+    const customerNo = emp.customer_no?.toLowerCase().trim() || "";
+
+    return (
+      fullName.includes(raw) ||
+      email.includes(raw) ||
+      telephone.includes(raw) ||
+      department.includes(raw) ||
+      address.includes(raw) ||
+      customerNo.includes(raw)
+    );
+  });
+});
 
 
 const confirmDeleteEmployee = async (employee) => {

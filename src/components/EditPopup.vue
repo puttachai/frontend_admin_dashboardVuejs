@@ -34,10 +34,11 @@
             <label>ตำแหน่ง</label>
             <input v-model="form.department" class="w-full border p-2 rounded"  />
           </div>
-          <div>
+          <!-- <div>
             <label>เงินเดือน</label>
             <input v-model="form.salary" type="number" class="w-full border p-2 rounded"  />
-          </div>
+          </div> -->
+
           <div>
             <label>สถานะ</label>
             <select v-model="form.status" class="w-full border p-2 rounded">
@@ -47,10 +48,11 @@
               <option>Abnormal</option>
             </select>
           </div>
-          <div>
+
+          <!-- <div>
             <label>เริ่มงาน</label>
             <input v-model="form.start_work" type="date" class="w-full border p-2 rounded" required />
-          </div>
+          </div> -->
         </div>
 
         <div class="flex justify-end mt-6 space-x-4">
@@ -64,6 +66,7 @@
 
 <script setup>
 import { reactive, watch } from 'vue';
+// eslint-disable-next-line no-unused-vars
 import { toRaw } from 'vue';
 import { ref } from 'vue';
 

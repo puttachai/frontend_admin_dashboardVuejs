@@ -595,11 +595,22 @@
                         }}</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
+                    <!-- <div>
                         <label class="block font-medium mb-1 text-gray-700">ส่วนลด</label>
                         <input type="text" v-model="formData.totalDiscount" :readonly="isReadOnly"
                             class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700"
                             placeholder="จำนวนเงิน หรือ %" />
+                    </div> -->
+                    <div>
+                      <label class="block font-medium mb-1 text-gray-700">ส่วนลด</label>
+                      <input
+                        type="text"
+                        v-model="formData.totalDiscount"
+                        :readonly="isReadOnly"
+                        @input="filterNumberDecimal"
+                        class="w-full text-gray-700 border px-3 py-2 rounded text-gray-700"
+                        placeholder="จำนวนเงิน หรือ %"
+                      />
                     </div>
                     <div>
                         <label class="block font-medium mb-1 text-gray-700">ค่าบริการทั้งหมด</label>
@@ -1131,6 +1142,7 @@ export default {
                 trackingNo: '' || '-',
                 deliveryType: '',
 
+                // oxlint-disable-next-line no-constant-binary-expression
                 service_price : '' || 0,
 
                 // oxlint-disable-next-line no-constant-binary-expression
@@ -1369,6 +1381,41 @@ export default {
           maximumFractionDigits: 2
         });
       },
+
+      // filterNumberDecimal(e) {
+      //   // รับได้เฉพาะตัวเลขและจุดทศนิยม
+      //   let value = e.target.value;
+      //   // ลบทุกตัวอักษรที่ไม่ใช่ตัวเลขหรือจุด
+      //   value = value.replace(/[^0-9.]/g, '');
+      //   // ป้องกันให้มีจุดทศนิยมแค่ครั้งเดียว
+      //   const parts = value.split('.');
+      //   if (parts.length > 2) {
+      //     value = parts[0] + '.' + parts.slice(1).join('');
+      //   }
+      //   this.formData.totalDiscount = value;
+      // },
+
+      filterNumberDecimal(e) {
+          let value = e.target.value;
+
+          // ลบทุกตัวอักษรที่ไม่ใช่ตัวเลขหรือจุด
+          value = value.replace(/[^0-9.]/g, '');
+
+          // แยกจุดทศนิยม
+          const parts = value.split('.');
+          if (parts.length > 2) {
+            // ถ้ามีจุดมากกว่า 1 ให้เหลือแค่จุดแรก
+            value = parts[0] + '.' + parts.slice(1).join('');
+          }
+
+          // จำกัดทศนิยมไม่เกิน 2 หลัก
+          if (parts[1]) {
+            parts[1] = parts[1].slice(0, 2);
+            value = parts[0] + '.' + parts[1];
+          }
+
+          this.formData.totalDiscount = value;
+        },
 
 
       // แปลง input กลับเป็นตัวเลข และไม่อนุญาตตัวอักษร, ค่าต่ำกว่า 1

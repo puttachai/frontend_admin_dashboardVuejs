@@ -45,7 +45,7 @@
 
     <!-- 🧾 Data Table -->
     <div class="overflow-x-auto border border-gray-200 rounded-xl shadow-inner bg-white/90">
-      <table class="min-w-full text-sm text-gray-700">
+      <table class="w-full min-w-[650px] text-sm text-gray-700">
 
         <thead class="bg-gradient-to-r from-indigo-50 to-purple-50 text-gray-600 text-center">
           <tr>
@@ -82,6 +82,37 @@
           </tr>
         </thead>
 
+        <!-- Mobile -->
+        <tbody v-if="!isLoading" class="lg:hidden">
+            <tr
+              v-for="(item, index) in tableData"
+              :key="index"
+              class="hover:bg-indigo-50 cursor-pointer transition duration-150"
+              @click="handleRowClick(item, index)"
+            >
+              <td class="px-5 py-3">{{ item.customer_no }}</td>
+              <td class="px-5 py-3">{{ item.nickname }}</td>
+              <td class="px-5 py-3">{{ item.sale_no }}</td>
+              <td class="px-5 py-3 text-gray-400 italic">–</td>
+              <td class="px-5 py-3 text-center">
+                <button
+                  @click.stop="rowClick(item, index)"
+                  class="text-indigo-600 hover:underline font-medium"
+                >
+                  เลือก
+                </button>
+              </td>
+            </tr>
+            <tr v-if="!tableData.length" class="lg:hidden">
+              <td colspan="5" class="py-10">
+                <div class="flex justify-center items-center">
+                  <span class="text-gray-400 italic text-center">ไม่พบข้อมูล</span>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+
         <tbody v-if="isLoading">
           <tr>
             <td colspan="10" class="py-10 text-center">
@@ -106,7 +137,8 @@
           </tr>
         </tbody>
 
-        <tbody v-if="!isLoading">
+        <!-- web -->
+        <tbody v-if="!isLoading" class="hidden lg:table-row-group">
           <tr
             v-for="(item, index) in tableData"
             :key="index"
@@ -126,7 +158,7 @@
               </button>
             </td>
           </tr>
-          <tr v-if="!tableData.length">
+          <tr v-if="!tableData.length" class="hidden lg:table-row">
             <td colspan="5" class="text-center text-gray-400 py-6 italic">ไม่พบข้อมูล</td>
           </tr>
         </tbody>
@@ -134,7 +166,7 @@
     </div>
 
     <!-- 🔢 Pagination ,:pageSize.sync="pageSize" , @change="onPageSizeChange" -->
-    <ConfigProvider :globalConfig="localeConfig">
+    <!-- <ConfigProvider :globalConfig="localeConfig">
       <div class="overflow-auto">
         <pagination
           v-model="pageCurrent"
@@ -148,7 +180,44 @@
           class="mt-4"
         />
       </div>
-    </ConfigProvider>
+    </ConfigProvider> ,,,,,-->
+   <ConfigProvider :globalConfig="localeConfig">
+  <div class="w-full overflow-x-auto mt-4">
+    <div class="inline-block min-w-full">
+      <pagination
+        v-model="pageCurrent"
+        v-model:pageSize="pageSize"
+        :total="total"
+        :pageSizeOptions="[5,10,15]"
+        show-page-size
+        :prev-button-props="{ content: '⏪' }"
+        :next-button-props="{ content: '⏩' }"
+        :show-less-items="false"
+        :show-quick-jumper="true"
+        @change="handlePaginationChange"
+        class="pagination-responsive inline-flex items-center gap-1 whitespace-nowrap"
+      />
+    </div>
+  </div>
+</ConfigProvider>
+    <!-- <ConfigProvider :globalConfig="localeConfig">
+        <div class="w-full overflow-x-auto flex justify-center mt-4">
+          <pagination
+            v-model="pageCurrent"
+            v-model:pageSize="pageSize"
+            :total="total"
+            :pageSizeOptions="[5,10,15]"
+            show-page-size
+            :prev-button-props="{ content: '⏪' }"
+            :next-button-props="{ content: '⏩' }"
+            :show-less-items="false"
+            :show-quick-jumper="true"
+            @change="handlePaginationChange"
+            class="pagination-responsive flex flex-wrap justify-center items-center gap-1"
+          />
+        </div>
+      </ConfigProvider> -->
+
   </div>
 </template>
 
@@ -287,6 +356,15 @@ export default {
 
   methods: {
 
+     handleRowClick(item, index) {
+    // ตรวจสอบว่าขนาดจอเล็กกว่า lg (960px)
+        if (window.innerWidth < 960) {
+          this.rowClick(item, index);
+        }
+        // ถ้า >= lg จะไม่ทำอะไร กดได้แค่ปุ่ม "เลือก"
+      },
+
+
     // formatContactNickname(item) {
     //   if (!item?.contact) return item?.nickname || '';
     //   if (!item?.nickname) return item?.contact || '';
@@ -401,9 +479,11 @@ export default {
     //   }
     // },
 
-    rowClick(row) {
+    rowClick(row, index) {
       // idx
       console.log(row.mobile);
+
+      console.log("เลือก:", row, index);
 
       this.accountLoginCustomerSubmit(row);
       //uni.showToast({ title: `คุณคลิกที่แถวที่ ${idx + 1}: ${row.mobile}`, icon: 'none' });
@@ -634,21 +714,54 @@ async searchSaleId() {
 };
 
 </script>
-
 <style scoped>
-thead th {
+
+.pagination-responsive {
+  font-size: 14px; /* desktop */
+}
+
+.pagination-responsive >>> .rc-pagination-item,
+.pagination-responsive >>> .rc-pagination-prev,
+.pagination-responsive >>> .rc-pagination-next {
+  min-width: 36px;
+  height: 36px;
+  line-height: 36px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
   text-align: center;
+  transition: all 0.2s;
 }
 
+.pagination-responsive >>> .rc-pagination-item-active {
+  background-color: #6366f1;
+  color: white;
+  border-color: #6366f1;
+}
+
+.pagination-responsive >>> .rc-pagination-item:hover,
+.pagination-responsive >>> .rc-pagination-prev:hover,
+.pagination-responsive >>> .rc-pagination-next:hover {
+  background-color: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+/* Responsive mobile */
 @media (max-width: 500px) {
-  .search {
-    margin-top: 0 !important;
-    /* mt-1.5 */
+  .pagination-responsive {
+    font-size: 12px;
   }
-}
 
-@media (max-width: 500px) {
-  table {
+  .pagination-responsive >>> .rc-pagination-item,
+  .pagination-responsive >>> .rc-pagination-prev,
+  .pagination-responsive >>> .rc-pagination-next {
+    min-width: 28px;
+    height: 28px;
+    line-height: 28px;
+    padding: 0 4px;
+  }
+
+    table {
     font-size: 12px;
     /* ลดขนาดตัวอักษร */
   }
@@ -704,8 +817,11 @@ thead th {
   .material-icons {
     font-size: 16px !important;
   }
+
 }
 </style>
+
+
 
 <!--
 @media (max-width: 500px) {

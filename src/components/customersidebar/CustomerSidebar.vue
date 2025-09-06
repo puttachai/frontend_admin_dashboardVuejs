@@ -31,7 +31,6 @@
     </div>
   </transition>
 </template> -->
-
 <template>
   <div v-show="show" class="h-full w-full p-4 overflow-y-auto">
     <div class="flex justify-between items-center mb-4">
@@ -50,8 +49,7 @@
     <div v-if="loading" class="text-sm text-gray-500 mb-2">กำลังค้นหา...</div>
     <div v-else-if="!customers.length" class="text-sm text-gray-400 mb-2">ไม่พบผลลัพธ์</div>
 
-    <ul v-if="customers.length" class="space-y-2 overflow-y-auto max-h-full">
-    <!-- <ul v-if="customers.length" class="space-y-2 overflow-y-auto max-h-[400px]"> -->
+    <ul v-if="customers.length" class="space-y-2 overflow-y-auto max-h-[400px]">
       <li
         v-for="cust in customers"
         :key="cust.customer_no"

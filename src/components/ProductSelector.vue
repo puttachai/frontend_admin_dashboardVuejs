@@ -57,7 +57,7 @@
               <th class="px-4 py-2  text-sm font-medium text-gray-600 relative">
                 <!-- Input ช่องค้นหา -->
                 <div class="flex gap-1">
-                  <input type="text" v-model="keyword_sku_no" placeholder="ค้นหา สี"
+                  <input type="text" v-model="keyword_sku_no" placeholder="ค้นหา Color, Model, Type"
                     @focus="dropdownOpenIndex = 'header'" style="margin-top: 0 !important;"
                     class="w-[170px]  py-1 border border-gray-300 rounded-md focus:outline-none" />
                   <!-- ปุ่มค้นหา -->
@@ -76,8 +76,8 @@
             </tr>
           </thead>
 
-
-          <tbody v-if="isnotData && isLoading">
+          <!-- /isnotData && isLoading &&   -->
+          <tbody v-if="tableData.length === 0">
             <tr>
               <td colspan="10" class="py-10 text-center text-gray-500">
                 ไม่พบข้อมูล
@@ -125,7 +125,7 @@
                 <span :class="item.goods_sku_text
                   ? 'border border-blue-500 px-1 py-1 rounded text-xs text-blue-600 font-semibold'
                   : 'text-gray-500 italic'">
-                  {{ item.goods_sku_text || 'ไม่มีสี' }}
+                  {{ item.goods_sku_text || 'ไม่มีสีหรือชนิดของข้อมูล' }}
                 </span>
               </td>
               <!-- <td class="px-4 text-gray-700 py-2 border">{{ item.goods_sku_text ?? 'ไม่มีสี' }}</td> -->
@@ -137,7 +137,9 @@
                 class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
             </td> -->
               <td class="px-4 text-gray-700 py-2 border text-center">
+                <!-- :max="item.stock" -->
                 <input type="number" class="w-16 px-2 py-1 text-gray-700 border rounded text-center"
+
                   v-model.number="item.amount" :min="0" :max="item.stock" @keypress="onlyNumberInput($event)"
                   @input="validateAmount(item)" placeholder="0" />
               </td>
@@ -403,9 +405,11 @@ function onlyNumberInput(event) {
 }
 
 function validateAmount(item) {
+   //Start แก้ไขปิดตัวของ ValidateAmount ได้
   // บังคับขอบเขต
   if (item.amount < 0) item.amount = 0
   if (item.amount > item.stock) item.amount = item.stock
+  // End
 
   const isAlreadySelected = selectedIds.value.includes(item.id)
 
@@ -415,12 +419,16 @@ function validateAmount(item) {
     selectedProducts.value.push({ ...item })
     console.log(`🖊️ Auto-checked because amount>0:`, item)
   }
+
+  //Start แก้ไขปิดตัวของ ValidateAmount ได้
   if (item.amount === 0 && isAlreadySelected) {
     // ถ้าลบเหลือ 0 ให้ยกเลิกติ๊ก
     selectedIds.value = selectedIds.value.filter(id => id !== item.id)
     selectedProducts.value = selectedProducts.value.filter(p => p.id !== item.id)
     console.log(`🗑️ Auto-unticked because amount=0:`, item)
   }
+  //End
+
   // 2) อัปเดต amount ใน selectedProducts ด้วย
   const idx = selectedProducts.value.findIndex(p => p.id === item.id)
   if (idx !== -1) {
@@ -599,11 +607,14 @@ async function SearchProducstSubmit() {
 
       // const getData
 
+
+
       if (response.data.code !== 1) {
         isLoading.value = false;
         console.log("if  isLoading.value = false;");
         // console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
       }
+
 
       if (response.data.code === 1) {
         const data = response.data.data;
@@ -716,13 +727,27 @@ async function SearchProducstSubmit() {
 
       // const getData
 
-      if (response.data.code !== 1) {
+      if (response.data.code !== 1 || response.data.msg === 'ตัวของ รายการสินค้ายังไม่ถูกเปิดขาย') {
+
+        if(response.data.msg === 'ตัวของ รายการสินค้ายังไม่ถูกเปิดขาย'){
+          Swal.fire({
+            title: 'ค้นหาไม่สำเร็จ',
+            text: response.data.msg || 'เกิดข้อผิดพลาด',
+            icon: 'warning'
+          });
+          isLoading.value = false;
+          pageCurrent.value = 1;
+        }
+
         // isLoading.value = false;
         console.log("else  isLoading.value = false ssss;");
         isnotData.value = true;
 
-        total.value = [];
-        pageCurrent.value = 1;
+        setTimeout(() => {
+          total.value = [];
+          pageCurrent.value = 1;
+        }, 500);
+
         // console.error("massgae error:", response.data.msg);
       }
 
@@ -863,6 +888,7 @@ async function SearchProducstSubmitFirst() {
       if (response.data.code !== 1) {
         // isLoading.value = false;
         console.error("ค้นหาไม่สำเร็จ:", response.data.msg);
+         isLoading.value = false;
         // return;
       }
 
@@ -1300,6 +1326,7 @@ async function confirmSelection() {
       lastQuantity
     });
 
+    //Start แก้ไขปิดตัวของ ValidateAmount ได้
     if (totalQuantity > stockAvailable) {
       // if (totalQuantity > stockAvailable) {
       productErrors.push({
@@ -1310,8 +1337,10 @@ async function confirmSelection() {
       });
       console.warn('❌ Stock not enough:', product);
     }
+    //End แก้ไขปิดตัวของ ValidateAmount ได้
   });
 
+   //Start แก้ไขปิดตัวของ ValidateAmount ได้
   if (productErrors.length > 0) {
     const messages = productErrors.map(p =>
       `• ${p.title} (ขอเพิ่มล่าสุด: ${p.quantity_plus}, รวม: ${p.quantity}, คลังมี: ${p.stock})`
@@ -1328,6 +1357,8 @@ async function confirmSelection() {
     console.error('🛑 ส่งข้อมูลถูกยกเลิกเพราะสินค้าเกินสต๊อก');
     return; // ❌ หยุดการส่งข้อมูล
   }
+
+  //End แก้ไขปิดตัวของ ValidateAmount ได้
 
   console.log('✅ สินค้าทั้งหมดผ่านการตรวจสอบ stock');
 

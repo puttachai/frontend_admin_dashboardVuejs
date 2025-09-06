@@ -70,6 +70,7 @@
             <th class="p-3 border">ชื่อร้าน</th>
             <th class="p-3 border">พนง.เร่งรัด</th>
             <th class="p-3 border">เบอร์โทรศัพท์</th>
+            <th class="p-3 border">เบอร์โทรศัพท์ พนง.เร่งรัด</th>
             <th class="p-3 border text-right">ยอดคำสั่งซื้อล่าสุด</th>
             <th class="p-3 border text-right">ยอดหนี้คงค้าง</th>
             <th class="p-3 border">เวลาสร้าง</th>
@@ -91,7 +92,9 @@
 
         <tbody v-if="isLoading">
           <tr>
-            <td colspan="11" class="py-10 text-center">
+
+            <td :colspan="isCrm ? 15 : 16" class="py-10 text-center">
+            <!-- <td colspan="11" class="py-10 text-center"> -->
               <svg
                 class="animate-spin h-8 w-8 text-blue-600 mx-auto"
                 xmlns="http://www.w3.org/2000/svg"
@@ -126,6 +129,8 @@
               <!-- <td class="p-3">{{ order.shop_name }}</td> -->
               <td class="p-3">{{ order.employee_name ? order.employee_name : "ไม่มีข้อมูล" }}</td>
               <td class="p-3">{{ order.mobile }}</td>
+              <!-- <td class="p-3">{{ order.employee_mobile ? order.employee_mobile : "ไม่มีข้อมูล"}}</td> -->
+              <td class="p-3">{{ order.employee_phone ? order.employee_phone : "ไม่มีข้อมูล"}}</td>
               <td class="p-3 text-right">{{ formatCurrency(order.total_amount) }}</td>
               <td class="p-3 text-right">{{ formatCurrency(order.total_paid) }}</td>
               <td class="p-3">{{ order.created_at }}</td>
@@ -240,59 +245,90 @@
                 </div>
 
                 <!-- Cards style -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 mt-3">
                   <div
-                    v-for="(d, i) in filteredExtraDetails(order)"
+                    v-for="(d, i) in filteredExtraDetails(order).slice(0, getVisibleCount(order))"
                     :key="i"
-                    class="flex justify-between items-center bg-white shadow-sm rounded-lg p-4 border border-gray-200 transition-transform transform hover:scale-[1.015] hover:shadow-md duration-300"
+                    class="flex justify-between items-center bg-white shadow-sm rounded-lg p-2 border border-gray-200 transition-transform transform hover:scale-[1.01] hover:shadow-md duration-200 max-w-[280px]"
                   >
                     <!-- ข้อมูลฝั่งซ้าย -->
-                    <div class="text-sm text-gray-800">
-                      <div class="text-[13px]">
-                        <strong class="text-[13px]">Invoice No.:</strong> {{ d.miHvnos }}
+                    <div class="text-xs text-gray-800 space-y-0.5">
+                      <div class="text-[11px]">
+                        <strong class="text-[11px]">Invoice No.:</strong> {{ d.miHvnos }}
                       </div>
-                      <div class="text-[13px]">
-                        <strong class="text-[13px]">Due Date:</strong> {{ d.dueDate }}
+                      <div class="text-[11px]">
+                        <strong class="text-[11px]">Due Date:</strong> {{ d.dueDate }}
                       </div>
-                      <div class="text-[13px]">
-                        <strong class="text-[13px]">Overdue Days:</strong> {{ d.overdueDays }}
+                      <div class="text-[11px]">
+                        <strong class="text-[11px]">Overdue Days:</strong> {{ d.overdueDays }}
                       </div>
-                      <div class="text-[13px]">
-                        <strong class="text-[13px]">Status:</strong>
-                        {{ getDisplayStatus(d.status2) }}
+                      <div class="text-[11px]">
+                        <strong class="text-[11px]">Status:</strong> {{ getDisplayStatus(d.status2) }}
                       </div>
-                      <div class="text-[13px]">
-                        <strong class="text-[13px]">Status:</strong> {{ d.status2 }}
+                      <div class="text-[11px]">
+                        <strong class="text-[11px]">Status:</strong> {{ d.status2 }}
                       </div>
-                      <div class="text-[13px]">
-                        <strong class="text-[13px]">Amount Due:</strong>
-                        {{ formatCurrency(d.inInvAmount) }}
+                      <div class="text-[11px]">
+                        <strong class="text-[11px]">Amount Due:</strong> {{ formatCurrency(d.inInvAmount) }}
                       </div>
                     </div>
 
                     <!-- ไอคอนฝั่งขวา -->
-                    <!-- <div class="w-14 h-14 flex items-center justify-center rounded-full shadow-inner"
-                      :class="getStatusColor(d.status2)" title="สถานะ: {{ getDisplayStatus(d.status2) }}">
-                      <component :is="getStatusIcon(d.status2)" class="w-6 h-6" />
-                    </div> -->
                     <div class="relative group z-50">
                       <div
-                        class="w-14 h-14 flex cursor-pointer items-center justify-center rounded-full shadow-inner transition-transform transform group-hover:scale-105"
+                        class="w-10 h-10 flex cursor-pointer items-center justify-center rounded-full shadow-inner transition-transform transform group-hover:scale-105"
                         :class="getStatusColor(d.status2)"
                       >
-                        <component :is="getStatusIcon(d.status2)" class="w-6 h-6" />
+                        <component :is="getStatusIcon(d.status2)" class="w-5 h-5" />
                       </div>
                       <div
-                        class="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-black text-white text-xs px-3 py-1 rounded-md opacity-0 group-hover:opacity-100 group-hover:-translate-y-[130%] transition-all duration-300 whitespace-nowrap z-60"
+                        class="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full bg-black text-white text-[10px] px-2 py-0.5 rounded-md opacity-0 group-hover:opacity-100 group-hover:-translate-y-[130%] transition-all duration-300 whitespace-nowrap z-60"
                       >
                         สถานะ: {{ d.status2 }}
                       </div>
                     </div>
                   </div>
                 </div>
+
+
+                <!-- ปุ่ม Show more / Show less / Show All -->
+                <div v-if="filteredExtraDetails(order).length > 3" class="mt-2 flex gap-2">
+                  <button
+                    v-if="getVisibleCount(order) < filteredExtraDetails(order).length"
+                    @click="showMore(order)"
+                    class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs"
+                  >
+                    Show more
+                  </button>
+                  <button
+                    v-if="getVisibleCount(order) > 3"
+                    @click="showLess(order)"
+                    class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-xs"
+                  >
+                    Show less
+                  </button>
+                  <button
+                    v-if="getVisibleCount(order) < filteredExtraDetails(order).length"
+                    @click="showAll(order)"
+                    class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-xs"
+                  >
+                    Show All
+                  </button>
+                </div>
               </td>
             </tr>
           </template>
+
+            <!-- ถ้าไม่มีข้อมูล -->
+            <tr v-if="!isLoading && filteredOrders.length === 0">
+              <td
+                :colspan="isCrm ? 15 : 16"
+                class="text-center py-10 text-gray-500 font-medium"
+              >
+                ไม่มีข้อมูล
+              </td>
+            </tr>
+
         </tbody>
       </table>
     </div>
@@ -341,7 +377,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch} from "vue";
+import { ref, onMounted, computed, watch, reactive } from "vue";
 // , reactive
 import axios from "axios";
 // import { logActivity } from '@/services/activityLogger.js'
@@ -364,6 +400,7 @@ import {
 // const BASE_URL = import.meta.env.VITE_API_URL
 const VITE_API_URL_C_SHARP = import.meta.env.VITE_API_URL_C_SHARP;
 const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 const tableWrapper = ref(null);
 const noticeBox = ref(null);
@@ -417,6 +454,7 @@ const formatCurrency = (value) =>
 // เมื่อ component โหลดเสร็จ แสดงปุ่มพร้อม animation
 onMounted(() => {
   showAnimatedButton.value = true;
+  // deBAdminCustomers();
 
   // ซ่อนปุ่มหลังจาก 10 วินาที
   // setTimeout(() => {
@@ -547,7 +585,9 @@ const filteredOrders = computed(() => {
     const saleNo = order.sale_no?.toLowerCase().trim() || "";
     const customerCode = order.customer_code?.toLowerCase().trim() || "";
     const shopName = order.shop_name?.toLowerCase().trim() || "";
+    const employeeName = order.employee_name?.toLowerCase().trim() || "";
     const mobile = order.mobile?.toLowerCase().trim() || "";
+    const employeeMobile = order.employee_mobile?.toLowerCase().trim() || "";
     const createdAt = order.created_at?.toLowerCase().trim() || "";
 
     // เงื่อนไข: ตรวจทีละ keyword
@@ -557,7 +597,9 @@ const filteredOrders = computed(() => {
         saleNo.includes(part) ||
         customerCode.includes(part) ||
         shopName.includes(part) ||
+        employeeMobile.includes(part) ||
         mobile.includes(part) ||
+        employeeName.includes(part) ||
         (isoDate && createdAt.includes(isoDate)) ||
         createdAt.includes(part) // เผื่อ user พิมพ์ yyyy-mm-dd โดยตรง
       );
@@ -672,6 +714,27 @@ async function confirmDelete(orderId) {
 //   }
 // }
 
+const visibleCounts = reactive({}); // key = order.sale_no, value = number of items shown
+
+function getVisibleCount(order) {
+  return visibleCounts[order.sale_no] ?? 5; // เริ่มต้น 3 รายการ
+}
+
+function showMore(order) {
+  const extraLength = filteredExtraDetails(order).length;
+  const current = getVisibleCount(order);
+  visibleCounts[order.sale_no] = Math.min(current + 5, extraLength);
+}
+
+function showLess(order) {
+  visibleCounts[order.sale_no] = Math.max(getVisibleCount(order) - 5, 5);
+}
+
+function showAll(order) {
+  visibleCounts[order.sale_no] = filteredExtraDetails(order).length;
+}
+
+
 async function fetchPage(page = 1) {
   isLoading.value = true;
   try {
@@ -707,14 +770,21 @@ async function fetchPage(page = 1) {
       totalRows.value = res.data.data.total;
       currentPage.value = page;
 
-      // // ✅ คำนวณจำนวน Order ที่ยังไม่อนุมัติ
+      // // คำนวณจำนวน Order ที่ยังไม่อนุมัติ
       // const pendingCount = saleOrders.value.filter(o => o.status !== 'ตรวจสอบเรียบร้อย').length;
 
-      // // ✅ ส่งไปให้ Navbar ผ่าน eventBus
+      // // ส่งไปให้ Navbar ผ่าน eventBus
       // eventBus.emit('updateOrderNotification', pendingCount);
 
-      // ✅ เรียกใช้ TypeCustomers หลังโหลดรายการเสร็จ
+      // เรียกใช้ TypeCustomers หลังโหลดรายการเสร็จ
       await TypeCustomers();
+       // เรียก API deBAdminCustomers สำหรับแต่ละ order
+
+      // const customerCodes = saleOrders.value.map(o => o.customer_code);
+      // await deBAdminCustomersBatch(customerCodes);
+
+      isLoading.value = false;
+
     }
   } catch (e) {
     console.error(e);
@@ -722,6 +792,104 @@ async function fetchPage(page = 1) {
     isLoading.value = false;
   }
 }
+
+
+// eslint-disable-next-line no-unused-vars
+async function deBAdminCustomersBatch(customerCodes) {
+  if (!customerCodes || customerCodes.length === 0) return;
+
+  isLoading.value = true;
+
+  try {
+    const res = await axios.post(
+      `${BASE_URL}/user/deBAdminCustomersBatch?v=${Date.now()}`,
+      { customerCodes },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    if (res.data.success) {
+      const admins = res.data.data2;
+
+      // map ข้อมูลกลับไปยัง saleOrders
+      admins.forEach((item) => {
+        const order = saleOrders.value.find((o) => o.customer_code === item.customer_code);
+        if (order) {
+          order.employee_name = item.contact_person;
+          order.employee_mobile = item.admin_mobile;
+          // order.employee_name = item.nickname;
+          // order.employee_mobile = item.mobile;
+        }
+      });
+
+      console.log("Batch deBAdminCustomers:", admins);
+    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+
+// async function deBAdminCustomers(customer_code) {
+//   isLoading.value = true;
+
+//   // const customer_code = customer_code.value;
+
+//   console.log("Check Log customer_code :", customer_code);
+
+//   try {
+//     const res = await axios.post(
+//       `${BASE_URL}/user/deBAdminCustomers?v=${Date.now()}`,
+//       {
+
+//         customerCode: customer_code,
+
+//       },
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//       }
+//       // {
+//       //   params: {
+//       //     // page,
+//       //     customerCode: customer_code.value,
+//       //   },
+//       // }
+//     );
+
+//     console.log("Check Log deBAdminCustomer :", res);
+
+//     if (res.data.success) {
+//       const deBAdminCustomer = res.data.data2.map((item) => ({
+//         // id: item.id,
+//         employee_name: item.nickname,
+//         mobile: item.mobile,
+//         customer_code: item.customer_code
+
+//       }));
+
+//       deBAdminCustomer.map((item) => {
+//         // หา order ที่ตรงกับ customer_code
+//         const order = saleOrders.value.find((o) => o.customer_code === item.customer_code);
+//         if (order) {
+//           order.employee_name = item.employee_name;
+//           order.employee_mobile = item.mobile;
+//         }
+//       });
+
+//       console.log("Check Log deBAdminCustomer :", deBAdminCustomer);
+
+//       // totalRows.value = res.data.data2.total;
+
+//     }
+//   } catch (e) {
+//     console.error(e);
+//   } finally {
+//     isLoading.value = false;
+//   }
+// }
 
 //
 async function getTokenDebtStatusType() {
@@ -958,6 +1126,7 @@ watch(searchQuery, () => {
   // newVal
   currentPage.value = 1;
   fetchPage(1);
+
 });
 
 onMounted(() => fetchPage(1));

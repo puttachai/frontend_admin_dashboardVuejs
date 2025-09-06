@@ -1,4 +1,4 @@
-/* eslint-disable no-unreachable */
+
 // macfiveService.js
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -86,6 +86,30 @@ export async function sendToMacfive(formdataapi, productListap, servicesPull, de
   }
 }
 
+
+// // helper functions
+// function round(value, decimals = 2) {
+//   return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
+// }
+
+// function number_format(number, decimals = 2, dec_point = ".", thousands_sep = ",") {
+//   const n = !isFinite(+number) ? 0 : +number;
+//   const prec = !isFinite(+decimals) ? 0 : Math.abs(decimals);
+//   const sep = thousands_sep;
+//   const dec = dec_point;
+
+//   let s = n.toFixed(prec).split(".");
+//   if (s[0].length > 3) {
+//     s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+//   }
+//   if ((s[1] || "").length < prec) {
+//     s[1] = s[1] || "";
+//     s[1] += new Array(prec - s[1].length + 1).join("0");
+//   }
+//   return s.join(dec);
+// }
+
+
 export function buildMacfivePayload(formdataapi, productListap, servicesPull, deliveryAddress) {
   const now = new Date();
   const formatDate = (d) => d.toISOString().slice(0, 10);
@@ -155,10 +179,52 @@ export function buildMacfivePayload(formdataapi, productListap, servicesPull, de
   const countservices = servicesPull.length;
   const totalItems = countProducts + countGifts + countPromotions + countservices;
 
-  const discountMacfive = formdataapi.totalDiscount;
-  const discT1CF = (discountMacfive * 100) / formdataapi.final_total_price;
-  const discFT2CC = (formdataapi.final_total_price * 7) / 107;
-  const discFT2CF = ((discFT2CC * 100) / formdataapi.final_total_price).toFixed(5);
+  // ใช้ได้
+
+  // //
+  // const discountMacfive = formdataapi.totalDiscount;
+  // const discT1CF = (discountMacfive * 100) / formdataapi.final_total_price;
+
+  // const discFT2CC = (formdataapi.final_total_price * 7) / 107;
+  // const discFT2CF = ((discFT2CC * 100) / formdataapi.final_total_price).toFixed(5);
+  // //
+
+  //  Last version
+
+  // มีอยู่แล้ว
+const afterDiscount1 = parseFloat(formdataapi.final_total_price); // 1540
+const discount1 = parseFloat(formdataapi.totalDiscount); // 30
+
+// ย้อนกลับหา subtotal ก่อนลด
+const subtotal = afterDiscount1 + discount1; // 1540 + 30 = 1570
+
+// % ส่วนลด 1
+const discT1CF = (discount1 * 100) / subtotal; // 1.91082803
+
+// ส่วนลด 2 (VAT backout)
+const discount2 = (afterDiscount1 * 7) / 107; // 100.75
+
+// % ส่วนลด 2
+const discT2CF = (discount2 * 100) / afterDiscount1; // 6.54220
+
+// VAT = discount2
+const vat = discount2; // 100.75
+
+// Net total
+const netTotal = afterDiscount1 - discount2 + vat; // 1540
+
+  // New old
+  // const discount_sum = formdataapi.final_total_price - discountMacfive; // 9570
+  // const discFT       = round(discount_sum, 2);    // 9570.00
+
+  // // ปัด 7/107 เป็น 5 ตำแหน่งก่อน แล้วคูณ 100
+  // const vatRatio5   = round(7 / 107, 5);                           // 0.06542
+  // const MH_discT2   = number_format(vatRatio5 * 100, 5, '.', ''); // 6.54200
+
+
+  // const MH_discF2   = number_format(discFT * vatRatio5, 2, '.', ''); // 626.07
+
+  // const discT1CFTTT = discountMacfive * 100 / formdataapi.final_total_price;
 
   return {
     hrows: {
@@ -169,17 +235,44 @@ export function buildMacfivePayload(formdataapi, productListap, servicesPull, de
       MH_supcus: formdataapi.customerCode,
       MH_noItems: totalItems,
       MH_vatRate: 7,
-      MH_vatTotal: parseFloat(formdataapi.final_total_price) * 0.07,
-      MH_netTotal: parseFloat(formdataapi.final_total_price),
+      // MH_vatTotal: parseFloat(formdataapi.final_total_price) * 0.07,
+      // MH_netTotal: parseFloat(formdataapi.final_total_price),
       MH_status: 15,
       MH_per: sale_no || "DP001",
       MH_site: deliveryAddress?.id || 0,
       MH_deldate: formatDate(now),
-      MH_totalCOG: parseFloat(formdataapi.final_total_price),
-      MH_discT1: discT1CF,
-      MH_discF1: discountMacfive,
-      MH_discT2: discFT2CF,
-      MH_discF2: (parseFloat(formdataapi.final_total_price - discountMacfive) * 7) / 107,
+
+      // MH_vatTotal: parseFloat(formdataapi.final_total_price) * 0.07,
+      // MH_netTotal: parseFloat(formdataapi.final_total_price),
+      // MH_totalCOG: parseFloat(formdataapi.final_total_price),
+      MH_vatTotal: vat,             // 100.75
+      MH_netTotal: netTotal,        // 1540.00
+      MH_totalCOG: afterDiscount1,  // 1540
+
+      // New
+      // MH_discT1: discT1CFTTT, // <-- แปลงเป็น int
+      // MH_discF1:  Math.round(discountMacfive),
+      // MH_discT2: round(MH_discT2,5),
+      // MH_discF2: round(MH_discF2,5),
+
+      // new old
+      // MH_discT1: discT1CF,
+      // MH_discF1: discountMacfive,
+      // MH_discT2: discFT2CF,
+      // MH_discF2: (parseFloat(formdataapi.final_total_price - discountMacfive) * 7) / 107,
+
+      MH_discF1: discount1,         // 30
+      MH_discT1: discT1CF,          // 1.91082803
+      MH_discF2: discount2,         // 100.75
+      MH_discT2: discT2CF,          // 6.54220
+
+      // old
+      // MH_discT1: discountMacfive,
+      // MH_discT1: discT1CF,
+      // MH_discF1: discountMacfive,
+      // MH_discT2: discFT2CF,
+      // MH_discF2: (parseFloat(formdataapi.final_total_price - discountMacfive) * 7) / 107,
+
       MH_flow: 0,
       MH_cur: 0,
       MH_Note: `// ${docNo}`,

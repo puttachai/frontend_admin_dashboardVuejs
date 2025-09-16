@@ -38,7 +38,8 @@
         <!-- Logo and Title -->
         <div class="text-center mb-4">
           <img src="../assets/logo.svg" alt="Logo" class="mx-auto h-16" />
-          <p class="mt-1 text-xl text-gray-700">Register</p>
+          <p class="mt-1 text-xl text-gray-700">ลงทะเบียนผู้ดูแลเร่งรัดหนี้สิน</p>
+          <!-- <p class="mt-1 text-xl text-gray-700">Register</p> -->
         </div>
 
         <!-- Upload Image -->
@@ -81,9 +82,18 @@
             เลือกร้านค้า: {{ selectedCustomer.nickname }}
           </div>
         </div> -->
-        <div v-if="selectedCustomer" class="py-2 text-sm text-purple-700">
+
+        <div v-if="selectedCustomer.length" class="py-2 text-sm text-purple-700">
+          เลือกร้านค้า:
+          <span v-for="(cust, index) in selectedCustomer" :key="cust.customer_no">
+            {{ cust.nickname }}<span v-if="index < selectedCustomer.length - 1">, </span>
+          </span>
+        </div>
+
+        <!-- ร้านเดียว -->
+        <!-- <div v-if="selectedCustomer" class="py-2 text-sm text-purple-700">
             เลือกร้านค้า: {{ selectedCustomer.nickname }}
-          </div>
+          </div> -->
 
 
         <!-- Preview Image -->
@@ -102,11 +112,12 @@
           @submit.prevent="register"
         >
           <div>
-            <label class="block text-sm font-medium text-gray-700">Employee ID</label>
+            <label class="block text-sm font-medium text-gray-700">DebEmployee ID</label>
             <input
               type="text"
               readonly
               v-model="formData.emp_ids"
+              placeholder="ระบบจะสร้างรหัสอัตโนมัติ"
               class="mt-1 block w-full border rounded-md border-gray-300 bg-gray-50 shadow-sm focus:ring-purple-500"
             />
           </div>
@@ -116,6 +127,7 @@
             <input
               type="text"
               v-model="formData.fullName"
+              placeholder="ชื่อ-นามสกุล"
               class="mt-1 block w-full border rounded-md border-gray-300 shadow-sm focus:ring-purple-500"
             />
           </div>
@@ -125,6 +137,7 @@
             <input
               type="email"
               v-model="formData.email"
+              placeholder="อีเมล์"
               class="mt-1 block w-full border rounded-md border-gray-300 shadow-sm focus:ring-purple-500"
             />
           </div>
@@ -134,6 +147,7 @@
             <input
               type="password"
               v-model="formData.password"
+              placeholder="รหัสผ่าน"
               class="mt-1 block w-full border rounded-md border-gray-300 shadow-sm focus:ring-purple-500"
             />
           </div>
@@ -143,6 +157,7 @@
             <input
               type="text"
               v-model="formData.address"
+              placeholder="ที่อยู่พนักงาน"
               class="mt-1 block w-full border rounded-md border-gray-300 shadow-sm focus:ring-purple-500"
             />
           </div>
@@ -152,6 +167,7 @@
             <input
               type="password"
               v-model="formData.confirmPassword"
+              placeholder="ยืนยันรหัสผ่าน"
               class="mt-1 block w-full border rounded-md border-gray-300 shadow-sm focus:ring-purple-500"
             />
           </div>
@@ -161,6 +177,7 @@
             <input
               type="text"
               v-model="formData.department"
+              placeholder="แผนก"
               class="mt-1 block w-full border rounded-md border-gray-300 shadow-sm focus:ring-purple-500"
             />
           </div>
@@ -170,6 +187,7 @@
             <input
               type="text"
               v-model="formData.phone"
+              placeholder="เบอร์โทรศัพท์"
               class="mt-1 block w-full border rounded-md border-gray-300 shadow-sm focus:ring-purple-500"
             />
           </div>
@@ -198,7 +216,7 @@
               type="submit"
               class="w-full bg-purple-700 text-white py-2 px-4 rounded-md hover:bg-purple-800 transition"
             >
-              Register
+              ลงทะเบียน
             </button>
           </div>
         </form>
@@ -251,16 +269,33 @@ const previewImage = ref(null);
 const searchCustomer = ref('');
 const customers = ref([]);
 
-const selectedCustomer = ref(null);
+// const selectedCustomer = ref(null); // ครั้งเดียว
+const selectedCustomer = ref([]); // เก็บหลายร้าน
+
 const showCustomerSidebar = ref(false);
 
 
 // eslint-disable-next-line no-unused-vars
 const openCustomerSidebar = () => showCustomerSidebar.value = true;
+
 const handleCustomerSelected = (cust) => {
-    selectedCustomer.value = cust;
-    formData.value.customer_no = cust.customer_no;
+    console.log("ลูกค้าที่เลือก:", cust);
+
+    // ตรวจสอบว่าลูกค้านี้ถูกเลือกไปแล้วหรือยัง (โดยใช้ customer_no)
+    const exists = selectedCustomer.value.some(c => c.customer_no === cust.customer_no);
+    if (!exists) {
+        selectedCustomer.value.push(cust); // เพิ่มค่าใหม่เข้า array
+    }
+
+    // สำหรับ formData เราสามารถเก็บเป็น array ของ customer_no
+    formData.value.customer_no = selectedCustomer.value.map(c => c.customer_no).join(',');
 };
+
+// const handleCustomerSelected = (cust) => {
+//   console.log("ลูกค้าที่เลือก:", cust);
+//     selectedCustomer.value = cust;
+//     formData.value.customer_no = cust.customer_no;
+// };
 
 const toggleCustomerSidebar = () => {
   showCustomerSidebar.value = !showCustomerSidebar.value;
@@ -268,14 +303,24 @@ const toggleCustomerSidebar = () => {
 
 
 // โหลดค่าจาก localStorage ตอน mounted
+// onMounted(() => {
+//     const saved = localStorage.getItem('signupForm')
+//     if (saved) {
+//         formData.value = JSON.parse(saved)
+//     }
+//     // else {
+//     //     formData.value.emp_ids = generateEmpId(); // สร้างรหัสใหม่เมื่อยังไม่มี
+//     // }
+// })
+
 onMounted(() => {
     const saved = localStorage.getItem('signupForm')
     if (saved) {
         formData.value = JSON.parse(saved)
     }
-    // else {
-    //     formData.value.emp_ids = generateEmpId(); // สร้างรหัสใหม่เมื่อยังไม่มี
-    // }
+    if (!formData.value.emp_ids) {
+        formData.value.emp_ids = generateEmpId(); // สร้างรหัสใหม่เมื่อยังไม่มี
+    }
 })
 
 // ทุกครั้งที่ formData เปลี่ยน จะเซฟลง localStorage
@@ -361,6 +406,7 @@ const register = async () => {
     formData.value.emp_ids = generateEmpId();
 
     const payload = new FormData();
+
     // for (const key in formData.value) {
     //     payload.append(key, formData.value[key]);
     //     console.log(`Appending ${key}:`, formData.value[key]); // ✅ เพิ่มบรรทัดนี้
@@ -380,6 +426,12 @@ const register = async () => {
       }
     }
 
+
+
+      // append object ของลูกค้า
+      if (selectedCustomer.value) {
+          payload.append('customers', JSON.stringify(selectedCustomer.value));
+      }
 
     // 2. แนบรูปแยกต่างหาก หากมีรูปจริง
     // if (formData.value.image instanceof File) {

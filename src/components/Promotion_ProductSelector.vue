@@ -1139,9 +1139,13 @@ async function SearchPromotionSubmit() {
   isLoading.value = true;
 
   const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
-  const getLevel = getLevelSS?.data2?.level ?? 0;
+  // const getLevel = getLevelSS?.data2?.level ?? 0;
 
-  // ✅ เช็กว่ามีการเลือกร้านค้าหรือยัง
+  memberType.value= getLevelSS?.data2?.level_name ?? '';
+
+  console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
+
+  // เช็กว่ามีการเลือกร้านค้าหรือยัง
   if (!getLevelSS?.data2) {
     noCustomerSelected.value = true;
     tableData.value = [];
@@ -1151,21 +1155,21 @@ async function SearchPromotionSubmit() {
     noCustomerSelected.value = false;
   }
 
-  if (getLevel === 0) {
-    memberType.value = 'Member End User';
-  } else if (getLevel === 1) {
-    memberType.value = 'Member A';
-  } else if (getLevel === 7) {
-    memberType.value = 'Member B';
-  } else if (getLevel === 10) {
-    memberType.value = 'Member A+';
-  } else {
-    memberType.value = 'Unknown Member';
-  }
+  // if (getLevel === 0) {
+  //   memberType.value = 'Member End User';
+  // } else if (getLevel === 1) {
+  //   memberType.value = 'Member A';
+  // } else if (getLevel === 7) {
+  //   memberType.value = 'Member B';
+  // } else if (getLevel === 10) {
+  //   memberType.value = 'Member A+';
+  // } else {
+  //   memberType.value = 'Unknown Member';
+  // }
 
   if (!keyword.value.trim()) {
     try {
-      // ✅ แทนที่ API ด้วยการใช้ข้อมูลจาก getPromotionProducts()
+      // แทนที่ API ด้วยการใช้ข้อมูลจาก getPromotionProducts()
       const keywordToSearch = keyword.value.trim().toLowerCase();
 
       if (!promotionProducts.value || promotionProducts.value.length === 0) {
@@ -1198,7 +1202,7 @@ async function SearchPromotionSubmit() {
       console.error("❌ SearchPromotionSubmit error:", err);
       isLoading.value = false;
     } finally {
-      // ✅ ปิด loading ไม่ว่าจะพบข้อมูลหรือไม่
+      // ปิด loading ไม่ว่าจะพบข้อมูลหรือไม่
       isLoading.value = false;
     }
 

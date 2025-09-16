@@ -267,8 +267,10 @@ const handleLogin = async () => {
       await orderStore.fetchPendingOrders()
 
       // 👉 ตรวจเงื่อนไข redirect
-      if (isCrm || isProduct || isFa || isAdmin) {
+      if (isCrm || isProduct) {
         router.push("/customer");
+      } else if( isFa || isAdmin){
+        router.push("/saleorderapprove");
       } else {
         router.push("/customer");
         // router.push("/dashboard");

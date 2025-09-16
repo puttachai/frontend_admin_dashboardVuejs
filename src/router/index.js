@@ -7,6 +7,7 @@ import RegisterDedtStatustView from "../views/Register_DedtStatustView.vue";
 import ShowDataEmpView from "../views/ShowDataEmpView.vue";
 import TechStackView from "../views/TechStackView.vue";
 import CreateSaleList from "../views/CreateSaleListView.vue";
+import SaleOrderApprove from "../views/SaleOrderApprove.vue";
 import CustomerView from "../views/CustomerView.vue";
 
 import SaleOrderList from "@/views/SaleOrderList.vue";
@@ -207,6 +208,13 @@ const routes = [
     // component: () => import('../views/SaleOrderList.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: "/saleorderapprove",
+    name: "saleorderapprove",
+    component: SaleOrderApprove,
+    // component: () => import('../views/SaleOrderList.vue'),
+    meta: { requiresAuth: true },
+  },
   // {
   //   path: '/saleorder/:id',
   //   name: 'saleorderdetail',
@@ -330,6 +338,24 @@ router.beforeEach((to, from, next) => {
   //   return next("/dashboard");
   // }
 
+    // Block /saleorderapprove สำหรับคนที่ไม่ใช่ Admin หรือ FA
+  if (to.path === "/saleorderapprove" && !(isAdmin || isFa)) {
+    Swal.fire({
+      title: "ไม่มีสิทธิ์เข้าใช้งาน",
+      text: "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้",
+      icon: "warning",
+    });
+    return next("/createsalelist"); // ส่งกลับไปหน้าอื่น
+  }
+
+  if (to.path === "/createsalelist" && !(isProduct || isCrm)) {
+    Swal.fire({
+      title: "ไม่มีสิทธิ์เข้าใช้งาน",
+      text: "คุณไม่ได้รับอนุญาตให้เข้าถึงหน้านี้",
+      icon: "warning",
+    });
+    return next("/saleorderapprove"); // ส่งกลับไปหน้าอื่น
+  }
 
   // ต้องใช้
   // กลุ่ม sale กับ product ห้ามเข้า /saleorder

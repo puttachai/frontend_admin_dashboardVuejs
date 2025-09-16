@@ -20,7 +20,8 @@
                             <span class="mx-1 text-gray-400">›</span>
                         </li>
                         <li>
-                            <router-link to="/createsalelist" @click.native="reloadPage"
+                            <!-- <router-link to="/createsalelist" @click.native="reloadPage" -->
+                            <router-link to="/createsalelist" @click="reloadPage"
                                 class="text-purple-600 font-medium hover:text-purple-800 transition">
                                 Create Sale List
                             </router-link>
@@ -970,6 +971,7 @@ import DeliveryAddressPopup from '@/components/DeliveryAddressPopup.vue'
 import DeliveryAddressPopupBase from '@/components/DeliveryAddressPopupBase.vue'
 
 
+// eslint-disable-next-line no-unused-vars
 import { sendToMacfive } from "@/services/macfiveService.js";
 
 
@@ -2698,39 +2700,39 @@ export default {
                             console.log("🛒 productListap final:", productListap);
                             console.log("🛠️ getServices final:", servicesPull);
 
-                                // ✅ เรียกส่งข้อมูลเข้า Macfive
-                                try {
-                                const macfiveRes = await sendToMacfive(
-                                    formdataapi,
-                                    productListap,
-                                    servicesPull,
-                                    // promotions,
-                                    // gifts,
-                                    deliveryAddress
-                                );
-                                console.log("✅ ส่งเข้า Macfive สำเร็จ:", macfiveRes);
+                                //  เรียกส่งข้อมูลเข้า Macfive
+                                // try {
+                                // const macfiveRes = await sendToMacfive(
+                                //     formdataapi,
+                                //     productListap,
+                                //     servicesPull,
+                                //     // promotions,
+                                //     // gifts,
+                                //     deliveryAddress
+                                // );
+                                // console.log("✅ ส่งเข้า Macfive สำเร็จ:", macfiveRes);
 
-                                if (macfiveRes.data?.Success) {
-                                    Swal.fire({
-                                    title: "ส่งเข้า Macfive สำเร็จ",
-                                    // text: `เลขที่เอกสาร: ${macfiveRes.VoucherNo || "-"}`,
-                                    icon: "success",
-                                    });
-                                } else {
-                                    Swal.fire({
-                                    title: "ไม่สามารถส่งเข้า Macfive ได้",
-                                    text: macfiveRes.data?.Message || "กรุณาลองใหม่",
-                                    icon: "error",
-                                    });
-                                }
-                                } catch (err) {
-                                console.error("❌ Error ส่ง Macfive:", err);
-                                Swal.fire({
-                                    title: "เกิดข้อผิดพลาด",
-                                    text: err.message || "ไม่สามารถเชื่อมต่อ Macfive ได้",
-                                    icon: "error",
-                                });
-                                }
+                                // if (macfiveRes.data?.Success) {
+                                //     Swal.fire({
+                                //     title: "ส่งเข้า Macfive สำเร็จ",
+                                //     // text: `เลขที่เอกสาร: ${macfiveRes.VoucherNo || "-"}`,
+                                //     icon: "success",
+                                //     });
+                                // } else {
+                                //     Swal.fire({
+                                //     title: "ไม่สามารถส่งเข้า Macfive ได้",
+                                //     text: macfiveRes.data?.Message || "กรุณาลองใหม่",
+                                //     icon: "error",
+                                //     });
+                                // }
+                                // } catch (err) {
+                                // console.error("❌ Error ส่ง Macfive:", err);
+                                // Swal.fire({
+                                //     title: "เกิดข้อผิดพลาด",
+                                //     text: err.message || "ไม่สามารถเชื่อมต่อ Macfive ได้",
+                                //     icon: "error",
+                                // });
+                                // }
 
 
                             // เก็บ deep copy
@@ -3156,39 +3158,39 @@ export default {
                             console.log("🛒 productListap final:", productListap);
                             console.log("🛠️ servicesPull final:", servicesPull);
 
-                                // ✅ เรียกส่งข้อมูลเข้า Macfive
-                                try {
-                                const macfiveRes = await sendToMacfive(
-                                    formdataapi,
-                                    productListap,
-                                    servicesPull,
-                                    // promotions,
-                                    // gifts,
-                                    deliveryAddress
-                                );
-                                console.log("✅ ส่งเข้า Macfive สำเร็จ:", macfiveRes);
+                                // // เรียกส่งข้อมูลเข้า Macfive
+                                // try {
+                                // const macfiveRes = await sendToMacfive(
+                                //     formdataapi,
+                                //     productListap,
+                                //     servicesPull,
+                                //     // promotions,
+                                //     // gifts,
+                                //     deliveryAddress
+                                // );
+                                // console.log(" ส่งเข้า Macfive สำเร็จ:", macfiveRes);
 
-                                if (macfiveRes.data?.Success) {
-                                    Swal.fire({
-                                    title: "ส่งเข้า Macfive สำเร็จ",
-                                    // text: `เลขที่เอกสาร: ${macfiveRes.VoucherNo || "-"}`,
-                                    icon: "success",
-                                    });
-                                } else {
-                                    Swal.fire({
-                                    title: "ไม่สามารถส่งเข้า Macfive ได้",
-                                    text: macfiveRes.data?.Message || "กรุณาลองใหม่",
-                                    icon: "error",
-                                    });
-                                }
-                                } catch (err) {
-                                    console.error("❌ Error ส่ง Macfive:", err);
-                                    Swal.fire({
-                                        title: "เกิดข้อผิดพลาด",
-                                        text: err.message || "ไม่สามารถเชื่อมต่อ Macfive ได้",
-                                        icon: "error",
-                                    });
-                                }
+                                // if (macfiveRes.data?.Success) {
+                                //     Swal.fire({
+                                //     title: "ส่งเข้า Macfive สำเร็จ",
+                                //     // text: `เลขที่เอกสาร: ${macfiveRes.VoucherNo || "-"}`,
+                                //     icon: "success",
+                                //     });
+                                // } else {
+                                //     Swal.fire({
+                                //     title: "ไม่สามารถส่งเข้า Macfive ได้",
+                                //     text: macfiveRes.data?.Message || "กรุณาลองใหม่",
+                                //     icon: "error",
+                                //     });
+                                // }
+                                // } catch (err) {
+                                //     console.error("❌ Error ส่ง Macfive:", err);
+                                //     Swal.fire({
+                                //         title: "เกิดข้อผิดพลาด",
+                                //         text: err.message || "ไม่สามารถเชื่อมต่อ Macfive ได้",
+                                //         icon: "error",
+                                //     });
+                                // }
 
                     const newDocumentNo = resData.newDocumentNo; // ดึง `documentNo` ใหม่จาก API
 

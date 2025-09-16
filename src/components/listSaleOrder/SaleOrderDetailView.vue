@@ -799,6 +799,7 @@ import "flatpickr/dist/flatpickr.css";
 import { Thai } from "flatpickr/dist/l10n/th.js";
 import flatpickr from "flatpickr";
 
+// eslint-disable-next-line no-unused-vars
 import { sendToMacfive } from "@/services/macfiveService.js";
 
 // ✅ ตั้งค่าภาษาไทยให้กับ flatpickr
@@ -2810,39 +2811,39 @@ export default {
           console.log("🛒 productListap final:", productListap);
           console.log("🛠️ servicesPull final:", servicesPull);
 
-          // ✅ เรียกส่งข้อมูลเข้า Macfive
-          try {
-            const macfiveRes = await sendToMacfive(
-              formdataapi,
-              productListap,
-              servicesPull,
-              // promotions,
-              // gifts,
-              deliveryAddress
-            );
-            console.log("✅ ส่งเข้า Macfive สำเร็จ:", macfiveRes);
+          // // เรียกส่งข้อมูลเข้า Macfive
+          // try {
+          //   const macfiveRes = await sendToMacfive(
+          //     formdataapi,
+          //     productListap,
+          //     servicesPull,
+          //     // promotions,
+          //     // gifts,
+          //     deliveryAddress
+          //   );
+          //   console.log("✅ ส่งเข้า Macfive สำเร็จ:", macfiveRes);
 
-            if (macfiveRes.data?.Success) {
-              Swal.fire({
-                title: "ส่งเข้า Macfive สำเร็จ",
-                // text: `เลขที่เอกสาร: ${macfiveRes.VoucherNo || "-"}`,
-                icon: "success",
-              });
-            } else {
-              Swal.fire({
-                title: "ไม่สามารถส่งเข้า Macfive ได้",
-                text: macfiveRes.data?.Message || "กรุณาลองใหม่",
-                icon: "error",
-              });
-            }
-          } catch (err) {
-            console.error("❌ Error ส่ง Macfive:", err);
-            Swal.fire({
-              title: "เกิดข้อผิดพลาด",
-              text: err.message || "ไม่สามารถเชื่อมต่อ Macfive ได้",
-              icon: "error",
-            });
-          }
+          //   if (macfiveRes.data?.Success) {
+          //     Swal.fire({
+          //       title: "ส่งเข้า Macfive สำเร็จ",
+          //       // text: `เลขที่เอกสาร: ${macfiveRes.VoucherNo || "-"}`,
+          //       icon: "success",
+          //     });
+          //   } else {
+          //     Swal.fire({
+          //       title: "ไม่สามารถส่งเข้า Macfive ได้",
+          //       text: macfiveRes.data?.Message || "กรุณาลองใหม่",
+          //       icon: "error",
+          //     });
+          //   }
+          // } catch (err) {
+          //   console.error("❌ Error ส่ง Macfive:", err);
+          //   Swal.fire({
+          //     title: "เกิดข้อผิดพลาด",
+          //     text: err.message || "ไม่สามารถเชื่อมต่อ Macfive ได้",
+          //     icon: "error",
+          //   });
+          // }
 
           const newDocumentNo = resData.newDocumentNo; // ดึง `documentNo` ใหม่จาก API
           this.formData.documentNo = newDocumentNo; // อัปเดต `documentNo` ใน `formData`
@@ -3321,15 +3322,15 @@ export default {
             },
           });
 
-          console.log("✅ Macfive ส่งสำเร็จ", macfiveResponse);
+          console.log(" Macfive ส่งสำเร็จ", macfiveResponse);
 
           if (macfiveResponse.data?.Success) {
             this.approvedVoucherNo = macfiveResponse.data?.VoucherNo || "";
 
             console.log("📦 รายการ DocumentNo :", this.approvedVoucherNo);
 
-            // update สถานะใน Database
-            await this.updateOrderStatus(this.approvedVoucherNo);
+            // update สถานะใน Database ปิดไว้ก่อน
+            // await this.updateOrderStatus(this.approvedVoucherNo);
 
             Swal.fire({
               title: "อนุมัติรายการสั่งซื้อสำเร็จ",
@@ -3441,10 +3442,27 @@ export default {
 
       const totalItems = countProducts + countGifts + countPromotions;
 
-      const discountMacfive = this.formData.totalDiscount;
-      const discT1CF = (discountMacfive * 100) / this.formData.final_total_price;
-      const discFT2CC = (this.formData.final_total_price * 7) / 107;
-      const discFT2CF = ((discFT2CC * 100) / this.formData.final_total_price).toFixed(5);
+      // const discountMacfive = this.formData.totalDiscount;
+      // const discT1CF = (discountMacfive * 100) / this.formData.final_total_price;
+      // const discFT2CC = (this.formData.final_total_price * 7) / 107;
+      // const discFT2CF = ((discFT2CC * 100) / this.formData.final_total_price).toFixed(5);
+
+
+        // มีอยู่แล้ว
+      const afterDiscount1 = parseFloat(this.formData.final_total_price); // 1540
+      const discount1 = parseFloat(this.formData.totalDiscount); // 30
+      // ย้อนกลับหา subtotal ก่อนลด
+      const subtotal = afterDiscount1 + discount1; // 1540 + 30 = 1570
+      // % ส่วนลด 1
+      const discT1CF = (discount1 * 100) / subtotal; // 1.91082803
+      // ส่วนลด 2 (VAT backout)
+      const discount2 = (afterDiscount1 * 7) / 107; // 100.75
+      // % ส่วนลด 2
+      const discT2CF = (discount2 * 100) / afterDiscount1; // 6.54220
+      // VAT = discount2
+      const vat = discount2; // 100.75
+      // Net total
+      const netTotal = afterDiscount1 - discount2 + vat; // 1540
       // const discFT2CF = discFT2CC * 100 / this.formData.final_total_price;
 
       console.log("📦 รวมทั้งหมด (MH_noItems):", totalItems);
@@ -3460,22 +3478,34 @@ export default {
           MH_noItems: totalItems, //
           // MH_noItems: this.formData.productList.length,
           MH_vatRate: 7,
-          MH_vatTotal: parseFloat(this.formData.final_total_price) * 0.07,
-          MH_netTotal: parseFloat(this.formData.final_total_price),
           MH_status: 15,
           MH_per: "DP001", //"DP001", // รหัสเซลล์ แก้ๆ
           // MH_per: sale_no, //"DP001", // รหัสเซลล์
           MH_site: this.deliveryAddress?.id || 0, // ที่อยู่จัดส่ง
           // MH_site: 1655, // ที่อยู่จัดส่ง
           MH_deldate: formatDate(now), // วันที่สร้าง
-          MH_totalCOG: parseFloat(this.formData.final_total_price), // ยอดรวม
-          MH_discT1: discT1CF, //ส่วนลด
-          // MH_discT1: 20, //ส่วนลด
-          MH_discF1: discountMacfive,
-          // MH_discF1: 0,
-          MH_discT2: discFT2CF, //
-          // MH_discT2: 6.54205, //
-          MH_discF2: (parseFloat(this.formData.final_total_price - discountMacfive) * 7) / 107, // round(ส่วนลด * 7 / 107 ,2);
+
+          // MH_vatTotal: parseFloat(this.formData.final_total_price) * 0.07,
+          // MH_netTotal: parseFloat(this.formData.final_total_price),
+          // MH_totalCOG: parseFloat(this.formData.final_total_price), // ยอดรวม
+
+          // MH_discT1: discT1CF, //ส่วนลด
+          // // MH_discT1: 20, //ส่วนลด
+          // MH_discF1: discountMacfive,
+          // // MH_discF1: 0,
+          // MH_discT2: discFT2CF, //
+          // // MH_discT2: 6.54205, //
+          // MH_discF2: (parseFloat(this.formData.final_total_price - discountMacfive) * 7) / 107, // round(ส่วนลด * 7 / 107 ,2);
+
+          MH_vatTotal: vat,             // 100.75
+          MH_netTotal: netTotal,        // 1540.00
+          MH_totalCOG: afterDiscount1,  // 1540
+
+          MH_discF1: discount1,         // 30
+          MH_discT1: discT1CF,          // 1.91082803
+          MH_discF2: discount2,         // 100.75
+          MH_discT2: discT2CF,          // 6.54220
+
           MH_flow: 0,
           MH_cur: 0,
           MH_Note: `// ${docNo}`,

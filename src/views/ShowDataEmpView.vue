@@ -1,6 +1,6 @@
 <template>
     <div class="p-6 min-w-full">
-        <h1 class="text-2xl font-bold mb-4">รายชื่อพนักงาน</h1>
+        <h1 class="text-2xl font-bold mb-4">รายชื่อพนักงานเร่งรัดหนี้สิน</h1>
 
          <div class="text-sm text-gray-500 mb-2">
                 จำนวนพนักงานทั้งหมด: {{ employees.length }} คน
@@ -10,7 +10,7 @@
           <!-- ปุ่มเพิ่มพนักงาน -->
           <router-link class="button" to="/registerdedtStatust">
             <button class="px-4 py-2 bg-purple-700 text-white rounded hover:bg-purple-800">
-              เพิ่มพนักงาน
+              เพิ่มพนักงานเร่งรัดหนี้สิน
             </button>
           </router-link>
 
@@ -38,6 +38,8 @@
                         <th class="px-2 py-1 border whitespace-nowrap">ที่อยู่</th>
                         <th class="px-2 py-1 border whitespace-nowrap">ตำแหน่ง</th>
                         <th class="px-2 py-1 border whitespace-nowrap">รหัสลูกค้า</th>
+                        <th class="px-2 py-1 border whitespace-nowrap">ชื่อลูกค้า</th>
+                        <th class="px-2 py-1 border whitespace-nowrap">เบอร์โทรลูกค้า</th>
                         <!-- <th class="px-2 py-1 border whitespace-nowrap">เงินเดือน</th> -->
                         <th class="px-2 py-1 border whitespace-nowrap">สถานะ</th>
                         <!-- <th class="px-2 py-1 border whitespace-nowrap">เริ่มงาน</th> -->
@@ -49,7 +51,7 @@
                     <tr v-for="employee in filteredEmployees" :key="employee.id" class="text-center hover:bg-gray-50">
                         <td class="px-2 py-1 border">
                             <template v-if="employee.image_path">
-                                <img :src="employee.image_path" alt="profile" class="w-8 h-8 rounded-full mx-auto" />
+                                <img :src="employee.image_path" alt="profile" class="w-8 h-8 rounded-full  max-w-[100px]" />
                             </template>
                             <template v-else>
                                 <span class="material-icons text-gray-400 text-3xl">account_circle</span>
@@ -60,7 +62,75 @@
                         <td class="px-2 py-1 border whitespace-nowrap">{{ employee.telephone }}</td>
                         <td class="px-2 py-1 border">{{ employee.address }}</td>
                         <td class="px-2 py-1 border whitespace-nowrap">{{ employee.department }}</td>
-                        <td class="px-2 py-1 border whitespace-nowrap">{{ employee.customer_no || 'ไม่มีข้อมูล' }}</td>
+                        <!-- <td class="px-2 py-1 border whitespace-nowrap">{{ employee.customer_no || 'ไม่มีข้อมูล' }}</td> -->
+
+                        <td class="px-2 py-1 border whitespace-nowrap min-w-[120px]">
+                          <select class="border border-gray-300 rounded px-2 py-1 w-full">
+                            <option
+                              v-for="(customer, index) in employee.customers"
+                              :key="index"
+                              :value="customer.customer_no"
+                            >
+                              {{ customer.customer_no || 'ไม่มีข้อมูล' }}
+                            </option>
+                          </select>
+                        </td>
+
+
+                        <!-- <td class="px-2 py-1 border whitespace-nowrap ">{{ employee.nickname || 'ไม่มีข้อมูล' }}</td> -->
+                        <td class="px-2 py-1 border whitespace-nowrap ">
+                            <div v-if="employee.customers && employee.customers.length" class="flex flex-col space-y-1">
+                              <div
+                                v-for="(customer, index) in employee.customers"
+                                :key="index"
+                                class="relative group cursor-pointer"
+                              >
+                                <span class="hover:text-purple-600">
+                                  {{ customer.nickname && customer.nickname.length > 20
+                                      ? customer.nickname.substring(0, 20) + '...'
+                                      : (customer.nickname || ',ไม่มีข้อมูล') }}
+                                </span>
+
+                                <!-- tooltip -->
+                                <div
+                                  v-if="customer.nickname"
+                                  class="absolute z-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 -top-8 left-0 max-w-xs whitespace-normal"
+                                >
+                                  {{ customer.nickname }}
+                                </div>
+                              </div>
+                            </div>
+                            <div v-else>ไม่มีข้อมูล</div>
+                          </td>
+
+
+                        <!-- <td class="px-2 py-1 border whitespace-nowrap">
+                          <select class="border border-gray-300 rounded px-2 py-1 w-full">
+                            <option
+                              v-for="(customer, index) in employee.customers"
+                              :key="index"
+                              :value="customer.nickname"
+                            >
+                              {{ customer.nickname || 'ไม่มีข้อมูล' }}
+                            </option>
+                          </select>
+                        </td> -->
+
+
+                        <td class="px-2 py-1 border whitespace-nowrap  min-w-[120px]">
+                          <select class="border border-gray-300 rounded px-2 py-1 w-full">
+                            <option
+                              v-for="(customer, index) in employee.customers"
+                              :key="index"
+                              :value="customer.customer_mobile"
+                            >
+                              {{ customer.customer_mobile || 'ไม่มีข้อมูล' }}
+                            </option>
+                          </select>
+                        </td>
+
+
+                        <!-- <td class="px-2 py-1 border whitespace-nowrap">{{ employee.mobile || employee.customer_mobile || 'ไม่มีข้อมูล' }}</td> -->
                         <!-- <td class="px-2 py-1 border whitespace-nowrap">{{ employee.salary }}</td> -->
                         <td class="px-2 py-1 border whitespace-nowrap">{{ employee.status }}</td>
                         <!-- <td class="px-2 py-1 border whitespace-nowrap">{{ employee.start_work }}</td> -->
@@ -108,6 +178,8 @@ const selectedEmployee = ref(null);
 
 const searchQuery = ref(""); // ตัวแปรช่องค้นหา
 
+const expandedEmployee = ref(null);
+
 const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 // const BASE_URL_LOCAL = import.meta.env.VITE_API_URL;
 
@@ -118,7 +190,34 @@ onMounted(async () => {
         console.log("Log BASE_URL_LOCAL: ", BASE_URL_LOCAL);
 
         const respone = await axios.get(`${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/get_dataEmployee.php`,)
-        employees.value = respone.data;
+
+        let data = respone.data;
+
+        // ดักข้อมูล customer ว่าง
+        data = data.map(emp => {
+            if (emp.customers && emp.customers.length) {
+                emp.customers = emp.customers.map(cust => ({
+                    customer_no: cust.customer_no || 'ไม่มีข้อมูล',
+                    nickname: cust.nickname || 'ไม่มีข้อมูล',
+                    customer_mobile: cust.customer_mobile || 'ไม่มีข้อมูล',
+                    contact: cust.contact || 'ไม่มีข้อมูล',
+                    // เพิ่ม field อื่น ๆ ตามต้องการ
+                }));
+            } else {
+                // ถ้าไม่มี customer เลย ให้สร้าง array พร้อมค่า default
+                emp.customers = [{
+                    customer_no: 'ไม่มีข้อมูล',
+                    nickname: 'ไม่มีข้อมูล',
+                    customer_mobile: 'ไม่มีข้อมูล',
+                    contact: 'ไม่มีข้อมูล',
+                }];
+            }
+            return emp;
+        });
+
+        employees.value = data;
+
+        // employees.value = respone.data;
         console.log("Log respone: ", respone);
         console.log("Success Fully");
 
@@ -135,6 +234,13 @@ const openEditPopup = (employee) => {
 
 const closeEditPopup = () => {
     showPopup.value = false;
+};
+
+
+// eslint-disable-next-line no-unused-vars
+const toggleExpand = (employee) => {
+  expandedEmployee.value =
+    expandedEmployee.value === employee.id ? null : employee.id;
 };
 
 // const updateEmployeeInList = (updatedData) => {
@@ -163,6 +269,8 @@ const filteredEmployees = computed(() => {
     const department = emp.department?.toLowerCase().trim() || "";
     const address = emp.address?.toLowerCase().trim() || "";
     const customerNo = emp.customer_no?.toLowerCase().trim() || "";
+    const nickname = emp.nickname?.toLowerCase() || "";
+    const customerMobile = emp.customer_mobile?.toLowerCase() || "";
 
     return (
       fullName.includes(raw) ||
@@ -170,7 +278,9 @@ const filteredEmployees = computed(() => {
       telephone.includes(raw) ||
       department.includes(raw) ||
       address.includes(raw) ||
-      customerNo.includes(raw)
+      customerNo.includes(raw) ||
+      nickname.includes(raw) ||
+      customerMobile.includes(raw)
     );
   });
 });
@@ -217,3 +327,37 @@ const confirmDeleteEmployee = async (employee) => {
 }
 
 </script>
+<!--
+
+<td class="px-2 py-1 border whitespace-nowrap">
+  <span
+    @click="toggleExpand(employee)"
+    class="cursor-pointer hover:text-purple-600"
+  >
+    {{ employee.nickname && employee.nickname.length > 20
+        ? employee.nickname.substring(0, 20) + '...'
+        : (employee.nickname || 'ไม่มีข้อมูล') }}
+  </span>
+
+
+  <div v-if="expandedEmployee === employee.id" class="mt-2">
+    <textarea
+      readonly
+      class="w-64 border rounded p-2 text-xs"
+      :value="employee.nickname"
+    ></textarea>
+    <button
+      class="mt-1 text-blue-600 text-xs"
+      @click="expandedEmployee = null"
+    >
+      ปิด
+    </button>
+  </div>
+</td>
+
+const toggleExpand = (employee) => {
+  expandedEmployee.value =
+    expandedEmployee.value === employee.id ? null : employee.id;
+};
+
+-->

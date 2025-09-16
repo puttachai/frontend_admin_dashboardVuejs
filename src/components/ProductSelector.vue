@@ -199,6 +199,8 @@ const router = useRouter()
 const BASE_URL_IMAGE = import.meta.env.VITE_API_URL_IMAGE;
 const BASE_URL = import.meta.env.VITE_API_URL;
 
+const BASE_URL_PRICE = import.meta.env.VITE_API_URL_BACKEND_PRICE;
+
 const isLoading = ref(false) // สำหรับ loading spinner
 const isnotData = ref(false) // สำหรับ loading spinner
 
@@ -551,21 +553,23 @@ async function SearchProducstSubmit() {
   const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
 
   const getLevel = getLevelSS?.data2?.level ?? 0;
+  memberType.value  = getLevelSS?.data2?.level_name ?? 0;
   console.log("Log getLevel: ", getLevel);
+  // console.log("Log memberType: ", memberType.value);
 
   // แปลงค่า getLevel เป็นชื่อสมาชิก
   // let memberType = '';
-  if (getLevel === 0) {
-    memberType.value = 'Member Nuser';
-  } else if (getLevel === 1) {
-    memberType.value = 'Member A';
-  } else if (getLevel === 7) {
-    memberType.value = 'Member B';
-  } else if (getLevel === 10) {
-    memberType.value = 'Member A+';
-  } else {
-    memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
-  }
+  // if (getLevel === 0) {
+  //   memberType.value = 'Member Nuser';
+  // } else if (getLevel === 1) {
+  //   memberType.value = 'Member A';
+  // } else if (getLevel === 7) {
+  //   memberType.value = 'Member B';
+  // } else if (getLevel === 10) {
+  //   memberType.value = 'Member A+';
+  // } else {
+  //   memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
+  // }
 
   console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
 
@@ -649,9 +653,14 @@ async function SearchProducstSubmit() {
         //   imageLoaded: false
         // }));
 
-        dataselect.value = searchProducts;
-        total.value = data.item_count || 0;
+        const productsWithPrice = await fetchProductPrices(searchProducts);
+        tableData.value = productsWithPrice;
+        dataselect.value = productsWithPrice;
         pageCurrent.value = 1;
+
+        // dataselect.value = searchProducts;
+        total.value = data.item_count || 0;
+        // pageCurrent.value = 1;
 
         console.log("✅ ข้อมูล searchProducts:", searchProducts);
 
@@ -729,7 +738,7 @@ async function SearchProducstSubmit() {
 
       if (response.data.code !== 1 || response.data.msg === 'ตัวของ รายการสินค้ายังไม่ถูกเปิดขาย') {
 
-        if(response.data.msg === 'ตัวของ รายการสินค้ายังไม่ถูกเปิดขาย'){
+        if (response.data.msg === 'ตัวของ รายการสินค้ายังไม่ถูกเปิดขาย'){
           Swal.fire({
             title: 'ค้นหาไม่สำเร็จ',
             text: response.data.msg || 'เกิดข้อผิดพลาด',
@@ -773,9 +782,14 @@ async function SearchProducstSubmit() {
         //   imageLoaded: false
         // }));
 
-        dataselect.value = searchProducts;
-        total.value = data.item_count || 0;
+        const productsWithPrice = await fetchProductPrices(searchProducts);
+        tableData.value = productsWithPrice;
+        dataselect.value = productsWithPrice;
         pageCurrent.value = 1;
+
+        // dataselect.value = searchProducts;
+        total.value = data.item_count || 0;
+        // pageCurrent.value = 1;
 
         console.log("✅ ข้อมูล searchProducts:", searchProducts);
 
@@ -828,22 +842,27 @@ async function SearchProducstSubmitFirst() {
 
   const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
 
+  console.log("😶‍🌫️Log getLevelSS 😶‍🌫️: ", getLevelSS);
+
   const getLevel = getLevelSS?.data2?.level ?? 0;
+  memberType.value  = getLevelSS?.data2?.level_name ?? 0;
+
   console.log("Log getLevel: ", getLevel);
 
-  // แปลงค่า getLevel เป็นชื่อสมาชิก
-  // let memberType = '';
-  if (getLevel === 0) {
-    memberType.value = 'Member Nuser';
-  } else if (getLevel === 1) {
-    memberType.value = 'Member A';
-  } else if (getLevel === 7) {
-    memberType.value = 'Member B';
-  } else if (getLevel === 10) {
-    memberType.value = 'Member A+';
-  } else {
-    memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
-  }
+
+  // // แปลงค่า getLevel เป็นชื่อสมาชิก
+  // // let memberType = '';
+  // if (getLevel === 0) {
+  //   memberType.value = 'Member Nuser';
+  // } else if (getLevel === 1) {
+  //   memberType.value = 'Member A';
+  // } else if (getLevel === 7) {
+  //   memberType.value = 'Member B';
+  // } else if (getLevel === 10) {
+  //   memberType.value = 'Member A+';
+  // } else {
+  //   memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
+  // }
 
   console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
 
@@ -925,7 +944,13 @@ async function SearchProducstSubmitFirst() {
         //   imageLoaded: false
         // }));
 
-        dataselect.value = searchProducts;
+        const productsWithPrice = await fetchProductPrices(searchProducts);
+        tableData.value = productsWithPrice;
+        dataselect.value = productsWithPrice;
+
+
+        // ใช้งานได้
+        // dataselect.value = searchProducts;
         total.value = data.item_count || 0;
         // pageCurrent.value = 1;
 
@@ -1028,7 +1053,13 @@ async function SearchProducstSubmitFirst() {
         //   imageLoaded: false
         // }));
 
-        dataselect.value = searchProducts;
+        const productsWithPrice = await fetchProductPrices(searchProducts);
+        tableData.value = productsWithPrice;
+        dataselect.value = productsWithPrice;
+
+
+        // ใช้งานได้
+        // dataselect.value = searchProducts;
         total.value = data.item_count || 0;
         // pageCurrent.value = 1;
 
@@ -1073,6 +1104,106 @@ async function SearchProducstSubmitFirst() {
     }
   }
 }
+
+
+// ฟังก์ชันขอ Token
+async function getToken() {
+  try {
+    const payload = {
+      UserName: "admin@gmail.com",
+      Password: "123456",
+      RememberMe: true
+    };
+
+    const response = await axios.post(
+      `${BASE_URL_PRICE}/Auth/login`,
+      payload,
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    if (response.data.Success) {
+      const token = response.data.Data.Token;
+      console.log(" ได้ Token:", token);
+      return token;
+    } else {
+      console.error("❌ ล็อกอินไม่สำเร็จ:", response.data.Message);
+      return null;
+    }
+  } catch (err) {
+    console.error("เกิดข้อผิดพลาดขณะขอ Token:", err);
+    return null;
+  }
+}
+
+async function fetchProductPrices(searchProducts) {
+  try {
+
+    const token = await getToken(); // ขอ Token ก่อน
+    if (!token) return searchProducts; // ถ้าไม่ได้ Token คืนค่าเดิม
+
+    // ดึง level_code จาก selectDataCustomer
+    const getLevelSS = JSON.parse(localStorage.getItem('selectDataCustomer'));
+    const levelCode = getLevelSS?.data2?.level_code ?? "null"; // ใช้ "A" เป็น default
+
+    // สร้าง array ของ ProductCodes จาก sn ของสินค้า
+    const productCodes = searchProducts.map(item => item.sn);
+
+    const payload = {
+      CompanyCode: "AH", // ใส่ค่า CompanyCode ถ้ามี
+      // ProductCodes: ["2010101DP0074",
+      //   "2010101DP0069"],
+      ProductCodes: productCodes,
+      CustomerTypeCode: levelCode,
+      PageNumber: pageCurrent.value,
+      PageSize: pageSize.value,
+      SortBy: "",
+      SortDescending: true
+    };
+
+    console.log("ส่ง payload ไป API ราคาสินค้า:", payload);
+    // เรียก API ราคาสินค้า
+    const response = await axios.post(
+      `${BASE_URL_PRICE}/SaleOrder/price-lists/search`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // ใช้ Token
+        }
+      }
+    );
+
+    console.log("API ราคาสินค้า response:", response.data);
+
+    if (response.data.Success) {
+      const priceList = response.data.Data.Data;
+
+      // สร้าง Map ของ ProductCode => SellingPrice
+      const priceMap = {};
+      priceList.forEach(item => {
+        priceMap[item.ProductCode] = item.SellingPrice;
+      });
+
+      // รวมข้อมูลราคากับข้อมูลสินค้าเดิม
+      const productsWithPrice = searchProducts.map(item => ({
+        ...item,
+        SellingPrice: priceMap[item.sn] ?? item.price, // ถ้าไม่เจอราคาจาก API ให้ใช้ price เดิม
+        price: priceMap[item.sn] ?? item.price // ถ้าไม่เจอราคาจาก API ให้ใช้ price เดิม
+      }));
+
+      console.log("✅ สินค้าพร้อมราคา:", productsWithPrice);
+      return productsWithPrice;
+
+    } else {
+      console.error("❌ ดึงราคาสินค้าไม่สำเร็จ:", response.data.Message);
+      return searchProducts; // คืนค่าเดิมถ้า error
+    }
+  } catch (err) {
+    console.error("เกิดข้อผิดพลาดขณะดึงราคาสินค้า:", err);
+    return searchProducts; // คืนค่าเดิมถ้า error
+  }
+}
+
 
 async function confirmSelection() {
 

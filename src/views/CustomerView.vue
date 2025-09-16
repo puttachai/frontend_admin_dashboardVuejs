@@ -579,6 +579,8 @@ async searchSaleId() {
   try {
     const keywordSale = this.keyword_sale_no.trim();
 
+
+
     let postData = {
       account: this.account,
       password: this.password,
@@ -604,6 +606,7 @@ async searchSaleId() {
     });
 
     if (response.data.code === 1) {
+      // this.pageCurrent = 1; // Reset กลับหน้า 1
       this.total = response.data.data.data.customer_count;
       this.dataselectSale_no = response.data.data.data.data2 ; // ตรวจสอบ path ให้ถูกต้อง || response.data.data.data2
       this.tableData = [...this.dataselectSale_no];

@@ -346,7 +346,7 @@ function confirmSelection() {
 }
 
 
-function searchPromotion_no() {
+async function searchPromotion_no() {
 
   isLoading.value = true;
 
@@ -355,6 +355,10 @@ function searchPromotion_no() {
     const kw = keyword.value.trim().toLowerCase();
     const promoNo = keyword_promotion_no.value.trim().toLowerCase();
 
+    // เรียกกฟังก์ชัน getPromotion() เพื่อดึงข้อมูลโปรโมชั่นทั้งหมด ลง tableData.value ทุกครั้งที่ ค้นหา
+    await getPromotion();
+
+    console.log('keyword kw: ', kw)
     console.log('keyword promoNo: ', promoNo)
     console.log('tableData.value: ', tableData.value)
 
@@ -392,7 +396,7 @@ function searchPromotion_no() {
             : parseInt(pageSize.value);
 
           pageCurrent.value = 1; // รีเซ็ตไปหน้าแรก
-
+          pageSize.value = 10; // ปรับ pageSize เป็น 10 เสมอ
 
     console.log('tableData.value:',tableData.value);
 
@@ -406,6 +410,9 @@ function searchPromotion_no() {
     } else {
       console.log('พบหลายรายการ:', filtered.length);
     }
+
+
+
   } else {
 
     isLoading.value = true;
@@ -676,19 +683,22 @@ async function SearchPromotionSubmit() {
   const getLevel = getLevelSS?.data2?.level ?? 0;
   console.log("Log getLevel: ", getLevel);
 
-  // แปลงค่า getLevel เป็นชื่อสมาชิก
-  // let memberType = '';
-  if (getLevel === 0) {
-    memberType.value = 'Member End User';
-  } else if (getLevel === 1) {
-    memberType.value = 'Member A';
-  } else if (getLevel === 7) {
-    memberType.value = 'Member B';
-  } else if (getLevel === 10) {
-    memberType.value = 'Member A+';
-  } else {
-    memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
-  }
+  memberType.value  = getLevelSS?.data2?.level_name ?? 0;
+
+
+  // // แปลงค่า getLevel เป็นชื่อสมาชิก
+  // // let memberType = '';
+  // if (getLevel === 0) {
+  //   memberType.value = 'Member End User';
+  // } else if (getLevel === 1) {
+  //   memberType.value = 'Member A';
+  // } else if (getLevel === 7) {
+  //   memberType.value = 'Member B';
+  // } else if (getLevel === 10) {
+  //   memberType.value = 'Member A+';
+  // } else {
+  //   memberType.value = 'Unknown Member'; // fallback กรณี level อื่น ๆ
+  // }
 
   console.log("ประเภทสมาชิกที่ได้จาก level: ", memberType.value);
 

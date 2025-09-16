@@ -56,6 +56,10 @@ export async function getAuthToken() {
 export async function sendToMacfive(formdataapi, productListap, servicesPull, deliveryAddress) {
 // export async function sendToMacfive(formData, selectedProducts, deliveryAddress) {
   const token = await getAuthToken();
+  console.log('🧩 Check formdataapi: ', formdataapi);
+  console.log('🧩 Check productListap: ', productListap);
+  console.log('🧩 Check servicesPull: ', servicesPull);
+  console.log('🧩 Check deliveryAddress: ', deliveryAddress);
 
   // const now = new Date();
   // const formatDate = (d) => d.toISOString().slice(0, 10);
@@ -89,40 +93,23 @@ export async function sendToMacfive(formdataapi, productListap, servicesPull, de
 
 
 
-// // helper functions
-// function round(value, decimals = 2) {
-//   return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
-// }
-
-// function number_format(number, decimals = 2, dec_point = ".", thousands_sep = ",") {
-//   const n = !isFinite(+number) ? 0 : +number;
-//   const prec = !isFinite(+decimals) ? 0 : Math.abs(decimals);
-//   const sep = thousands_sep;
-//   const dec = dec_point;
-
-//   let s = n.toFixed(prec).split(".");
-//   if (s[0].length > 3) {
-//     s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
-//   }
-//   if ((s[1] || "").length < prec) {
-//     s[1] = s[1] || "";
-//     s[1] += new Array(prec - s[1].length + 1).join("0");
-//   }
-//   return s.join(dec);
-// }
-
-
-export function buildMacfivePayload(formdataapi, productListap, servicesPull, deliveryAddress) {
+export function buildMacfivePayload(formdataapi = [], productListap = [], servicesPull = [], deliveryAddress = {}) {
   const now = new Date();
   const formatDate = (d) => d.toISOString().slice(0, 10);
   const formatDateTime = (d) => d.toISOString().slice(0, 19).replace("T", " ");
 
-  const docNo = formdataapi.documentNo;
+  const docNo = formdataapi.document_no || formdataapi.documentNo;
   const sale_no = localStorage.getItem("account") || "";
+
+  console.log('🧩 Check formdataapi customer_code: ', formdataapi.customer_code);
+  console.log('🧩 Check docNo: ', docNo);
 
   console.log('🧩 Check productListap: ', productListap);
   console.log('🧩 Check servicesPull: ', servicesPull);
   console.log('🧩 Check deliveryAddress: ', deliveryAddress);
+
+
+console.log('Check formdataapi.promotions: ', formdataapi.promotions);
 
   // 🧩 รวม promotions และ gifts จาก products
   const productPromotions = productListap.flatMap((item) => item.promotions || []);
@@ -131,33 +118,25 @@ export function buildMacfivePayload(formdataapi, productListap, servicesPull, de
   const productGifts = productListap.flatMap((item) => item.gifts || []);
   console.log('🧩 Check productGifts: ', productGifts);
 
-    // formdataapi.promotions = formdataapi.promotions.map(promo => {
+    formdataapi.promotions = formdataapi.promotions?.map(promo => {
 
-    //   return {
-    //       ...promo,
-    //       pro_sn: promo.pro_sn || promo.prosn || 'noting',
-    //   };
+      return {
+          ...promo,
+          pro_sn: promo.pro_sn || promo.prosn || 'noting',
+      };
 
-    // });
-    formdataapi.promotions = (formdataapi.promotions || []).map(promo => ({
-      ...promo,
-      pro_sn: promo.pro_sn || promo.prosn || 'noting',
-    }));
+    });
 
     console.log('🧩 Check formdataapi.promotions: ', formdataapi.promotions);
 
-    // formdataapi.gifts = formdataapi.gifts.map(gift => {
+    formdataapi.gifts = formdataapi.gifts?.map(gift => {
 
-    //   return {
-    //       ...gift,
-    //       pro_sn: gift.pro_sn || gift.prosn || 'noting',
-    //   };
+      return {
+          ...gift,
+          pro_sn: gift.pro_sn || gift.prosn || 'noting',
+      };
 
-    // });
-    formdataapi.gifts = (formdataapi.gifts || []).map(gift => ({
-      ...gift,
-      pro_sn: gift.pro_sn || gift.prosn || 'noting',
-    }));
+    });
 
     console.log('🧩 Check formdataapi.gifts: ', formdataapi.gifts);
 
@@ -179,6 +158,7 @@ export function buildMacfivePayload(formdataapi, productListap, servicesPull, de
    console.log('🧩 Check allPromotions: ', allPromotions);
    console.log('🧩 Check productGifts: ', allGifts);
 
+  // const filteredPromotions = allPromotions;
   const filteredPromotions = allPromotions.filter((promo) => promo.pro_sn !== "P02-ZZ-9999");
 
   const countProducts = productListap.length;
@@ -186,6 +166,8 @@ export function buildMacfivePayload(formdataapi, productListap, servicesPull, de
   const countPromotions = filteredPromotions.length;
   const countservices = servicesPull.length;
   const totalItems = countProducts + countGifts + countPromotions + countservices;
+
+  console.log("Check totalItems:", totalItems);
 
   // ใช้ได้
 
@@ -201,7 +183,7 @@ export function buildMacfivePayload(formdataapi, productListap, servicesPull, de
 
   // มีอยู่แล้ว
 const afterDiscount1 = parseFloat(formdataapi.final_total_price); // 1540
-const discount1 = parseFloat(formdataapi.totalDiscount); // 30
+const discount1 = parseFloat(formdataapi.total_discount); // 30
 
 // ย้อนกลับหา subtotal ก่อนลด
 const subtotal = afterDiscount1 + discount1; // 1540 + 30 = 1570
@@ -240,8 +222,9 @@ const netTotal = afterDiscount1 - discount2 + vat; // 1540
       MH_type: "PS",
       MH_vnumber: docNo,
       MH_process: 9,
-      MH_supcus: formdataapi.customerCode,
+      MH_supcus: formdataapi.customer_code ,
       MH_noItems: totalItems,
+      // MH_noItems: lrows.length,   // ✅ ใช้ตามจริง
       MH_vatRate: 7,
       // MH_vatTotal: parseFloat(formdataapi.final_total_price) * 0.07,
       // MH_netTotal: parseFloat(formdataapi.final_total_price),
@@ -291,7 +274,7 @@ const netTotal = afterDiscount1 - discount2 + vat; // 1540
       ME_date: formatDateTime(now),
       ME_type: "PS",
       ME_vnumber: docNo,
-      ME_supcus: formdataapi.customerCode,
+      ME_supcus: formdataapi.customer_code,
       ME_termCX: "7|",
       ME_termPX: "100|",
       ME_termAX: `${parseFloat(formdataapi.final_total_price)}|`,
@@ -301,7 +284,7 @@ const netTotal = afterDiscount1 - discount2 + vat; // 1540
     },
     krows: {
       MK_date: formatDateTime(now),
-      MK_name: formdataapi.fullName,
+      MK_name: formdataapi.full_name || formdataapi.fullName,
       MK_addr: formdataapi.address || 1,
       MK_tel: formdataapi.phone || 1,
     },
@@ -312,20 +295,20 @@ const netTotal = afterDiscount1 - discount2 + vat; // 1540
         ML_type: "PS",
         ML_vnumber: docNo,
         ML_per: sale_no || "DP001",
-        ML_supcus: formdataapi.customerCode,
-        ML_stk: item.pro_sn || "N/A",
+        ML_supcus: formdataapi.customer_code,
+        ML_stk: item.sn || item.pro_sn,
         ML_sto: "MAIN",
         ML_item: index + 1,
-        ML_quan: parseFloat(item.pro_quantity),
-        ML_cog: parseFloat(item.item.pro_total_price || 0).toFixed(2),
-        ML_netL: parseFloat(item.pro_total_price || 0).toFixed(2),
+        ML_quan: parseFloat(item.qty || item.pro_quantity),
+        ML_cog: parseFloat(item.total_price || item.pro_total_price || 0).toFixed(2),
+        ML_netL: parseFloat(item.total_price || item.pro_total_price || 0).toFixed(2),
         ML_cut: 1,
         ML_unit: item.pro_unit || "PCS",
-        ML_des: item.pro_erp_title + '' + (item.pro_goods_sku_text || ""),
+        ML_des: item.pro_title + '' + (item.pro_goods_sku_text || "") || item.pro_erp_title + '' + (item.pro_goods_sku_text || "") ,
         ML_addcost: 0,
         ML_discL: 0,
         ML_deldate: formatDate(now),
-        ML_uprice: parseFloat(item.pro_unit_price).toFixed(2),
+        ML_uprice: parseFloat(item.unit_price || item.pro_unit_price).toFixed(2),
         ML_Note: "item",
       })),
       // 🎁 gifts
@@ -334,7 +317,7 @@ const netTotal = afterDiscount1 - discount2 + vat; // 1540
         ML_type: "PS",
         ML_vnumber: docNo,
         ML_per: sale_no || "DP001",
-        ML_supcus: formdataapi.customerCode,
+        ML_supcus: formdataapi.customer_code,
         ML_stk: gift.pro_sn || gift.prosn || "N/A",
         ML_sto: "MAIN",
         ML_item: productListap.length + index + 1,
@@ -356,7 +339,7 @@ const netTotal = afterDiscount1 - discount2 + vat; // 1540
         ML_type: "PS",
         ML_vnumber: docNo,
         ML_per: sale_no || "DP001",
-        ML_supcus: formdataapi.customerCode,
+        ML_supcus: formdataapi.customer_code,
         ML_stk: promo.pro_sn || "N/A",
         ML_sto: "MAIN",
         ML_item: productListap.length + allGifts.length + index + 1,
@@ -379,7 +362,7 @@ const netTotal = afterDiscount1 - discount2 + vat; // 1540
         ML_type: "PS", // STKpsi
         ML_vnumber: docNo,
         ML_per: sale_no || "DP001",
-        ML_supcus: formdataapi.customerCode,
+        ML_supcus: formdataapi.customer_code,
         ML_stk: service.service_code || "N/A", // STKcode || STKcode2 // service_code
         ML_sto: "MAIN",
         ML_item: productListap.length + allGifts.length + filteredPromotions.length + index + 1,
@@ -398,3 +381,28 @@ const netTotal = afterDiscount1 - discount2 + vat; // 1540
     ],
   };
 }
+
+
+
+
+// // helper functions
+// function round(value, decimals = 2) {
+//   return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
+// }
+
+// function number_format(number, decimals = 2, dec_point = ".", thousands_sep = ",") {
+//   const n = !isFinite(+number) ? 0 : +number;
+//   const prec = !isFinite(+decimals) ? 0 : Math.abs(decimals);
+//   const sep = thousands_sep;
+//   const dec = dec_point;
+
+//   let s = n.toFixed(prec).split(".");
+//   if (s[0].length > 3) {
+//     s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+//   }
+//   if ((s[1] || "").length < prec) {
+//     s[1] = s[1] || "";
+//     s[1] += new Array(prec - s[1].length + 1).join("0");
+//   }
+//   return s.join(dec);
+// }

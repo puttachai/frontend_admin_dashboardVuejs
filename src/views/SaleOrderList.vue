@@ -60,14 +60,14 @@
       @scroll="onScroll"
     >
       <table
-        class="min-w-[1500px] table-fixed text-sm text-left text-gray-700 divide-x divide-gray-200 border border-gray-300"
+        class="min-w-[1900px] table-fixed text-sm text-left text-gray-700 divide-x divide-gray-200 border border-gray-300"
       >
         <thead class="bg-gray-100 text-xs uppercase border">
           <tr class="border-r border-gray-300">
             <th class="p-3 border">Id</th>
             <th class="p-3 border">หมายเลขสั่งซื้อ</th>
             <th class="p-3 border">รหัสลูกค้า</th>
-            <th class="p-3 border">ชื่อร้าน</th>
+            <th class="p-3 border ">ชื่อร้าน</th>
             <th class="p-3 border">พนง.เร่งรัด</th>
             <th class="p-3 border">เบอร์โทรศัพท์</th>
             <th class="p-3 border">เบอร์โทรศัพท์ พนง.เร่งรัด</th>
@@ -226,7 +226,7 @@
               v-if="filteredExtraDetails(order).length > 0"
               class="bg-blue-50 hover:bg-blue-100 transition-colors duration-300"
             >
-              <td colspan="16" class="px-6 py-4 border rounded-md">
+              <td colspan="18" class="px-6 py-4 border rounded-md">
                 <div class="flex items-center space-x-2 text-blue-800 font-medium mb-3">
                   <svg
                     class="w-5 h-5 text-blue-600"

@@ -1,5 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
+
   <Disclosure as="nav" class="bg-gray-800 fixed top-0 left-0 w-full z-[60]" >
     <!-- v-slot="{ open }" -->
     <div class="mx-auto max-w-7xl px-2 smls:px-6 lg:px-8">
@@ -22,25 +23,13 @@
           </div>
         </div>
 
-        <!-- Title (ตรงกลาง) -->
-        <!-- <div v-if="!contact && !nickname" class="boxTitel absolute left-1/2 transform -translate-x-1/2"> -->
-          <!-- <router-link to="/dashboard"> -->
-          <!-- <router-link to="/createsalelist">
-            <h4 class="welcome font-semibold text-xl text-center">Welcome to the D-Power Sales Dashboard</h4>
-          </router-link>
-        </div> -->
-
         <!-- ไอคอนแจ้งเตือนและเมนูผู้ใช้ -->
         <div class="flex items-center space-x-4 relative">
 
           <!-- Notification Bell -->
           <div class="relative cursor-pointer" ref="bellRef" aria-haspopup="true"
             :aria-expanded="dropdownOpen.toString()">
-            <!-- <span class="material-icons text-white text-3xl select-none" @click="toggleDropdown">notifications</span>
-            <span v-if="orderStore.pendingCount > 0 || orderStore.pendingCountMessage > 0"
-              class="absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse shadow-lg">
-              New
-            </span> -->
+
              <span class="material-icons text-white text-3xl select-none" @click="toggleDropdown">notifications</span>
             <!-- กรณีมีทั้งสองค่ามากกว่า 0 -->
               <template v-if="orderStore.pendingCount > 0 && orderStore.pendingCountMessage > 0">
@@ -69,23 +58,7 @@
                 class="absolute -top-1 -right-1 bg-green-600 text-white text-[8px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse shadow-lg">
                 {{ orderStore.pendingCountMessage }}
               </span>
-            <!-- {{ orderStore.pendingCount }} -->
 
-
-            <!-- :class="[
-                  'absolute right-0 mt-3 w-[18rem] max-h-[20rem] bg-white rounded-lg shadow-lg z-50 flex flex-col',
-                  contact ? 'ring-1 ring-black ring-opacity-5 left-1' : 'ring-1',
-                    // กำหนด width แบบ responsive
-                    'w-full max-w-xs sm:w-96'
-                  ]" -->
-            <!-- :class="[
-                  'absolute right-0 mt-3 w-[24rem] max-h-[20rem] bg-white rounded-lg shadow-lg z-50 flex flex-col',
-                  contact ? 'ring-1 ring-black ring-opacity-5 left-1' : 'ring-1',
-                    // กำหนด width แบบ responsive
-                    'w-full max-w-xs sm:w-96'
-                  ]" > -->
-            <!-- Dropdown Menu -->
-            <!--  class="absolute right-0 mt-3 w-80 max-h-[24rem] bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 z-50 flex flex-col"> -->
             <transition name="fade" appear>
 
               <div
@@ -163,19 +136,7 @@
                       </li>
                     </ul>
 
-                      <!-- <ul>
-                      <li v-for="order in paginatedOrders" :key="order.document_no"
-                        class="flex items-center gap-2 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50"
-                        @click="handleOrderClick(order.document_no)">
-                        <span class="material-icons text-yellow-500 select-none"
-                          title="แจ้งเตือนรายการสถานะที่ยังไม่อนุมัติใหม่">notifications_active</span>
-                        <div class="flex-1 ">
-                          <p class="font-medium text-sm truncate">{{ order.document_no }}</p>
-                          <p class="text-xs text-gray-500 truncate">{{ order.status }}</p>
-                        </div>
-                        <span class="text-xs text-gray-400 whitespace-nowrap">{{ formatDate(order.created_at) }}</span>
-                      </li>
-                    </ul> -->
+
                     <div v-if="paginatedOrders.length === 0" class="text-center text-gray-400 mt-4">
                       ไม่มีรายการแจ้งเตือนสถานะยังไม่อนุมัติใหม่
                     </div>
@@ -189,54 +150,13 @@
                         class="px-2 py-1 text-xs rounded border hover:bg-gray-100 disabled:opacity-50">ถัดไป</button>
                     </div>
 
-                    <!-- <input
-                      v-model="searchQuery"
-                      @keyup.enter="searchDocument"
-                      type="text"
-                      placeholder="กรอก Document No เพื่อเช็คสถานะ"
-                      class="w-full mb-3 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300"
-                    />
-                    <button
-                      @click="searchDocument"
-                      class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
-                      ค้นหา
-                    </button>
-
-                    <div v-if="loadingStatus" class="mt-3 text-center text-gray-500">กำลังค้นหา...</div>
-
-                    <div v-if="statusResult" class="mt-3">
-                      <p><strong>Document No:</strong> {{ statusResult.document_no }}</p>
-                      <p><strong>สถานะ:</strong> {{ statusResult.status }}</p>
-                      <p><strong>อนุมัติแล้ว:</strong> {{ statusResult.is_approved ? 'ใช่' : 'ยังไม่อนุมัติ' }}</p>
-                    </div>
-
-                    <div v-if="errorStatus" class="mt-3 text-red-600">{{ errorStatus }}</div> -->
                   </div>
 
                   <!-- Tab 2: แจ้งเตือนรายการใหม่ -->
                   <div v-if="activeTab === 'new'">
                     <input v-model="searchQuery" type="text" placeholder="ค้นหาแจ้งเตือน"
                       class="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:ring-blue-300" />
-                    <!-- <ul>
-                      <li v-for="order in paginatedOrdersMessage" :key="order.document_no"
-                        @click="handleOrderClick(order.document_no)" :class="[
-                          'flex items-center gap-2 px-2 py-2 border-b last:border-b-0 cursor-pointer hover:bg-gray-50',
-                          order.is_read === 1 ? 'opacity-50 cursor-default' : 'opacity-100'
-                        ]">
-                        <span class="material-icons text-yellow-500 select-none" title="แจ้งเตือนรายการใหม่">
-                          notifications_active
-                        </span>
-                        <div class="flex-1">
-                          <p class="font-medium text-sm truncate">{{ order.document_no }}</p>
-                          <p class="text-xs truncate text-gray-500">
-                            {{ order.is_read === 1 ? 'อ่านแล้ว' : 'ยังไม่อ่าน' }}
-                          </p>
-                        </div>
-                        <span class="text-xs text-gray-400 whitespace-nowrap">
-                          {{ formatDate(order.created_at) }}
-                        </span>
-                      </li>
-                    </ul> -->
+
 
                     <ul>
                       <li v-for="order in paginatedOrdersMessage" :key="order.document_no"
@@ -339,6 +259,8 @@
       </div>
     </DisclosurePanel>
   </Disclosure>
+
+
 </template>
 
 <script>
@@ -427,6 +349,9 @@ export default {
         (order.document_no || '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         (order.id ? order.id.toString() : '').includes(searchQuery.value) ||
         (order.phone ? order.phone.toString() : '').includes(searchQuery.value) ||
+        (order.account_user ? order.account_user.toString() : '').includes(searchQuery.value) ||
+        (order.sale_no ? order.sale_no.toString() : '').includes(searchQuery.value) ||
+        (order.nickname_admin ? order.nickname_admin.toString() : '').includes(searchQuery.value) ||
         (order.full_name || '').toLowerCase().includes(searchQuery.value.toLowerCase())
       )
     })
@@ -438,6 +363,9 @@ export default {
         (order.document_no || '').toLowerCase().includes(searchQuery.value.toLowerCase()) ||
         (order.id ? order.id.toString() : '').includes(searchQuery.value) ||
         (order.phone ? order.phone.toString() : '').includes(searchQuery.value) ||
+        (order.account_user ? order.account_user.toString() : '').includes(searchQuery.value) ||
+        (order.sale_no ? order.sale_no.toString() : '').includes(searchQuery.value) ||
+        (order.nickname_admin ? order.nickname_admin.toString() : '').includes(searchQuery.value) ||
         (order.full_name || '').toLowerCase().includes(searchQuery.value.toLowerCase())
       )
     })
@@ -618,6 +546,7 @@ export default {
         console.log('ยกเลิกการออกจากระบบ')
       }
     }
+
 
     return {
       account,

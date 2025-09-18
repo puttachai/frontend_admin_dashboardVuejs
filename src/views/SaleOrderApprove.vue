@@ -103,10 +103,79 @@
               <td class="p-3">{{ order.customer_code }}</td>
               <td class="p-3 min-w-[100px]">{{ order.shop_name }}</td>
               <!-- <td class="p-3">{{ order.shop_name }}</td> -->
-              <td class="p-3">{{ order.employee_name ? order.employee_name : "ไม่มีข้อมูล" }}</td>
+              <!-- <td class="p-3">{{ order.employee_name ? order.employee_name : "ไม่มีข้อมูล" }}</td> -->
+
+              <td class="px-2 py-1 border whitespace-nowrap relative">
+                <div v-if="order.collector_list && order.collector_list.length" class="flex flex-col space-y-1">
+                  <div
+                    v-for="(c, idx) in order.collector_list.slice(0,2)"
+                    :key="idx"
+                    class="relative group cursor-pointer"
+                  >
+                    <span class="hover:text-purple-600">
+                      {{ c.full_name && c.full_name.length > 20
+                          ? c.full_name.substring(0, 20) + '...'
+                          : (c.full_name || 'ไม่มีข้อมูล') }}
+                    </span>
+
+                    <!-- tooltip -->
+                    <div
+                      v-if="c.full_name"
+                      class="absolute z-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 -top-8 left-0 max-w-xs whitespace-normal"
+                    >
+                      {{ c.full_name }}
+                    </div>
+                  </div>
+                </div>
+
+                <div v-else>ไม่มีข้อมูล</div>
+
+                <!-- ปุ่มดูทั้งหมด -->
+                <button
+                  v-if="order.collector_list && order.collector_list.length > 2"
+                  @click="openCollectorsModal(order.collector_list)"
+                  class="absolute right-1 bottom-1 text-[9px] text-gray-500 hover:text-gray-400 px-1 py-0.5 rounded bg-white shadow-sm"
+                >
+                  ดูทั้งหมด
+                </button>
+
+                <!-- Modal แสดงข้อมูลเต็ม -->
+                <div v-if="showCollectorsModal" class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+                  <div class="bg-white rounded-lg shadow-lg w-96 p-4 relative">
+                    <h2 class="text-lg font-bold mb-2 ">พนักงานเร่งรัดที่ดูแล</h2>
+                    <textarea
+                      readonly
+                      class="w-full h-40 border rounded p-2 text-sm"
+                      :value="modalCollectors.map(c => `📍 ${c.full_name}`).join('\n')"
+                    ></textarea>
+                    <button
+                      @click="showCollectorsModal = false"
+                      class="absolute top-2 right-2 text-gray-500 hover:text-black"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </td>
+
               <td class="p-3">{{ order.mobile }}</td>
               <!-- <td class="p-3">{{ order.employee_mobile ? order.employee_mobile : "ไม่มีข้อมูล"}}</td> -->
-              <td class="p-3">{{ order.employee_phone ? order.employee_phone : "ไม่มีข้อมูล" }}</td>
+              <!-- <td class="p-3">{{ order.employee_phone ? order.employee_phone : "ไม่มีข้อมูล" }}</td> -->
+
+              <!-- เบอร์โทรศัพท์พนักงานเร่งรัด -->
+              <td class="px-2 py-1 border whitespace-nowrap min-w-[120px]">
+                <select class="border border-gray-300 rounded px-2 py-1 w-full">
+                  <option
+                    v-for="(c, idx) in order.collector_list"
+                    :key="`tel-${idx}`"
+                    :value="c.telephone"
+                  >
+                    {{ c.telephone || 'ไม่มีข้อมูล' }}
+                  </option>
+                </select>
+              </td>
+
+
               <td class="p-3 text-right">{{ formatCurrency(order.total_amount) }}</td>
               <td class="p-3 text-right">{{ formatCurrency(order.total_paid) }}</td>
               <td class="p-3">{{ order.created_at }}</td>
@@ -339,6 +408,9 @@ const limit = 10;
 
 const searchQuery = ref(""); // <- ช่องค้นหา
 const isLoading = ref(false); // หรือ true ถ้าต้องการให้เริ่มต้นแสดง
+
+const showCollectorsModal = ref(false);
+const modalCollectors = ref([]);
 
 const isAdmin = computed(() => localStorage.getItem("role_admin") === "true");
 const isFa = computed(() => localStorage.getItem("role_fa") === "true");
@@ -728,14 +800,170 @@ watch([selectedOrders, filteredOrders], () => {
 
 // import { toRaw } from "vue";
 
+async function updateOrderStatus(documentNo) {
+      try {
+        const response = await axios.post(
+          `${BASE_URL_LOCAL}/api_admin_dashboard/backend/api/document_running/update_status_order.php`,
+          {
+            documentNo: documentNo,
+            status: "ตรวจสอบเรียบร้อย",
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data?.success) {
+          console.log("📦 อัปเดตสถานะสำเร็จ:", response.data.message);
+        } else {
+          console.warn("⚠️ อัปเดตสถานะไม่สำเร็จ:", response.data.message);
+        }
+      } catch (error) {
+        console.error("❌ เกิดข้อผิดพลาดในการอัปเดตสถานะ:", error);
+      }
+    }
+
+// async function approveSelected() {
+//   if (selectedOrders.value.length === 0) return;
+
+//    // Log ข้อมูลที่เลือกไว้ทั้งหมด
+//   console.log("🟢 selectedOrders (IDs):", JSON.stringify(selectedOrders.value));
+//   console.log("🟢 approveData (all loaded orders):", JSON.stringify(approveData.value.map(o => o.id)));
+
+
+//   const resultConfirm = await Swal.fire({
+//     title: 'ยืนยันการอนุมัติ',
+//     text: `ต้องการอนุมัติเอกสารที่เลือก ${selectedOrders.value.length} รายการ ใช่หรือไม่?`,
+//     icon: 'question',
+//     showCancelButton: true,
+//     confirmButtonText: 'ใช่, อนุมัติเลย',
+//     cancelButtonText: 'ยกเลิก',
+//   });
+
+//   if (!resultConfirm.isConfirmed) return;
+
+//   // ✅ เปิด Loading
+//   isLoading.value = true;
+
+// // Log ก่อนหา order
+//   console.log("🟢 หา ordersToApprove จาก approveData");
+
+//   const ordersToApprove = selectedOrders.value
+//     .map(id => approveData.value.find(o => o.id === id))
+//     // .map(id => saleOrders.value.find(o => o.id === id))
+//     .filter(o => o && o.order);
+
+//      // Log ordersToApprove ที่จะส่งไป
+//   console.log("🟢 ordersToApprove (objects):", JSON.stringify(ordersToApprove.map(o => o.id)));
+
+
+//   const successList = [];
+//   const failList = [];
+
+//   for (const orderObj of ordersToApprove) {
+//     const formdataapi = structuredClone(toRaw(orderObj.order));
+//     const productListap = structuredClone(toRaw(orderObj.productList || []));
+//     const servicesPull = structuredClone(toRaw(orderObj.services || []));
+//     const deliveryAddress = structuredClone(toRaw(orderObj.deliveryAddress || false));
+
+//     try {
+//       const res = await sendToMacfive(formdataapi, productListap, servicesPull, deliveryAddress);
+
+//       if (res?.Success) {
+//         successList.push(formdataapi.document_no || formdataapi.documentNo || "N/A");
+
+//       } else {
+//         Swal.fire({
+//           title: "ไม่สามารถอนุมัติรายการสั่งซื้อได้",
+//           text: "กรุณาลองใหม่อีกครั้ง",
+//           icon: "error",
+//         })
+
+//         // location.reload();
+//         // eslint-disable-next-line no-undef
+//         const message = err.response?.data?.message || err.message || "เกิดข้อผิดพลาด";
+//         console.error("เกิดข้อผิดพลาด", message);
+//       }
+
+//     } catch (err) {
+//       failList.push({
+//         doc: formdataapi.document_no || formdataapi.documentNo || "N/A",
+//         msg: err.message || "เกิดข้อผิดพลาด"
+//       });
+//     }
+//   }
+
+//   // ✅ ปิด Loading
+//   isLoading.value = false;
+
+
+// let hasSuccess = successList.length > 0;
+// let hasFail = failList.length > 0;
+
+// // สร้างข้อความสรุปสั้น ๆ
+// let summaryMessage = '';
+// if (hasSuccess) summaryMessage += `✅ สำเร็จ: ${successList.length} รายการ<br>`;
+// if (hasFail) summaryMessage += `❌ ไม่สำเร็จ: ${failList.length} รายการ`;
+
+// // เพิ่มปุ่มสำหรับดูรายละเอียด
+// Swal.fire({
+//   title: 'ผลการอนุมัติรายการ',
+//   html: summaryMessage,
+//   icon: hasFail ? 'warning' : 'success',
+//   showCancelButton: hasSuccess || hasFail,
+//   confirmButtonText: 'ดูรายละเอียด',
+//   cancelButtonText: 'ปิด',
+//   width: '400px', // ลดความกว้างของกล่อง
+//   customClass: {
+//     popup: 'p-3 text-sm',
+//     title: 'swal-title-small'    // กำหนด class ให้ title
+//   } // ลด padding และตัวอักษรเล็กลง
+// }).then((result) => {
+//   if (result.isConfirmed) {
+//     let leftColumn = hasSuccess
+//       ? `<p>✅ สำเร็จ:</p><ul>${successList.map(v => `<li><a href="/sale-order/${v}" target="_blank">${v}</a></li>`).join('')}</ul>`
+//       : '';
+//     let rightColumn = hasFail
+//       ? `<p>❌ ไม่สำเร็จ:</p><ul>${failList.map(v => `<li><a href="/sale-order/${v.doc}" target="_blank">${v.doc}</a></li>`).join('')}</ul>`
+//       : '';
+
+//     let detailHtml = '';
+//     if (hasSuccess && hasFail) {
+//       detailHtml = `
+//         <div style="display:flex; gap:15px; max-height:250px; overflow:auto; font-size:0.95rem;">
+//           <div style="flex:1; border-right:1px solid #ccc; padding-right:8px;">${leftColumn}</div>
+//           <div style="flex:1; padding-left:8px;">${rightColumn}</div>
+//         </div>
+//       `;
+//     } else if (hasSuccess) {
+//       detailHtml = `<div style="max-height:250px; overflow:auto; font-size:0.95rem;">${leftColumn}</div>`;
+//     } else if (hasFail) {
+//       detailHtml = `<div style="max-height:250px; overflow:auto; font-size:0.95rem;">${rightColumn}</div>`;
+//     }
+
+//     Swal.fire({
+//       title: 'รายละเอียดผลการอนุมัติ',
+//       html: detailHtml,
+//       width: '500px', // ลดความกว้างของกล่องรายละเอียด
+//       confirmButtonText: 'ปิด',
+//       customClass: {
+//         popup: 'p-3 text-sm',
+//         title: 'swal-title-small'    // กำหนด class ให้ title
+//       } // ลด padding และตัวอักษรเล็กลง
+//     }).then(() => {
+//       location.reload();
+//     });
+//   } else {
+//     // กดปิด
+//     location.reload();
+//   }
+// });
+// }
 
 async function approveSelected() {
   if (selectedOrders.value.length === 0) return;
-
-   // Log ข้อมูลที่เลือกไว้ทั้งหมด
-  console.log("🟢 selectedOrders (IDs):", JSON.stringify(selectedOrders.value));
-  console.log("🟢 approveData (all loaded orders):", JSON.stringify(approveData.value.map(o => o.id)));
-
 
   const resultConfirm = await Swal.fire({
     title: 'ยืนยันการอนุมัติ',
@@ -748,23 +976,15 @@ async function approveSelected() {
 
   if (!resultConfirm.isConfirmed) return;
 
-  // ✅ เปิด Loading
   isLoading.value = true;
-
-// Log ก่อนหา order
-  console.log("🟢 หา ordersToApprove จาก approveData");
 
   const ordersToApprove = selectedOrders.value
     .map(id => approveData.value.find(o => o.id === id))
-    // .map(id => saleOrders.value.find(o => o.id === id))
     .filter(o => o && o.order);
-
-     // Log ordersToApprove ที่จะส่งไป
-  console.log("🟢 ordersToApprove (objects):", JSON.stringify(ordersToApprove.map(o => o.id)));
-
 
   const successList = [];
   const failList = [];
+  const approvedVoucherList = []; // ✅ เก็บ VoucherNo สำหรับอัปเดตหลังสุด
 
   for (const orderObj of ordersToApprove) {
     const formdataapi = structuredClone(toRaw(orderObj.order));
@@ -776,87 +996,91 @@ async function approveSelected() {
       const res = await sendToMacfive(formdataapi, productListap, servicesPull, deliveryAddress);
 
       if (res?.Success) {
+        const voucherNo = res?.VoucherNo || "";
+        console.log('Check voucherNo : ',voucherNo);
+
         successList.push(formdataapi.document_no || formdataapi.documentNo || "N/A");
+        approvedVoucherList.push(voucherNo); // ✅ เก็บไว้ใช้อัปเดตทีเดียว
+
+        console.log('Check approvedVoucherList : ',approvedVoucherList);
+
       } else {
         failList.push({
           doc: formdataapi.document_no || formdataapi.documentNo || "N/A",
-          msg: res?.Message || "ไม่สามารถอนุมัติได้"
+          msg: res?.message || "เกิดข้อผิดพลาด",
         });
       }
-
     } catch (err) {
       failList.push({
         doc: formdataapi.document_no || formdataapi.documentNo || "N/A",
-        msg: err.message || "เกิดข้อผิดพลาด"
+        msg: err.message || "เกิดข้อผิดพลาด",
       });
     }
   }
 
-  // ✅ ปิด Loading
+  // อัปเดตสถานะทั้งหมดทีเดียวหลังอนุมัติสำเร็จ
+  if (approvedVoucherList.length > 0) {
+    for (const voucher of approvedVoucherList) {
+      await updateOrderStatus(voucher);
+    }
+  }
+
   isLoading.value = false;
 
+  const hasSuccess = successList.length > 0;
+  const hasFail = failList.length > 0;
 
-let hasSuccess = successList.length > 0;
-let hasFail = failList.length > 0;
+  let summaryMessage = '';
+  if (hasSuccess) summaryMessage += `✅ สำเร็จ: ${successList.length} รายการ<br>`;
+  if (hasFail) summaryMessage += `❌ ไม่สำเร็จ: ${failList.length} รายการ`;
 
-// สร้างข้อความสรุปสั้น ๆ
-let summaryMessage = '';
-if (hasSuccess) summaryMessage += `✅ สำเร็จ: ${successList.length} รายการ<br>`;
-if (hasFail) summaryMessage += `❌ ไม่สำเร็จ: ${failList.length} รายการ`;
-
-// เพิ่มปุ่มสำหรับดูรายละเอียด
-Swal.fire({
-  title: 'ผลการอนุมัติรายการ',
-  html: summaryMessage,
-  icon: hasFail ? 'warning' : 'success',
-  showCancelButton: hasSuccess || hasFail,
-  confirmButtonText: 'ดูรายละเอียด',
-  cancelButtonText: 'ปิด',
-  width: '400px', // ลดความกว้างของกล่อง
-  customClass: {
-    popup: 'p-3 text-sm',
-    title: 'swal-title-small'    // กำหนด class ให้ title
-  } // ลด padding และตัวอักษรเล็กลง
-}).then((result) => {
-  if (result.isConfirmed) {
-    let leftColumn = hasSuccess
-      ? `<p>✅ สำเร็จ:</p><ul>${successList.map(v => `<li><a href="/sale-order/${v}" target="_blank">${v}</a></li>`).join('')}</ul>`
-      : '';
-    let rightColumn = hasFail
-      ? `<p>❌ ไม่สำเร็จ:</p><ul>${failList.map(v => `<li><a href="/sale-order/${v.doc}" target="_blank">${v.doc}</a></li>`).join('')}</ul>`
-      : '';
-
-    let detailHtml = '';
-    if (hasSuccess && hasFail) {
-      detailHtml = `
-        <div style="display:flex; gap:15px; max-height:250px; overflow:auto; font-size:0.95rem;">
-          <div style="flex:1; border-right:1px solid #ccc; padding-right:8px;">${leftColumn}</div>
-          <div style="flex:1; padding-left:8px;">${rightColumn}</div>
-        </div>
-      `;
-    } else if (hasSuccess) {
-      detailHtml = `<div style="max-height:250px; overflow:auto; font-size:0.95rem;">${leftColumn}</div>`;
-    } else if (hasFail) {
-      detailHtml = `<div style="max-height:250px; overflow:auto; font-size:0.95rem;">${rightColumn}</div>`;
+  Swal.fire({
+    title: 'ผลการอนุมัติรายการ',
+    html: summaryMessage,
+    icon: hasFail ? 'warning' : 'success',
+    showCancelButton: hasSuccess || hasFail,
+    confirmButtonText: 'ดูรายละเอียด',
+    cancelButtonText: 'ปิด',
+    width: '400px',
+    customClass: {
+      popup: 'p-3 text-sm',
+      title: 'swal-title-small'
     }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const leftColumn = hasSuccess
+        ? `<p>✅ สำเร็จ:</p><ul>${successList.map(v => `<li><a href="/sale-order/${v}" target="_blank">${v}</a></li>`).join('')}</ul>`
+        : '';
+      const rightColumn = hasFail
+        ? `<p>❌ ไม่สำเร็จ:</p><ul>${failList.map(v => `<li>${v.doc} - ${v.msg}</li>`).join('')}</ul>`
+        : '';
 
-    Swal.fire({
-      title: 'รายละเอียดผลการอนุมัติ',
-      html: detailHtml,
-      width: '500px', // ลดความกว้างของกล่องรายละเอียด
-      confirmButtonText: 'ปิด',
-      customClass: {
-        popup: 'p-3 text-sm',
-        title: 'swal-title-small'    // กำหนด class ให้ title
-      } // ลด padding และตัวอักษรเล็กลง
-    }).then(() => {
+      const detailHtml =
+        hasSuccess && hasFail
+          ? `<div style="display:flex; gap:15px; max-height:250px; overflow:auto; font-size:0.95rem;">
+               <div style="flex:1; border-right:1px solid #ccc; padding-right:8px;">${leftColumn}</div>
+               <div style="flex:1; padding-left:8px;">${rightColumn}</div>
+             </div>`
+          : hasSuccess
+          ? `<div style="max-height:250px; overflow:auto; font-size:0.95rem;">${leftColumn}</div>`
+          : `<div style="max-height:250px; overflow:auto; font-size:0.95rem;">${rightColumn}</div>`;
+
+      Swal.fire({
+        title: 'รายละเอียดผลการอนุมัติ',
+        html: detailHtml,
+        width: '500px',
+        confirmButtonText: 'ปิด',
+        customClass: {
+          popup: 'p-3 text-sm',
+          title: 'swal-title-small'
+        }
+      }).then(() => {
+        location.reload();
+      });
+    } else {
       location.reload();
-    });
-  } else {
-    // กดปิด
-    location.reload();
-  }
-});
+    }
+  });
 }
 
 
@@ -1218,6 +1442,14 @@ async function handleFilterChange() {
 }
 
 
+function openCollectorsModal(list) {
+  modalCollectors.value = list;
+  console.log('check Function openCollectorsModal :');
+  console.log('check modalCollectors.value :',modalCollectors.value);
+  showCollectorsModal.value = true;
+}
+
+
 async function fetchPage(page = 1, orderstatus) {
 
   console.log(" status filter:", orderstatus);
@@ -1266,6 +1498,7 @@ async function fetchPage(page = 1, orderstatus) {
               created_at: item.order.created_at,
               employee_name: item.order.employee_name || "",
               employee_phone: item.order.employee_phone || "",
+              collector_list: item.collector_list || [], // เก็บ collector ทั้งหมด
               extra_details: item.order.extra_list || [],
               productList: item.productList || [],
               services: item.services || [],
@@ -1273,7 +1506,7 @@ async function fetchPage(page = 1, orderstatus) {
 
             saleOrders.value = mergedOrders;
 
-            // ✅ Merge order ใหม่เข้า approveData (ไม่ซ้ำ id)
+            // Merge order ใหม่เข้า approveData (ไม่ซ้ำ id)
             const approveMap = new Map(approveData.value.map(o => [o.id, o]));
             mergedOrders.forEach(o => {
               if (!approveMap.has(o.id)) {
@@ -1281,6 +1514,8 @@ async function fetchPage(page = 1, orderstatus) {
               }
             });
             approveData.value = Array.from(approveMap.values());
+
+            console.log('check approveData: ',approveData.value);
 
             totalRows.value = res.data.data.total;
             currentPage.value = page;

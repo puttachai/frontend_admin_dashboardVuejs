@@ -76,34 +76,6 @@
                           </select>
                         </td>
 
-
-                        <!-- <td class="px-2 py-1 border whitespace-nowrap ">{{ employee.nickname || 'ไม่มีข้อมูล' }}</td> -->
-                        <td class="px-2 py-1 border whitespace-nowrap ">
-                            <div v-if="employee.customers && employee.customers.length" class="flex flex-col space-y-1">
-                              <div
-                                v-for="(customer, index) in employee.customers"
-                                :key="index"
-                                class="relative group cursor-pointer"
-                              >
-                                <span class="hover:text-purple-600">
-                                  {{ customer.nickname && customer.nickname.length > 20
-                                      ? customer.nickname.substring(0, 20) + '...'
-                                      : (customer.nickname || ',ไม่มีข้อมูล') }}
-                                </span>
-
-                                <!-- tooltip -->
-                                <div
-                                  v-if="customer.nickname"
-                                  class="absolute z-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 -top-8 left-0 max-w-xs whitespace-normal"
-                                >
-                                  {{ customer.nickname }}
-                                </div>
-                              </div>
-                            </div>
-                            <div v-else>ไม่มีข้อมูล</div>
-                          </td>
-
-
                         <!-- <td class="px-2 py-1 border whitespace-nowrap">
                           <select class="border border-gray-300 rounded px-2 py-1 w-full">
                             <option
@@ -115,6 +87,61 @@
                             </option>
                           </select>
                         </td> -->
+
+                        <td class="px-2 py-1 border whitespace-nowrap relative">
+                          <!-- รายการลูกค้า -->
+                          <div v-if="employee.customers && employee.customers.length" class="flex flex-col space-y-1">
+                            <div
+                              v-for="(customer, index) in employee.customers.slice(0,2)"
+                              :key="index"
+                              class="relative group cursor-pointer"
+                            >
+                              <span class="hover:text-purple-600">
+                                {{ customer.nickname && customer.nickname.length > 20
+                                    ? customer.nickname.substring(0, 20) + '...'
+                                    : (customer.nickname || 'ไม่มีข้อมูล') }}
+                              </span>
+
+                              <!-- tooltip -->
+                              <div
+                                v-if="customer.nickname"
+                                class="absolute z-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 -top-8 left-0 max-w-xs whitespace-normal"
+                              >
+                                {{ customer.nickname }}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div v-else>ไม่มีข้อมูล</div>
+
+                          <!-- ปุ่มดูทั้งหมด: มุมขวาล่าง ขนาดเล็ก สีเทา hover เป็นสีอ่อน -->
+                          <button
+                            v-if="employee.customers && employee.customers.length > 2"
+                            @click="openCustomersModal(employee.customers)"
+                            class="absolute right-1 bottom-1 text-[9px] text-gray-500 hover:text-gray-400 px-1 py-0.5 rounded bg-white shadow-sm"
+                          >
+                            ดูทั้งหมด
+                          </button>
+
+                          <!-- Modal แสดงข้อมูลเต็ม -->
+                          <div v-if="showModal" class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+                            <div class="bg-white rounded-lg shadow-lg w-96 p-4 relative">
+                              <h2 class="text-lg font-bold mb-2 ">ลูกค้าทั้งหมด</h2>
+                              <textarea
+                                readonly
+                                class="w-full h-40 border rounded p-2 text-sm"
+                                :value="modalText"
+                              ></textarea>
+                              <button
+                                @click="showModal = false"
+                                class="absolute top-2 right-2 text-gray-500 hover:text-black"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+
 
 
                         <td class="px-2 py-1 border whitespace-nowrap  min-w-[120px]">
@@ -180,6 +207,9 @@ const searchQuery = ref(""); // ตัวแปรช่องค้นหา
 
 const expandedEmployee = ref(null);
 
+const showModal = ref(false)
+const modalContent = ref([])
+
 const BASE_URL_LOCAL = import.meta.env.VITE_API_URL_LOCAL;
 // const BASE_URL_LOCAL = import.meta.env.VITE_API_URL;
 
@@ -236,6 +266,23 @@ const closeEditPopup = () => {
     showPopup.value = false;
 };
 
+// function openCustomersModal(customers) {
+//   modalContent.value = customers
+//   showModal.value = true
+// }
+
+function openCustomersModal(customers) {
+  modalContent.value = Array.isArray(customers) ? customers : []  // ป้องกันกรณีไม่ใช่ array
+  showModal.value = true
+}
+
+const modalText = computed(() => {
+  // return modalContent.value.map(c => c.nickname || 'ไม่มีข้อมูล').join(',\n')
+    return modalContent.value
+    .map(c => `📍 ${c.nickname || 'ไม่มีข้อมูล'}`)
+    .join('\n')   // แยกแต่ละบรรทัดด้วย newline
+
+})
 
 // eslint-disable-next-line no-unused-vars
 const toggleExpand = (employee) => {

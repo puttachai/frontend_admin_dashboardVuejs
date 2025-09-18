@@ -3330,7 +3330,7 @@ export default {
             console.log("📦 รายการ DocumentNo :", this.approvedVoucherNo);
 
             // update สถานะใน Database ปิดไว้ก่อน
-            // await this.updateOrderStatus(this.approvedVoucherNo);
+            await this.updateOrderStatus(this.approvedVoucherNo);
 
             Swal.fire({
               title: "อนุมัติรายการสั่งซื้อสำเร็จ",

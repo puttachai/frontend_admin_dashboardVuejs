@@ -40,13 +40,45 @@
           เลือกร้านค้า: {{ selectedCustomer.nickname }}
         </div> -->
 
-        <div v-if="selectedCustomers.length" class="py-2 text-sm text-purple-700">
+        <!-- ใช้ได้ -->
+        <!-- <div v-if="selectedCustomers.length" class="py-2 text-sm text-purple-700">
           เลือกร้านค้าแล้ว:
           <span v-for="cust in selectedCustomers" :key="cust.customer_no" class="mr-2">
             {{ cust.nickname }}
             <button @click="removeCustomer(cust.customer_no)" class="text-red-500">x</button>
           </span>
+        </div> -->
+
+        <div v-if="selectedCustomers.length"
+            class="py-2 text-sm text-purple-700">
+
+          <!-- หัวข้อแบบ sticky -->
+          <p class=" top-0 z-10 font-semibold bg-white/80 text-black dark:text-white
+                    px-2 py-1 rounded mb-2">
+            เลือกร้านค้าแล้ว:
+          </p>
+
+          <div class="flex-1 w-full max-h-40 overflow-y-auto">
+            <!-- รายการลูกค้า -->
+          <ul class="list-disc list-inside space-y-1">
+            <li
+              v-for="cust in selectedCustomers"
+              :key="cust.customer_no"
+              class="flex items-center justify-between bg-purple-50 rounded-md px-3 py-1 hover:bg-purple-100 transition"
+            >
+              <span class="truncate">{{ cust.nickname }}</span>
+              <button
+                @click="removeCustomer(cust.customer_no)"
+                class="ml-2 text-xs text-red-500 hover:text-red-700"
+              >
+                ✕
+              </button>
+            </li>
+          </ul>
+          </div>
+
         </div>
+
 
         <!-- <div v-if="selectedCustomers.length" class="py-2 text-sm text-purple-700">
           เลือกร้านค้า:
@@ -188,7 +220,23 @@ const handleCustomerSelected = (cust) => {
   console.log('Selected Customer:', cust);
   const exists = selectedCustomers.value.find(c => c.customer_no === cust.customer_no);
 
-  if (!exists) selectedCustomers.value.push(cust); // เพิ่มเฉพาะตัวที่ยังไม่อยู่
+  // if (!exists) selectedCustomers.value.push(cust); // เพิ่มเฉพาะตัวที่ยังไม่อยู่
+
+    if (exists) {
+    // แจ้งเตือนผู้ใช้ว่าซ้ำ
+    Swal.fire({
+      icon: 'warning',
+      title: 'เลือกรายการซ้ำ',
+      text: `ร้าน "${cust.nickname}" ถูกเลือกอยู่แล้ว`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+    return; // ❌ ไม่เพิ่มลงใน selectedCustomers
+  }
+
+  // ถ้าไม่ซ้ำ ให้เพิ่ม
+  selectedCustomers.value.push(cust);
+
 };
 // const handleCustomerSelected = (cust) => {
 //   selectedCustomer.value = cust;
@@ -256,8 +304,6 @@ const confirmSubmitEdit = async () => {
         formData.append("customer_name", selectedCustomer.value.nickname);
       }
     }
-
-
 
     // ส่งเป็น JSON array ของลูกค้า
     if (selectedCustomers.value.length) {

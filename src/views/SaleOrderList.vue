@@ -127,10 +127,79 @@
               <td class="p-3">{{ order.customer_code }}</td>
               <td class="p-3">{{ order.shop_name }}</td>
               <!-- <td class="p-3">{{ order.shop_name }}</td> -->
-              <td class="p-3">{{ order.employee_name ? order.employee_name : "ไม่มีข้อมูล" }}</td>
+              <!-- <td class="p-3">{{ order.employee_name ? order.employee_name : "ไม่มีข้อมูล" }}</td> -->
+              <!-- พนักงานเร่งรัด (ชื่อ) -->
+              <td class="px-2 py-1 border whitespace-nowrap relative">
+                <div v-if="order.collector_list && order.collector_list.length" class="flex flex-col space-y-1">
+                  <div
+                    v-for="(c, idx) in order.collector_list.slice(0,2)"
+                    :key="idx"
+                    class="relative group cursor-pointer"
+                  >
+                    <span class="hover:text-purple-600">
+                      {{ c.full_name && c.full_name.length > 20
+                          ? c.full_name.substring(0, 20) + '...'
+                          : (c.full_name || 'ไม่มีข้อมูล') }}
+                    </span>
+
+                    <!-- tooltip -->
+                    <div
+                      v-if="c.full_name"
+                      class="absolute z-10 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 -top-8 left-0 max-w-xs whitespace-normal"
+                    >
+                      {{ c.full_name }}
+                    </div>
+                  </div>
+                </div>
+
+                <div v-else>ไม่มีข้อมูล</div>
+
+                <!-- ปุ่มดูทั้งหมด -->
+                <button
+                  v-if="order.collector_list && order.collector_list.length > 2"
+                  @click="openCollectorsModal(order.collector_list)"
+                  class="absolute right-1 bottom-1 text-[9px] text-gray-500 hover:text-gray-400 px-1 py-0.5 rounded bg-white shadow-sm"
+                >
+                  ดูทั้งหมด
+                </button>
+
+                <!-- Modal แสดงข้อมูลเต็ม -->
+                <div v-if="showCollectorsModal" class="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+                  <div class="bg-white rounded-lg shadow-lg w-96 p-4 relative">
+                    <h2 class="text-lg font-bold mb-2 ">พนักงานเร่งรัดที่ดูแล</h2>
+                    <textarea
+                      readonly
+                      class="w-full h-40 border rounded p-2 text-sm"
+                      :value="modalCollectors.map(c => `📍 ${c.full_name}`).join('\n')"
+                    ></textarea>
+                    <button
+                      @click="showCollectorsModal = false"
+                      class="absolute top-2 right-2 text-gray-500 hover:text-black"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              </td>
+
               <td class="p-3">{{ order.mobile }}</td>
               <!-- <td class="p-3">{{ order.employee_mobile ? order.employee_mobile : "ไม่มีข้อมูล"}}</td> -->
-              <td class="p-3">{{ order.employee_phone ? order.employee_phone : "ไม่มีข้อมูล"}}</td>
+              <!-- <td class="p-3">{{ order.employee_phone ? order.employee_phone : "ไม่มีข้อมูล"}}</td> -->
+             <!-- พนักงานเร่งรัด (ชื่อ) -->
+
+              <!-- เบอร์โทรศัพท์พนักงานเร่งรัด -->
+              <td class="px-2 py-1 border whitespace-nowrap min-w-[120px]">
+                <select class="border border-gray-300 rounded px-2 py-1 w-full">
+                  <option
+                    v-for="(c, idx) in order.collector_list"
+                    :key="`tel-${idx}`"
+                    :value="c.telephone"
+                  >
+                    {{ c.telephone || 'ไม่มีข้อมูล' }}
+                  </option>
+                </select>
+              </td>
+
               <td class="p-3 text-right">{{ formatCurrency(order.total_amount) }}</td>
               <td class="p-3 text-right">{{ formatCurrency(order.total_paid) }}</td>
               <td class="p-3">{{ order.created_at }}</td>
@@ -416,6 +485,9 @@ const limit = 10;
 
 const searchQuery = ref(""); // <- ช่องค้นหา
 const isLoading = ref(false); // หรือ true ถ้าต้องการให้เริ่มต้นแสดง
+
+const showCollectorsModal = ref(false);
+const modalCollectors = ref([]);
 
 const isAdmin = computed(() => localStorage.getItem("role_admin") === "true");
 const isFa = computed(() => localStorage.getItem("role_fa") === "true");
@@ -735,6 +807,14 @@ function showAll(order) {
 }
 
 
+function openCollectorsModal(list) {
+  modalCollectors.value = list;
+  console.log('check Function openCollectorsModal :');
+  console.log('check modalCollectors.value :',modalCollectors.value);
+  showCollectorsModal.value = true;
+}
+
+
 async function fetchPage(page = 1) {
   isLoading.value = true;
   try {
@@ -762,8 +842,9 @@ async function fetchPage(page = 1) {
         total_paid: item.final_total_price,
         status: item.status,
         created_at: item.created_at,
-        employee_name: item.employee_name, //
-        employee_phone: item.employee_phone, // ถ้าจะใช้
+        employee_name: item.collector_names || item.employee_name , //
+        employee_phone: item.employee_phone || item.collector_phone, // ถ้าจะใช้
+        collector_list: item.collector_list || [], // เก็บ collector ทั้งหมด
         extra_details: item.extra_list || [],
       }));
 

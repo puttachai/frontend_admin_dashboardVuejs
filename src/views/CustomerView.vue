@@ -824,8 +824,11 @@ async searchSaleId() {
 }
 </style>
 
+<<<<<<< Updated upstream
 
 
+=======
+>>>>>>> Stashed changes
 <!--
 @media (max-width: 500px) {
     table {
